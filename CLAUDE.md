@@ -104,8 +104,6 @@ Decided items waiting to be built:
 - A "Regular season games" league setting (16 or 17; default 17). The engine
   is per-play, so only the schedule and the report benchmarks change (scale
   real benchmarks by games/17).
-- Training camp and preseason as separate sim steps, including camp/preseason
-  injuries (then recheck stats with the tools).
 - Player development as designed in the build log (potential shifts, two
   layers, staged reveals). Rust was dropped (Blake, Oct 23).
 - Main menu, new game, save slots.
@@ -119,7 +117,9 @@ Decided items waiting to be built:
   (`contracts.py`, `free_agency.py`, `draft.py`). The offseason plays in phases
   with a Next button (`offseason.offseason_start/next`, `season.begin_offseason/
   advance_offseason`); you run your contracts on the Contracts tab
-  (`screens/contracts_page.py`). Draft screens are still to come.
+  (`screens/contracts_page.py`) and your draft on the Draft tab
+  (`engine/draft_day.py` runs it pick by pick, `engine/scouting.py` interview
+  scouting, `screens/draft_page.py`; new games start with a live startup draft).
 
 ## Files
 

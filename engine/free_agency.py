@@ -80,6 +80,7 @@ TEST_MARKET_DEPTH = 0.30        # the same for an unrestricted veteran worth les
 EXTEND_CHANCE = 0.45            # a core starter entering his last year gets extended
 EXTEND_MIN_PRICE = 0.02         # ...if he's worth at least this share of the cap
 EXTEND_MAX_AGE = {"QB": 33, "K": 34, "P": 35, "LS": 35}   # and no older than this (others 29)
+EXTEND_NEXT_MAX = 1.0           # ...and only if next season's commitments stay within next season's cap
 TAG_MIN_VALUE = 0.95            # tag a player only if he's worth at least this share of the tag
 LONG_TERM_AFTER_TAG = 0.45      # a tagged player signs a long-term deal before the season
 OPTION_MIN_VALUE = 0.8          # exercise a fifth-year option if he's worth this share of it
@@ -488,8 +489,10 @@ def league_year_start(league, rng=None, draft_order=None):
             continue
         if rng.random() < EXTEND_CHANCE:
             apy = info["price"] * (1 + RESIGN_PREMIUM * (1.5 - p.loyalty / 100)) * team_style(league, c["team"])
-            _extend(league, p, c, apy, rng)
-            rep["extensions"] += 1
+            ext, new = _extension_contract(league, p, c, apy, rng)
+            if _extension_fits(league, c, ext):
+                _sign_extension(league, ext, new)
+                rep["extensions"] += 1
     # 4. Expiring contracts: best players first, so a re-signed starter counts for the next decision.
     quality = team_quality(league)
     order = sorted(pending, key=lambda pid: -table[pid]["price"])
@@ -597,17 +600,37 @@ def _extension_contract(league, p, c, apy_share, rng, years=None, apy_k=None, gt
     return ext, new
 
 
-def _extend(league, p, c, apy_share, rng, years=None, apy_k=None, gtd=None):
-    """Extension: sign _extension_contract's deal (logged the way OverTheCap
-    records extensions: the new years and their average)."""
+def _extension_fits(league, c, ext):
+    """AI: can the team afford this extension? The new bonus's share has to fit
+    this season with the room it keeps for the draft and in-season moves (as
+    re-signings do), and next season's commitments can't go past next season's
+    cap. (Before Oct 24 extensions never checked: a startup-draft league had a
+    team pay two quarterbacks 38% of its cap, and teams piled up deals they
+    then had to cut.)"""
+    tid, S = c["team"], league.season
+    more = C.cap_hit(league, ext) - C.cap_hit(league, c)
+    if more > 0 and C.room_after(league, tid, more) < _reserve_share(league, tid, True) * C.cap_for(league, S):
+        return False
+    nxt = (C.commitments(league, tid, S + 1) - C.cap_hit(league, c, S + 1, full=True)
+           + C.cap_hit(league, ext, S + 1, full=True))
+    return nxt <= EXTEND_NEXT_MAX * C.cap_for(league, S + 1)
+
+
+def _sign_extension(league, ext, new):
     cap = C.cap_for(league, league.season)
-    ext, new = _extension_contract(league, p, c, apy_share, rng, years, apy_k, gtd)
     years = ext["new_years"]
     C.sign(league, ext, phase="extension", new_team=False)
     # Logged the way OverTheCap records extensions: the new years and their average.
     league.contract_log[-1].update(years=years, apy=new["apy"], apy_share=round(new["apy"] / cap, 5),
                                    value=new["value"], guaranteed=new["guaranteed"])
     return ext
+
+
+def _extend(league, p, c, apy_share, rng, years=None, apy_k=None, gtd=None):
+    """Extension: sign _extension_contract's deal (logged the way OverTheCap
+    records extensions: the new years and their average)."""
+    ext, new = _extension_contract(league, p, c, apy_share, rng, years, apy_k, gtd)
+    return _sign_extension(league, ext, new)
 
 
 def _cap_cuts(league, tid, table, depth, rng):
