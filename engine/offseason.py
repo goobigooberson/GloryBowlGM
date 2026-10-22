@@ -92,6 +92,7 @@ def retirement_chance(p, season, rank):
 
 def retirements(league, rng):
     """Rostered players who retire this offseason (returns their ids)."""
+    from .free_agency import retirement_contract_factor
     active = [p for p in league.players if p.retired is None and p.id in league.rosters]
     rank = _position_rank(active)
     gone = []
@@ -101,6 +102,9 @@ def retirements(league, rng):
         # Achilles never play again; injuries.py has each injury's push).
         for kind, _weeks in league.season_injuries.get(p.id, ()):
             chance = 1 - (1 - chance) * (1 - injuries.get(kind, p.position).retire)
+        # Still under contract: real players rarely retire then, least of all young ones owed money
+        # (Oct 24; free_agency.retirement_contract_factor, fitted to the real reserve/retired list).
+        chance = min(1.0, chance * retirement_contract_factor(league, p, retire_age(p)))
         if rng.random() < chance:
             gone.append(p.id)
     return gone

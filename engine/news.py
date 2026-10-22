@@ -53,6 +53,7 @@ TYPES = {
     "awards": "Awards and honors",
     "storyline": "Storylines",
     "rankings": "Rankings and previews",
+    "business": "League business",
 }
 LEAGUE_VIEW_MIN = 25       # the league-wide view shows stories at least this important (0-100)
 POST_LEAGUE_VIEW_MIN = 30  # ...and social posts at least this important
@@ -2851,6 +2852,8 @@ def build(league, past_games=None):
         _captains(ctx, season)
         from .news_awards import awards_news   # awards and the Pro Bowl (Oct 23)
         awards_news(ctx, season)
+        from .news_money import money_news     # the cap, TV and labor deals (Oct 24)
+        money_news(ctx, season)
     _injury_reports(ctx)
     _playoff_picture(ctx)
     order = lambda x: (-x["season"], -x["cal"], -x["importance"])

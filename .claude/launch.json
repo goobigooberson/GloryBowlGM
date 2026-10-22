@@ -36,6 +36,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["app.py", "--browser", "--no-show", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\blakecopy"],
       "port": 8085
+    },
+    {
+      "name": "layout-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8103", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\f3047749-5221-429f-bc26-fe5da6fd4733\\scratchpad\\layoutsaves"],
+      "port": 8103
     }
   ]
 }

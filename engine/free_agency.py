@@ -54,6 +54,25 @@ UPGRADE_K = 0.06               # a team pays up to this much over his price for 
 UPGRADE_FULL = 10.0             # ...reached at this many rating points over the starter he'd replace
 MIN_UPGRADE = 1.5               # less of an upgrade than this: he's priced as a backup there
 DEPTH_KEEP = 0.55               # chance a team keeps a cheap depth player it could keep (teams churn depth)
+# ---- Knobs: each AI team's approach to the league year (Blake, Oct 24: "match the real NFL":
+# contenders go all in, rebuilders sit on room). Real cap room when free agency opens
+# (2024-25): median ~14% of the cap, 7-8 teams with almost none, the most 40-45%; before
+# this every AI team spent the same way and none ran short (lowest tenth ~9%).
+APPROACH_COUNTS = (10, 7)       # AI teams going all in / rebuilding each league year (the rest: normal)
+APPROACH_NOISE = 0.6            # front offices read their window differently (spread, in team-strength units)
+ALLIN_RESTRUCTURE = 0.12        # all in: turn up to this share of the cap in salary into bonus (pushing money
+                                # into later years) when it needs room to sign or keep a player it wants
+ALLIN_RESERVE = 0.5             # ...keep only this share of the usual room for in-season moves
+ALLIN_PAY = 1.05                # ...and pay a little more for starters
+ALLIN_EXTEND = 0.65             # ...and extend core players more often (EXTEND_CHANCE otherwise)
+ALLIN_RISE = 0.15               # ...back-load new deals (base salary climbs this much a year, 6% otherwise:
+                                # a small cap hit now, bigger ones later)
+ALLIN_NEXT_MAX = 1.15           # ...and let next season's commitments run past next season's cap (it'll
+                                # restructure or cut in March, as real contenders do; EXTEND_NEXT_MAX otherwise)
+REBUILD_KEEP = 0.02             # rebuilding: keep this share of the cap unspent in the offseason (it carries over)
+REBUILD_AGE = 29                # ...pay players this old or older less
+REBUILD_OLD_PAY = 0.8
+REBUILD_CUT_CHANCE = 0.85       # ...and cut overpaid veterans more readily (CUT_CHANCE otherwise)
 # ---- Knobs: the market ---------------------------------------------------------------
 # A free agent's ask, as a share of his price, by wave: high early (the first days,
 # when the best players sign), falling as the market cools; market-level players
@@ -81,6 +100,10 @@ EXTEND_CHANCE = 0.45            # a core starter entering his last year gets ext
 EXTEND_MIN_PRICE = 0.02         # ...if he's worth at least this share of the cap
 EXTEND_MAX_AGE = {"QB": 33, "K": 34, "P": 35, "LS": 35}   # and no older than this (others 29)
 EXTEND_NEXT_MAX = 1.0           # ...and only if next season's commitments stay within next season's cap
+# Retiring while under contract (retirement_contract_factor; fitted to the real reserve/retired list 2021-22):
+RETIRE_UC_SCALE = 0.5           # his plain odds times this at his position's usual retiring age...
+RETIRE_UC_AGE = 0.175           # ...times e^(this x years past that age), from 8 years before to 4 after
+RETIRE_MONEY_K = 0.01           # ...and shrinking by e per 1% of the cap he'd give up (full weight when young)
 TAG_MIN_VALUE = 0.95            # tag a player only if he's worth at least this share of the tag
 LONG_TERM_AFTER_TAG = 0.45      # a tagged player signs a long-term deal before the season
 OPTION_MIN_VALUE = 0.8          # exercise a fifth-year option if he's worth this share of it
@@ -140,6 +163,74 @@ def _eval(league, tid, pid):
 
 def ai_teams(league):
     return [t.id for t in league.teams if t.id != league.user_team_id]
+
+
+def approach(league, tid):
+    """This AI team's approach this league year: 'all_in', 'rebuild' or 'normal'
+    (set_approaches, at the start of the league year)."""
+    return league.fa.get("approach", {}).get(tid, "normal")
+
+
+def set_approaches(league, table):
+    """Each AI team reads its window: last season's record and the talent on its
+    roster (its best 22 players' market scores), plus its own judgment. The most
+    promising go all in, the least promising rebuild."""
+    quality = team_quality(league)
+    strength = {}
+    for tid in ai_teams(league):
+        scores = sorted((table[pid]["score"] for pid, t in league.rosters.items() if t == tid and pid in table),
+                        reverse=True)[:22]
+        strength[tid] = sum(scores) / max(1, len(scores))
+    if not strength:
+        league.fa["approach"] = {}
+        return
+    mu_s = sum(strength.values()) / len(strength)
+    sd_s = (sum((v - mu_s) ** 2 for v in strength.values()) / len(strength)) ** 0.5 or 1.0
+    z = {}
+    for tid in strength:
+        r = random.Random(f"fa-approach-{_salt(league)}-{league.season}-{tid}")
+        z[tid] = (0.5 * (quality.get(tid, 0.5) - 0.5) / 0.18 + 0.5 * (strength[tid] - mu_s) / sd_s
+                  + r.gauss(0, APPROACH_NOISE))
+    order = sorted(z, key=lambda t: -z[t])
+    n_in, n_re = APPROACH_COUNTS
+    league.fa["approach"] = {tid: ("all_in" if i < n_in else "rebuild" if i >= len(order) - n_re else "normal")
+                             for i, tid in enumerate(order)}
+
+
+def _make_room(league, tid, need_k, rng):
+    """All in: restructure to open `need_k` more cap room, within the league year's
+    ALLIN_RESTRUCTURE. True if the room is there now."""
+    cap = C.cap_for(league, league.season)
+    if C.cap_room(league, tid) >= need_k:
+        return True
+    if approach(league, tid) != "all_in":
+        return False
+    used = league.fa.setdefault("allin_used", {})
+    left = ALLIN_RESTRUCTURE * cap - used.get(tid, 0)
+    short = need_k - C.cap_room(league, tid)
+    if short > left:
+        return False
+    before = C.cap_room(league, tid)
+    _comply(league, tid, rng, target=need_k / cap, allow_cuts=False)
+    used[tid] = used.get(tid, 0) + max(0, C.cap_room(league, tid) - before)
+    return C.cap_room(league, tid) >= need_k
+
+
+def _restructure_left(league, tid):
+    """Cap room an all-in team could still open by restructuring this league year."""
+    if approach(league, tid) != "all_in":
+        return 0
+    cap = C.cap_for(league, league.season)
+    left = ALLIN_RESTRUCTURE * cap - league.fa.get("allin_used", {}).get(tid, 0)
+    S = league.season
+    possible = 0
+    for pid in C.players_with_team(league, tid):
+        c = league.contracts.get(pid)
+        if c is not None:
+            r = C.restructure_room(league, c, S)
+            if r > 0:
+                possible += r - r // min(C.years_left(c, S), C.MAX_PRORATION_YEARS)
+    return max(0, min(left, possible))
 
 
 def team_quality(league):
@@ -229,6 +320,11 @@ def willingness(league, tid, p, info, depth, quality=None):
         # Backups, and bodies for camp (offseason rosters run to 90; the cut to 53 sorts them out).
         role = "backup" if slot <= starters else "depth"
         w = min(price, role_price(pos, slot))
+    way = approach(league, tid)
+    if way == "all_in" and role == "starter":
+        w *= ALLIN_PAY
+    elif way == "rebuild" and _age(league, p) >= REBUILD_AGE:
+        w *= REBUILD_OLD_PAY
     return max(info["minimum"], w * team_style(league, tid) * _eval(league, tid, p.id)), role
 
 
@@ -259,7 +355,8 @@ def make_deal(league, p, tid, apy_share, rng, kind=None, years=None, gtd_share=N
         c = C.minimum_contract(league, p.id, tid, years=years, week=week, kind=kind or "minimum")
         return c
     gtd = (gtd_share if gtd_share is not None else M.guarantee_share(share, years, p.position, rng)) * apy_k * years
-    c = C.build(league, p.id, tid, kind or _kind_for(share), league.season, years, apy_k, guaranteed=gtd)
+    rise = ALLIN_RISE if tid != league.user_team_id and approach(league, tid) == "all_in" else 0.06
+    c = C.build(league, p.id, tid, kind or _kind_for(share), league.season, years, apy_k, guaranteed=gtd, rise=rise)
     c["week"] = week
     return c
 
@@ -274,11 +371,15 @@ def _sign(league, p, c, label, note, phase, new_team=None):
 def _reserve_share(league, tid, before_draft):
     """Cap room (share of the cap) an AI team keeps free: for in-season moves,
     in the offseason also for week 1's extra costs, and before the draft for
-    its picks."""
-    r = IN_SEASON_BUFFER
+    its picks. All-in teams keep less for in-season moves; rebuilding teams keep
+    extra room through the offseason."""
+    way = approach(league, tid)
+    r = IN_SEASON_BUFFER * (ALLIN_RESERVE if way == "all_in" else 1.0)
     top51 = C.top51_in_force(league)
     if top51:
         r += WEEK1_EXTRA
+        if way == "rebuild":
+            r += REBUILD_KEEP
     # Room to fill out the roster at the minimum (a team can't spend it all on a few stars).
     signed = sum(1 for c in league.contracts.values() if c["team"] == tid and c["kind"] != "practice")
     open_spots = max(0, (C.TOP_51 if top51 else ROSTER_SIZE) - signed)
@@ -451,6 +552,7 @@ def league_year_start(league, rng=None, draft_order=None):
     rep = league.fa["report"]
     user = league.user_team_id
     table = M.market_table(league)
+    set_approaches(league, table)
     # 1. Reserve/future deals for last season's practice squad players (now on the offseason roster).
     pending = {}
     for pid, old in expired.items():
@@ -487,7 +589,7 @@ def league_year_start(league, rng=None, draft_order=None):
         lst = [x for x in depth[c["team"]][p.position] if x != info["score"]]
         if sum(1 for x in lst if x > info["score"]) >= STARTER_COUNT.get(p.position, 1):
             continue
-        if rng.random() < EXTEND_CHANCE:
+        if rng.random() < (ALLIN_EXTEND if approach(league, c["team"]) == "all_in" else EXTEND_CHANCE):
             apy = info["price"] * (1 + RESIGN_PREMIUM * (1.5 - p.loyalty / 100)) * team_style(league, c["team"])
             ext, new = _extension_contract(league, p, c, apy, rng)
             if _extension_fits(league, c, ext):
@@ -530,18 +632,25 @@ def league_year_start(league, rng=None, draft_order=None):
                 elif (role == "starter" and status == "UFA" and tid not in league.fa["tags"]):
                     amount = C.tag_amount(league, p.position, C.cap_hit(league, old, S - 1, full=True),
                                           old.get("tags", 0) if old["kind"] == "tag" else 0)
+                    floor = ((WEEK1_EXTRA + 0.005) if approach(league, tid) != "rebuild"
+                             else _reserve_share(league, tid, True))
                     if (info["price"] * C.cap_for(league, S) >= TAG_MIN_VALUE * amount
-                            and C.room_after(league, tid, amount) >= _reserve_share(league, tid, True)
-                            * C.cap_for(league, S)):
+                            and C.room_after(league, tid, amount) >= floor * C.cap_for(league, S)):
                         signed = C.tag_contract(league, pid, tid, amount,
                                                 old.get("tags", 0) if old["kind"] == "tag" else 0)
                         league.fa["tags"][tid] = pid
                         rep["tags"] += 1
         if signed is not None:
-            # Within the cap (with room kept for the draft) or he goes to the market.
-            if C.room_after(league, tid, _first_hit(league, signed)) < _reserve_share(league, tid, True) * \
-                    C.cap_for(league, S) and signed["kind"] not in ("tender",):
-                signed = None
+            # Within the cap (with room kept for the draft) or he goes to the market. Teams that
+            # aren't rebuilding keep their starters and find the rookie and in-season money later
+            # (restructures after the draft, at final cuts), as real teams do, keeping only what
+            # week 1 adds; an all-in team restructures now if even that isn't there.
+            keep = _reserve_share(league, tid, True) * C.cap_for(league, S)
+            if approach(league, tid) != "rebuild" and role == "starter":
+                keep = (WEEK1_EXTRA + 0.005) * C.cap_for(league, S)
+            if C.room_after(league, tid, _first_hit(league, signed)) < keep and signed["kind"] not in ("tender",):
+                if not (role == "starter" and _make_room(league, tid, _first_hit(league, signed) + keep, rng)):
+                    signed = None
         if signed is not None:
             C.sign(league, signed, phase="re-sign", new_team=False)
             s = table[pid]["score"]
@@ -613,7 +722,8 @@ def _extension_fits(league, c, ext):
         return False
     nxt = (C.commitments(league, tid, S + 1) - C.cap_hit(league, c, S + 1, full=True)
            + C.cap_hit(league, ext, S + 1, full=True))
-    return nxt <= EXTEND_NEXT_MAX * C.cap_for(league, S + 1)
+    limit = ALLIN_NEXT_MAX if approach(league, tid) == "all_in" else EXTEND_NEXT_MAX
+    return nxt <= limit * C.cap_for(league, S + 1)
 
 
 def _sign_extension(league, ext, new):
@@ -653,7 +763,7 @@ def _cap_cuts(league, tid, table, depth, rng):
         dead_total = sum(prev["dead"].values())
         if (over >= max(CUT_OVERPAY_MIN * cap, CUT_OVERPAY_SHARE * hit) and savings >= CUT_SAVINGS_MIN * cap
                 and dead_total <= CUT_DEAD_MAX * hit):
-            if rng.random() < CUT_CHANCE:
+            if rng.random() < (REBUILD_CUT_CHANCE if approach(league, tid) == "rebuild" else CUT_CHANCE):
                 C.release(league, pid, june1=use_june)
                 p = league.player(pid)
                 _let_go(league, pid, tid, "UFA" if p.experience >= C.RFA + 1 else _status(p), "released (cap)")
@@ -903,7 +1013,7 @@ def market(league, waves, rng=None, before_draft=None):
         depth = depth_lists(league, table)
         bids = defaultdict(list)
         for tid in sorted(ai_teams(league), key=lambda _t: rng.random()):
-            room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap
+            room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap + _restructure_left(league, tid)
             if room <= 0:
                 continue
             spots = OFFSEASON_ROSTER_MAX - roster_count(league, tid)
@@ -943,6 +1053,7 @@ def market(league, waves, rng=None, before_draft=None):
             info = table[pid]
             ask = ask_share(info, wave)
             lst = sorted(bids[pid], key=lambda b: -b[1])
+            role_of = {(pid, tid): role for tid, _w, role in lst}
             second = lst[1][1] if len(lst) > 1 else ask
             offers = []
             uo = league.fa.get("user_offers", {}).get(pid)
@@ -973,7 +1084,13 @@ def market(league, waves, rng=None, before_draft=None):
                 else:
                     c = make_deal(league, p, tid, amount, rng)
                 if tid != league.user_team_id:
-                    if C.room_after(league, tid, _first_hit(league, c)) < _reserve_share(league, tid, pre) * cap * 0.5:
+                    keep = _reserve_share(league, tid, pre) * cap * 0.5
+                    if C.top51_in_force(league):
+                        # never less than what starts counting at week 1 (an all-in team keeps less
+                        # for in-season moves, and could otherwise be over the cap at week 1)
+                        keep = max(keep, (WEEK1_EXTRA + 0.005) * cap)
+                    if C.room_after(league, tid, _first_hit(league, c)) < keep and \
+                            not (role_of.get((pid, tid)) == "starter" and _make_room(league, tid, _first_hit(league, c) + keep, rng)):
                         continue
                     if roster_count(league, tid) >= OFFSEASON_ROSTER_MAX:
                         continue
@@ -1079,6 +1196,37 @@ def final_compliance(league, full=None):
     if user is not None and C.cap_room(league, user, top51=t51) < 0:
         request_cap_moves(league, user)
     return moves
+
+
+def retirement_contract_factor(league, p, typical_age):
+    """A multiplier on his chance to retire this offseason (offseason.retirements)
+    when he's still under contract for the coming season. Real players under
+    contract rarely retire (they're released instead, or play on), and almost
+    never walk away from real money before their prime ends, while an old star
+    still might (Brees, Whitworth). Players whose contract just ended keep the
+    plain odds (offseason.retirement_chance, fitted to real career lengths).
+    Fitted to the real rates (Oct 24; Blake: "make sure its as accurate as you
+    can get it"): players on the NFL's reserve/retired list in 2021-22 (nflverse
+    rosters, status RET; the list is for players who retire under contract),
+    out of the players on a roster under an OverTheCap contract that season:
+    1.0% a season; by age under 26 0.3%, 26-29 1.1%, 30-32 2.4%, 33+ 6.3%; none
+    of the ~865 players under 30 paid 1.5%+ of the cap retired, while 10% of
+    those 33+ paid 4%+ did. The game with this factor: 0.4% / 0.6% / 2.4% / 6.2%
+    (before: 2.7% / 6.2% / 14.8% / 21.1%, five times the real rate overall,
+    and retirees' leftover bonuses were the biggest source of dead money).
+    Money he'd give up: this season's base salary plus guaranteed salary still
+    to come, as a share of the cap; it counts in full until 3 years before his
+    position's usual retiring age and not at all from 3 years after it."""
+    c = getattr(league, "contracts", {}).get(p.id)
+    if c is None or c["kind"] == "practice" or C.last_season(c) < league.season:
+        return 1.0
+    S = league.season
+    money = sum(y["base"] if y["season"] == S else y["gtd"] for y in c["years"] if y["season"] >= S)
+    share = money / C.cap_for(league, S)
+    age = _age(league, p)
+    youth = max(0.0, min(1.0, 1.0 - (age - (typical_age - 3)) / 6))
+    scale = RETIRE_UC_SCALE * math.exp(RETIRE_UC_AGE * max(-8.0, min(4.0, age - typical_age)))
+    return scale * math.exp(-share / RETIRE_MONEY_K * youth)
 
 
 def cut_money_value(league, p):

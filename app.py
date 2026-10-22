@@ -116,8 +116,24 @@ if __name__ in {"__main__", "__mp_main__"}:
     multiprocessing.freeze_support()  # needed for the game window in the packaged .exe
     if HAS_WINDOW:
         # find_open_port: use any free port, so another program on the PC can't block the game.
+        port = native.find_open_port()
+        if getattr(sys, "frozen", False) and multiprocessing.current_process().name == "MainProcess":
+            # Packaged game: if no game screen has connected in 30 seconds (the
+            # window failed on a friend's PC), open the game in the web browser
+            # instead. (A window can appear but stay blank, so this waits for the
+            # screen itself, not the window.)
+            import threading
+            import webbrowser
+            screen_connected = threading.Event()
+            app.on_connect(lambda: screen_connected.set())
+
+            def browser_if_no_window():
+                if not screen_connected.wait(30):
+                    webbrowser.open(f"http://127.0.0.1:{port}")
+
+            threading.Thread(target=browser_if_no_window, daemon=True).start()
         ui.run(title="Front Office Football", native=True, window_size=(1600, 950),
-               reload=False, port=native.find_open_port())
+               reload=False, port=port)
     else:
         print("Opening in your browser.")
         if "--browser" not in sys.argv:

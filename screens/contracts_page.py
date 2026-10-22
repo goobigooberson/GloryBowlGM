@@ -10,7 +10,7 @@
 #                first-rounders' fifth-year options (until the draft)
 #   Free agency  the free-agent board during the offseason waves: what each asks, how much
 #                other teams are interested, your offers (he decides when the wave plays out)
-# Screens read the engine only (free_agency.py, contracts.py).
+# Screens read the engine only (free_agency.py, contracts.py, league_money.py).
 
 from datetime import date
 from html import escape
@@ -19,6 +19,7 @@ from nicegui import ui
 
 from engine import contracts as C
 from engine import free_agency as FA
+from engine import league_money as LM
 from engine import season
 from engine.scale import shown
 from engine.teams import ROSTER_TEMPLATE
@@ -45,7 +46,23 @@ def _cap_line(league, tid):
             + f' &nbsp;·&nbsp; room <b>{_m(cap["room"])}</b>'
             + (f' &nbsp;·&nbsp; standing offers {_m(tied)}' if tied else "")
             + f' &nbsp;·&nbsp; dead money {_m(cap["dead"])}'
-            + f' &nbsp;·&nbsp; {league.season + 1}: {_m(nxt)} committed of about {_m(nxt_cap)}')
+            + f' &nbsp;·&nbsp; {league.season + 1}: {_m(nxt)} committed of a projected {_m(nxt_cap)}'
+            + _league_money_line(league))
+
+
+def _league_money_line(league):
+    """Where the cap is headed: next year's projection and the TV and labor deals."""
+    o = LM.outlook(league)
+    ch = o["next_change"]
+    bits = [f'{o["next_season"]} cap projected {_m(o["next_cap"])} ({"+" if ch >= 0 else ""}{ch * 100:.1f}%'
+            + (", revenue fell" if o["shock"] else "") + ")"]
+    if o["next_deal"]:
+        bits.append(f'new TV deals signed for {o["next_deal"][0]}-{o["next_deal"][1]}')
+    elif o["deal_end"]:
+        bits.append(f'TV deals run through {o["deal_end"]}')
+    if o["labor_end"]:
+        bits.append(f'labor deal through {o["labor_end"]}')
+    return '<br><span style="opacity:.75">League money: ' + " &nbsp;·&nbsp; ".join(bits) + "</span>"
 
 
 def advice_text(r):

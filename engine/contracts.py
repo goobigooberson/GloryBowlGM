@@ -28,8 +28,8 @@
 #        practice (practice squad, paid by the week), extension
 #
 # Real rules used (sources in docs/free-agency-design.md):
-#   - The cap: real figures 1994-2026; later years grow ~7% a year with some
-#     randomness (each league its own).
+#   - The cap: real figures 1994-2026; later years come from each league's own
+#     TV-deal eras, labor deals and rare shocks (league_money.py).
 #   - Minimum salaries by credited season (2020 CBA table, 2020-2030).
 #   - Signing bonuses are spread evenly over the contract, at most 5 years.
 #   - Base salaries are paid over 18 regular-season weeks; a player signed or
@@ -52,6 +52,8 @@
 import math
 import random
 
+from . import league_money as LM
+
 # ---- The salary cap ($M), real figures -----------------------------------------
 # 2011-2026 from the research (docs/research/real_contracts.json, OverTheCap/NFL);
 # 1994-2010 are the published caps (2010 was an uncapped year: 2009's figure is used).
@@ -63,10 +65,10 @@ CAP_HISTORY_M = {
     2017: 167.0, 2018: 177.2, 2019: 188.2, 2020: 198.2, 2021: 182.5, 2022: 208.2,
     2023: 224.8, 2024: 255.4, 2025: 279.2, 2026: 301.2,
 }
-# Years after the last real cap: growth per year (average, spread, lowest, highest).
-# Real 2015-2026 growth averaged ~7.5% outside the 2021 COVID dip (2023-26: +8.0%,
-# +13.6%, +9.3%, +7.9%).
-CAP_GROWTH = (0.07, 0.025, 0.02, 0.13)
+# Years after the last real cap: TV-deal eras, labor deals and rare shocks
+# (league_money.py; Blake, Oct 24). Until then each year was a random 2-13%.
+# The pace used only for years before the first real cap (1994):
+CAP_GROWTH = (0.07,)
 
 # ---- Minimum salaries ($K) by credited seasons: 0, 1, 2, 3, 4-6, 7+ (2020 CBA) --
 MIN_SALARY = {
@@ -145,25 +147,27 @@ def _real_cap_k(season):
 
 def cap_for(league, season):
     """The salary cap ($K) for a season: the league's own record if set, the
-    real figure for past years, else a projection (7% a year) for planning."""
+    real figure for past years, else a projection for planning (next year's
+    announced projection, then the expected pace with every TV and labor deal
+    already signed: league_money.projected)."""
     ensure(league)
     if season in league.cap_history:
         return league.cap_history[season]
     if season in CAP_HISTORY_M:
         return _real_cap_k(season)
-    first, last = min(CAP_HISTORY_M), max(CAP_HISTORY_M)
+    first = min(CAP_HISTORY_M)
     if season < first:
         return round(_real_cap_k(first) * (1 - CAP_GROWTH[0]) ** (first - season))
-    known = [s for s in league.cap_history if s < season]
-    base_season = max(known) if known else last
+    base_season = max([s for s in league.cap_history if s < season] + [s for s in CAP_HISTORY_M if s < season])
     base = league.cap_history.get(base_season) or _real_cap_k(base_season)
-    return round(base * (1 + CAP_GROWTH[0]) ** (season - base_season))
+    return LM.projected(league, season, base_season, base)
 
 
 def set_cap(league, season):
     """Fix this league year's cap (called when the league year starts). Real
-    years use the real cap; later years grow from last year's by a random
-    amount, the same for a given league and year every time."""
+    years use the real cap; later years come from the league's TV-deal eras
+    (league_money.py: next year's figure is projected a year ahead, the same for
+    a given league and year every time)."""
     ensure(league)
     if season in league.cap_history:
         return league.cap_history[season]
@@ -171,9 +175,7 @@ def set_cap(league, season):
         cap = _real_cap_k(season)
     else:
         prev = cap_for(league, season - 1)
-        mean, sd, lo, hi = CAP_GROWTH
-        rng = random.Random(f"cap-{league.settings.get('salt', '')}-{season}")
-        cap = round(prev * (1 + max(lo, min(hi, rng.gauss(mean, sd)))))
+        cap = LM.league_year(league, season, prev)
     league.cap_history[season] = cap
     return cap
 
@@ -212,9 +214,11 @@ def share(league, amount_k, season=None):
 
 
 def fmt_money(k):
-    """$K -> '$72.6M', '$885K', '-$1.2M'."""
+    """$K -> '$72.6M', '$885K', '-$1.2M', '$1.17B' (the cap passes $1B around 2045)."""
     sign = "-" if k < 0 else ""
     k = abs(k)
+    if k >= 999_500:
+        return f"{sign}${k / 1_000_000:.2f}B" if k < 99_995_000 else f"{sign}${k / 1_000_000:.0f}B"
     if k >= 1000:
         m = k / 1000
         return f"{sign}${m:.1f}M" if m < 100 else f"{sign}${m:.0f}M"

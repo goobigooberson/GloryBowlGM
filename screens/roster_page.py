@@ -271,9 +271,12 @@ def roster_notice_html():
                      f'team could take the field (you simmed ahead):<ul style="margin:4px 0 0 18px">{items}</ul></div>')
     warnings = transactions.roster_warnings(league, league.injuries, tid) if season.user_moves_open(league) else []
     if warnings:
+        # Folded to one line so the table gets the screen; the Home page lists the
+        # same items with buttons (layout research, Oct 21).
         items = "".join(f"<li>{escape(w)}</li>" for w in warnings)
-        parts.append(f'<div class="notice"><b>Roster to-do</b> (click a player for his moves):'
-                     f'<ul style="margin:4px 0 0 18px">{items}</ul></div>')
+        parts.append(f'<details class="notice"><summary style="cursor:pointer"><b>Roster to-do ({len(warnings)})'
+                     f'</b>: click to show (also on the Home page, with buttons). Click a player for his moves.'
+                     f'</summary><ul style="margin:4px 0 0 18px">{items}</ul></details>')
     return "".join(parts)
 
 
@@ -378,7 +381,7 @@ def build_roster_tab():
         table = ui.table(rows=[], columns=COLUMNS, row_key="id",
                          pagination={"rowsPerPage": 0, "sortBy": "pos"}) \
             .props("flat dense virtual-scroll hide-bottom") \
-            .classes("roster-table").style("flex: 1 1 0; min-width: 0; height: calc(100vh - 300px)")
+            .classes("roster-table").style("flex: 1 1 0; min-width: 0; height: calc(100vh - 230px)")
         table.add_slot("body-cell-pos", r"""
             <q-td :props="props">
               <span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span>
@@ -402,7 +405,7 @@ def build_roster_tab():
             <q-td :props="props">{{ props.row.draft_text }}</q-td>""")
         table.on("rowClick", lambda e: select_player(e.args[1]["id"]))
         moves_box = ui.element("div").classes("report px-6 py-5") \
-            .style("flex: 1 1 0; min-width: 0; height: calc(100vh - 300px); overflow-y: auto")
+            .style("flex: 1 1 0; min-width: 0; height: calc(100vh - 230px); overflow-y: auto")
         with moves_box:
             @ui.refreshable
             def moves_view():
@@ -410,7 +413,7 @@ def build_roster_tab():
             moves_view()
 
         with ui.element("div").classes("report px-6 py-5") \
-                .style("flex: 0 0 470px; height: calc(100vh - 300px); overflow-y: auto"):
+                .style("flex: 0 0 470px; height: calc(100vh - 230px); overflow-y: auto"):
             @ui.refreshable
             def report():
                 p = next((x for x in league.players if x.id == state.selected_id), None)

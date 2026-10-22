@@ -20,9 +20,18 @@ real season per league first, ~2 min). Nothing is saved.
 
 ## Real rules modeled (2020 CBA, which runs through 2030)
 
-- **The cap**: real figures 1994-2026 ($301.2M in 2026); later years grow ~7% a year with
-  some randomness (2-13%), the same for a given league and year every time. Unused cap room
-  carries over to next season (real rule).
+- **The cap**: real figures 1994-2026 ($301.2M in 2026); later years come from each league's
+  own TV-deal eras (`engine/league_money.py`, Blake Oct 24): steady ~7% a year inside an era,
+  a jump when new TV money arrives (deals of 7-11 years, signed 1-2 years ahead; the size is
+  mostly market luck plus some league buzz), labor deals every 10 years (a hard one keeps the
+  cap flat for a few years), a rare revenue shock (a drop, paid back over the next two years).
+  Next year's cap is projected a year ahead, as the real NFL does, and teams plan with it.
+  Unused cap room carries over to next season (real rule).
+- **AI teams' approach each league year** (Blake Oct 24, "match the real NFL"): the most
+  promising ~10 go all in (restructure to keep and sign starters, back-load new deals, keep
+  less room), the least promising ~7 rebuild (pay older players less, cut overpaid veterans,
+  keep extra room that carries over). Target: cap room when free agency opens spread like the
+  real NFL's (median ~13-14% of the cap, the most ~40%, several teams at almost nothing).
 - **Minimum salaries** by credited season, the 2020 CBA table for 2020-2030 (2026: $885K
   for a rookie up to $1.3M for 7+ seasons); scaled with the cap outside those years.
 - **Contract structure**: base salary by year (rising ~6% a year: real deals are

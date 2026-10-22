@@ -27,7 +27,8 @@ REPLIES_SHOWN = 2    # replies shown under a bit before "Show more replies"
 SCOPES = {"league": "For you", "mine": "Your team", "team": "A team", "player": "A player"}
 KIND_COLORS = {"game": "#2F6690", "performance": "#B8860B", "milestone": "#6B5B95", "injury": "#A3321F",
                "moves": "#4A5A66", "playoffs": "#1F4A35", "draft": "#8A5A2B", "retirement": "#5B6670",
-               "season": "#2E8B57", "awards": "#9C7A1C", "storyline": "#B5523B", "rankings": "#3B6E8F"}
+               "season": "#2E8B57", "awards": "#9C7A1C", "storyline": "#B5523B", "rankings": "#3B6E8F",
+               "business": "#55606E"}
 
 CSS = """
 <style>

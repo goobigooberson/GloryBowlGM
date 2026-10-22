@@ -518,7 +518,8 @@ ARTICLE_ACCOUNTS = {"game": ("LeagueWire", "wire_game"), "performance": ("League
                     "rankings": ("GridironDaily", "daily_feature"), "season": ("LeagueWire", "wire_news"),
                     "awards": ("LeagueWire", "wire_news"), "playoffs": ("LeagueWire", "wire_news"),
                     "draft": ("LeagueWire", "wire_news"), "retirement": ("LeagueWire", "wire_news"),
-                    "moves": ("LeagueWire", "wire_news"), "injury": ("LeagueWire", "wire_news")}
+                    "moves": ("LeagueWire", "wire_news"), "injury": ("LeagueWire", "wire_news"),
+                    "business": ("LeagueWire", "wire_news")}
 
 
 def _article_bit(ctx_writer, item):

@@ -19,9 +19,19 @@ import sys
 
 from .database import read_save_info, rename_save
 
-# In the packaged game (the .exe), saves go in a "saves" folder next to the .exe.
+def _documents_folder():
+    """The player's Documents folder (wherever Windows keeps it, e.g. in OneDrive)."""
+    import ctypes
+    buf = ctypes.create_unicode_buffer(260)
+    if ctypes.windll.shell32.SHGetFolderPathW(None, 5, None, 0, buf) == 0:   # 5 = My Documents
+        return Path(buf.value)
+    return Path.home() / "Documents"
+
+
+# In the packaged game (the .exe), saves go in Documents\Front Office Football\saves,
+# so they're kept even if the .exe was run straight from inside its zip.
 if getattr(sys, "frozen", False):
-    SAVES_DIR = Path(sys.executable).resolve().parent / "saves"
+    SAVES_DIR = _documents_folder() / "Front Office Football" / "saves"
 else:
     SAVES_DIR = Path(__file__).resolve().parent.parent / "saves"
 SETTINGS_FILE = SAVES_DIR / "settings.json"

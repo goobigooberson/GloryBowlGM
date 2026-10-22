@@ -118,7 +118,7 @@ CREATE TABLE contract_log (         -- every signing, kept for good
 """
 
 # Money state kept as JSON in league_info (dicts keyed by team id / season / player id).
-MONEY_INFO = ("cap_history", "cap_carry", "cap_charges", "june1_used", "fa")
+MONEY_INFO = ("cap_history", "cap_carry", "cap_charges", "june1_used", "fa", "tv")   # tv: league_money.py
 
 
 def _int_keys(obj):

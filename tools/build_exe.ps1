@@ -1,6 +1,7 @@
 # build_exe.ps1
-# Packages the game into a folder with FrontOfficeFootball.exe inside, then
-# zips it, so you can send it to someone who doesn't have Python.
+# Packages the game into ONE file, FrontOfficeFootball.exe, and zips it, so you
+# can send it to someone who doesn't have Python. Everything is inside the .exe,
+# so it works even if they double-click it without unzipping first.
 # Run it from the project folder with:
 #     powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 # Add -ErrorWindow for a test copy that opens a text window showing any error
@@ -8,10 +9,12 @@
 #     powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1 -ErrorWindow
 # Needs PyInstaller once:  python -m pip install pyinstaller
 #
+# The packaged game keeps its saves in Documents\Front Office Football\saves
+# (engine/saves.py). If its window doesn't appear within 30 seconds, it opens in
+# the web browser instead (app.py). Your own saves are NOT included.
 # The big temporary build files go in C:\Users\<you>\FOF-build (outside
-# OneDrive, so OneDrive doesn't sync hundreds of MB of scratch files). The
-# finished zip goes in the project's "dist" folder. Your own saves are NOT
-# included: the packaged game starts with an empty "saves" folder next to the .exe.
+# OneDrive, so OneDrive doesn't sync scratch files). The finished zip goes in
+# the project's "dist" folder.
 
 param([switch]$ErrorWindow)
 
@@ -28,15 +31,21 @@ $nicegui = python -c "import nicegui, os; print(os.path.dirname(nicegui.__file__
 $windowArg = @("--windowed")
 if ($ErrorWindow) { $windowArg = @("--console") }
 
-python -m PyInstaller app.py --name $name @windowArg --noconfirm --clean `
+$distDir = Join-Path $buildRoot "dist"
+if (Test-Path $distDir) { Remove-Item $distDir -Recurse -Force -Confirm:$false }
+
+python -m PyInstaller app.py --name $name --onefile @windowArg --noconfirm --clean `
     --add-data "$nicegui;nicegui" `
     --workpath (Join-Path $buildRoot "work") `
-    --distpath (Join-Path $buildRoot "dist") `
+    --distpath $distDir `
     --specpath $buildRoot
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed (see the messages above)." }
 
-$appDir = Join-Path $buildRoot "dist\$name"
-New-Item -ItemType Directory -Force (Join-Path $appDir "saves") | Out-Null
+# What goes in the zip: the .exe plus two small helper files.
+$appDir = Join-Path $buildRoot "package\$name"
+if (Test-Path $appDir) { Remove-Item $appDir -Recurse -Force -Confirm:$false }
+New-Item -ItemType Directory -Force $appDir | Out-Null
+Copy-Item (Join-Path $distDir "$name.exe") $appDir
 
 # Backup way to play if the game window won't open on someone's PC: the game
 # opens in their web browser instead (Quit game on the main menu stops it).

@@ -507,11 +507,52 @@ def answer_staff_request(league, index, approve):
                                                      f"{calendar(league)}"))
 
 
+class CapHold(Exception):
+    """You're over the salary cap at one of the NFL's deadlines (see cap_hold)."""
+
+
+def cap_hold(league):
+    """Is your team over the salary cap at a deadline? The real NFL's cap is
+    hard: every team must be under it when the new league year starts (before
+    free agency opens; the top-51 rule applies then) and when the regular
+    season starts (every contract counts from week 1). AI teams always are;
+    you can't move on until you are (Blake, Oct 24). Returns None, or {"when",
+    "short" ($K over)}; your staff's suggested moves are on the Roster tab."""
+    tid = league.user_team_id
+    if tid is None or not getattr(league, "contracts", None):
+        return None
+    from . import contracts as C
+    from . import free_agency as FA
+    when = None
+    if in_offseason(league) and offseason_phase(league)[0] == "resign":
+        when = "the new league year starts (Next opens free agency)"
+    elif in_regular_season(league) and league.week == 1:
+        g = team_current_game(league, tid)
+        if g and not g["played"]:
+            when = "the regular season starts (every contract counts from week 1)"
+    if when is None:
+        return None
+    room = C.cap_room(league, tid)
+    if room >= 0:
+        return None
+    FA.request_cap_moves(league, tid)       # your staff's suggestions (restructures first, then cuts)
+    return {"when": when, "short": -room}
+
+
+def _check_cap_hold(league):
+    hold = cap_hold(league)
+    if hold:
+        from .contracts import fmt_money
+        raise CapHold(f"You're {fmt_money(hold['short'])} over the salary cap. Every team must be under it "
+                      f"when {hold['when']}.")
+
+
 def play_week(league):
     """Play every game this week that hasn't been played (yours too, unless
     you already watched it), then move on to the next week."""
     if season_over(league):
         return []
+    _check_cap_hold(league)
     transactions.ensure(league)
     league.staff_moves = []
     if league.user_team_id is not None and not in_preseason(league):
@@ -635,7 +676,10 @@ def begin_offseason(league, rng=None):
     played_share = snap_shares(league)
     serious = dict(league.season_injuries)
     # 1. Keep everything from this season for good.
-    league.career.extend(stats.season_lines(league))
+    lines = stats.season_lines(league)
+    league.career.extend(lines)
+    from . import league_money
+    league_money.record_buzz(league, lines)    # how the season played with the TV audience
     summary = team_season_summary(league)
     league.team_history.extend(summary)
     champ = po.champion(league)
@@ -672,6 +716,7 @@ def advance_offseason(league, rng=None):
     from . import development, offseason
     if not in_offseason(league):
         return None
+    _check_cap_hold(league)
     if offseason.offseason_next(league, rng) != "done":
         return league.offseason["phase"]
     st = league.offseason

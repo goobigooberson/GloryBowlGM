@@ -52,8 +52,11 @@ priorities" section overrides everything else in that document.
 - Show numbers the way football fans expect: heights in feet-inches (6-2),
   combine results in real units, ratings as word-plus-number like
   "Very High (87)" (see `engine/formatting.py`).
-- Label every button and column. One main view with tabs and side panels is
-  the home base; detail views (player card, game summary, offseason report)
+- Label every button and column. One main view is the home base: a slim green
+  bar with six sections (Home, Team, Schedule, League, Draft, Bitter), page
+  buttons under it, side panels on the pages (Oct 22; `screens/nav.py` sorts
+  pages into sections, `screens/home_page.py` is the overview; new pages get a
+  tab in `main_page.py` plus an entry in `nav.SECTIONS`); detail views (player card, game summary, offseason report)
   open as pop-ups over it, FOF8-style, and they stack (Blake, Oct 21; reverses
   the old "no floating pop-ups" rule). Use `screens/popups.py` for new ones;
   any `<a href="/player/ID">` on the game screen opens a card pop-up by itself.
@@ -138,6 +141,11 @@ Decided items waiting to be built:
   awards by a 50-voter media panel, All-Pro, fan/player/coach Pro Bowl vote, alternates, the Pro
   Bowl game in the week off, Glory Bowl MVP; saved as `league.awards`); `engine/news_awards.py`
   their news; `screens/awards_page.py` the Awards tab; `tools/awards_check.py` vs real winners.
+- `engine/league_money.py` where the salary cap comes from after 2026: TV-deal eras, labor
+  deals, rare shocks, league buzz, next year's projection (saved as `league.tv`; Blake, Oct 24);
+  `engine/news_money.py` its news. AI teams' yearly approach (all in / normal / rebuild) is in
+  `free_agency.set_approaches`; `tools/free_agency_check.py` compares cap room at free agency's
+  opening with the real NFL's.
 - `engine/sim/` game sim; `engine/player.py` player generation (incl.
   durability/RB endurance via `fill_new_ratings`); `engine/depth.py` depth
   charts; `engine/database.py` save/load (older saves get new fields filled on

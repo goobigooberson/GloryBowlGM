@@ -57,6 +57,13 @@ LADDER_GROUP = {"QB": "QB", "RB": "RB", "FB": "FB", "WR": "WR", "TE": "TE", "T":
                 "DE": "EDGE", "DT": "DT", "OLB": "LB", "ILB": "LB", "CB": "CB", "S": "S", "K": "K", "P": "P",
                 "LS": "LS"}
 EXP_GROUPS = (("0-2", 0, 2), ("3-4", 3, 4), ("5-7", 5, 7), ("8+", 8, 99))
+# Cap room when free agency opened, March 2, 2024 (OverTheCap via CBS Sports; $255.4M cap; $M).
+# Teams over the cap had to get under it by the start of the league year (March 13), so they
+# count as 0 here. 2025 (CBS, March 5; tiers only): 5 teams over, 6 at $0-20M, 5 at $20-40M,
+# 9 at $40-60M, 6 at $60-100M, New England $127M ($279.2M cap): a median of about 14%.
+REAL_FA_OPEN_2024 = [101.8, 91.5, 78.7, 75.7, 70.1, 69.7, 56.8, 52.5, 48.6, 42.0, 41.9, 40.9, 37.6, 37.6, 35.0,
+                     34.8, 32.6, 29.2, 20.7, 13.6, 12.5, 12.2, 8.0, 6.8, 3.5, 0, 0, 0, 0, 0, 0, 0]
+REAL_CAP_2024 = 255.4
 
 out_lines = []
 
@@ -193,6 +200,10 @@ def offseason(lg, rng, stats, lines):
     FA.ensure(lg)
     rep = FA.league_year_start(lg, rng, draft_order=order)
     stats["legal"].append(("league year", [t for t, _ in C.audit(lg)]))
+    # Cap room the day free agency opens (after re-signings, tags, cap cuts; top 51 counts).
+    cap = C.cap_for(lg, S)
+    stats["fa_open"].append(sorted((C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id),
+                                   reverse=True))
     sign1 = FA.market(lg, FA.PRE_DRAFT_WAVES, rng)
     stats["legal"].append(("pre-draft FA", [t for t, _ in C.audit(lg)]))
     from engine import draft as D       # the real draft (Step 8; the placeholder in offseason.py is gone)
@@ -213,7 +224,8 @@ def offseason(lg, rng, stats, lines):
         released[tid].append(lg.player(pid))
     TR.form_practice_squads(lg, {}, {}, released, rng)
     FA.sync(lg, "practice squads")
-    FA.final_compliance(lg)
+    FA.final_compliance(lg, full=True)     # every contract counts from week 1 (the game's final cuts do this;
+                                           # before Oct 24 the tool checked only the top 51 here)
     FA.sync(lg, "final cuts")
     OS.trim_free_agents(lg, rng)
     for p in rookies:
@@ -430,6 +442,16 @@ def report(stats, n_leagues, real_deals_in_season):
     say(f"  cap room: median {pct(st.median(rm))} of the cap; dead money average {pct(st.mean(stats['dead']))} "
         f"[real 2023-25: roughly 5-10% of the cap a team]")
     say()
+    say("CAP ROOM WHEN FREE AGENCY OPENS (share of the cap, AI teams; real March 2024 in brackets, teams over "
+        "the cap counted as 0)")
+    real = sorted((x / REAL_CAP_2024 for x in REAL_FA_OPEN_2024), reverse=True)
+    for label, rank in (("most room", 0), ("2nd", 1), ("5th", 4), ("8th", 7), ("median", None), ("24th", 23)):
+        vals = [(st.median(v) if rank is None else v[rank]) for v in stats["fa_open"] if len(v) > (rank or 0)]
+        rv = st.median(real) if rank is None else real[rank]
+        say(f"  {label:10} {pct(st.mean(vals))}  [{pct(rv)}]")
+    low = [sum(1 for x in v if x < 0.02) for v in stats["fa_open"]]
+    say(f"  teams with under 2% of the cap: {st.mean(low):.1f} a year  [7-8 of 32 in 2024 and 2025]")
+    say()
     say("ROOKIE SCALE (average per year, share of the cap) by round: sim [real median 2017-22]")
     rk = defaultdict(list)
     for d in stats["deals"]:
@@ -476,7 +498,7 @@ def main():
     stats = {"legal": [], "missing": 0, "move_all": Counter(), "move_exp": defaultdict(Counter),
              "move_pos": defaultdict(Counter), "year": Counter(), "waves": Counter(), "waves_market": Counter(),
              "deals": [], "ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [],
-             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter)}
+             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": []}
     in_season = []
     day1 = {"ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [], "dead": []}
     seeds = [int(x) for x in args.leagues.split(",")]

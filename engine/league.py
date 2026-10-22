@@ -121,6 +121,8 @@ class League:
     contract_log: list = field(default_factory=list)  # every signing, kept for good
     june1_used: dict = field(default_factory=dict)   # team -> {season: June 1 cuts used}
     fa: dict = field(default_factory=dict)           # this league year's free agency state
+    tv: dict = field(default_factory=dict)           # TV and labor deals, shocks, league buzz,
+                                                     # next year's cap projection (league_money.py)
     offseason: dict = None                           # where the offseason is (offseason.py), None in-season
     long_injuries: dict = field(default_factory=dict)  # player id -> {kind, week, team}: season-ending
                                                        # injuries this season (next season's carryover)
@@ -138,6 +140,17 @@ class League:
         pool = set((self.draft or {}).get("pool", ()))
         return [p for p in self.players if p.id not in self.rosters and p.retired is None
                 and p.id not in self.practice and p.id not in self.reserve and p.id not in pool]
+
+    def __setstate__(self, state):
+        """Unpickling (tools that keep a league in a .pkl file): new players made
+        after this (draft classes, camp bodies) must get fresh ids, as
+        database.load_league makes sure for saves. (Before Oct 24 a pickled league
+        restarted ids at 1: new players took old players' ids and their contracts,
+        and the money rules then charged huge dead money for them.)"""
+        self.__dict__.update(state)
+        from . import player as player_module
+        if self.players:
+            player_module._next_id = max(player_module._next_id, max(p.id for p in self.players) + 1)
 
     def player(self, pid):
         """A player (active or retired) by id."""
