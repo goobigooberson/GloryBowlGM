@@ -141,14 +141,13 @@ def build_page():
 
         @ui.refreshable
         def save_bar():
-            autosave = saves.load_app_settings()["autosave"]
             if state.dirty:
                 ui.button("Unsaved changes: Save", on_click=lambda: do_save()) \
                     .props("no-caps unelevated").style(f"background:{theme.FLAG};color:{theme.INK}") \
                     .tooltip("Save your game (Ctrl+S)")
             else:
                 ui.label("Saved").classes("save-chip") \
-                    .tooltip("Autosave is on: every change is saved." if autosave else "All changes are saved.")
+                    .tooltip("All changes are saved.")
         save_bar()
         state.on_save_status = save_bar.refresh
 
