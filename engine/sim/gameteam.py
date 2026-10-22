@@ -31,6 +31,29 @@ PRESEASON_STARTERS_SECS = {1: 450, 2: 900, 3: 1800, 4: 0}   # game number -> sec
 PRESEASON_SECOND_STRING_UNTIL = 2700                          # the 3rd string plays the 4th quarter
 
 
+class _StyleDice:
+    """The team's coaches' style (engine/staff.py) handed out in the order
+    _build_tendencies asks for it, as gauss(0, spread) = spread x the coach's
+    own number. Falsy when the team has no staff (then the old random draw)."""
+
+    def __new__(cls, league, team_id):
+        from .. import staff
+        st = staff.style(league, team_id) if league is not None and getattr(league, "staff", None) else None
+        if not st:
+            return None
+        obj = super().__new__(cls)
+        obj.z = iter([st["pass"], st["aggr"], st["man"], st["blitz"], st["heavy"], st["fb"], st["rb_split"]]
+                     + [st["roles"].get(slot, 0.0) for slot in T.TARGET_ROLE_BIAS]
+                     + [st["shade"], st["pace"]])
+        return obj
+
+    def __init__(self, league, team_id):
+        pass
+
+    def gauss(self, mu, sigma):
+        return mu + sigma * next(self.z)
+
+
 class GameTeam:
     def __init__(self, league, team_id, norms, rng, is_home, unavailable=(), neutral=False,
                  preseason_game=None, hurt=(), extra=()):
@@ -127,15 +150,16 @@ class GameTeam:
     # ------------------------------------------------------------------
     # Ratings
     # ------------------------------------------------------------------
-    def raw(self, p, skill):
-        """His current rating in a skill (estimated if he never trained it)."""
-        key = (p.id, skill)
+    def raw(self, p, skill, position=None):
+        """His current rating in a skill (estimated if he never trained it; playing a
+        related position, some of that position's craft carries over: depth.RELATED)."""
+        key = (p.id, skill, position)
         v = self._val.get(key)
         if v is None:
             if skill in p.skills:
                 v = p.skills[skill][0]
             else:
-                v = depth._skill_value(p, skill, 0)
+                v = depth._skill_value(p, skill, 0, position)
             self._val[key] = v
         return v
 
@@ -155,7 +179,7 @@ class GameTeam:
                     total = wsum = 0.0
                     for s, w in pos.POSITIONS[natural][1]:
                         if w > 0:
-                            total += depth._skill_value(p, s, 0) * w
+                            total += depth._skill_value(p, s, 0, natural) * w
                             wsum += w
                     base = total / wsum
                 v = min(0.0, fit - base)
@@ -166,7 +190,7 @@ class GameTeam:
         """How player p compares to an average starter at this spot, in this skill,
         today. 0 = average starter, +1 = clearly better, -1 = clearly worse."""
         natural = NATURAL.get(slot, p.position)
-        value = self.raw(p, skill) + self.slot_penalty(p, slot) + self.form[p.id]
+        value = self.raw(p, skill, natural) + self.slot_penalty(p, slot) + self.form[p.id]
         f = self.fatigue[p.id]
         limit = self.fatigue_limit(p)
         if f > limit:
@@ -195,9 +219,40 @@ class GameTeam:
         """Weighted blend of z-scores, e.g. {"pass_block": .55, "footwork": .3}."""
         return sum(w * self.z(p, slot, s) for s, w in weights.items())
 
-    def talent_z(self, p):
-        m, sd = self.norms.overall_of(p.position)
-        z = (p.overall() + self.form[p.id] - m) / sd
+    def untrained(self, p, slot, weights):
+        """How far below the worst real player at this spot he plays (z units, 0 or less).
+        Only a player out of position can be (at his own position z has a soft floor), so
+        this is 0 in normal play. The plays add it outside their per-play caps, which exist
+        to soften real players' extremes, not to hide a receiver at left tackle (Oct 24)."""
+        natural = NATURAL.get(slot, p.position)
+        if natural == p.position or natural in ("KR", "PR"):
+            return 0.0
+        floor = T.Z_CAP_GENERATIONAL if p.generational else T.Z_CAP
+        return min(0.0, self.zmix(p, slot, weights) + floor)
+
+    def untrained_qb_lean(self):
+        """Run/pass logit nudge when the man at quarterback isn't a quarterback (0 otherwise):
+        coaches stop asking him to throw (tuning.UNTRAINED_QB_RUN_K)."""
+        qb = next((self.by_id[pid] for pid in self.chart.get("QB", []) if self.available(pid)), None)
+        if qb is None or qb.position == "QB":
+            return 0.0
+        key = ("qb_lean", qb.id)
+        v = self._pen.get(key)
+        if v is None:
+            v = self._pen[key] = T.UNTRAINED_QB_RUN_K * self.untrained(qb, "QB", {"accuracy": .55, "short_pass": .45})
+        return v
+
+    def talent_z(self, p, slot=None):
+        """How good he is overall, in z vs average starters. With slot: at that spot (a player
+        away from his own position is judged by his rating there, not his own position's
+        overall: a good fullback behind the running back isn't an equal back, Oct 24)."""
+        natural = NATURAL.get(slot, p.position) if slot else p.position
+        if natural != p.position and natural not in ("KR", "PR"):
+            m, sd = self.norms.overall_of(natural)
+            z = (self.rating_at(p, slot) + self.form[p.id] - m) / sd
+        else:
+            m, sd = self.norms.overall_of(p.position)
+            z = (p.overall() + self.form[p.id] - m) / sd
         cap = T.Z_CAP_GENERATIONAL if p.generational else T.Z_CAP
         return cap * math.tanh(z / cap)
 
@@ -381,7 +436,7 @@ class GameTeam:
             subs = sorted(subs, key=lambda pid: 0 if self.by_id[pid].position == "TE" else 1)
         if base and subs:
             second = self.by_id[subs[0]]
-            gap = max(0.0, self.talent_z(first) - self.talent_z(second))
+            gap = max(0.0, self.talent_z(first, slot) - self.talent_z(second, slot))
             gap_k = T.ROTATION_GAP_K_WR if slot[:2] == "WR" else T.ROTATION_GAP_K
             r = self.rng.random()
             if r < base * math.exp(-gap_k * gap):
@@ -390,7 +445,7 @@ class GameTeam:
             third_base = T.ROTATION.get(slot + "_3")
             if third_base and len(subs) > 1:
                 third = self.by_id[subs[1]]
-                gap3 = max(0.0, self.talent_z(first) - self.talent_z(third))
+                gap3 = max(0.0, self.talent_z(first, slot) - self.talent_z(third, slot))
                 if self.rng.random() < third_base * math.exp(-gap_k * gap3):
                     used.add(third.id)
                     return third
@@ -462,14 +517,18 @@ class GameTeam:
         return self.by_id[ids[1]] if len(ids) > 1 else None
 
     def _build_tendencies(self):
-        # The coordinators' style is the same every week of a season (until
-        # coaches exist, it's drawn from the team and season so it never
-        # changes game to game). The roster still shapes it each game.
-        style = random.Random(f"style-{self.league.season}-{self.id}-{self.abbrev}")
+        # The coordinators' style (Oct 24: the team's real coaches, engine/staff.py:
+        # the offensive coordinator's offense, the defensive coordinator's defense,
+        # the head coach's 4th-down aggression; each coach's style numbers were
+        # drawn once from exactly the spreads below, so league stats are as before,
+        # but a team keeps its identity while its coordinator stays and the style
+        # moves with him). A league without staffs draws it from the team and season
+        # as before. The roster still shapes it each game.
+        style = _StyleDice(self.league, self.id) or random.Random(f"style-{self.league.season}-{self.id}-{self.abbrev}")
 
         def tz(slot):
             p = self.starter(slot)
-            return self.talent_z(p) if p else -1.0
+            return self.talent_z(p, slot) if p else -1.0
 
         pass_strength = 0.6 * tz("QB") + 0.25 * (tz("WR1") + tz("WR2")) / 2 + 0.15 * tz("TE1")
         run_strength = 0.6 * tz("RB") + 0.4 * sum(tz(s) for s in ("LT", "LG", "C", "RG", "RT")) / 5
@@ -494,8 +553,8 @@ class GameTeam:
             self.outside_lean = 0.0
         te2 = self.starter("TE2")
         fb = self.starter("FB")
-        self.heavy_lean = 0.25 * (self.talent_z(te2) if te2 else -1) + style.gauss(0, 0.25)
-        self.fb_lean = 0.25 * (self.talent_z(fb) if fb else -2) + style.gauss(0, 0.25)
+        self.heavy_lean = 0.25 * (self.talent_z(te2, "TE2") if te2 else -1) + style.gauss(0, 0.25)
+        self.fb_lean = 0.25 * (self.talent_z(fb, "FB") if fb else -2) + style.gauss(0, 0.25)
         qb = self.starter("QB")
         self.qb_mobility = self.zmix(qb, "QB", {"scrambling": 1.0}) if qb else -1.0
         # Running back usage: some staffs ride one workhorse, others split carries.
@@ -505,7 +564,7 @@ class GameTeam:
         # own style adds some variety.
         rb1, rb2 = self.starter("RB"), self._second("RB")
         endurance_z = ((rb1.skills.get("endurance", (50, 50))[0] - 50) / 15) if rb1 else 0.0
-        gap = max(0.0, self.talent_z(rb1) - self.talent_z(rb2)) if (rb1 and rb2) else 1.0
+        gap = max(0.0, self.talent_z(rb1, "RB") - self.talent_z(rb2, "RB")) if (rb1 and rb2) else 1.0
         self.rb_split = min(0.55, max(T.RB_SPLIT_MIN, 0.04 + T.ROTATION["RB"]
                                       * math.exp(style.gauss(0, T.STYLE_RB_SPLIT_SD)
                                                  - T.RB_ENDURANCE_SPLIT_K * endurance_z

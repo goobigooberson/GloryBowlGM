@@ -40,8 +40,9 @@ from datetime import date
 
 from . import positions as pos
 from . import scale
+from . import scouting_words as W
 from .draft import (team_skill, starter_stats, TEAM_INSIGHT, INSIGHT_RANGE, POT_WEIGHT, AGE_VALUE, AGE_SEEN,
-                    AGE_SEEN_SKILL, CONSENSUS_MISS, CONSENSUS_MISS_DEPTH, board_grade)
+                    AGE_SEEN_SKILL, AGE_MEAN, CONSENSUS_MISS, CONSENSUS_MISS_DEPTH, board_grade, load_notes)
 
 # ---- Knobs (budget: Blake; what each step clears: PROVISIONAL) ----------------
 SCOUT_HOURS = 150            # your scouting department's hours for one draft year
@@ -60,6 +61,9 @@ OWN_PARTS = {"film": 0.20, "cross": 0.15, "visit": 0.20, "interview": 0.10, "nev
 OWN_DEPTH = 1.25
 PERSONALITY_MISS = 7         # interview: your staff's read of each personality trait is off by about this
 CHARACTER_FOUND = 0.85       # chance an interview turns up a character red flag he has
+SHARED_TYPICAL = 0.6        # the range's league-wide part is sized this far toward a typical prospect's
+                             # (measured Oct 22: with 0 the unscouted top 32 of your board had the truth
+                             # inside 54% of the time, with 1.0 77%, with 0.6 about 2 in 3)
 RANGE_WIDTH = 1.0            # ranges shown = estimate +/- this many spreads of what's still unknown: the
                              # truth is inside about 2 times in 3 (with 0.67, a 50% range, a fully scouted
                              # top prospect showed a 1-2 point range: it looked like knowing the truth)
@@ -160,21 +164,114 @@ def _skill_scale(league, team_id):
     return max(INSIGHT_RANGE[0], min(INSIGHT_RANGE[1], 1 - TEAM_INSIGHT * skill))
 
 
-def remaining_miss(league, team_id, p):
+def _ensure_notes(league, p):
+    """The class's hidden notes on this prospect (draft.py: the truth, the league's shared
+    mistake, how deep in the class he is). Without them the grade would quietly use
+    defaults and differ from the board's, so they're put back if they're missing."""
+    if "_depth" in p.__dict__:
+        return
+    d = getattr(league, "draft", None)
+    notes = d.get("notes") if isinstance(d, dict) else None
+    if notes and str(p.id) in notes:
+        load_notes([p], notes)
+
+
+def _depth_of(grade):
+    """How deep in the class a grade puts a prospect, 0 (top) to 1 (draft.py's _depth)."""
+    return max(0.0, min(1.0, (1.5 - grade) / 3.0))
+
+
+def remaining_miss(league, team_id, p, seen_grade=None, shared_grade=None):
     """(this staff's current mistake about him in grade units, the spread of
-    what it still doesn't know)."""
+    what it still doesn't know). The spread goes by how deep in the class the
+    staff THINKS he is, never his true depth (a wide range would otherwise
+    quietly say he's truly worse): seen_grade is the grade it's read at
+    (default: the staff's raw view of him), shared_grade the grade the
+    league-wide part is read at (default: seen_grade)."""
+    _ensure_notes(league, p)
     e = _entry(league, p.id)
     own, _pz, _u = _draws(league, team_id, p)
     k = _skill_scale(league, team_id)
     depth = p.__dict__.get("_depth", 0.5)
     shared_left = max(0.15, 1.0 - sum(c for step, c in SHARED_CLEARED.items() if e.get(step)))
     cerr = p.__dict__.get("_cerr", 0.0)
-    cerr_sd = CONSENSUS_MISS + CONSENSUS_MISS_DEPTH * depth
     size = 1.0 + OWN_DEPTH * depth
     left = [part for part in OWN_PARTS if part == "never" or not e.get(part)]
     miss = k * shared_left * cerr + sum(k * OWN_PARTS[part] * size * own[part] for part in left)
-    spread = math.sqrt((k * shared_left * cerr_sd) ** 2 + sum((k * OWN_PARTS[part] * size) ** 2 for part in left))
+    grade = p.__dict__.get("_grade")
+    if seen_grade is None and grade is not None:
+        seen_grade = grade + miss
+    seen = _depth_of(seen_grade) if seen_grade is not None else depth
+    shared_seen = _depth_of(shared_grade) if shared_grade is not None else seen
+    cerr_sd = CONSENSUS_MISS + CONSENSUS_MISS_DEPTH * shared_seen
+    seen_size = 1.0 + OWN_DEPTH * seen
+    spread = math.sqrt((k * shared_left * cerr_sd) ** 2
+                       + sum((k * OWN_PARTS[part] * seen_size) ** 2 for part in left))
     return miss, spread
+
+
+def class_prior(league, stats):
+    """What a staff knows about a typical prospect in this class: (mean, spread) of
+    the class's ability now, its ceiling and its draft grade, in grade units (how far from a typical
+    starter at his position), all positions together. Used to read a grade the way
+    a good staff does: the prospects it rates highest are, more often than not, the
+    ones it overrates (the board's top is full of them)."""
+    d = getattr(league, "draft", None) or {}
+    pool = d.get("pool") or []
+    key = (league.season, len(pool), pool[:1] and pool[0], tuple(sorted(stats.items())))
+    c = league.__dict__.get("_scout_prior")
+    if c and c[0] == key:
+        return c[1]
+    by_id = {p.id: p for p in league.players}
+    zs = ([], [], [])
+    for pid in pool:
+        p = by_id.get(pid)
+        if p is None:
+            continue
+        m, sd = stats.get(p.position, (65.0, 8.0))
+        zs[0].append((p.overall() - m) / sd)
+        zs[1].append((p.overall("potential") - m) / sd)
+        zs[2].append(POT_WEIGHT * zs[1][-1] + (1 - POT_WEIGHT) * zs[0][-1])
+
+    def ms(v):
+        if len(v) < 2:
+            return 0.0, 1.0
+        mean = sum(v) / len(v)
+        return mean, max(0.3, math.sqrt(sum((x - mean) ** 2 for x in v) / (len(v) - 1)))
+    prior = (ms(zs[0]), ms(zs[1]), ms(zs[2]))
+    league.__dict__["_scout_prior"] = (key, prior)
+    return prior
+
+
+def _reading(league, team_id, p, stats):
+    """Your staff's reading of him: for his ability now and his ceiling, (the shift from
+    his true rating to the middle of the range, half the range's width), in rating
+    units. The staff's raw view (truth + its mistake) is pulled toward a typical
+    prospect by how unsure it still is, and the width is how unsure it is after
+    that, so the truth lands inside about 2 times in 3 for every kind of prospect,
+    the ones it rates highest included (tools: scratchpad coverage.py of the Oct 22
+    draft board session; results in the build log)."""
+    m, sd = stats.get(p.position, (65.0, 8.0))
+    miss, spread = remaining_miss(league, team_id, p)
+    wide = spread
+    grade = p.__dict__.get("_grade")
+    if grade is not None:
+        # How deep in the class he is, read from the pulled-in view.
+        mu_g, tau_g = class_prior(league, stats)[2]
+        seen = mu_g + tau_g ** 2 / (tau_g ** 2 + spread ** 2) * (grade + miss - mu_g)
+        spread = remaining_miss(league, team_id, p, seen_grade=seen)[1]
+        # The league-wide part of the width is read closer to a typical prospect: the
+        # prospects a staff rates highest are partly ones the whole league overrates,
+        # who really come from deeper in the class, where those misses are bigger.
+        wide = remaining_miss(league, team_id, p, seen_grade=seen,
+                              shared_grade=SHARED_TYPICAL * mu_g + (1 - SHARED_TYPICAL) * seen)[1]
+    out = []
+    for value, (mu, tau) in zip((p.overall(), p.overall("potential")), class_prior(league, stats)[:2]):
+        z_view = (value - m) / sd + miss
+        w = tau ** 2 / (tau ** 2 + spread ** 2)
+        z_mid = mu + w * (z_view - mu)
+        out.append(((z_mid - (value - m) / sd) * sd, RANGE_WIDTH * wide * math.sqrt(w) * sd))
+    return out
 
 
 def _true_grade(p, stats):
@@ -249,11 +346,9 @@ def grade_ranges(league, team_id, p, stats=None):
     high), (ceiling low, high)). stats: draft.starter_stats(league), when
     you already have it (it takes a moment to work out)."""
     stats = stats or starter_stats(league)
-    _m, sd = stats.get(p.position, (65.0, 8.0))
-    miss, spread = remaining_miss(league, team_id, p)
-    half = RANGE_WIDTH * spread * sd
-    return tuple((scale.shown(v + miss * sd - half, p.position), scale.shown(v + miss * sd + half, p.position))
-                 for v in (p.overall(), p.overall("potential")))
+    return tuple((scale.shown(v + shift - half, p.position), scale.shown(v + shift + half, p.position))
+                 for v, (shift, half) in zip((p.overall(), p.overall("potential")),
+                                             _reading(league, team_id, p, stats)))
 
 
 def report(league, team_id, p, media_rank=None, stats=None):
@@ -261,26 +356,26 @@ def report(league, team_id, p, media_rank=None, stats=None):
     {"public": ..., "staff": {"now": (lo, hi), "ceiling": (lo, hi), "skills": {skill: {"now", "ceiling"}},
     "scouted": [steps done]}, "interview": None or {trait: shown read, "character_flag": bool}}."""
     stats = stats or starter_stats(league)
-    _m, sd = stats.get(p.position, (65.0, 8.0))
-    miss, spread = remaining_miss(league, team_id, p)
+    (shift_now, half_now), (shift_pot, half_pot) = _reading(league, team_id, p, stats)
     e = _entry(league, p.id)
-    half = RANGE_WIDTH * spread * sd
 
-    def rng_(v):
-        return scale.shown(v - half, p.position), scale.shown(v + half, p.position)
+    def rng_(v, shift, half):
+        return scale.shown(v + shift - half, p.position), scale.shown(v + shift + half, p.position)
     out = {
         "public": {"age": round((date(league.season, 4, 25) - p.birth_date).days / 365.25, 1),
                    "college": p.college, "height": p.height, "weight": p.weight, "combine": dict(p.combine),
                    "intel_test": p.intel_test, "position_drill": p.position_drill, "media_rank": media_rank,
                    "medical_flag": p.__dict__.get("_flag") == "medical"},
-        "staff": {"now": rng_(p.overall() + miss * sd), "ceiling": rng_(p.overall("potential") + miss * sd),
+        "staff": {"now": rng_(p.overall(), shift_now, half_now),
+                  "ceiling": rng_(p.overall("potential"), shift_pot, half_pot),
                   "skills": {}, "scouted": [k for k in STEPS if e.get(k)]},
         "interview": None,
     }
     for skill, (cur, pot_s) in p.skills.items():
         if skill in pos.HIDDEN_SKILLS:
             continue                              # hidden ratings are never shown
-        out["staff"]["skills"][skill] = {"now": rng_(cur + miss * sd), "ceiling": rng_(pot_s + miss * sd)}
+        out["staff"]["skills"][skill] = {"now": rng_(cur, shift_now, half_now),
+                                         "ceiling": rng_(pot_s, shift_pot, half_pot)}
     if e["interview"]:
         _own, pz, _u = _draws(league, team_id, p)
         notes = {}
@@ -289,3 +384,269 @@ def report(league, team_id, p, media_rank=None, stats=None):
         notes["character_flag"] = p.__dict__.get("_flag") == "character" and _character_known(league, team_id, p)
         out["interview"] = notes
     return out
+
+
+# ---------------------------------------------------------------------------
+# What your staff says about him (Blake, Oct 22: FOF8's "underrated / overrated"
+# idea in scout slang, scout's notes, two scouts who can disagree until a
+# cross-check, round projections). All of it comes from your staff's view, so it
+# can be wrong; better staffs (draft.team_skill) are wrong less. Wording:
+# scouting_words.py.
+# ---------------------------------------------------------------------------
+IMPRESSION_SPLIT = (0.55, 1.15)  # board-grade gap between your staff's view and what a player at his media
+                                 # rank usually turns out to be: Sleeper / Overhyped from the first, Hidden
+                                 # gem / Fool's gold from the second (Oct 22: about 15% and 10% each, whole
+                                 # class scouted)
+RAW_WILD = 0.85                  # a Wild card: his ceiling this many spreads above what he is now (raw;
+RAW_WILD_YOUNG = 0.65            # this much if he's 21.5 or younger), until a top-30 visit sorts him out
+SCOUT_SPLIT = 1.0                # the two scouts sit this many of the cross-check part's spreads apart
+NOTE_MISREAD = {"film": 0.5, "cross": 0.25, "visit": 0.1}  # per-skill misread in the notes, by how far
+                                 # your scouting has gone (film, then a cross-check, then a visit)
+NOTE_STRONG = 0.5                # a skill this many spreads above (below) a typical prospect at his
+                                 # position in this class is a strength (weakness) worth a note
+
+
+def _board_view(league, team_id, p, stats):
+    return board_grade(p, staff_grade(league, team_id, p, stats))
+
+
+def _media_grades(league):
+    """The class's media board grades, best first (for turning a grade into a pick)."""
+    d = getattr(league, "draft", None) or {}
+    pool = d.get("pool") or []
+    key = (league.season, len(pool), pool[:1] and pool[0])
+    c = league.__dict__.get("_scout_media")
+    if c and c[0] == key:
+        return c[1]
+    by_id = {p.id: p for p in league.players}
+    grades = []
+    for pid in pool:
+        p = by_id.get(pid)
+        if p is None:
+            continue
+        _ensure_notes(league, p)
+        grades.append(p.__dict__.get("_media", -9.0))
+    grades.sort(reverse=True)
+    league.__dict__["_scout_media"] = (key, grades)
+    return grades
+
+
+def media_worth(league, p):
+    """What a player at his place on the media's big board usually turns out to be
+    (board-grade units): big boards regress to the mean (their top prospects are, more
+    often than not, ones the media overrates), and every front office knows it from
+    years of drafts. Measured on the class: the straight-line fit of true draft value
+    on the media's grade."""
+    d = getattr(league, "draft", None) or {}
+    pool = d.get("pool") or []
+    key = (league.season, len(pool), pool[:1] and pool[0])
+    c = league.__dict__.get("_scout_worth")
+    if not (c and c[0] == key):
+        by_id = {q.id: q for q in league.players}
+        xs, ys = [], []
+        for pid in pool:
+            q = by_id.get(pid)
+            if q is None:
+                continue
+            _ensure_notes(league, q)
+            if "_media" in q.__dict__:
+                xs.append(q._media)
+                ys.append(board_grade(q, q._grade + AGE_VALUE * q._age_gap))
+        if len(xs) > 2:
+            mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
+            var = sum((x - mx) ** 2 for x in xs)
+            slope = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / var if var else 1.0
+            fit = (my - slope * mx, slope)
+        else:
+            fit = (0.0, 1.0)
+        c = (key, fit)
+        league.__dict__["_scout_worth"] = c
+    a, b = c[1]
+    return a + b * p.__dict__.get("_media", 0.0)
+
+
+def projected_pick(league, grade):
+    """Where a board grade would go in this draft: 1 + the prospects the media ranks above it."""
+    grades = _media_grades(league)
+    lo, hi = 0, len(grades)
+    while lo < hi:                      # grades are best first
+        mid = (lo + hi) // 2
+        if grades[mid] > grade:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo + 1
+
+
+def ordinal_word(n):
+    return {1: "1st", 2: "2nd", 3: "3rd"}.get(n, f"{n}th")
+
+
+def round_text(pick, n_teams=32, rounds=7):
+    """A pick number in scout language: 'Top-5 talent', 'Late 1st', 'Mid 3rd',
+    'Undrafted free agent'..."""
+    if pick <= 5:
+        return "Top-5 talent"
+    if pick <= 15:
+        return "Top-half 1st"
+    if pick <= n_teams:
+        return "Late 1st"
+    rnd = (pick - 1) // n_teams + 1
+    if rnd > rounds:
+        return "Undrafted free agent" if pick <= rounds * n_teams * 1.35 else "Camp body"
+    third = ("Early", "Mid", "Late")[min(2, ((pick - 1) % n_teams) * 3 // n_teams)]
+    return f"{third} {ordinal_word(rnd)}"
+
+
+def impression(league, team_id, p, stats=None):
+    """Your staff's impression of him vs his buzz, once its scouts have watched his
+    film: {"key", "word", "color", "tip"} (scouting_words.IMPRESSIONS), or None."""
+    if not _entry(league, p.id).get("film"):
+        return None
+    stats = stats or starter_stats(league)
+    m, sd = stats.get(p.position, (65.0, 8.0))
+    raw = (p.overall("potential") - p.overall()) / sd
+    age = p.__dict__.get("_age_gap", 0.0) + AGE_MEAN
+    if not _entry(league, p.id).get("visit") and (raw >= RAW_WILD or (raw >= RAW_WILD_YOUNG and age <= 21.5)):
+        key = "wild"
+    else:
+        gap = _board_view(league, team_id, p, stats) - media_worth(league, p)
+        small, big = IMPRESSION_SPLIT
+        key = ("gem" if gap >= big else "sleeper" if gap >= small else "fools" if gap <= -big
+               else "hyped" if gap <= -small else "fair")
+    word, color, tip = W.IMPRESSIONS[key]
+    return {"key": key, "word": word, "color": color, "tip": tip}
+
+
+def projections(league, team_id, p, stats=None, media_rank=None):
+    """Where he'd go, in scout language: {"media": the media's projection,
+    "staff": your staff's (None before film study), "scouts": [(scout, projection),
+    (scout, projection)] while your two scouts still disagree (after film study,
+    before the cross-check), else None}."""
+    stats = stats or starter_stats(league)
+    out = {"media": round_text(media_rank) if media_rank else None, "staff": None, "scouts": None}
+    e = _entry(league, p.id)
+    if not e.get("film"):
+        return out
+    g = _board_view(league, team_id, p, stats)
+    out["staff"] = round_text(projected_pick(league, g))
+    if not e.get("cross"):
+        r = random.Random(f"scouts-{league.settings.get('salt', '')}-{team_id}-{p.id}")
+        depth = p.__dict__.get("_depth", 0.5)
+        d = (abs(r.gauss(0, 1)) * SCOUT_SPLIT * _skill_scale(league, team_id) * OWN_PARTS["cross"]
+             * (1.0 + OWN_DEPTH * depth))
+        sign = 1 if r.random() < 0.5 else -1
+        out["scouts"] = [(W.SCOUTS[0], round_text(projected_pick(league, g + sign * d))),
+                         (W.SCOUTS[1], round_text(projected_pick(league, g - sign * d)))]
+    return out
+
+
+def _class_skills(league, position):
+    """{skill: (mean, spread)} of this class's prospects at a position (ability now)."""
+    d = getattr(league, "draft", None) or {}
+    pool = d.get("pool") or []
+    key = (league.season, len(pool), position)
+    cache = league.__dict__.setdefault("_scout_skills", {})
+    if key in cache:
+        return cache[key]
+    by_id = {p.id: p for p in league.players}
+    vals = {}
+    for pid in pool:
+        p = by_id.get(pid)
+        if p is not None and p.position == position:
+            for s, (cur, _pot) in p.skills.items():
+                vals.setdefault(s, []).append(cur)
+    out = {}
+    for s, v in vals.items():
+        m = sum(v) / len(v)
+        sd = math.sqrt(sum((x - m) ** 2 for x in v) / max(1, len(v) - 1))
+        out[s] = (m, max(2.0, sd))
+    cache[key] = out
+    return out
+
+
+def report_interview(league, team_id, p):
+    """Your staff's interview reads ({trait: shown read, "character_flag": bool}), or None."""
+    if not _entry(league, p.id).get("interview"):
+        return None
+    _own, pz, _u = _draws(league, team_id, p)
+    reads = {trait: max(1, min(99, round(getattr(p, trait) + PERSONALITY_MISS * zi)))
+             for trait, zi in zip(PERSONALITY, pz)}
+    reads["character_flag"] = p.__dict__.get("_flag") == "character" and _character_known(league, team_id, p)
+    return reads
+
+
+def notes(league, team_id, p, stats=None, combine=None):
+    """Your scouts' notes on him: [{"kind": "film" | "person", "text"}]. Film notes
+    (his best and worst, tape vs stopwatch) once they've watched his film; notes on
+    the person once he's interviewed. combine: his combine ranks ({drill: (rank, of)})."""
+    stats = stats or starter_stats(league)
+    e = _entry(league, p.id)
+    out = []
+    if e.get("film"):
+        (shift, _half), _pot = _reading(league, team_id, p, stats)
+        r = random.Random(f"notes-{league.settings.get('salt', '')}-{team_id}-{p.id}")
+        level = "visit" if e.get("visit") else "cross" if e.get("cross") else "film"
+        misread = NOTE_MISREAD[level]
+        typical = _class_skills(league, p.position)
+        zs = {}
+        for s, _w in pos.POSITIONS[p.position][1]:
+            if s in pos.HIDDEN_SKILLS or s not in typical or s in ("kick_return", "punt_return", "endurance"):
+                continue
+            m, sd = typical[s]
+            zs[s] = (p.skills[s][0] + shift - m) / sd + r.gauss(0, misread)
+        ranked = sorted(zs.items(), key=lambda kv: kv[1], reverse=True)
+        for s, z in ranked[:2]:
+            if z >= NOTE_STRONG:
+                out.append({"kind": "film", "text": r.choice(W.phrases(W.STRENGTH, s, p.position))})
+        if ranked and ranked[-1][1] <= -NOTE_STRONG:
+            out.append({"kind": "film", "text": r.choice(W.phrases(W.WEAKNESS, ranked[-1][0], p.position))})
+        # Tape vs stopwatch: the skills that run on speed, against his 40 time.
+        fast = [zs[s] for s in zs if pos.SKILLS[s][1].get("speed", 0) >= 0.3]
+        forty = (combine or {}).get("forty")
+        if fast and forty:
+            play = sum(fast) / len(fast)
+            pct = forty[0] / forty[1]                # near 0 = fastest at his position in the class
+            if play >= 0.6 and pct >= 0.6:
+                out.append({"kind": "film", "text": r.choice(W.PLAYS_FASTER)})
+            elif play <= -0.4 and pct <= 0.25:
+                out.append({"kind": "film", "text": r.choice(W.TIMED_FASTER)})
+        imp = impression(league, team_id, p, stats)
+        if imp and imp["key"] == "wild":
+            out.append({"kind": "film", "text": r.choice(W.WILD)})
+    reads = report_interview(league, team_id, p)
+    if reads:
+        r = random.Random(f"person-{league.settings.get('salt', '')}-{team_id}-{p.id}")
+        extremes = []
+        for trait in PERSONALITY:
+            v = reads[trait]
+            if v >= 75:
+                extremes.append((v - 50, (trait, "high")))
+            elif v <= 30:
+                extremes.append((50 - v, (trait, "low")))
+        for _d, k in sorted(extremes, reverse=True)[:2]:
+            out.append({"kind": "person", "text": r.choice(W.PERSON[k])})
+        out.append({"kind": "person", "text": W.CHARACTER if reads["character_flag"] else W.CLEAN})
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Developed % (Blake, Oct 22: the bars shrink toward your staff's view of his potential;
+# "the developed % will determine what they come into the league with their current
+# rating at", like FOF8). Your staff's estimate of how much of his potential he already
+# has, with a fixed mistake that shrinks as you scout (better staffs err less).
+# ---------------------------------------------------------------------------
+DEVELOPED_MISS = {"none": 6.0, "film": 4.0, "cross": 3.0, "visit": 2.0}   # percentage points (1 spread)
+
+
+def developed(league, team_id, p):
+    """Your staff's estimate of his Developed % (his ability now as a share of his
+    potential, on the screen scale, so it matches what you'll see once he's yours), a
+    whole number. (On the internal scale prospects were 80-97% developed, most near 90:
+    on screen that read as nearly finished players.)"""
+    true = 100.0 * scale.shown(p.overall(), p.position) / max(1, scale.shown(p.overall("potential"), p.position))
+    e = _entry(league, p.id)
+    level = "visit" if e.get("visit") else "cross" if e.get("cross") else "film" if e.get("film") else "none"
+    z = random.Random(f"devl-{league.settings.get('salt', '')}-{team_id}-{p.id}").gauss(0, 1)
+    # Never 100: a scouting guess doesn't say a prospect has nothing left to grow.
+    return max(1, min(99, round(true + z * DEVELOPED_MISS[level] * _skill_scale(league, team_id))))

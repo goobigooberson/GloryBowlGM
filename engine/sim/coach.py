@@ -141,6 +141,9 @@ def pass_probability(state, off_idx, off_team):
     skey = "st_" + _state_key(state, off_idx)
     m = data.PASS_MODEL
     x = m.get(dkey, 0.0) + m.get(fz, 0.0) + m.get(skey, 0.0) + off_team.pass_bias + T.PASS_SCALE
+    lean = getattr(off_team, "untrained_qb_lean", None)
+    if lean is not None:
+        x += lean()          # a non-quarterback at QB: run the ball (0 with a real QB)
     return sigmoid(x)
 
 
@@ -305,7 +308,7 @@ def load_box(rng, state, off_team, off_call, dcall, box=None):
     rb = off_call.lineup.get("RB")
     if rb is None:
         return False
-    t = off_team.talent_z(rb)
+    t = off_team.talent_z(rb, "RB")
     if t < T.LOAD_BOX_MIN:
         return False
     hot = box.players.get(rb.id, {}).get("rush_yds", 0) if box is not None else 0

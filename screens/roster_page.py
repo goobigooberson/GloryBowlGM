@@ -2,8 +2,9 @@
 # The Roster tab: every player on the chosen team (or the free agent pool)
 # in a sortable table. Click a player to read his full report on the right.
 #
-# Note: ratings shown here are the TRUE ratings. Once scouting exists, this
-# screen will show what your scouts believe instead.
+# Every rating here is your staff's evaluation (Oct 24; engine/evaluation.py
+# through scale.seen): your own players are read closely, everyone else's
+# less so. True ratings stay inside the engine.
 
 from datetime import date
 from html import escape
@@ -15,7 +16,8 @@ from engine import injuries
 from engine import positions as pos
 from engine import season
 from engine import transactions
-from engine.scale import shown
+from engine.scale import shown, seen
+from engine import evaluation
 from engine.teams import ROSTER_TEMPLATE
 from . import popups, theme
 from .state import state, FREE_AGENTS, team_starter_ids, injury_text, injury_code, mark_changed
@@ -55,7 +57,7 @@ def rating_cell(value):
 
 
 def player_row(p, today, starters, captains=(), cuts=(), keeps=()):
-    ovr, pot = shown(p.overall(), p.position), shown(p.overall("potential"), p.position)
+    ovr, pot = seen(state.league, p), seen(state.league, p, "potential")
     ovr_word, ovr_color = rating_cell(ovr)
     pot_word, pot_color = rating_cell(pot)
     return {
@@ -198,7 +200,8 @@ def report_html(p, with_stats=True):
     pos_name = pos.POSITIONS[p.position][0]
     pos_style = theme.position_style(p.position)
     exp = "Rookie" if p.experience == 0 else f"{p.experience} season{'s' if p.experience != 1 else ''}"
-    ovr, pot = shown(p.overall(), p.position), shown(p.overall("potential"), p.position)
+    ovr, pot = seen(league, p), seen(league, p, "potential")
+    view = evaluation.user_view(league, p)       # his skills as your staff sees them
 
     facts = [
         ("Team", team_txt),
@@ -236,7 +239,7 @@ def report_html(p, with_stats=True):
                 f'<span class="num">{word} ({cur}) / {potential}</span></div>')
 
     skills = "".join(
-        skill_row(pos.SKILLS[s][0], *p.skills[s])
+        skill_row(pos.SKILLS[s][0], *view.skills[s])
         for s, _w in pos.POSITIONS[p.position][1]
         if s not in pos.HIDDEN_SKILLS)          # hidden ratings never appear on screen
 

@@ -21,7 +21,7 @@ from engine import contracts as C
 from engine import free_agency as FA
 from engine import league_money as LM
 from engine import season
-from engine.scale import shown
+from engine.scale import shown, seen   # seen: your staff's evaluation (Oct 24)
 from engine.teams import ROSTER_TEMPLATE
 from . import popups, theme
 from .state import state, mark_changed
@@ -41,13 +41,60 @@ def _cap_line(league, tid):
     nxt_cap = C.cap_for(league, league.season + 1)
     offers = league.fa.get("user_offers", {}) if season.in_offseason(league) else {}
     tied = sum(o["apy"] for o in offers.values())
-    return (f'{league.season} salary cap <b>{_m(cap["cap"])}</b> &nbsp;·&nbsp; used <b>{_m(cap["used"])}</b>'
-            + (" (top 51 contracts, the offseason rule)" if top51 else "")
-            + f' &nbsp;·&nbsp; room <b>{_m(cap["room"])}</b>'
-            + (f' &nbsp;·&nbsp; standing offers {_m(tied)}' if tied else "")
-            + f' &nbsp;·&nbsp; dead money {_m(cap["dead"])}'
-            + f' &nbsp;·&nbsp; {league.season + 1}: {_m(nxt)} committed of a projected {_m(nxt_cap)}'
-            + _league_money_line(league))
+    # A cap strip (Oct 22, "spruce up the UI"): the numbers as tiles, and a bar of how
+    # full the cap is (dead money is the darker part of what's used).
+    total = max(1, cap["cap"])
+    used_pct = min(100.0, 100.0 * max(0, cap["used"]) / total)
+    dead_pct = min(used_pct, 100.0 * max(0, cap["dead"]) / total)
+    offer_pct = min(100.0 - used_pct, 100.0 * tied / total)
+
+    def tile(label, value, cls="", tip=""):
+        return (f'<div class="cap-tile {cls}" title="{escape(tip)}"><span class="cap-k">{label}</span>'
+                f'<span class="cap-v">{value}</span></div>')
+    tiles = (tile(f"{league.season} salary cap", _m(cap["cap"]))
+             + tile("Used" + (" (top 51)" if top51 else ""), _m(cap["used"]), "",
+                    "In the offseason only your 51 biggest cap hits count (the NFL's rule)" if top51 else "")
+             + tile("Cap room", _m(cap["room"]), "good" if cap["room"] >= 0 else "bad")
+             + (tile("Standing offers", _m(tied), "", "Free agent offers you've made that are still out")
+                if tied else "")
+             + tile("Dead money", _m(cap["dead"]), "", "Cap charges for players no longer on your team")
+             + tile(f"{league.season + 1} committed", f'{_m(nxt)} <small>of {_m(nxt_cap)}</small>', "",
+                    f"Already promised for {league.season + 1}, of a projected {_m(nxt_cap)} cap"))
+    bar = (f'<div class="cap-bar" title="{used_pct:.0f}% of the cap used">'
+           f'<div class="cap-dead" style="width:{dead_pct:.1f}%"></div>'
+           f'<div class="cap-used" style="width:{used_pct - dead_pct:.1f}%"></div>'
+           f'<div class="cap-offer" style="width:{offer_pct:.1f}%"></div></div>'
+           '<div class="cap-key"><span><i class="cap-used"></i>Contracts</span>'
+           '<span><i class="cap-dead"></i>Dead money</span>'
+           + ('<span><i class="cap-offer"></i>Standing offers</span>' if tied else "")
+           + '<span><i class="cap-free"></i>Room</span></div>')
+    return (f'<div class="cap-strip"><div class="cap-tiles">{tiles}</div>{bar}'
+            f'<div class="legend" style="margin-top:2px">{_league_money_line(league)}</div></div>')
+
+
+CAP_CSS = """
+<style>
+  .cap-strip { background: var(--paper); border: 1px solid var(--line); border-top: 3px solid var(--turf);
+               border-radius: 3px; padding: 8px 14px 8px; box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }
+  .cap-tiles { display: flex; flex-wrap: wrap; gap: 4px 28px; }
+  .cap-tile { display: flex; flex-direction: column; }
+  .cap-k { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12.5px; text-transform: uppercase;
+           letter-spacing: .05em; color: var(--ink-soft); }
+  .cap-v { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 24px; line-height: 1.1;
+           font-variant-numeric: tabular-nums; }
+  .cap-v small { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+  .cap-tile.good .cap-v { color: #23703A; }
+  .cap-tile.bad .cap-v { color: #A3321F; }
+  .cap-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #E3E8E1; margin-top: 8px; }
+  .cap-key { display: flex; gap: 16px; font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .cap-key i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px;
+               vertical-align: -1px; }
+  .cap-used { background: var(--turf); }
+  .cap-dead { background: #8B5A2B; }
+  .cap-offer { background: #E3C13B; }
+  .cap-free { background: #E3E8E1; }
+</style>
+"""
 
 
 def _league_money_line(league):
@@ -62,7 +109,7 @@ def _league_money_line(league):
         bits.append(f'TV deals run through {o["deal_end"]}')
     if o["labor_end"]:
         bits.append(f'labor deal through {o["labor_end"]}')
-    return '<br><span style="opacity:.75">League money: ' + " &nbsp;·&nbsp; ".join(bits) + "</span>"
+    return "League money: " + " &nbsp;·&nbsp; ".join(bits)
 
 
 def advice_text(r):
@@ -102,10 +149,10 @@ def payroll_rows(league, tid):
         dead = sum(prev["dead"].values())
         rows.append({
             "id": pid, "pos": p.position, "pos_style": theme.position_style(p.position),
-            "pos_sort": POSITION_ORDER.index(p.position) * 1000 - shown(p.overall(), p.position),
+            "pos_sort": POSITION_ORDER.index(p.position) * 1000 - seen(league, p),
             "name": p.name + {"practice": " (practice squad)", "reserve": " (reserve list)"}.get(where, ""),
             "age": _age(league, p),
-            "ovr": shown(p.overall(), p.position),
+            "ovr": seen(league, p),
             "kind": {"practice": "Practice squad", "futures": "Reserve/future", "tag": "Franchise tag",
                      "tender": "Tender", "rookie": "Rookie", "udfa": "Undrafted rookie", "minimum": "Minimum",
                      "extension": "Extension", "veteran": "Veteran"}.get(c["kind"], c["kind"].title()),
@@ -159,6 +206,7 @@ MONEY_SLOTS = {"apy": "apy_t", "hit": "hit_t", "next": "next_t", "dead": "dead_t
 def build_contracts_tab(on_change=None):
     """Builds the Contracts tab. Returns a function that refreshes it."""
     league = state.league
+    ui.add_head_html(CAP_CSS)
     view = {"v": "Payroll", "pid": None, "pos": "All positions"}
 
     def default_view():
@@ -177,7 +225,7 @@ def build_contracts_tab(on_change=None):
             if tid is None:
                 ui.label("Pick your team first.").classes("legend")
                 return
-            ui.html(f'<div class="legend">{_cap_line(league, tid)}</div>', sanitize=False)
+            ui.html(_cap_line(league, tid), sanitize=False).classes("w-full")
             ph = season.offseason_phase(league)
             if ph:
                 ui.html(f'<div class="notice" style="margin-top:6px"><b>{escape(ph[1])}.</b> {escape(ph[2])} '
@@ -205,7 +253,7 @@ def build_contracts_tab(on_change=None):
         table = ui.table(rows=[], columns=PAY_COLS, row_key="id",
                          pagination={"rowsPerPage": 0, "sortBy": "pos"}) \
             .props("flat dense virtual-scroll hide-bottom") \
-            .classes("roster-table").style("flex: 1 1 0; min-width: 0; height: calc(100vh - 330px)")
+            .classes("roster-table").style("flex: 1 1 0; min-width: 0; height: calc(100vh - 372px)")
         table.add_slot("body-cell-pos", r"""
             <q-td :props="props"><span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span></q-td>""")
         # The name opens his card (popups.py); the rest of the row opens the contract panel.
@@ -217,7 +265,7 @@ def build_contracts_tab(on_change=None):
         table.on("rowClick", lambda e: select(e.args[1]["id"]))
 
         with ui.element("div").classes("report px-6 py-5") \
-                .style("flex: 0 0 440px; height: calc(100vh - 330px); overflow-y: auto"):
+                .style("flex: 0 0 440px; height: calc(100vh - 372px); overflow-y: auto"):
             @ui.refreshable
             def panel():
                 pid = view["pid"]
@@ -238,8 +286,8 @@ def build_contracts_tab(on_change=None):
                 ui.html(f'<span class="pos-tag" style="{theme.position_style(p.position)}">{p.position}</span>'
                         f'<h2 style="margin-top:6px">{escape(p.name)}</h2>'
                         f'<div class="legend">Age {_age(league, p)} · {p.experience} season'
-                        f'{"s" if p.experience != 1 else ""} · Overall {shown(p.overall(), p.position)} · '
-                        f'potential {shown(p.overall("potential"), p.position)}</div>', sanitize=False)
+                        f'{"s" if p.experience != 1 else ""} · Overall {seen(league, p)} · '
+                        f'potential {seen(league, p, "potential")}</div>', sanitize=False)
                 if view["v"] == "Payroll":
                     contract_panel(pid)
                 elif view["v"] == "Re-sign":
@@ -592,15 +640,15 @@ def build_contracts_tab(on_change=None):
             for r in FA.expiring_for_you(league):
                 p = league.player(r["pid"])
                 out.append({"id": p.id, "pos": p.position, "pos_style": theme.position_style(p.position),
-                            "pos_sort": POSITION_ORDER.index(p.position) * 1000 - shown(p.overall(), p.position),
-                            "name": p.name, "age": _age(league, p), "ovr": shown(p.overall(), p.position),
+                            "pos_sort": POSITION_ORDER.index(p.position) * 1000 - seen(league, p),
+                            "name": p.name, "age": _age(league, p), "ovr": seen(league, p),
                             "status": r["status"], "ask": r["ask"]["apy"], "ask_t": _m(r["ask"]["apy"]),
                             "years": r["ask"]["years"], "advice": advice_text(r)})
             for r in FA.options_for_you(league):
                 p = league.player(r["pid"])
                 out.append({"id": p.id, "pos": p.position, "pos_style": theme.position_style(p.position),
-                            "pos_sort": POSITION_ORDER.index(p.position) * 1000 - shown(p.overall(), p.position),
-                            "name": p.name, "age": _age(league, p), "ovr": shown(p.overall(), p.position),
+                            "pos_sort": POSITION_ORDER.index(p.position) * 1000 - seen(league, p),
+                            "name": p.name, "age": _age(league, p), "ovr": seen(league, p),
                             "status": f"Fifth-year option ({r['season']})", "ask": r["salary"],
                             "ask_t": _m(r["salary"]), "years": 1, "advice": option_advice(r)})
             return out, RESIGN_COLS
@@ -611,7 +659,7 @@ def build_contracts_tab(on_change=None):
         fas = FA.free_agent_list(league)
         if view["pos"] != "All positions":
             fas = [p for p in fas if p.position == view["pos"]]
-        fas = sorted(fas, key=lambda p: -shown(p.overall(), p.position))[:250]
+        fas = sorted(fas, key=lambda p: -seen(league, p))[:250]
         from engine import cap_market
         table = cap_market.market_table(league)        # once (slow to build), not once per player
         inter = FA.interest(league, [p.id for p in fas], wave, table=table)
@@ -621,9 +669,9 @@ def build_contracts_tab(on_change=None):
             ask = FA.asking_terms(league, p.id, tid, wave, table=table)
             o = offers.get(p.id)
             out.append({"id": p.id, "pos": p.position, "pos_style": theme.position_style(p.position),
-                        "pos_sort": POSITION_ORDER.index(p.position) * 1000 - shown(p.overall(), p.position),
+                        "pos_sort": POSITION_ORDER.index(p.position) * 1000 - seen(league, p),
                         "name": p.name, "age": _age(league, p), "exp": p.experience,
-                        "ovr": shown(p.overall(), p.position), "pot": shown(p.overall("potential"), p.position),
+                        "ovr": seen(league, p), "pot": seen(league, p, "potential"),
                         "ask": ask["apy"], "ask_t": _m(ask["apy"]), "years": ask["years"],
                         "interest": inter.get(p.id, ""), "offer": f"{_m(o['apy'])} x {o['years']}" if o else ""})
         return out, FA_COLS

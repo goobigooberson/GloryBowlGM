@@ -1,0 +1,43 @@
+League: Bitter check 2, now 2029 Week 11; seasons with bits: [2026, 2027, 2028, 2029]
+Build time: this season's feed 4.58s; every season with its games 21.30s
+Bits per season: 2026: 6306, 2027: 6655, 2028: 6459, 2029: 3982; regular-season week average: 297 in all, 79 top-level in For you
+
+Word-for-word repeats, every bit: in a week 0, in a season 0, across the save 0 (extra copies among 23402 bits)
+  Across seasons:
+
+Same shape (names and numbers swapped), the accounts' own bits: in a week 0, in a season 2758, across the save 5264 (extra copies among 9513 bits); shapes used more than 3 times in a season: 0
+  x3 in 2029: Beat a 7-1 team. Believe it.
+       2029 Week 10: OldNewOrleansFan (Krewe fan): Beat a 7-1 team. Believe it.
+       2029 Week 7: OldTampaFan (Storm fan): Beat a 3-3 team. Believe it.
+  x3 in 2029: Calm down. 23-11 doesn't scare anybody.
+       2029 Week 10: SanFranciscoDiehard (Fog fan): Calm down. 23-11 doesn't scare anybody.
+       2029 Week 9: WildcattersNation (Wildcatters fan): Calm down. 30-9 doesn't scare anybody.
+  x3 in 2029: 5-5. Real team.
+       2029 Week 10: BuffaloDiehard (Blizzard fan): 5-5. Real team.
+       2029 Week 5: OldClevelandFan (Forge fan): 4-1. Real team.
+
+Same shape, the outlets' article bits (for information): in a week 1986, in a season 5800, across the save 8625 (extra copies among 13889 bits); shapes used more than 3 times in a season: 546
+  x58 in 2026: The San Francisco Fog promoted wide receiver Bryce Perkins from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The San Francisco Fog promoted wide receiver Bryce Perkins from the practice squad to the 53-man roster.
+       2026 Week 17: League Wire (Outlet): The Boston Harbormen promoted wide receiver Darren Howard from the practice squad to the 53-man roster.
+  x56 in 2026: The Phoenix Scorpions promoted cornerback Marcus Simpson from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The Phoenix Scorpions promoted cornerback Marcus Simpson from the practice squad to the 53-man roster.
+       2026 Week 16: League Wire (Outlet): The Seattle Sound promoted cornerback Taylor Bradley from the practice squad to the 53-man roster.
+  x50 in 2028: The Cleveland Forge promoted cornerback Jordan Taylor from the practice squad to the 53-man roster.
+       2028 Divisional round: League Wire (Outlet): The Cleveland Forge promoted cornerback Jordan Taylor from the practice squad to the 53-man roster.
+       2028 Week 18: League Wire (Outlet): The St. Louis Archers promoted cornerback Nick Holland from the practice squad to the 53-man roster.
+
+Same shape in the For you view: in a week 0, in a season 1066, across the save 2612 (extra copies among 6321 bits); shapes used more than 3 times in a season: 13
+  x6 in 2026: Buffalo was 4-6 when Javon Martin was hurt in Week 10.
+       2026 Week 13: Gridiron Daily (Outlet): Buffalo was 4-6 when Javon Martin was hurt in Week 10.
+       2026 Week 12: Gridiron Daily (Outlet): Miami was 2-6 when Landon Wood was hurt in Week 9.
+  x5 in 2028: San Francisco got three sacks and a forced fumble from defensive end Ross Caldwell in a 17-13 win over the Bos
+       2028 Week 16: League Wire (Outlet): San Francisco got three sacks and a forced fumble from defensive end Ross Caldwell in a 17-13 win over the Boston 
+       2028 Week 12: League Wire (Outlet): San Diego got two sacks and a forced fumble from defensive end Roman Thompson in a 31-24 win over the Las Vegas Hi
+  x5 in 2027: Tampa was 6-5 when Micah James was hurt in Week 12.
+       2027 Week 15: Gridiron Daily (Outlet): Tampa was 6-5 when Micah James was hurt in Week 12.
+       2027 Week 11: Gridiron Daily (Outlet): Cleveland was 5-2 when Thomas Sims was hurt in Week 8.
+
+Same-shape repeats in a season by kind of account: Fans 977, Team accounts 679, Reporters and insiders 447, Players 341, Hot takes and analysis 140, Celebrities 139, Stats 35
+
+TARGETS: all met

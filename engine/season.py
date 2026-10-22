@@ -632,6 +632,10 @@ def snap_shares(league):
 
 OFFSEASON = "offseason"
 OFFSEASON_PHASES = {
+    "coaching": ("Coaching changes",
+                 "The coaching carousel: fire or extend your coaches, then make offers to candidates. Each "
+                 "Next settles one round (head coaches; coordinators and assistant head coaches; the rest). "
+                 "Jobs still open after the last round get your staff's pick."),
     "resign": ("Start of the league year",
                "Re-sign or tag your expiring players, or let them go. Other teams have made their "
                "decisions. Anyone you haven't re-signed becomes a free agent when the market opens."),
@@ -661,6 +665,10 @@ def offseason_phase(league):
     if key == "fa":
         from .free_agency import WAVES
         title = f"Free agency, wave {st.get('wave')}: {WAVES.get(st.get('wave'), '')}"
+    elif key == "coaching":
+        from .staff import ROUND_NAMES
+        rnd = ((getattr(league, "staff", None) or {}).get("carousel") or {}).get("round", 1)
+        title = f"Coaching changes, round {rnd} of 3: {ROUND_NAMES.get(rnd, '')}"
     return key, title, text
 
 

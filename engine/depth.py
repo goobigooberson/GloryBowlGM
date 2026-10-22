@@ -123,25 +123,52 @@ NEW_POSITION_NOW = 6          # a position he hasn't played
 NEW_POSITION_CEILING = 4      # most a new position can cost his ceiling
 SIDE_SWITCH_NOW = 5           # an offensive lineman flipping sides (like switching hands)
 SIDE_SWITCH_CEILING = 2
-UNTRAINED_TECHNIQUE = 25      # technique level, right now, for a skill he's never practiced
+UNTRAINED_TECHNIQUE = 12      # technique level, right now, for a skill he's never practiced
+                              # (Oct 24: 25 -> 12. Real anchor: 2020 Broncos, WR Kendall Hinton at QB went 1 for 9;
+                              # at 25 a receiver or back at QB still completed 47-48% for 4.6 a throw, now ~39% for 3.5)
 LEARNABLE_TECHNIQUE = 0.75    # share of his usual ceiling he could reach in a new skill
+
+# How much of a new position's craft a player brings from his own (Oct 24; Blake: "obviously not
+# for like corner to safety but like DT to qb there should be a very noticeable fall off"): 0 = nothing
+# in common (a receiver at tackle), 1 = the same job. It shrinks the size penalty (his skills already
+# carry his size) and lets skills the related position partly shares start above UNTRAINED_TECHNIQUE.
+# Tiers follow how often real players switch between the two (nflverse rosters 2010-25, switches per
+# 1,000 player-seasons): ILB-OLB 97, C-G 80, DE-DT 78, G-T 70, DE-OLB 45 (real 3-4 OLBs are edge
+# rushers; this game's OLB is an off-ball linebacker, so lower here), CB-S 20 (plus many more listed
+# only as "DB"), RB-FB 15; then TE-WR 5, FB-TE 4, RB-TE 4, S-LB 3, RB-WR 3; DL-OL 2, DB-WR 1.6,
+# QB-anything under 2. The numbers themselves are judgment.
+RELATED = {
+    frozenset(("CB", "S")): 0.7, frozenset(("G", "T")): 0.7, frozenset(("C", "G")): 0.7,
+    frozenset(("ILB", "OLB")): 0.7, frozenset(("DE", "DT")): 0.7,
+    frozenset(("C", "T")): 0.55, frozenset(("RB", "FB")): 0.5,
+    frozenset(("DE", "OLB")): 0.35, frozenset(("TE", "FB")): 0.35, frozenset(("TE", "WR")): 0.35,
+    frozenset(("S", "ILB")): 0.35, frozenset(("S", "OLB")): 0.35,
+    frozenset(("RB", "WR")): 0.25, frozenset(("RB", "TE")): 0.25,
+}
+
+
+def related(a, b):
+    """0-1: how much of position b's craft a player from position a already has."""
+    return 1.0 if a == b else RELATED.get(frozenset((a, b)), 0.0)
 
 # Which side of the line each offensive line spot is on.
 SLOT_SIDE = {"LT": "L", "LG": "L", "RG": "R", "RT": "R"}
 
 
-def _skill_value(p, skill, which):
+def _skill_value(p, skill, which, position=None):
     """His rating in a skill, now (which=0) or at his ceiling (which=1).
     If his position never trains it, estimate from raw athletic ability:
-    very little technique now, more at his ceiling if he learns it."""
+    very little technique now, more at his ceiling if he learns it. Playing a
+    related position (position), some of the craft carries over (RELATED)."""
     if skill in p.skills:
         return p.skills[skill][which]
     _label, trait_weights = pos.SKILLS[skill]
-    if which == 0:
-        technique = UNTRAINED_TECHNIQUE
-    else:
+    r = related(p.position, position) if position else 0.0
+    own_now = [cur for cur, _pot in p.skills.values()]
+    technique = UNTRAINED_TECHNIQUE + r * max(0.0, sum(own_now) / len(own_now) - UNTRAINED_TECHNIQUE)
+    if which == 1:
         own = [pot for _cur, pot in p.skills.values()]
-        technique = LEARNABLE_TECHNIQUE * (sum(own) / len(own))
+        technique = max(technique, LEARNABLE_TECHNIQUE * (sum(own) / len(own)))
     value = (1 - sum(trait_weights.values())) * technique
     for trait, w in trait_weights.items():
         value += w * p.athletic.get(trait, 50)
@@ -169,12 +196,15 @@ def spot_fit(p, slot):
         weight_sum = 0
         for skill, w in weights:
             if w > 0:
-                totals[0] += _skill_value(p, skill, 0) * w
-                totals[1] += _skill_value(p, skill, 1) * w
+                totals[0] += _skill_value(p, skill, 0, position) * w
+                totals[1] += _skill_value(p, skill, 1, position) * w
                 weight_sum += w
         now, ceiling = totals[0] / weight_sum, totals[1] / weight_sum
+    close = related(p.position, position)
     if position != p.position:
         learned = p.learned.get(position, 0) / 100
+        # (The same for every move. Oct 24, tried shrinking it for related positions: with CB-S or G-T
+        # nearly free, AI depth charts started 408-634 of 2,976 starters out of position, vs 169.)
         now -= NEW_POSITION_NOW * (1 - learned)
         ceiling -= NEW_POSITION_CEILING * (1 - p.adaptability / 100)
         notes.append(f"Out of position (a {p.position} playing {position})")
@@ -193,7 +223,9 @@ def spot_fit(p, slot):
     off_size = abs(p.weight - avg_w) / w_spread
     size_note = ""
     if position != p.position and off_size > 1.5:
-        cost = (off_size - 1.5) * 6
+        # (At a related position his skills already carry his size: a light corner's run
+        # defense and hitting are already lower, so the extra charge shrinks with RELATED.)
+        cost = (off_size - 1.5) * 6 * (1 - close)
         now -= cost
         ceiling -= cost
         size_note = f"light for a {position}" if p.weight < avg_w else f"heavy for a {position}"

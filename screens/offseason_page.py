@@ -8,7 +8,7 @@ from html import escape
 
 from nicegui import ui
 
-from engine.scale import shown
+from engine.scale import shown, seen
 from .state import state
 from . import theme
 
@@ -26,7 +26,7 @@ def build_offseason_page():
     ui.query("body").style(f"background:{theme.CHALK}")
     with ui.element("div").classes("field-band w-full px-8 pt-4 pb-5"):
         with ui.row().classes("w-full items-center justify-between"):
-            ui.label(f"Front Office Football  |  {league.name}").classes("condensed text-lg opacity-90")
+            ui.label(f"Glory Bowl GM  |  {league.name}").classes("condensed text-lg opacity-90")
             ui.button("Back to the game", icon="arrow_back", on_click=lambda: ui.navigate.to("/game")) \
                 .props("outline color=white no-caps")
         report_header(league)
@@ -73,13 +73,13 @@ def report_body(league):
                                                          f"{s['years']} yr, {C.fmt_money(s['apy'])} a year")
                                             for s in fa if s.get("former") == you and s["team"] != you])
             section("Draft picks", [_player_line(league, d["pid"], f"round {d['round']}, pick {d['pick']}  ·  "
-                                                 f"{league.player(d['pid']).college}  ·  overall {shown(league.player(d['pid']).overall(), league.player(d['pid']).position)}, "
-                                                 f"potential {shown(league.player(d['pid']).overall('potential'), league.player(d['pid']).position)}")
+                                                 f"{league.player(d['pid']).college}  ·  overall {seen(league, league.player(d['pid']))}, "
+                                                 f"potential {seen(league, league.player(d['pid']), 'potential')}")
                                     for d in rep["draft"] if d["team"] == you])
             section("Undrafted rookies signed", [_player_line(league, pid, league.player(pid).college)
                                                  for pid, tid in rep["udfa"] if tid == you])
             if rep["cuts"]:          # offseasons before Oct 23 cut to 53 here
-                section("Released", [_player_line(league, pid, f"overall {shown(league.player(pid).overall(), league.player(pid).position)}")
+                section("Released", [_player_line(league, pid, f"overall {seen(league, league.player(pid))}")
                                      for pid, tid in rep["cuts"] if tid == you])
             section("Signed for training camp (by your staff; cut anyone you like)",
                     [_player_line(league, pid, "free agent") for pid, tid in rep["signed"] if tid == you])
@@ -94,7 +94,7 @@ def report_body(league):
                              key=lambda pid: (-league.player(pid).overall(), -league.player(pid).experience))[:15]
             for pid in notable:
                 p = league.player(pid)
-                ui.html(_player_line(league, pid, f"overall {shown(p.overall(), p.position)}  ·  age {_age(league, pid)}  ·  "
+                ui.html(_player_line(league, pid, f"overall {seen(league, p)}  ·  age {_age(league, pid)}  ·  "
                                      f"{p.experience} seasons  ·  {_career_games(league, pid)} career games here"),
                         sanitize=False).classes("edit-row w-full")
             ui.label(f"{len(rep['retired'])} players retired in all; {len(rep['fa_left'])} unsigned free agents "

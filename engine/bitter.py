@@ -1,15 +1,24 @@
 # bitter.py
-# Bitter: the league's social media site (the News tab). Accounts post "bits":
+# Bitter: the league's social media site (the Bitter tab). Accounts post "bits":
 # news outlets share every story as a clickable article, insiders break news,
-# team accounts post finals, a hot-take TV host makes predictions (and a
-# receipts account holds him to them), a grumpy columnist, a fantasy guy, a
-# former lineman who watches film, a meme account, fictional celebrities who
-# root for teams, players and fans. Bits get replies, quote-bits, likes and
-# rebits, and the page shows what's trending.
+# team accounts and beat writers post finals, a hot-take TV host makes
+# predictions (and a receipts account holds him to them), a grumpy columnist, a
+# fantasy guy, a former lineman who watches film, a meme account, fictional
+# celebrities who root for teams, players and fans. Bits get replies,
+# quote-bits, likes and rebits, and the page shows what's trending.
 #
 # engine/news.py works out what happened (it calls the react_* functions here
 # with the facts); this file decides who reacts and how, and assembles the
 # timeline the screen shows. Wording lives in engine/bitter_words.py.
+#
+# Freshness (Oct 24, Blake: "the tweets that are visible feel completely new and
+# in reaction to whats happening... there should not be word for word repeats"):
+# reactions hand news.py a news_words.Say (which list, which facts), and news.py
+# words every bit of a season in calendar order so that no bit repeats another
+# and no shape of words comes back in the same week (news_words.Writer.fresh).
+# Every reaction gets the specifics: the player and his line, the play that
+# decided it, the score, the streak, the record, who's next. Accounts remember
+# their takes and follow up (Rex Harmon, Big T, Fantasy Freddie, the fans).
 #
 # Rules: every account is invented (none imitates a real person); PG-13 (no
 # swearing); opinions are fine, made-up facts are not. Likes, rebits, replies
@@ -18,6 +27,9 @@
 
 import random
 import re
+import zlib
+
+from .news_words import Say
 
 # ---- The cast (invented) ---------------------------------------------------------
 PERSONAS = {
@@ -58,9 +70,15 @@ CATS = {"headlines": "Headlines", "teams": "Team accounts", "reporters": "Report
         "takes": "Hot takes and analysis", "stats": "Stats", "players": "Players", "fans": "Fans",
         "celebs": "Celebrities"}
 
-# How important a bit must be (0-100) to show in "For you", by kind of account.
-FOR_YOU_BARS = {"headlines": 25, "teams": 25, "reporters": 25, "stats": 25, "takes": 18, "players": 22,
-                "celebs": 18, "fans": 14}
+# "For you" (the league-wide view): about this many top-level bits a week (Blake,
+# Oct 24: about 80, every one tied to something that happened), mixed like a real
+# feed: these shares of the week go to each kind of account first (the most
+# important of each), then the rest to the most important bits of any kind.
+# PROVISIONAL (the mix). A team's or a player's view shows everything about them.
+FOR_YOU_PER_WEEK = 80
+FOR_YOU_MIX = {"headlines": 0.30, "reporters": 0.08, "stats": 0.06, "teams": 0.12, "takes": 0.14, "fans": 0.14,
+               "celebs": 0.07, "players": 0.09}
+FOR_YOU_FLOOR = 16          # nothing less important than this makes For you
 
 # How a team's fans are split: 0 the homer, 1 the worrier, 2 the trash talker.
 HOMER, WORRIER, TROLL = 0, 1, 2
@@ -105,6 +123,17 @@ def _week_cap(ctx, key, season, week, limit):
     return True
 
 
+def _takes(ctx):
+    """What accounts said that they (or someone) will come back to: Rex's calls,
+    Big T's film notes, Freddie's meltdowns, fans' takes on players."""
+    return ctx.__dict__.setdefault("_takes", [])
+
+
+def remember(ctx, kind, season, week, who, bit_id, **about):
+    if bit_id:
+        _takes(ctx).append(dict(about, kind=kind, season=season, week=week, who=who, id=bit_id))
+
+
 # Player personalities on Bitter (Blake, Oct 23: "a lot generic, but then there's some
 # wild ones who are bold and/or weird and cryptic like some NFL players"). Picked at
 # random for each player in each league (never from his ratings).
@@ -121,19 +150,30 @@ def personality(ctx, p):
     return None
 
 
-def player_post(ctx, season, cal, p, tid, won, rng, imp, opp_tid=None):
-    """A player's own bit after his game, in his voice."""
+def _voice_ok(ctx, p, line):
+    """Players whose own posts show up: good players, and anyone who played a starter's
+    share of that game (from the box score, so it never changes with later depth charts)."""
+    return ctx.caliber(p) >= 62 or line.get("off_snaps", 0) + line.get("def_snaps", 0) >= 35
+
+
+def player_post(ctx, season, cal, p, tid, won, rng, imp, opp_tid=None, facts=None):
+    """A player's own bit after his game, in his voice. facts: score, rec, got (his line in words)."""
     voice = personality(ctx, p)
-    f = {"opp": ctx.nick(opp_tid) if opp_tid else "them", "city": ctx.city(tid)}
+    f = dict(facts or {}, opp=ctx.nick(opp_tid) if opp_tid else "them", city=ctx.city(tid))
+    f.setdefault("score", "")
+    f.setdefault("rec", "")
+    f["got"] = f.get("got") or ""
     if voice == "bold":
-        text = ctx.writer.say("player_win_bold" if won else "player_loss_bold", rng, f)
+        name = "player_win_bold" if won else "player_loss_bold"
     elif voice == "cryptic" and (not won or rng.random() < 0.5):
-        text = ctx.writer.say("player_cryptic", rng, f)
+        name = "player_cryptic"
     elif voice == "weird" and rng.random() < 0.5:
-        text = ctx.writer.say("player_weird", rng, f)
+        name = "player_weird"
     else:
-        text = ctx.writer.say("player_win" if won else "player_loss", rng, f)
-    return ctx.post(season, cal, ctx.player_voice(p), text, teams=[tid], players=[p.id],
+        name = "player_win" if won else "player_loss"
+    if name in ("player_win", "player_loss") and not (f["score"] and f["rec"]):
+        return None
+    return ctx.post(season, cal, ctx.player_voice(p), Say(name, f), teams=[tid], players=[p.id],
                     importance=imp + (6 if voice else 0))
 
 
@@ -142,185 +182,383 @@ def _division_rivals(ctx, tid):
     return [o for o in ctx.teams.values() if o.conference == t.conference and o.division == t.division and o.id != tid]
 
 
+def _team_weeks(track):
+    """{team: [(week, opponent), ...]} for the regular season (cached on the track)."""
+    tw = track.__dict__.get("_team_weeks")
+    if tw is None:
+        tw = {}
+        for g in sorted(track.schedule, key=lambda g: g["week"]):
+            tw.setdefault(g["home"], []).append((g["week"], g["away"]))
+            tw.setdefault(g["away"], []).append((g["week"], g["home"]))
+        track._team_weeks = tw
+    return tw
+
+
+def next_game(track, tid, week):
+    """(week, opponent) of a team's next regular-season game after `week`, or None."""
+    if track is None:
+        return None
+    return next(((w, o) for w, o in _team_weeks(track).get(tid, ()) if w > week), None)
+
+
 # ---------------------------------------------------------------------------
 # Reactions (called from engine/news.py with the facts it already worked out)
 # ---------------------------------------------------------------------------
 
-def react_game(ctx, season, cal, phase, g, f, W, L, sp, lp, imp, rng, tw_, tl_, star_def=None, lines=None):
-    """Team accounts, fans, the TV host, memes, celebrities and analysts react to a game."""
+def _game_facts(ctx, f, g, phase, W, L, sp, lp, tw_, tl_, track):
+    # (f["_season"]: the season, set by news.py)
+    """Everything a reaction to this game can mention (see bitter_words.py)."""
+    from .news import num, plural
+    from . import playoffs as po
+    ws, ls = f["ws"], f["ls"]
+    margin = ws - ls
+    week = g["week"]
+    regular = phase == "regular"
+    wt, lt = ctx.teams[W], ctx.teams[L]
+    wr, lr = f.get("_wrec"), f.get("_lrec")
+    gf = {"Wn": wt.nickname, "Ln": lt.nickname, "Wc": wt.city, "Lc": lt.city, "WN": wt.nickname.upper(),
+          "LN": lt.nickname.upper(), "city": wt.city, "CITY": wt.city.upper(), "tag": tag(ctx, W), "ltag": tag(ctx, L),
+          "score": f["score"], "ws": ws, "ls": ls, "margin": margin, "margin_t": plural(margin, "point"),
+          "margin_pt": f"{num(margin)}-point", "champ": f["champ"], "div": wt.division,
+          "star": bool(sp and f.get("star_got")), "star_last": sp.last_name if sp else "",
+          "star_got": f.get("star_got", ""), "lstar": bool(lp and f.get("lstar_got")),
+          "lstar_last": lp.last_name if lp else "", "lstar_got": f.get("lstar_got", ""),
+          "rec": regular and bool(f.get("wrec")), "wrec": f.get("wrec", ""), "lrec": f.get("lrec", ""),
+          "wrec_b": f.get("wrec_b", ""), "lrec_b": f.get("lrec_b", ""),
+          "wstreak": bool(f.get("wstreak")), "n_w": f.get("n_w") or "", "lstreak": bool(f.get("lstreak")),
+          "n_l": f.get("n_l") or "",
+          "late": bool(f.get("_late") and f.get("has_desc")), "goahead": f.get("goahead", ""),
+          "clock": f.get("clock", ""), "comeback": f.get("max_def", 0) >= 10, "max_def": f.get("max_def", 0),
+          "ot": bool(f.get("ot")), "ot_s": " (OT)" if f.get("ot") else "",
+          "takeaways": tl_["give"] >= 3, "to_n": num(tl_["give"]), "sacks4": tl_["sacked"] >= 4,
+          "sk_n": num(tl_["sacked"]), "ground": tw_["rush"] >= 170, "rw": tw_["rush"],
+          "snow": bool(f.get("snow")), "rain": bool(f.get("rain")), "frigid": bool(f.get("frigid")),
+          "temp": f.get("temp", ""), "avenge": bool(f.get("avenge")), "sweep": bool(f.get("sweep")),
+          "prev_week": f.get("prev_week", ""), "prev_score": f.get("prev_score", ""),
+          "took_first": regular and bool(f.get("took_first")), "first_win": bool(f.get("first_win")),
+          "unbeaten": bool(f.get("unbeaten")), "snap_w": bool(f.get("snap_w")), "upset": bool(f.get("upset")),
+          "shutout": ls == 0, "blowout": margin >= 21, "close": margin <= 3 and not f.get("ot"),
+          "outgained": tl_["yds"] - tw_["yds"] >= 80, "yds_gap": tl_["yds"] - tw_["yds"],
+          "lpen": tl_["pen"] >= 10, "pen_n": num(tl_["pen"]), "peny": tl_["pen_yds"],
+          "rival": L in [o.id for o in _division_rivals(ctx, W)],
+          "playoffs": phase == "playoffs", "rnd": po.ROUND_NAMES.get(week, "") if phase == "playoffs" else "",
+          "lbetter": bool(regular and wr and lr and (lr[0] + 0.5 * lr[2]) / max(1, sum(lr[:3]))
+                          > (wr[0] + 0.5 * wr[2]) / max(1, sum(wr[:3]))),
+          "road_loss": L == g["away"] and not g.get("neutral"), "home_loss": L == g["home"] and not g.get("neutral")}
+    if f.get("hw") is not None and f["hw"] < f["hl"]:
+        gf.update(trailed_half=True, hw_t=f"{f['hl']}-{f['hw']}")
+    if phase == "playoffs" and week == 5:
+        titles = sum(1 for s, t in ctx.league.champions.items() if t == W and s < f.get("_season", 10 ** 6))
+        gf.update(first_title=bool(f.get("first_title")), repeat_title=not f.get("first_title"),
+                  titles_n=titles + 1)
+    if regular:
+        for side, key in ((W, ""), (L, "l")):
+            nx = next_game(track, side, week)
+            if nx:
+                gf.update({f"{key}has_next": True, f"{key}next": ctx.nick(nx[1]), f"{key}next_week": nx[0]})
+        again = next(((w, o) for w, o in _team_weeks(track).get(W, ()) if w > week and o == L), None) if track else None
+        if again:
+            gf.update(rematch=True, rematch_week=again[0])
+    return gf
+
+
+def _beat_facts(ctx, side, W, L, f, star, tw_, tl_, track, phase, week):
+    """One team's game, from its beat writer's side."""
+    from .news import num, stat_line
+    won = side == W
+    other = L if won else W
+    mine, theirs = (tw_, tl_) if won else (tl_, tw_)
+    p = ctx.player(star[0]) if star and star[2] >= 8 else None
+    rec = (f.get("wrec") if won else f.get("lrec")) or ""
+    bf = {"T": ctx.city(side), "O": ctx.city(other), "pf": f["ws"] if won else f["ls"],
+          "pa": f["ls"] if won else f["ws"], "ot_s": " in OT" if f.get("ot") else "", "rec": rec,
+          "st": bool(p), "st_name": p.name if p else "", "st_line": stat_line(star[1]) if p else "",
+          "takes": theirs["give"] >= 2, "take_n": num(theirs["give"]), "gives": mine["give"] >= 2,
+          "give_n": num(mine["give"]), "rush": mine["rush"] >= 150, "ry": mine["rush"],
+          "sacked": mine["sacked"] >= 4, "sk_n": num(mine["sacked"])}
+    if not bf["st_line"]:
+        bf["st"] = False
+    nx = next_game(track, side, week) if phase == "regular" else None
+    if nx:
+        bf.update(next=ctx.city(nx[1]), next_week=nx[0], has_next=True)
+    return bf
+
+
+def react_game(ctx, season, cal, phase, g, f, W, L, sp, lp, imp, rng, tw_, tl_, star_def=None, lines=None,
+               track=None, stars=None):
+    """Team accounts, beat writers, fans, the TV host, memes, celebrities and analysts react to a game."""
     from .news import num
-    W_ = ctx.writer
     tie = f.get("tie")
     week = g["week"]
     if phase == "preseason" or tie:
         return
-    ws, ls = f["ws"], f["ls"]
-    margin = ws - ls
+    gf = _game_facts(ctx, f, g, phase, W, L, sp, lp, tw_, tl_, track)
     champ = phase == "playoffs" and week == 5
-    base = {"tag": tag(ctx, W), "city": ctx.city(W), "CITY": ctx.city(W).upper(), "Nick": ctx.nick(W),
-            "NICK": ctx.nick(W).upper(), "OPP": ctx.nick(L).upper(), "opp": ctx.nick(L), "score": f["score"],
-            "champ": f["champ"], "star_last": sp.last_name if sp else "", "star": bool(sp)}
     # The winner's team account, with fans replying.
-    team_f = dict(base, me=ctx.nick(W), them=ctx.nick(L), my=ws, their=ls, rec=f.get("wrec", ""),
-                  streak3=bool(f.get("wstreak")), streak_n=(f.get("n_w") or "").capitalize(), close=margin <= 3,
-                  div="")
     bucket = "team_champ" if champ else ("team_playoff_win" if phase == "playoffs" else "team_win")
-    top = ctx.post(season, cal, team_account(ctx, W), W_.say(bucket, rng, team_f), teams=[W, L],
+    top = ctx.post(season, cal, team_account(ctx, W), Say(bucket, gf), teams=[W, L],
                    players=[sp.id] if sp else (), importance=imp - 2, kind="final")
-    ctx.post(season, cal, ctx.fan(W, rng, HOMER), W_.say("fan_reply_win", rng, base), teams=[W], reply_to=top,
-             importance=10)
+    # Fans: the playoffs get their own lines (NICK and opp: the fan's own team and the other one).
+    homer = "fan_champ" if champ else "fan_playoff_win" if phase == "playoffs" else "fan_reply_win"
+    ctx.post(season, cal, ctx.fan(W, rng, HOMER), Say(homer, dict(gf, NICK=gf["WN"], opp=gf["Ln"])), teams=[W],
+             reply_to=top, importance=10)
     if rng.random() < 0.5:
-        ctx.post(season, cal, ctx.fan(L, rng, TROLL), W_.say("fan_salty", rng, base), teams=[L], reply_to=top,
-                 importance=8)
+        ctx.post(season, cal, ctx.fan(L, rng, TROLL), Say("fan_salty", gf), teams=[L], reply_to=top, importance=8)
     # The loser's account.
     if rng.random() < 0.6 or phase == "playoffs":
-        lf = dict(base, me=ctx.nick(L), them=ctx.nick(W), my=ls, their=ws, star_last=lp.last_name if lp else "",
-                  star=bool(lp))
-        ltop = ctx.post(season, cal, team_account(ctx, L), W_.say("team_loss", rng, lf), teams=[L, W],
+        ltop = ctx.post(season, cal, team_account(ctx, L), Say("team_loss", gf), teams=[L, W],
                         importance=imp - 12, kind="final")
-        ctx.post(season, cal, ctx.fan(L, rng, WORRIER), W_.say("fan_loss", rng, {
-            "rec": f.get("lrec", ""), "score": f["score"], "nick": ctx.nick(L)}), teams=[L], reply_to=ltop,
-            importance=8)
+        worrier = "fan_playoff_loss" if phase == "playoffs" else "fan_loss"
+        ctx.post(season, cal, ctx.fan(L, rng, WORRIER), Say(worrier, dict(gf, NICK=gf["LN"], opp=gf["Wn"])),
+                 teams=[L], reply_to=ltop, importance=8)
+    # Each team's beat writer.
+    for side, star in ((W, (stars or (None, None))[0]), (L, (stars or (None, None))[1])):
+        bf = _beat_facts(ctx, side, W, L, f, star, tw_, tl_, track, phase, week)
+        ctx.post(season, cal, ctx.beat(side), Say("beat_win" if side == W else "beat_loss", bf), teams=[W, L],
+                 players=[star[0]] if bf["st"] else (), importance=imp - 10)
+    # Fans who go all in on a hot start or give up on a slide (they'll hear about it later).
+    if phase == "regular":
+        wr, lr = f.get("_wrec"), f.get("_lrec")
+        taken = {(t["season"], t["kind"], t.get("team")) for t in _takes(ctx)}
+        if wr and sum(wr[:3]) >= 5 and wr[1] <= 1 and f.get("wstreak") and (season, "fan_parade", W) not in taken:
+            who = ctx.fan(W, rng, HOMER)
+            pid = ctx.post(season, cal, who, Say("fan_parade", dict(gf, NICK=gf["WN"])), teams=[W], importance=24)
+            remember(ctx, "fan_parade", season, week, who, pid, team=W)
+        if lr and sum(lr[:3]) >= 4 and lr[0] <= lr[1] - 3 and f.get("lstreak") and                 (season, "fan_doom", L) not in taken and week <= ctx.n_weeks - 4:
+            who = ctx.fan(L, rng, WORRIER)
+            pid = ctx.post(season, cal, who, Say("fan_doom", gf), teams=[L], importance=22)
+            remember(ctx, "fan_doom", season, week, who, pid, team=L)
     # A division rival enjoys it.
     rivals = [o for o in _division_rivals(ctx, L) if o.id != W]
     if rivals and phase == "regular" and rng.random() < 0.3:
         rv = rng.choice(rivals)
-        ctx.post(season, cal, ctx.fan(rv.id, rng, TROLL), W_.say("fan_rival_dunk", rng, {"opp": ctx.nick(L)}),
-                 teams=[rv.id, L], importance=16)
+        ctx.post(season, cal, ctx.fan(rv.id, rng, TROLL), Say("fan_rival_dunk", gf), teams=[rv.id, L], importance=16)
     # Rex Harmon: takes that get remembered.
-    takes = ctx.__dict__.setdefault("rex_takes", [])
-    said = {(t["season"], t["team"]) for t in takes}
+    rf = dict(gf, Tc="", rec="", lrec_b=f.get("lrec_b", ""), wrec_b=f.get("wrec_b", ""))
+    said = {(t["season"], t["team"]) for t in _takes(ctx) if t["kind"].startswith("rex")}
     if phase == "regular":
-        wr = f.get("_wrec"), f.get("_lrec")
+        wr, lr = f.get("_wrec"), f.get("_lrec")
         if f.get("upset") and _week_cap(ctx, "rex_fraud", season, week, 1):
-            ctx.post(season, cal, persona("RexTakes"), W_.say("rex_fraud", rng, f), teams=[W, L], importance=40)
-        if (f.get("wstreak") and wr[0] and wr[0][1] <= 1 and sum(wr[0][:3]) >= 5 and (season, W) not in said
+            ctx.post(season, cal, persona("RexTakes"), Say("rex_fraud", rf), teams=[W, L], importance=40)
+        if (f.get("wstreak") and wr and wr[1] <= 1 and sum(wr[:3]) >= 5 and (season, W) not in said
                 and _week_cap(ctx, "rex", season, week, 2)):
-            text = W_.say("rex_champ", rng, {"Tc": ctx.city(W), "champ": f["champ"]})
-            pid = ctx.post(season, cal, persona("RexTakes"), text, teams=[W], importance=44)
-            takes.append({"season": season, "week": week, "team": W, "kind": "champ", "text": text, "id": pid})
-        lr = wr[1]
+            pid = ctx.post(season, cal, persona("RexTakes"), Say("rex_champ", dict(rf, Tc=ctx.city(W),
+                           rec=f.get("wrec", ""))), teams=[W], importance=44)
+            remember(ctx, "rex_champ", season, week, None, pid, team=W)
         if (lr and sum(lr[:3]) >= 4 and lr[0] + 0.5 * lr[2] <= 0.25 * sum(lr[:3]) and (season, L) not in said
                 and _week_cap(ctx, "rex", season, week, 2)):
-            text = W_.say("rex_done", rng, {"Tc": ctx.city(L), "rec": f.get("lrec", "")})
-            pid = ctx.post(season, cal, persona("RexTakes"), text, teams=[L], importance=44)
-            takes.append({"season": season, "week": week, "team": L, "kind": "done", "text": text, "id": pid})
+            pid = ctx.post(season, cal, persona("RexTakes"), Say("rex_done", dict(rf, Tc=ctx.city(L),
+                           rec=f.get("lrec", ""))), teams=[L], importance=44)
+            remember(ctx, "rex_done", season, week, None, pid, team=L)
     # Memes.
-    mf = dict(f, kicker=f.get("_kicker", ""))
+    mf = dict(gf, kicker=f.get("_kicker", ""))
     memes = []
-    if ls == 0:
+    if gf["shutout"]:
         memes.append("meme_shutout")
-    if margin >= 30:
+    if gf["margin"] >= 30:
         memes.append("meme_blowout")
-    if f.get("ot"):
+    if gf["ot"]:
         memes.append("meme_ot")
     if f.get("max_def", 0) >= 17:
         memes.append("meme_comeback")
-    if f.get("winless") and f.get("_lrec") and f["_lrec"][1] >= 5:
+    if f.get("winless") and lr_ok(f) and f["_lrec"][1] >= 5:
         memes.append("meme_winless")
     if f.get("_kicker"):
         memes.append("meme_kicker")
-    if f.get("lstreak") and f.get("_lrec") and f["_lrec"][3][-1:] == "L" and rng.random() < 0.4:
+    if f.get("lstreak") and lr_ok(f) and f["_lrec"][3][-1:] == "L" and rng.random() < 0.4:
         memes.append("meme_streak_loss")
     if f.get("wstreak") and rng.random() < 0.3:
         memes.append("meme_streak_win")
+    if f.get("upset") and rng.random() < 0.4:
+        memes.append("meme_upset")
     if champ:
         memes.append("meme_champ")
     if memes and (champ or rng.random() < 0.6) and _week_cap(ctx, "meme", season, cal, 4):
-        ctx.post(season, cal, persona("GridironMemes"), W_.say(rng.choice(memes), rng, mf), teams=[W, L],
-                 importance=34)
+        ctx.post(season, cal, persona("GridironMemes"), Say(rng.choice(memes), mf), teams=[W, L], importance=34)
     # Celebrities.
     cw = celebrity(ctx, W)
     if cw:
         who, style = cw
-        big = (phase == "playoffs" or margin >= 17 or f.get("wstreak") or f.get("took_first")
-               or L in [o.id for o in _division_rivals(ctx, W)] or rng.random() < 0.2)
+        cf = dict(gf, Nick=ctx.nick(W))
+        big = (phase == "playoffs" or gf["margin"] >= 17 or f.get("wstreak") or f.get("took_first")
+               or gf["rival"] or rng.random() < 0.2)
         if champ:
-            ctx.post(season, cal, who, W_.say("celeb_champ", rng, base), teams=[W], importance=60)
-        elif margin <= 3 or f.get("ot"):
+            ctx.post(season, cal, who, Say("celeb_champ", cf), teams=[W], importance=60)
+        elif gf["margin"] <= 3 or gf["ot"]:
             # A nail-biter: "please, for my health".
-            ctx.post(season, cal, who, W_.say("celeb_win_close", rng, base), teams=[W], importance=38)
+            ctx.post(season, cal, who, Say("celeb_win_close", cf), teams=[W], importance=38)
         elif big:
-            name = f"celeb_win_{style}" if rng.random() < 0.65 else "celeb_win"
-            ctx.post(season, cal, who, W_.say(name, rng, base), teams=[W], importance=36)
+            name = f"celeb_win_{style}" if rng.random() < 0.6 else "celeb_win"
+            ctx.post(season, cal, who, Say(name, cf), teams=[W], importance=36)
     cl = celebrity(ctx, L)
     if cl and (phase == "playoffs" or rng.random() < 0.35):
-        ctx.post(season, cal, cl[0], W_.say("celeb_loss", rng, {"Nick": ctx.nick(L)}), teams=[L], importance=26)
+        ctx.post(season, cal, cl[0], Say("celeb_loss", dict(gf, rec=bool(gf["lrec"]))), teams=[L], importance=26)
     # The league's louder (and stranger) players speak up after the game.
     for pid, line in (lines or {}).items():
         p = ctx.player(pid)
         tid = line.get("team")
-        if p is None or tid not in (W, L) or not ctx.notable(p, tid):
+        if p is None or tid not in (W, L) or not _voice_ok(ctx, p, line):
             continue
         voice = personality(ctx, p)
         won = tid == W
         prng = random.Random(f"pvoice-{ctx.salt}-{g['id']}-{pid}")
         if (voice == "bold" and prng.random() < (0.3 if won else 0.2)) or \
                 (voice == "cryptic" and not won and prng.random() < 0.3):
-            player_post(ctx, season, cal, p, tid, won, prng, 26, L if won else W)
-    # Big T on the trenches.
+            player_post(ctx, season, cal, p, tid, won, prng, 26, L if won else W,
+                        {"score": gf["score"], "rec": gf["wrec"] if won else gf["lrec"]})
+    # Big T on the trenches (and he remembers the lines he called out).
     if tl_["sacked"] >= 5 and rng.random() < 0.5 and _week_cap(ctx, "bigt", season, week, 2):
-        ctx.post(season, cal, persona("BigTHolloway"), W_.say("bigt_sacks", rng, dict(f, n=num(tl_["sacked"]))),
-                 teams=[W, L], importance=32)
+        pid = ctx.post(season, cal, persona("BigTHolloway"), Say("bigt_sacks", dict(gf, n=num(tl_["sacked"]))),
+                       teams=[W, L], importance=32)
+        if phase == "regular":
+            remember(ctx, "bigt_line", season, week, None, pid, team=L, n=tl_["sacked"])
     elif tw_["rush"] >= 200 and rng.random() < 0.5 and _week_cap(ctx, "bigt", season, week, 2):
-        ctx.post(season, cal, persona("BigTHolloway"), W_.say("bigt_rush", rng, f), teams=[W], importance=32)
+        ctx.post(season, cal, persona("BigTHolloway"), Say("bigt_rush", gf), teams=[W], importance=32)
     elif star_def and rng.random() < 0.4 and _week_cap(ctx, "bigt", season, week, 2):
         p, got = star_def
-        ctx.post(season, cal, persona("BigTHolloway"), W_.say("bigt_def", rng, {"name": p.name, "got": got}),
+        ctx.post(season, cal, persona("BigTHolloway"), Say("bigt_def", dict(gf, name=p.name, got=got)),
                  teams=[W], players=[p.id], importance=30)
 
 
-def react_performance(ctx, season, cal, week, p, tid, stat, got, ints, rng, imp):
-    """Fantasy Freddie on the biggest fantasy days (and the worst)."""
-    W_ = ctx.writer
+def lr_ok(f):
+    return bool(f.get("_lrec"))
+
+
+def react_performance(ctx, season, cal, week, p, tid, stat, got, ints, rng, imp, opp=None, track=None):
+    """Fantasy Freddie on the biggest fantasy days (and the worst); he remembers his meltdowns."""
+    f = {"last": p.last_name, "got": got, "ints": ints, "opp": ctx.nick(opp) if opp else "them"}
     if stat == "pass_int":
         if _week_cap(ctx, "freddie_bust", season, week, 1):
-            ctx.post(season, cal, persona("FantasyFreddie"), W_.say("freddie_bust", rng, {
-                "last": p.last_name, "ints": ints}), teams=[tid], players=[p.id], importance=30)
+            pid = ctx.post(season, cal, persona("FantasyFreddie"), Say("freddie_bust", f), teams=[tid],
+                           players=[p.id], importance=30)
+            remember(ctx, "freddie_bust", season, week, None, pid, pid_=p.id)
         return
-    if stat in ("pass_yds", "pass_td", "rush_yds", "rush_td", "rec_yds", "rec_td", "rec") \
-            and rng.random() < 0.6 and _week_cap(ctx, "freddie", season, week, 3):
-        ctx.post(season, cal, persona("FantasyFreddie"), W_.say("freddie_boom", rng, {
-            "last": p.last_name, "got": got}), teams=[tid], players=[p.id], importance=imp - 12)
+    if stat not in ("pass_yds", "pass_td", "rush_yds", "rush_td", "rec_yds", "rec_td", "rec"):
+        return
+    # Freddie takes back a meltdown about this player (once).
+    for t in _takes(ctx):
+        if t["kind"] == "freddie_bust" and t["pid_"] == p.id and t["season"] == season and t["week"] < week \
+                and not t.get("settled"):
+            t["settled"] = True
+            ctx.post(season, cal, persona("FantasyFreddie"), Say("freddie_crow", dict(f, k=t["week"], w=week)),
+                     teams=[tid], players=[p.id], quote={"of": t["id"], "when": f"Week {t['week']}"},
+                     importance=imp - 6)
+            return
+    if rng.random() < 0.6 and _week_cap(ctx, "freddie", season, week, 3):
+        ctx.post(season, cal, persona("FantasyFreddie"), Say("freddie_boom", f), teams=[tid], players=[p.id],
+                 importance=imp - 12)
 
 
 def react_injury(ctx, season, cal, p, tid, part, vp, rng, imp, parent):
-    W_ = ctx.writer
-    ctx.post(season, cal, ctx.fan(tid, rng, WORRIER), W_.say("fan_reply_injury", rng, {}), teams=[tid],
-             players=[p.id], reply_to=parent, importance=8)
     if p.position in ("QB", "RB", "WR", "TE") and rng.random() < 0.6:
-        ctx.post(season, cal, persona("FantasyFreddie"), W_.say("freddie_injury", rng, {
-            "name": p.name, "part": part, "vp": vp}), teams=[tid], players=[p.id], reply_to=parent, importance=10)
+        ctx.post(season, cal, persona("FantasyFreddie"), Say("freddie_injury", {"name": p.name, "part": part, "vp": vp}),
+                 teams=[tid], players=[p.id], reply_to=parent, importance=10)
 
 
 def react_week(ctx, season, track, w, games):
-    """Weekly: receipts on the TV host's old takes, the columnist's column."""
+    """Weekly: receipts on the TV host's old takes, follow-ups on other remembered
+    takes, the columnist's column, rematch week for the fans."""
     from . import storylines as SL
-    W_ = ctx.writer
+    from .news import num, plural
     cal = 5 + w + 0.65
     rng = ctx.rng(season, "bitterweek", w)
-    for t in ctx.__dict__.get("rex_takes", []):
+    for t in _takes(ctx):
         if t["season"] != season or t["week"] >= w or t.get("settled"):
             continue
-        kind, n = track.streak_of(t["team"], w)
-        since = track.record(t["team"], w, since=t["week"])
-        quote = {"name": "Rex Harmon", "handle": "@RexTakes", "text": t["text"], "when": f"Week {t['week']}"}
-        wrong = (t["kind"] == "done" and kind == "W" and n >= 3) or (t["kind"] == "champ" and kind == "L" and n >= 3)
-        if wrong:
-            t["settled"] = True
-            ctx.post(season, cal, persona("ReceiptsFB"), W_.say("receipts", rng, {
-                "Tc": ctx.city(t["team"]), "since_rec": SL.rec_text(since)}), teams=[t["team"]], quote=quote,
-                importance=46)
-        elif t["kind"] == "done" and w == ctx.n_weeks:
-            r = track.record(t["team"], w)
-            if SL.pct(r) < 0.5:
+        quote = {"of": t["id"], "when": f"Week {t['week']}"}
+        if t["kind"] in ("rex_done", "rex_champ"):
+            kind, n = track.streak_of(t["team"], w)
+            since = track.record(t["team"], w, since=t["week"])
+            wrong = (t["kind"] == "rex_done" and kind == "W" and n >= 3) or \
+                    (t["kind"] == "rex_champ" and kind == "L" and n >= 3)
+            if wrong:
                 t["settled"] = True
-                ctx.post(season, cal, persona("RexTakes"), W_.say("rex_right", rng, {
-                    "k": t["week"], "Tc": ctx.city(t["team"]), "rec": SL.rec_text(r)}), teams=[t["team"]],
-                    quote=quote, importance=40)
+                ctx.post(season, cal, persona("ReceiptsFB"), Say("receipts", {
+                    "Tc": ctx.city(t["team"]), "since_rec": SL.rec_text(since), "k": t["week"]}), teams=[t["team"]],
+                    quote=quote, importance=46)
+            elif t["kind"] == "rex_done" and w == ctx.n_weeks:
+                r = track.record(t["team"], w)
+                if SL.pct(r) < 0.5:
+                    t["settled"] = True
+                    ctx.post(season, cal, persona("RexTakes"), Say("rex_right", {
+                        "k": t["week"], "Tc": ctx.city(t["team"]), "rec": SL.rec_text(r)}), teams=[t["team"]],
+                        quote=quote, importance=40)
+        elif t["kind"] in ("fan_parade", "fan_doom"):
+            kind, n = track.streak_of(t["team"], w)
+            r = track.record(t["team"], w)
+            facts = {"Tc": ctx.city(t["team"]), "k": t["week"], "n": num(n), "rec": SL.rec_text(r),
+                     "since_rec": SL.rec_text(track.record(t["team"], w, since=t["week"])), "tag": tag(ctx, t["team"])}
+            if t["kind"] == "fan_parade" and kind == "L" and n >= 3:
+                t["settled"] = True
+                rivals = _division_rivals(ctx, t["team"])
+                if rivals:
+                    rv = random.Random(f"parade-{ctx.salt}-{season}-{t['team']}").choice(rivals)
+                    ctx.post(season, cal, ctx.fan(rv.id, rng, TROLL), Say("fan_parade_bust", facts),
+                             teams=[rv.id, t["team"]], quote=quote, importance=30)
+            elif t["kind"] == "fan_doom" and kind == "W" and n >= 3 and SL.pct(r) >= 0.45:
+                t["settled"] = True
+                ctx.post(season, cal, t["who"], Say("fan_doom_crow", facts), teams=[t["team"]], quote=quote,
+                         importance=28)
+            elif t["kind"] == "fan_doom" and w == ctx.n_weeks:
+                t["settled"] = True
+                if SL.pct(r) < 0.4:
+                    ctx.post(season, cal, t["who"], Say("fan_doom_right", facts), teams=[t["team"]], quote=quote,
+                             importance=24)
+        elif t["kind"] == "bigt_line":
+            # Big T comes back to a line he called out: better, or the same old story.
+            game = next((x for x in track.team_games.get(t["team"], ()) if x[0] == w), None)
+            if w - t["week"] > 8:
+                t["settled"] = True
+            if not game:
+                continue
+            _w, g, opp, pf, pa, idx = game
+            sacked = int(((track.boxes.get(g["id"]) or {}).get("team", [{}, {}])[idx] or {}).get("sacked", 0))
+            facts = {"Tc": ctx.city(t["team"]), "k": t["week"], "k_n": num(t["n"]), "n": num(sacked),
+                     "n_t": plural(sacked, "sack") if sacked else "no sacks", "score": f"{max(pf, pa)}-{min(pf, pa)}"}
+            if sacked <= 1 and pf > pa:
+                t["settled"] = True
+                ctx.post(season, cal, persona("BigTHolloway"), Say("bigt_credit", facts), teams=[t["team"]],
+                         quote=quote, importance=34)
+            elif sacked >= 5:
+                t["settled"] = True
+                ctx.post(season, cal, persona("BigTHolloway"), Say("bigt_again", facts), teams=[t["team"]],
+                         quote=quote, importance=34)
+        elif t["kind"] == "fan_bench":
+            # A fan who wanted the quarterback benched, three games later.
+            r = track.qb_recent(t["pid_"], w)
+            p = ctx.player(t["pid_"])
+            gl = track.games_of(t["pid_"], w)
+            if not r or not p or not gl or gl[-1][0] != w or len([x for x in gl if x[0] > t["week"]]) < 3:
+                if w - t["week"] > 8:
+                    t["settled"] = True
+                continue
+            t["settled"] = True
+            facts = {"last": p.last_name, "k": t["week"], "rating": f"{r['rating']:.1f}"}
+            if r["rating"] >= 95:
+                ctx.post(season, cal, t["who"], Say("fan_crow", facts), teams=[t["team"]], players=[p.id],
+                         quote=quote, importance=30)
+            elif r["rating"] < 70:
+                ctx.post(season, cal, t["who"], Say("fan_again", facts), teams=[t["team"]], players=[p.id],
+                         quote=quote, importance=28)
+        elif t["kind"] == "fan_believe":
+            # A fan who called a breakout, a month later.
+            if w - t["week"] < 4:
+                continue
+            t["settled"] = True
+            p = ctx.player(t["pid_"])
+            if not p or len([x for x in track.games_of(p.id, w) if x[0] > t["week"]]) < 3:
+                continue
+            from .news import impact, season_amount
+            tot = track.totals(p.id, w)
+            main = max(impact(tot).items(), key=lambda kv: kv[1], default=(None, 0))[0]
+            stat = {"pass": "pass_yds", "rush": "rush_yds", "rec": "rec_yds", "def": "sacks"}.get(main)
+            if stat and tot.get(stat):
+                ctx.post(season, cal, t["who"], Say("fan_called", {
+                    "last": p.last_name, "k": t["week"], "season_amount": season_amount(stat, tot[stat])}),
+                    teams=[t["team"]], players=[p.id], quote=quote, importance=28)
     # Walt's weekly column-in-a-bit: the week's most old-school (or least) game.
-    week_games = [x for x in track.team_games.items()]
     best = None
+    month = "December" if w >= 13 else "November" if w >= 9 else "October" if w >= 4 else "September"
     for g in games:
         b = track.boxes.get(g["id"])
         if not b or g["week"] != w:
@@ -328,24 +566,41 @@ def react_week(ctx, season, track, w, games):
         hs, as_ = g["home_score"], g["away_score"]
         W, L = (g["home"], g["away"]) if hs >= as_ else (g["away"], g["home"])
         ws, ls = max(hs, as_), min(hs, as_)
-        wi = 0 if W == g["home"] else 1
+        wi, li = (0, 1) if W == g["home"] else (1, 0)
         rush = int(b["team"][wi].get("rush_yds", 0))
+        give = int(b["team"][li].get("int_thrown", 0) + b["team"][li].get("fum_lost", 0))
         facts = {"Wc": ctx.city(W), "Lc": ctx.city(L), "ws": ws, "ls": ls, "score": f"{ws}-{ls}", "rw": rush,
-                 "wrec": SL.rec_text(track.record(W, w))}
+                 "total": ws + ls, "give_n": num(give), "month": month}
         for name, score in (("walt_lowscore", 30 - (ws + ls)), ("walt_shootout", (ws + ls) - 70),
-                            ("walt_rush", (rush - 220) / 4)):
+                            ("walt_rush", (rush - 220) / 4), ("walt_turnovers", (give - 4) * 6)):
             if score > 0 and (best is None or score > best[0]):
                 best = (score, name, facts, [W, L])
     if best and rng.random() < 0.8:
-        ctx.post(season, cal, persona("WaltBrennan"), W_.say(best[1], rng, best[2]), teams=best[3], importance=33)
+        ctx.post(season, cal, persona("WaltBrennan"), Say(best[1], best[2]), teams=best[3], importance=33)
+    _rematch_week(ctx, season, track, w, cal)
     _player_week(ctx, season, track, w, cal)
+
+
+def _rematch_week(ctx, season, track, w, cal):
+    """Before a rematch, the side that lost the first meeting hasn't forgotten."""
+    for g in track.schedule:
+        if g["week"] != w + 1:
+            continue
+        for me, opp in ((g["home"], g["away"]), (g["away"], g["home"])):
+            prev = track.meetings(me, opp, w + 1)
+            if not prev:
+                continue
+            pw, _pg, _o, pf, pa, _i = prev[-1]
+            rng = random.Random(f"rematch-{ctx.salt}-{season}-{w}-{me}")
+            if pf < pa and rng.random() < 0.6:
+                ctx.post(season, cal + 0.1, ctx.fan(me, rng, TROLL), Say("fan_rematch", {
+                    "k": pw, "Opp": ctx.nick(opp), "Me": ctx.nick(me), "their": pa, "my": pf, "tag": tag(ctx, me)}),
+                    teams=[me, opp], importance=22)
 
 
 def _player_week(ctx, season, track, w, cal):
     """Midweek: the weird and cryptic players post whatever is on their minds; bold
     players guarantee wins, and last week's guarantees are settled."""
-    from . import storylines as SL
-    W_ = ctx.writer
     guarantees = ctx.__dict__.setdefault("guarantees", [])
     # Settle the guarantees made for this week's games.
     for gu in guarantees:
@@ -356,95 +611,104 @@ def _player_week(ctx, season, track, w, cal):
         if not game:
             continue
         _w, _g, opp, pf, pa, _i = game
-        quote = {"name": gu["name"], "handle": gu["handle"], "text": gu["text"], "when": f"Week {w - 1}"}
+        quote = {"of": gu["id"], "when": f"Week {w - 1}"}
         p = ctx.player(gu["pid"])
-        rng = random.Random(f"settle-{ctx.salt}-{season}-{w}-{gu['pid']}")
+        facts = {"name": p.name, "last": p.last_name, "Tc": ctx.city(gu["team"]), "opp": ctx.nick(opp),
+                 "score": f"{max(pf, pa)}-{min(pf, pa)}", "pf": pf, "pa": pa}
         if pf > pa:
-            ctx.post(season, 5 + w + 0.62, ctx.player_voice(p), W_.say("player_told", rng, {}), teams=[gu["team"]],
+            ctx.post(season, 5 + w + 0.62, ctx.player_voice(p), Say("player_told", facts), teams=[gu["team"]],
                      players=[p.id], quote=quote, importance=36)
         elif pf < pa:
-            ctx.post(season, 5 + w + 0.62, persona("ReceiptsFB"), W_.say("receipts_player", rng, {
-                "name": p.name, "Tc": ctx.city(gu["team"]), "score": f"{pa}-{pf}"}), teams=[gu["team"], opp],
-                players=[p.id], quote=quote, importance=42)
+            ctx.post(season, 5 + w + 0.62, persona("ReceiptsFB"), Say("receipts_player", facts),
+                     teams=[gu["team"], opp], players=[p.id], quote=quote, importance=42)
     # This week's players, as they were this week (so a player who's since moved posts for the right team).
-    played = {}
+    played, lines = {}, {}
     for pid, gl in track.player_games.items():
         last = gl[-1] if gl[-1][0] <= w else next((x for x in reversed(gl) if x[0] <= w), None)
         if last and last[0] == w:
-            played[pid] = last[2]
+            played[pid], lines[pid] = last[2], last[3]
     nxt = {t for g in track.schedule if g["week"] == w + 1 for t in (g["home"], g["away"])}
     made = 0
     for pid in sorted(played):
         p = ctx.player(pid)
         tid = played[pid]
-        if p is None or not ctx.notable(p, tid):
+        if p is None or not _voice_ok(ctx, p, lines[pid]):
             continue
         voice = personality(ctx, p)
         if not voice:
             continue
         rng = random.Random(f"midweek-{ctx.salt}-{season}-{w}-{pid}")
         if voice in ("weird", "cryptic") and rng.random() < 0.12:
-            ctx.post(season, cal, ctx.player_voice(p), W_.say(f"player_{voice}", rng, {}), teams=[tid],
+            facts = {"city": ctx.city(tid), "cold": w >= 12 and ctx.teams[tid].abbrev in COLD_CITIES,
+                     "bye": tid not in nxt}
+            ctx.post(season, cal, ctx.player_voice(p), Say(f"player_{voice}", facts), teams=[tid],
                      players=[p.id], importance=30)
         elif voice == "bold" and tid in nxt and made < 2 and rng.random() < 0.08:
             g = next(g for g in track.schedule if g["week"] == w + 1 and tid in (g["home"], g["away"]))
             opp = g["away"] if g["home"] == tid else g["home"]
-            text = W_.say("player_guarantee", rng, {"opp": ctx.nick(opp)})
-            pid_ = ctx.post(season, cal + 0.05, ctx.player_voice(p), text, teams=[tid, opp], players=[p.id],
-                            importance=40)
-            who = ctx.player_voice(p)
-            guarantees.append({"season": season, "week": w + 1, "team": tid, "pid": p.id, "text": text,
-                               "name": who[0], "handle": "@" + who[1], "id": pid_})
+            pid_ = ctx.post(season, cal + 0.05, ctx.player_voice(p), Say("player_guarantee", {"opp": ctx.nick(opp)}),
+                            teams=[tid, opp], players=[p.id], importance=40)
+            guarantees.append({"season": season, "week": w + 1, "team": tid, "pid": p.id, "id": pid_})
             made += 1
 
 
-def react_rankings(ctx, season, cal, top_tid, rng):
+COLD_CITIES = {"BOS", "NYK", "PHI", "BUF", "PIT", "CLE", "DET", "CHI", "MIN", "DEN", "CIN", "IND", "KCY", "WAS",
+               "BAL", "STL"}
+
+
+def react_rankings(ctx, season, cal, top_tid, rng, rec=""):
     if rng.random() < 0.4:
-        ctx.post(season, cal, persona("RexTakes"), ctx.writer.say("rex_rank", rng, {"top": ctx.city(top_tid)}),
+        ctx.post(season, cal, persona("RexTakes"), Say("rex_rank", {"top": ctx.city(top_tid), "rec": rec}),
                  teams=[top_tid], importance=34)
 
 
-def react_pick(ctx, season, cal, d, q, rng):
+def react_pick(ctx, season, cal, d, q, rng, first_of_team=False):
     """A first-round pick: the team announces it; fans and their celebrity react."""
-    W_ = ctx.writer
+    from .news import POS_WORD
     tid = d["team"]
     f = {"pick": d["pick"], "season": season, "T": ctx.full(tid), "pos": q.position, "name": q.name,
-         "college": q.college, "city": ctx.city(tid), "Nick": ctx.nick(tid), "tag": tag(ctx, tid), "last": q.last_name}
-    top = ctx.post(season, cal, team_account(ctx, tid), W_.say("team_pick", rng, f), teams=[tid], players=[q.id],
+         "college": q.college, "city": ctx.city(tid), "Nick": ctx.nick(tid), "tag": tag(ctx, tid), "last": q.last_name,
+         "pos_word": POS_WORD.get(q.position, q.position), "first_of_team": first_of_team}
+    top = ctx.post(season, cal, team_account(ctx, tid), Say("team_pick", f), teams=[tid], players=[q.id],
                    importance=36 if d["pick"] > 1 else 60)
-    ctx.post(season, cal, ctx.fan(tid, rng, rng.choice([HOMER, WORRIER])), W_.say("fan_reply_pick", rng, f),
+    ctx.post(season, cal, ctx.fan(tid, rng, rng.choice([HOMER, WORRIER])), Say("fan_pick_reply", f),
              teams=[tid], reply_to=top, importance=8)
     c = celebrity(ctx, tid)
     if c:
-        ctx.post(season, cal, c[0], W_.say("celeb_draft", rng, f), teams=[tid], players=[q.id], importance=30)
+        ctx.post(season, cal, c[0], Say("celeb_draft", f), teams=[tid], players=[q.id], importance=30)
 
 
 def react_last_pick(ctx, season, cal, d, q, rng):
-    ctx.post(season, cal, persona("GridironMemes"), ctx.writer.say("meme_irrelevant", rng, {
-        "name": q.name, "pick": d["pick"]}), teams=[d["team"]], players=[q.id], importance=30)
+    ctx.post(season, cal, persona("GridironMemes"), Say("meme_irrelevant", {
+        "name": q.name, "pick": d["pick"], "season": season, "pos": q.position, "college": q.college}),
+        teams=[d["team"]], players=[q.id], importance=30)
 
 
-def react_clinch(ctx, season, cal, tid, what, rng):
-    W_ = ctx.writer
+def react_clinch(ctx, season, cal, tid, what, rng, rec="", left_t=""):
     t = ctx.teams[tid]
-    f = {"city": t.city, "tag": tag(ctx, tid), "div": t.division, "champ": ctx.champ_name(season)}
+    f = {"city": t.city, "tag": tag(ctx, tid), "div": t.division, "champ": ctx.champ_name(season), "rec": rec,
+         "left_t": left_t or "games", "conf": f"{t.conference} Conference", "Nick": t.nickname}
     if what in ("berth", "div", "top"):
-        ctx.post(season, cal, team_account(ctx, tid), W_.say(f"team_clinch_{what}", rng, f), teams=[tid],
-                 importance=50)
+        ctx.post(season, cal, team_account(ctx, tid), Say(f"team_clinch_{what}", f), teams=[tid], importance=50)
         c = celebrity(ctx, tid)
         if c:
-            ctx.post(season, cal, c[0], W_.say("celeb_clinch", rng, f), teams=[tid], importance=34)
+            ctx.post(season, cal, c[0], Say("celeb_clinch", f), teams=[tid], importance=34)
 
 
-def react_sign(ctx, season, cal, tid, p, rng, back=False):
-    f = {"city": ctx.city(tid), "name": p.name, "last": p.last_name, "pos": p.position, "tag": tag(ctx, tid)}
-    ctx.post(season, cal, team_account(ctx, tid), ctx.writer.say("team_back" if back else "team_sign", rng, f),
+def react_sign(ctx, season, cal, tid, p, rng, back=False, extra=None):
+    f = dict({"city": ctx.city(tid), "name": p.name, "last": p.last_name, "pos": p.position, "tag": tag(ctx, tid),
+              "Nick": ctx.nick(tid), "exp": p.experience >= 4, "exp_t": f"{p.experience} years",
+              "list_name": "injured reserve", "prev": False, "prev_team": "", "out": False, "out_t": ""},
+             **(extra or {}))
+    ctx.post(season, cal, team_account(ctx, tid), Say("team_back" if back else "team_sign", f),
              teams=[tid], players=[p.id], importance=24)
 
 
 def react_retire(ctx, season, cal, tid, p, rng):
-    ctx.post(season, cal, team_account(ctx, tid), ctx.writer.say("team_retire", rng, {
-        "name": p.name, "Nick": ctx.nick(tid), "tag": tag(ctx, tid)}), teams=[tid], players=[p.id], importance=30)
+    from .news import num
+    ctx.post(season, cal, team_account(ctx, tid), Say("team_retire", {
+        "name": p.name, "Nick": ctx.nick(tid), "tag": tag(ctx, tid),
+        "seasons_t": f"{num(p.experience).capitalize()} seasons"}), teams=[tid], players=[p.id], importance=30)
 
 
 # ---------------------------------------------------------------------------
@@ -520,23 +784,149 @@ ARTICLE_ACCOUNTS = {"game": ("LeagueWire", "wire_game"), "performance": ("League
                     "draft": ("LeagueWire", "wire_news"), "retirement": ("LeagueWire", "wire_news"),
                     "moves": ("LeagueWire", "wire_news"), "injury": ("LeagueWire", "wire_news"),
                     "business": ("LeagueWire", "wire_news")}
+_LEADS = {"wire_game": ("", "RECAP: ", "FINAL: "), "wire_news": ("", "NEWS: ", "JUST IN: "),
+          "daily_feature": ("", "NEW: ", "Read: ")}
 
 
-def _article_bit(ctx_writer, item):
-    rng = random.Random(f"article-{item['id']}")
-    key, words = ARTICLE_ACCOUNTS.get(item["kind"], ("LeagueWire", "wire_news"))
-    name, role, _bio, _f = PERSONAS[key]
-    # A written story leads with its first sentence (the headline goes on the article
-    # card); a list (rankings, a preview, an injury report) leads with its headline.
-    first = re.split(r"(?<=[.!?])\s", item["body"].split("\n")[0], maxsplit=1)[0]
-    if "\n" not in item["body"] and 40 <= len(first) <= 240 and rng.random() < 0.75:
-        text = first
-    else:
-        text = ctx_writer.say(words, rng, {"headline": item["headline"]})
-    return {"id": "a-" + item["id"], "season": item["season"], "cal": item["cal"], "when": item["when"],
-            "name": name, "handle": "@" + key, "role": role, "team": None, "text": text, "teams": item["teams"],
-            "players": item["players"], "importance": item["importance"], "article": item, "reply_to": None,
-            "quote": None}
+def _article_shape(text, item, league, teams_re):
+    """The article bit's words with its names, teams and numbers taken out."""
+    s = text.replace("Hall of Fame", "HOF")
+    for pid in item["players"][:12]:
+        try:
+            p = league.player(pid)
+        except (KeyError, ValueError):
+            continue
+        s = s.replace(p.name, "N").replace(p.last_name, "N")
+    s = teams_re.sub("T", s)
+    return _NUMBER_WORDS.sub("9", re.sub(r"\d[\d,.]*", "9", s)).lower()
+
+
+_NUMBER_WORDS = re.compile(r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|first|second|third|"
+                           r"fourth|fifth|sixth|seventh|eighth|ninth|tenth)\b", re.I)
+
+
+# Sentence ends, but not "St. Louis" or "No. 1".
+_SENTENCE = re.compile(r"(?<!\bSt\.)(?<!\bNo\.)(?<!\bJr\.)(?<=[.!?])\s")
+
+
+def _teams_re(league):
+    names = tuple(sorted({w for t in league.teams for w in (t.name, t.city, t.nickname)}, key=len, reverse=True))
+    if _TEAMS_RE.get("key") != names:
+        _TEAMS_RE.update(key=names, re=re.compile("|".join(re.escape(w) for w in names)))
+    return _TEAMS_RE["re"]
+
+
+_TEAMS_RE = {}
+
+
+def _move_rank(sentence):
+    """Which of a team's moves leads its transactions bit (lowest first)."""
+    for i, words in enumerate(("injured reserve", "Released", "Waived", "Claimed", "Activated", "Signed", "Promoted")):
+        if words in sentence and "practice squad" not in sentence:
+            return i
+    return 9 if sentence.startswith("Elevated") else 8
+
+
+def _article_bits(items, league):
+    """Every story as an outlet's bit, in calendar order. A written story leads with
+    its first sentence (the headline goes on the article card); a list (rankings,
+    an injury report, a team's moves) leads with its headline and its first line.
+    No two article bits say the same thing, and the same shape of words isn't
+    used twice in a week."""
+    out = []
+    seen, shapes = set(), set()
+    teams_re = _teams_re(league)
+    for item in sorted(items, key=lambda x: (x["season"], x["cal"], -x["importance"], x["id"])):
+        rng = random.Random(f"article-{item['id']}")
+        key, words = ARTICLE_ACCOUNTS.get(item["kind"], ("LeagueWire", "wire_news"))
+        name, role, _bio, _f = PERSONAS[key]
+        body = item["body"].split("\n")
+        sents = _SENTENCE.split(body[0])
+        first = sents[0]
+        cands = []
+        m = re.match(r"(.+) transactions: (.+)$", item["headline"])
+        if m and len(body) == 1:
+            # A team's week of moves: lead with the most notable one.
+            best = min(sents, key=_move_rank).rstrip(".")
+            cands.append(f"{m.group(1)}, {m.group(2)}: {best[:1].lower() + best[1:]}"
+                         + (f" (+{len(sents) - 1} more)" if len(sents) > 1 else ""))
+        elif len(body) == 1 and 40 <= len(first) <= 240:
+            cands.append(first)
+        elif len(body) > 1:
+            numbered = next((x.strip() for x in body if re.match(r"\d+\. ", x.strip())), None)
+            line = numbered or (body[1].strip() if len(body[0]) > 140 or ":" in body[0] else body[0].strip())
+            if 0 < len(line) <= 160:
+                more = len(body) - 2 if line == body[1].strip() else len(body) - 1
+                cands.append(f"{item['headline']}: {line.rstrip('.')}" + (f" (+{more} more)" if more > 0 else ""))
+        leads = list(_LEADS[words])
+        rng.shuffle(leads)
+        heads = [lead + item["headline"] for lead in leads]
+        cands = (heads + cands) if rng.random() < 0.25 else (cands + heads)
+        text = None
+        week = (item["season"], int(item["cal"]))
+        # (Shapes only matter for stories that can make For you.)
+        shaped = item["importance"] >= 25
+        for c in cands:
+            if c.lower() in seen:
+                continue
+            if not shaped or (week, _article_shape(c, item, league, teams_re)) not in shapes:
+                text = c
+                break
+        if text is None:
+            text = next((c for c in cands if c.lower() not in seen), None)
+        if text is None:
+            continue
+        seen.add(text.lower())
+        shape = _article_shape(text, item, league, teams_re) if shaped else None
+        shapes.add((week, shape))
+        out.append({"id": "a-" + item["id"], "season": item["season"], "cal": item["cal"], "when": item["when"],
+                    "name": name, "handle": "@" + key, "role": role, "team": None, "text": text,
+                    "teams": item["teams"], "players": item["players"], "importance": item["importance"],
+                    "article": item, "reply_to": None, "quote": None, "_shape": shape})
+    return out
+
+
+def _wobble(key, size):
+    """A fixed nudge between -size and +size for this key (cheaper than seeding a Random)."""
+    return (zlib.crc32(key.encode()) % 10_001) / 10_000 * 2 * size - size
+
+
+def _for_you(tops, league):
+    """About FOR_YOU_PER_WEEK top-level bits a week, mixed by kind of account (FOR_YOU_MIX)."""
+    weeks = {}
+    for b in tops:
+        if b["importance"] >= FOR_YOU_FLOOR:
+            weeks.setdefault((b["season"], int(b["cal"])), []).append(b)
+    keep = []
+    for week_bits in weeks.values():
+        score = lambda b: -(b["importance"] + _wobble(b["id"], 6))
+        week_bits.sort(key=score)
+        # Two outlet bits shaped the same ("X has retired after 12 seasons", or two teams'
+        # "draft class" lists) don't both make it.
+        chosen, by_cat, shapes = set(), {}, set()
+
+        def take(b):
+            if b["cat"] == "headlines":
+                if b.get("_shape") is None:
+                    b["_shape"] = _article_shape(b["text"], b["article"], league, _teams_re(league))
+                if b.get("_hshape") is None:
+                    b["_hshape"] = _article_shape(b["article"]["headline"], b["article"], league, _teams_re(league))
+                if b["_shape"] in shapes or b["_hshape"] in shapes:
+                    return
+                shapes.update((b["_shape"], b["_hshape"]))
+            chosen.add(b["id"])
+            by_cat[b["cat"]] = by_cat.get(b["cat"], 0) + 1
+
+        for b in week_bits:
+            if by_cat.get(b["cat"], 0) < round(FOR_YOU_MIX.get(b["cat"], 0) * FOR_YOU_PER_WEEK):
+                take(b)
+        for b in week_bits:
+            if len(chosen) >= FOR_YOU_PER_WEEK:
+                break
+            if b["id"] not in chosen:
+                take(b)
+        keep += [b for b in week_bits if b["id"] in chosen]
+    return keep
 
 
 def timeline(league, past_games=None, team_id=None, player_id=None, season=None, cats=None, min_importance=None):
@@ -544,11 +934,11 @@ def timeline(league, past_games=None, team_id=None, player_id=None, season=None,
     {"bits": [top-level bits, newest first, each with its "replies"],
      "trending": [(label, count text)], "follow": [account dicts]}."""
     from . import news
-    from .news_words import Writer, BANK
-    from .bitter_words import BITTER_BANK
     data = news.build(league, past_games)
-    writer = Writer({**BANK, **BITTER_BANK})
-    bits = [_article_bit(writer, x) for x in data["items"]] + [dict(p) for p in data["posts"]]
+    articles = data.get("_articles")
+    if articles is None:
+        articles = data["_articles"] = _article_bits(data["items"], league)   # cached with the build
+    bits = [dict(a) for a in articles] + [dict(p) for p in data["posts"]]
     by_id = {}
     for b in bits:
         b["cat"] = category(b["role"])
@@ -563,9 +953,7 @@ def timeline(league, past_games=None, team_id=None, player_id=None, season=None,
             parent["replies"].append(b)
         else:
             tops.append(b)
-    # "For you" (the league-wide view): the bigger news, plus plenty of personality
-    # (Blake: "as much news as will make it feel real"). PROVISIONAL.
-    bars = FOR_YOU_BARS if min_importance is None and team_id is None and player_id is None else None
+    for_you = min_importance is None and team_id is None and player_id is None
     floor = min_importance or 0
 
     def keep(b):
@@ -577,12 +965,14 @@ def timeline(league, past_games=None, team_id=None, player_id=None, season=None,
             return False
         if cats is not None and b["cat"] not in cats:
             return False
-        return b["importance"] >= (bars[b["cat"]] if bars else floor)
+        return b["importance"] >= floor
 
     shown = [b for b in tops if keep(b)]
+    if for_you:
+        shown = _for_you(shown, league)
     # Newest week first; within a week, the bigger bits first, but loosely, so the
     # outlets' articles and everybody else's takes mix the way a real feed does.
-    jitter = lambda b: random.Random(f"order-{b['id']}").uniform(-12, 12)
+    jitter = lambda b: _wobble("order" + b["id"], 12)
     shown.sort(key=lambda b: (-b["season"], -int(b["cal"]), -(b["importance"] + jitter(b))))
     for b in shown:
         for x in [b] + b["replies"]:

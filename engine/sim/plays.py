@@ -294,10 +294,19 @@ def _rush_score(team, p, slot):
     return team.zmix(p, slot, {"rush_tech": .45, "pursuit": .35, "hitting": .20})
 
 
-def _block_score(team, p, slot):
+def _block_weights(slot):
     if slot in ("LT", "LG", "C", "RG", "RT"):
-        return team.zmix(p, slot, {"pass_block": .55, "footwork": .30, "block_aware": .15})
-    return team.z(p, slot, "pass_block")
+        return {"pass_block": .55, "footwork": .30, "block_aware": .15}
+    return {"pass_block": 1.0}
+
+
+def _block_score(team, p, slot):
+    return team.zmix(p, slot, _block_weights(slot))
+
+
+def _block_below(team, p, slot):
+    """The part of his pass blocking below every real blocker's level (out of position only)."""
+    return team.untrained(p, slot, _block_weights(slot))
 
 
 def protection(g, off, deff, call, dcall, rng):
@@ -387,14 +396,20 @@ def protection(g, off, deff, call, dcall, rng):
             w = T.FREE_RUSHER_WIN
         else:
             bz = _block_score(off, b, bs)
+            below = _block_below(off, b, bs)
             if helper is not None:
                 hs = "C" if helper is center else ("RB" if helper is lo.get("RB") else "TE1")
-                bz = max(bz, _block_score(off, helper, hs)) + 0.45
+                hz = _block_score(off, helper, hs)
+                if hz > bz:
+                    below = 0.0         # the helper takes the man
+                bz = max(bz, hz) + 0.45
             cls = RUSH_CLASS.get((natural(rs), natural(bs)), 0.0)
             inside = T.RUSH_INTERIOR if rs in ("LDT", "RDT") else 0.0
             # A terrible blocker can only be so much worse: diminishing returns on the blocker's side keeps
             # a rusher's own talent fully counted but stops team sack totals running past the real extremes.
-            w = sigmoid(T.RUSH_WIN_BASE + inside + T.RUSH_WIN_K * (rz - soft_cap(T.RUSH_EDGE_CAP, bz) + cls))
+            # A player blocking out of position below every real blocker's level isn't softened (T.UNTRAINED_K).
+            w = sigmoid(T.RUSH_WIN_BASE + inside + T.RUSH_WIN_K * (rz - soft_cap(T.RUSH_EDGE_CAP, bz)
+                                                                   - T.UNTRAINED_K * below + cls))
         w = min(0.95, w * timing)
         if rng.random() < w:
             winners.append((rs, r, b, w, bs))
@@ -451,33 +466,54 @@ def _depth_class(d):
     return 2
 
 
-def _receiver_route_score(team, p, slot, depth):
+def _route_weights(slot, depth):
+    """(scale, skill weights) for how well a receiver gets open on this route."""
     if slot in ("RB", "FB"):
-        return team.zmix(p, slot, {"route_running": .55, "hands": .25, "elusiveness": .20} if slot == "RB"
-                         else {"route_running": .7, "hands": .3})
+        return 1.0, ({"route_running": .55, "hands": .25, "elusiveness": .20} if slot == "RB"
+                     else {"route_running": .7, "hands": .3})
     if slot.startswith("TE"):
         # Tight ends are measured against other tight ends, whose receiving
         # skills sit well below receivers'; scale so a great TE gets open like
         # a good receiver, not like a great one.
-        return T.TE_ROUTE_SCALE * team.zmix(p, slot, {"route_running": .5, "getting_open": .4, "after_catch": .1})
+        return T.TE_ROUTE_SCALE, {"route_running": .5, "getting_open": .4, "after_catch": .1}
     k = T.WR_ROUTE_SCALE
     if depth <= 6:
-        return k * team.zmix(p, slot, {"route_running": .55, "getting_open": .45})
+        return k, {"route_running": .55, "getting_open": .45}
     if depth <= 15:
-        return k * team.zmix(p, slot, {"route_running": .5, "getting_open": .5})
+        return k, {"route_running": .5, "getting_open": .5}
     if slot.startswith("WR"):
-        return k * team.zmix(p, slot, {"route_running": .3, "getting_open": .3, "breakaway": .4})
-    return k * team.zmix(p, slot, {"route_running": .45, "getting_open": .45, "after_catch": .10})
+        return k, {"route_running": .3, "getting_open": .3, "breakaway": .4}
+    return k, {"route_running": .45, "getting_open": .45, "after_catch": .10}
+
+
+def _receiver_route_score(team, p, slot, depth):
+    k, w = _route_weights(slot, depth)
+    return k * team.zmix(p, slot, w)
+
+
+def _cover_weights(dslot, coverage, depth):
+    if coverage == "man":
+        if depth >= 16:
+            return {"man_cover": .6, "pursuit": .4}
+        return {"man_cover": .65, "bump_run": .20, "pursuit": .15}
+    if dslot in ("WLB", "MLB", "SLB"):
+        return {"zone_cover": .7, "diagnosis": .3}
+    return {"zone_cover": .75, "ball_skills": .25}
 
 
 def _cover_score(team, d, dslot, coverage, depth):
-    if coverage == "man":
-        if depth >= 16:
-            return team.zmix(d, dslot, {"man_cover": .6, "pursuit": .4})
-        return team.zmix(d, dslot, {"man_cover": .65, "bump_run": .20, "pursuit": .15})
-    if dslot in ("WLB", "MLB", "SLB"):
-        return team.zmix(d, dslot, {"zone_cover": .7, "diagnosis": .3})
-    return team.zmix(d, dslot, {"zone_cover": .75, "ball_skills": .25})
+    return team.zmix(d, dslot, _cover_weights(dslot, coverage, depth))
+
+
+def _sep_below(off, p, slot, deff, d, dslot, coverage, depth):
+    """The part of a receiver's separation that comes from a player out of position below every
+    real player's level at his spot (a hopeless receiver, a hopeless cover man). It's already in
+    the separation; the completion and target caps count it outside the cap (T.UNTRAINED_K)."""
+    k, w = _route_weights(slot, depth)
+    below = k * off.untrained(p, slot, w)
+    if d is not None:
+        below -= deff.untrained(d, dslot, _cover_weights(dslot, coverage, depth))
+    return below
 
 
 def _assign_coverage(rng, routes, dcall, rushing_slots):
@@ -514,7 +550,7 @@ def _assign_coverage(rng, routes, dcall, rushing_slots):
 
 def _threat(off, p, slot):
     """How dangerous a receiver is, as the defense sees it."""
-    t = off.talent_z(p)
+    t = off.talent_z(p, slot)
     if slot.startswith("TE"):
         return 0.8 * t
     if slot in ("RB", "FB"):
@@ -588,7 +624,8 @@ def pass_play(g, off, deff, call, dcall, rng):
         rs, rusher, blocker, wprob, bslot = winners[0]
         edge = 0.0
         if blocker is not None:
-            edge = _rush_score(deff, rusher, rs) - soft_cap(T.RUSH_EDGE_CAP, _block_score(off, blocker, bslot))
+            edge = (_rush_score(deff, rusher, rs) - soft_cap(T.RUSH_EDGE_CAP, _block_score(off, blocker, bslot))
+                    - T.UNTRAINED_K * _block_below(off, blocker, bslot))
         free = blocker is None
         conc = {"quick": -0.5, "screen": -0.9, "deep": 0.25, "play_action": 0.1, "hail_mary": 0.3}.get(call.concept, 0.0)
         p_sack = sigmoid(T.SACK_GIVEN_PRESSURE + 0.30 * edge - T.SACK_SENSE_RUSH_K * sense
@@ -662,6 +699,7 @@ def pass_play(g, off, deff, call, dcall, rng):
         if slot == screen_slot:
             sep += 0.8
         r["sep"], r["dslot"], r["def"] = sep, dslot, d
+        r["below"] = _sep_below(off, p, slot, deff, d, dslot, dcall.coverage, depth)
         best_sep = max(best_sep, sep)
 
     # Unpressured scramble: nobody open and the QB can run.
@@ -690,9 +728,10 @@ def pass_play(g, off, deff, call, dcall, rng):
         rz = T.RZ_SPREAD if st.yl <= 10 else 1.0
         # How open he is and how good he is, with diminishing returns: the
         # play design still sends the ball to the other receivers.
-        edge = (T.TARGET_SEP_WEIGHT * (1 + T.TARGET_READ_K * read) * r["sep"]
-                + T.TARGET_TALENT_WEIGHT * off.talent_z(r["p"]))
-        s = rz * soft_cap(T.TARGET_EDGE_CAP, edge)
+        sep_w = T.TARGET_SEP_WEIGHT * (1 + T.TARGET_READ_K * read)
+        edge = sep_w * r["sep"] + T.TARGET_TALENT_WEIGHT * off.talent_z(r["p"], r["slot"])
+        # A cover man out of position and hopeless gets picked on: that part isn't capped.
+        s = rz * (soft_cap(T.TARGET_EDGE_CAP, edge) + T.UNTRAINED_K * sep_w * r["below"])
         roles = getattr(off, "role_bias", T.TARGET_ROLE_BIAS)
         role = r["slot"]
         if role[:2] in ("WR", "TE"):
@@ -766,6 +805,9 @@ def pass_play(g, off, deff, call, dcall, rng):
         # A non-quarterback throwing (only he can be below every real QB's level, since a
         # real QB's accuracy has a soft floor at -Z_CAP): the part below it isn't capped.
         x += T.UNTRAINED_PASSER_K * min(0.0, acc + T.Z_CAP)
+        # Likewise a hopeless cover man or receiver out of position (T.UNTRAINED_K).
+        x += T.UNTRAINED_K * (T.COMP_SEPARATION_K * target.get("below", 0.0)
+                              + T.COMP_HANDS_K * off.untrained(rec, slot, {"hands": 1.0}))
         if slot == "RB":
             x += T.RB_CATCH_BONUS
         p_comp = sigmoid(x)
@@ -806,18 +848,22 @@ def _completion(g, off, deff, call, dcall, res, rec, slot, depth, sep, d, dslot,
     else:
         table = data.Q_YAC_DEEP
     if slot == "RB":
-        yskill = off.zmix(rec, slot, {"elusiveness": .5, "breakaway": .3, "vision": .2})
+        yw = {"elusiveness": .5, "breakaway": .3, "vision": .2}
     elif slot == "FB":
-        yskill = off.zmix(rec, slot, {"power_run": .6, "vision": .4})
+        yw = {"power_run": .6, "vision": .4}
     elif slot.startswith("WR"):
-        yskill = off.zmix(rec, slot, {"after_catch": .65, "breakaway": .35})
+        yw = {"after_catch": .65, "breakaway": .35}
     else:
-        yskill = off.z(rec, slot, "after_catch")
+        yw = {"after_catch": 1.0}
+    yskill = off.zmix(rec, slot, yw)
+    below = off.untrained(rec, slot, yw)
     if d is not None:
         tackle = deff.zmix(d, dslot, {"hitting": .5, "pursuit": .5})
+        below -= deff.untrained(d, dslot, {"hitting": .5, "pursuit": .5})
     else:
         tackle = -0.5
     m = soft_cap(T.YAC_CAP, centered("yac" + _depth_key(depth), T.YAC_K * (yskill - tackle) + T.YAC_SEP_K * sep))
+    m += T.UNTRAINED_K * T.YAC_K * below
     m += field_squeeze(T.YAC_FIELD, st.yl - depth) + T.YAC_SCALE
     if slot == "RB":
         m += T.RB_YAC_BONUS
@@ -963,19 +1009,35 @@ DEF_FILL = {"SLB": ["NB", "SS", "DB"], "WLB": ["NB", "MLB", "DB"], "MLB": ["WLB"
             "SS": ["FS"], "CB1": ["NB"], "CB2": ["NB"]}
 
 
-def _run_block_score(team, p, slot):
+def _run_block_weights(slot):
     if slot in ("LT", "LG", "C", "RG", "RT"):
-        return team.zmix(p, slot, {"run_block": .60, "block_aware": .25, "footwork": .15})
-    return team.z(p, slot, "run_block")
+        return {"run_block": .60, "block_aware": .25, "footwork": .15}
+    return {"run_block": 1.0}
+
+
+def _run_block_score(team, p, slot):
+    return team.zmix(p, slot, _run_block_weights(slot))
+
+
+def _run_def_weights(slot):
+    nat = natural(slot)
+    if nat in ("DE", "DT"):
+        return {"run_defense": .45, "shed": .35, "rush_power": .20}
+    if nat in ("OLB", "ILB"):
+        return {"run_defense": .40, "diagnosis": .30, "pursuit": .30}
+    return {"run_defense": .55, "hitting": .45}
 
 
 def _run_def_score(team, p, slot):
-    nat = natural(slot)
-    if nat in ("DE", "DT"):
-        return team.zmix(p, slot, {"run_defense": .45, "shed": .35, "rush_power": .20})
-    if nat in ("OLB", "ILB"):
-        return team.zmix(p, slot, {"run_defense": .40, "diagnosis": .30, "pursuit": .30})
-    return team.zmix(p, slot, {"run_defense": .55, "hitting": .45}) - 0.35
+    return team.zmix(p, slot, _run_def_weights(slot)) - (0.35 if natural(slot) not in ("DE", "DT", "OLB", "ILB") else 0.0)
+
+
+def _run_below(off, blockers, deff, defenders):
+    """Blockers' minus defenders' run play below every real player's level at their spots
+    (out of position only), averaged like the scores; counted outside T.RUN_CAP."""
+    b = sum(off.untrained(p, s, _run_block_weights(s)) for s, p in blockers) / max(1, len(blockers))
+    d = sum(deff.untrained(p, s, _run_def_weights(s)) for s, p in defenders) / max(1, len(defenders))
+    return b - d
 
 
 def run_play(g, off, deff, call, dcall, rng):
@@ -1017,16 +1079,21 @@ def run_play(g, off, deff, call, dcall, rng):
     res.block_edge = block_edge
 
     if cslot == "QB":
-        rb_z = off.zmix(carrier, "QB", {"scrambling": 1.0}) * 0.8
+        rk, rw = 0.8, {"scrambling": 1.0}
     elif cslot.startswith("WR"):
-        rb_z = off.zmix(carrier, cslot, {"after_catch": .5, "breakaway": .5}) * 0.8
+        rk, rw = 0.8, {"after_catch": .5, "breakaway": .5}
     elif call.gap == "end":
-        rb_z = off.zmix(carrier, cslot, {"vision": .35, "elusiveness": .35, "breakaway": .30})
+        rk, rw = 1.0, {"vision": .35, "elusiveness": .35, "breakaway": .30}
     else:
-        rb_z = off.zmix(carrier, cslot, {"vision": .40, "power_run": .35, "elusiveness": .25})
+        rk, rw = 1.0, {"vision": .40, "power_run": .35, "elusiveness": .25}
+    rb_z = rk * off.zmix(carrier, cslot, rw)
+    below = (T.RUN_BLOCK_K * _run_below(off, blockers[:3], deff, defenders[:3])
+             + T.RUN_BACK_K * rk * off.untrained(carrier, cslot, rw))
     lvl2 = [ld[s] for s in ("MLB", "WLB", "SLB") if ld.get(s) is not None]
     if lvl2:
-        l2 = sum(deff.zmix(p, _slot_of(ld, p), {"pursuit": .4, "hitting": .3, "diagnosis": .3}) for p in lvl2) / len(lvl2)
+        l2w = {"pursuit": .4, "hitting": .3, "diagnosis": .3}
+        l2 = sum(deff.zmix(p, _slot_of(ld, p), l2w) for p in lvl2) / len(lvl2)
+        below -= T.RUN_BACK_K * sum(deff.untrained(p, _slot_of(ld, p), l2w) for p in lvl2) / len(lvl2)
     else:
         l2 = -0.6
     box = {"Base 4-3": T.RUN_BOX_HEAVY, "Nickel": T.RUN_BOX_LIGHT * 0.6, "Dime": T.RUN_BOX_LIGHT}.get(dcall.package, 0.0)
@@ -1038,6 +1105,7 @@ def run_play(g, off, deff, call, dcall, rng):
     if g.weather.precip == "snow" and not g.weather.indoors:
         m -= 0.05
     m = soft_cap(T.RUN_CAP, centered("qb_run" if cslot == "QB" else "run", m))
+    m += T.UNTRAINED_K * below      # players out of position below every real player's level: not capped
     if cslot == "QB":
         table = data.Q_QB_RUN
     elif st.togo <= 2 and st.yl > 3:

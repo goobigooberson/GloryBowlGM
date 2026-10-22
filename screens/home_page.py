@@ -80,6 +80,9 @@ def build_home_tab(go, watch, open_summary, on_change):
                     if key in ("draft", "drafting"):
                         ui.button("Go to the draft room" if key == "drafting" else "Scout the draft class",
                                   on_click=lambda: go("Draft")).props("no-caps unelevated color=green-10")
+                    elif key == "coaching":
+                        ui.button("Go to Staff", on_click=lambda: go("Staff")) \
+                            .props("no-caps unelevated color=green-10")
                     else:
                         ui.button("Go to Contracts", on_click=lambda: go("Contracts")) \
                             .props("no-caps unelevated color=green-10")
@@ -109,25 +112,34 @@ def build_home_tab(go, watch, open_summary, on_change):
                         ui.label(_no_game_text(team, pre, post)).classes("home-big")
                     else:
                         home = g["home"] == team.id
-                        opp = league.team(g["away"] if home else g["home"])
-                        where = "vs" if home or g.get("neutral") else "at"
-                        if pre:
-                            tag = ""
-                        elif post:
-                            seed = po.seed_of(league, opp.id)
-                            tag = f" (#{seed} seed)" if seed else ""
-                        else:
-                            tag = f" ({season.record_text(rec[opp.id])})"
-                        if g["played"]:
-                            _k, txt = result_text(g, team.id)
-                            ui.html(f'{where} {popups.team_link(opp)}: {txt}', sanitize=False).classes("home-big")
-                        else:
-                            ui.html(f'{where} {popups.team_link(opp)}<span class="home-big-soft">{tag}</span>',
-                                    sanitize=False).classes("home-big")
+                        # A scoreboard: away team left, home team right (Oct 22, "spruce up the UI").
+                        def tag(tid):
+                            if pre:
+                                return ""
+                            if post:
+                                seed = po.seed_of(league, tid)
+                                return f"#{seed} seed" if seed else ""
+                            return season.record_text(rec[tid])
+
+                        def side(tid, score):
+                            t = league.team(tid)
+                            won = g["played"] and score == max(g["home_score"], g["away_score"]) \
+                                and g["home_score"] != g["away_score"]
+                            return (f'<div class="mt-team{" you" if tid == team.id else ""}">'
+                                    f'<span class="mt-ab">{escape(t.abbrev)}</span>'
+                                    f'<span class="mt-nm">{popups.team_link(t, t.nickname)}</span>'
+                                    f'<span class="mt-rec">{tag(tid)}</span>'
+                                    + (f'<span class="mt-pts{" won" if won else ""}">{score}</span>'
+                                       if g["played"] else "") + '</div>')
+                        mid = ("FINAL" + (" (OT)" if g["overtime"] else "")) if g["played"] else \
+                            ("VS" if g.get("neutral") else "AT")
+                        ui.html(f'<div class="matchup">{side(g["away"], g["away_score"])}'
+                                f'<div class="mt-mid">{mid}</div>{side(g["home"], g["home_score"])}</div>',
+                                sanitize=False).classes("w-full")
                         kind = ("Hall of Fame Game" if g.get("kind") == "hof" else "Preseason game" if pre
                                 else "Playoff game" if post else "Home game" if home else "Road game")
-                        standing = "" if pre else f" · {team.abbrev} {season.record_text(rec[team.id])}"
-                        ui.label(kind + standing).classes("legend")
+                        site = f" · {season.site_text(league, g)}" if g.get("neutral") else ""
+                        ui.label(kind + site).classes("legend").style("margin-top:4px")
                 if g is not None and not g["played"]:
                     ui.button("Watch my game", on_click=watch).props("no-caps outline color=green-10") \
                         .tooltip("Play it snap by snap. The other games sim when you press Sim week.")
@@ -428,5 +440,28 @@ CSS = f"""
                border-top: 1px solid #EEF1EC; padding: 8px 0; font: inherit; color: inherit; cursor: pointer; }}
   .story-btn:hover .story-head {{ text-decoration: underline; }}
   .story-head {{ font-weight: 600; font-size: 15px; line-height: 1.3; }}
+  /* Card titles as a green header band, like the draft board's header row */
+  .hcard-h {{ margin: -14px -16px 8px; padding: 7px 16px 6px; background: {theme.TURF}; color: white;
+             border-radius: 3px 3px 0 0; font-size: 18px; letter-spacing: .02em; }}
+  .hcard-h .hcount {{ color: rgba(255,255,255,.75); }}
+  .hcard-h .home-link {{ color: {theme.FLAG}; font-size: 13.5px; }}
+  .hcard-h .home-link:hover {{ color: white; }}
+  /* This week's game as a scoreboard */
+  .matchup {{ display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; margin-top: 8px;
+             background: #18222B; color: white; border-radius: 4px; overflow: hidden; }}
+  .mt-team {{ display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: 10px;
+             align-items: center; padding: 10px 12px; min-width: 0; }}
+  .mt-team.you {{ box-shadow: inset 0 -3px 0 {theme.FLAG}; }}
+  .mt-ab {{ grid-row: 1 / 3; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 36px;
+           line-height: 1; }}
+  .mt-nm {{ font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .mt-nm a {{ color: white; }}
+  .mt-rec {{ grid-column: 2; font-size: 13px; opacity: .7; font-variant-numeric: tabular-nums; }}
+  .mt-pts {{ grid-column: 3; grid-row: 1 / 3; font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+            font-size: 38px; opacity: .6; }}
+  .mt-pts.won {{ opacity: 1; color: {theme.FLAG}; }}
+  .mt-mid {{ display: flex; align-items: center; justify-content: center; padding: 0 14px;
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: .08em;
+            background: rgba(255,255,255,.07); color: {theme.FLAG}; }}
 </style>
 """

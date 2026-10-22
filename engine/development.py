@@ -23,8 +23,12 @@
 # - Current ratings move a steady share of the way toward potential each
 #   year with a little noise. If potential falls below current, current
 #   falls too, though not point for point.
-# - Coaches (later) will tilt shifts upward at their specialty; staged
-#   reveals (what the staff can see) and rust come with training camp.
+# - Coaches (Oct 24, staff.py; Blake: a coach specialized in the player's
+#   position "could really maximize that specific players potential"): good
+#   coaching leans the ceiling up, helps him reach it a little faster and
+#   softens the yearly falls; bad coaching the opposite. Strongest before his
+#   peak. Measured against the league's average staff, so a league of average
+#   staffs develops exactly as before (see COACH_* below).
 #
 # Each player keeps his development state in Player.dev:
 #   {"base": {skill: potential before the layers}, "long": float, "swing": float}
@@ -107,6 +111,17 @@ PHYSICAL_TRAITS = ("speed", "agility", "explosion", "strength")
 # injury's odds and sizes are in injuries.py. (Before: any 12+ week injury cut the ceiling
 # 60% of the time; before that, any 8+ week one, every time: ~210 hits a season.)
 INJURY_MENTAL_SHARE = 0.3   # how much of an injury hit lands on non-physical skills (vs 1.0 = all equal)
+# Coaching (staff.py's coaching score: 0 = the league's average staff for his position,
+# +1 = one spread better). Blake (Oct 24) chose "in between": a young player with about
+# the league's best 2-3 staffs at his group (+2) ends about 4-5 points of potential above
+# an average staff's after 4 years, the worst about the same below. Real data (nflverse,
+# docs/staff-design.md): coaching effects on development are small and hard to detect,
+# at most about +3 for such a staff, so this is a little stronger than the real upper
+# bound, by Blake's choice. PROVISIONAL sizes, tuned with the scratchpad coach_dev_size.py.
+COACH_LEAN = 0.95         # points of long-term potential a year per spread of coaching
+COACH_GROWTH = 0.06       # growth toward potential x e^(this x coaching)
+COACH_FALL = 0.12         # the downside of the yearly dice x e^(-this x coaching)
+COACH_STAGE = {"before peak": 1.0, "early peak": 0.7, "peak": 0.4, "past peak": 0.25}
 COMEBACK_SHARE = (0.7, 1.0)  # share of a temporary step back he gets back at the next camp
 # ------------------------------------------------------------------------------------------
 
@@ -201,6 +216,24 @@ def _lean(p, age, share_played):
     return lean
 
 
+def career_stage(p):
+    """'before peak', 'early peak', 'peak' or 'past peak' at his position."""
+    start, end = peak_seasons(p)
+    seasons = season_number(p)
+    if seasons < start:
+        return "before peak"
+    if seasons <= start + 2:
+        return "early peak"
+    if seasons <= end:
+        return "peak"
+    return "past peak"
+
+
+def _soften(v, k):
+    """Good coaching (k > 0) softens a fall; bad coaching sharpens it."""
+    return v * math.exp(-k) if v < 0 else v
+
+
 def season_number(p):
     """Which pro season he's about to play (training camp runs after the
     offseason has added last season to his experience): a second-year
@@ -257,16 +290,19 @@ def _injury_effects(rng, season_injuries, position=None):
     return temp, perm
 
 
-def develop(p, age, rng, share_played=None, season_injuries=()):
+def develop(p, age, rng, share_played=None, season_injuries=(), coaching=0.0):
     """One year of development for one player (at training camp). Changes
     p.skills in place. season_injuries: [[injury kind, weeks], ...] from
-    last season (injuries.py). Returns (overall before, overall after,
-    potential before, potential after)."""
+    last season (injuries.py). coaching: his staff's coaching score
+    (staff.coaching_scores; 0 = the league's average). Returns (overall
+    before, overall after, potential before, potential after)."""
     d = ensure_state(p)
     ovr0, pot0 = p.overall(), p.overall("potential")
     s = _scale(p, age)
+    c = coaching * COACH_STAGE[career_stage(p)] if coaching else 0.0
+    fall = COACH_FALL * c
     # Layer 1: the long-term ceiling.
-    step = _lean(p, age, share_played) + LONG_SD * s * _t(rng)
+    step = _lean(p, age, share_played) + COACH_LEAN * c + LONG_SD * s * _soften(_t(rng), fall)
     if p.generational:
         step = max(step, -1.5)                    # Generational players almost never collapse
     # A lasting shift fades very slowly (LONG_PULL a year), so a breakout
@@ -277,13 +313,15 @@ def develop(p, age, rng, share_played=None, season_injuries=()):
     d["long"] = (1 - LONG_PULL) * d["long"] + step
     # Layer 2: this season's swing, fading from last year's.
     carry = rng.uniform(*SWING_CARRY)
-    shock = SWING_SD * s * _t(rng)
+    shock = SWING_SD * s * _soften(_t(rng), fall)
     if p.generational:
         shock = max(shock, -1.5)
     d["swing"] = carry * d["swing"] + shock
     # Aging past his peak years (physical skills fade faster).
     decline = aging(p, rng)
     growth = GROWTH_SHARE.get(age, GROWTH_SHARE_OLD if age > 27 else 0.38)
+    if c:
+        growth = min(0.9, growth * math.exp(COACH_GROWTH * c))
     # Injuries. Permanent: a lower ceiling. Temporary: he comes to camp below
     # where he'd be (not all the way back yet) and gets most of it back at the
     # next camp. Both hit physical skills hardest (an Achilles costs burst,
@@ -315,24 +353,32 @@ def develop(p, age, rng, share_played=None, season_injuries=()):
     return ovr0, p.overall(), pot0, p.overall("potential")
 
 
-def training_camp(league, played_share=None, serious=None, rng=None):
+def training_camp(league, played_share=None, serious=None, rng=None, coaching=None):
     """Every active player's yearly development, at training camp.
     played_share: {player id: share of his team's snaps last season};
     serious: {player id: [[injury kind, weeks], ...] last season} (injuries
-    that can mark a career; see injuries.py).
+    that can mark a career; see injuries.py); coaching: {player id: coaching
+    score} (default: from the league's staffs, staff.coaching_scores).
     Records everyone's new ratings in league.rating_history."""
     from datetime import date
     rng = rng or random.Random(f"camp-{league.settings.get('salt', '')}-{league.season}")
+    if coaching is None:
+        from . import staff
+        coaching = staff.coaching_scores(league)
+    from .evaluation import note_camp
     changes = {}
     for p in league.players:
         if p.retired is not None:
             continue
+        note_camp(league, p)          # staffs see this year's change in stages (evaluation.py)
         age = p.age(date(league.season, 9, 1))
         if p.experience == 0 and p.draft_year == league.season:
             ensure_state(p)               # rookies: their first camp sets them up; growth starts next year
         else:
             changes[p.id] = develop(p, age, rng, (played_share or {}).get(p.id),
-                                    (serious or {}).get(p.id, ()))
+                                    (serious or {}).get(p.id, ()), coaching.get(p.id, 0.0))
         league.rating_history.append({"pid": p.id, "season": league.season, "ovr": p.overall(),
                                       "pot": p.overall("potential")})
+    from . import staff
+    staff.note_development(league, changes)     # coaches' records and reputations
     return changes

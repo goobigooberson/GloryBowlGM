@@ -228,9 +228,14 @@ def starter_stats(league):
 
 
 def team_skill(league, team_id):
-    """A front office's scouting skill (about -2 .. +2, average 0), kept for
-    the whole save so good drafting teams stay good (real: a team's drafting
-    in odd years predicts its even years, correlation 0.53)."""
+    """A front office's scouting skill (about -2 .. +2, average 0). Since Oct 24
+    it's the team's director of college scouting (staff.py: his evaluation
+    skill against the league's), so it changes when he does; a league without
+    staffs keeps a fixed skill per team for the whole save (real: a team's
+    drafting in odd years predicts its even years, correlation 0.53)."""
+    if getattr(league, "staff", None):
+        from .evaluation import _eval_z
+        return round(max(-2.5, min(2.5, _eval_z(league, team_id, "college"))), 3)
     skills = league.settings.setdefault("draft_skill", {})
     key = str(team_id)
     if key not in skills:
@@ -941,9 +946,7 @@ STARTUP_MISS_YOUNG = 0.90     # ...and on a player with 0-1 seasons
 # the starter the team would be stuck with if it waited (the worst starter-level player
 # still left at his position, counting every team's open starting spots), times how much
 # the position matters (the depth chart's spot importance: QB 3.0, LT 1.3, most 1.0).
-# Results (6 leagues): every team has its QB by round 4 (STARTUP_QB_BY; before: as late
-# as round 25), starters under 45 shown ~3-5 of 192 (8), the 10th-percentile starter
-# 52, about the pool's 32nd best QB; the low ones are teams whose scouting misjudged.
+# Results: see docs/build-log.md, "Startup draft QB fix".
 STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.0, "FB": 0.4, "WR": 1.1, "TE": 1.0, "T": 1.2, "G": 1.0, "C": 1.1,
                       "DE": 1.2, "DT": 1.0, "OLB": 0.95, "ILB": 1.1, "CB": 1.03, "S": 1.03,
                       "K": 0.3, "P": 0.25, "LS": 0.1}
@@ -952,7 +955,10 @@ STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.0, "FB": 0.4, "WR": 1.1, "TE": 1.0, "T"
 # With these, each team's first K goes around round 22, P 23, LS 38; none in rounds 1-3.)
 STARTUP_WAIT_DEPTH = 8        # a team never counts on getting better than the 8th best player left at a
                               # position by waiting (others take players too)
-STARTUP_QB_BY = 4             # a team still without a QB in this round takes the best one on its board
+STARTUP_QB_EAGER = 0.05       # a team still without a QB gets this much keener on one each round after
+STARTUP_QB_EAGER_FROM = 3     # this one, but only for a QB better than what it would find later (Blake,
+                              # Oct 22: no reaching for the best of a bad bunch; a round-12 QB is fine
+                              # when that's what makes sense. Replaced a hard 'QB by round 4' rule.)
 STARTUP_BACKUP_SHARE = 0.25   # a backup is worth this share of a starter (insurance), measured against
                               # the worst player who'll make a roster there, and half again for each more
 
@@ -1061,7 +1067,12 @@ class StartupRoom:
         else:                      # a backup: against the worst player left who'll make a roster
             k, share = max(1, self.open_all[position]), STARTUP_BACKUP_SHARE * 0.5 ** backups
         repl = _repl if _repl is not None else self._kth(tid, position, k)
-        return share * STARTUP_POS_WEIGHT.get(position, 1.0) * (self.views[tid][p.id] - repl)
+        value = share * STARTUP_POS_WEIGHT.get(position, 1.0) * (self.views[tid][p.id] - repl)
+        if position == "QB" and backups < 0 and value > 0:
+            # No QB yet: a little keener each round, only for one worth more than waiting.
+            n = len(self.picks) // len(self.order) + 1
+            value *= 1 + STARTUP_QB_EAGER * max(0, n - STARTUP_QB_EAGER_FROM)
+        return value
 
     def scores(self, tid, players):
         """{pid: score(tid, p)} for many players at once (the screens' board)."""
@@ -1079,13 +1090,7 @@ class StartupRoom:
 
     def best(self, tid):
         """The player this team takes now: the best on its board for a spot it
-        still has open (starters first). No real front office waits past the
-        first few rounds for its quarterback (STARTUP_QB_BY)."""
-        slot = self.on_clock()
-        if (slot and slot["team"] == tid and slot["round"] >= STARTUP_QB_BY and self.have[tid]["QB"] == 0):
-            qb = self._nth_left(tid, "QB", 1)
-            if qb is not None:
-                return qb
+        still has open (starters first)."""
         best = None
         for pos_, lst in self.lists[tid].items():
             if self.have[tid][pos_] >= ROSTER_TEMPLATE.get(pos_, 0):

@@ -248,6 +248,14 @@ Z_CAP_GENERATIONAL = 2.7     # Generational players get a little more headroom a
 Z_CAP = 2.3                  # soft ceiling on how far above/below average a player can play
 Z_FLOOR_OUT_OF_POSITION = -6.0  # out of position, no soft floor (a DT at QB is worse than any real QB), just this
 UNTRAINED_PASSER_K = 0.30    # completion logit per z a passer's accuracy is below every real QB's (only a non-QB is)
+UNTRAINED_K = 1.0            # everywhere else: the part of a matchup that's below every real player's level at
+                             # that spot (only a player out of position can be) counts this much, OUTSIDE the
+                             # per-play caps (RUSH_EDGE_CAP, TARGET_EDGE_CAP, COMP_CAP, YAC_CAP, RUN_CAP), which
+                             # soften real players' extremes. 1.0 = the matchup's normal slope (Oct 24)
+UNTRAINED_QB_RUN_K = 0.8     # pass-rate logit per z a non-quarterback at QB passes below every real QB: coaches
+                             # run the ball. Real: 2020 Broncos with WR Kendall Hinton at QB, 11 dropbacks and 33
+                             # runs (25%). With 0.8 a WR at QB ~16 dropbacks, 45 runs (26%); a DT or G ~13, 45.
+                             # Before, the offense still threw ~30 times a game.
 FORM_SD = 2.6                # rating points: an average player's game-to-game swing
 HOME_EDGE = 0.09             # z added to the home team's players (crowd, comfort)
 AWAY_FALSE_START = 1.25      # crowd noise: away offense false starts more

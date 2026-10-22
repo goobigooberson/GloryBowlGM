@@ -22,9 +22,26 @@
 # other entries use. tools/news_check.py flags unfilled {gaps}.
 
 import re
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 _TOKEN = re.compile(r"#(\w+)#")
+_DIGITS = re.compile(r"\d[\d,.]*")
+_FACT = re.compile(r"\{(\w+)\}")
+_SPACES = re.compile(r"\s+")
+
+# A bit on Bitter that's written later, in calendar order (engine/news.py
+# _Ctx.post and finish_posts): which list to say it from, and the facts.
+Say = namedtuple("Say", "name facts")
+
+# Bitter's freshness rules (Blake, Oct 24: "there should not be word for word
+# repeats of tweets especially not in the same page/week/year"). A bit's shape is
+# its wording with the facts left out ("If you started {last} this week..."):
+# never the same shape twice in a week, at most this many times in a season,
+# and never the same finished text twice in a season. A bit that can't be said
+# freshly isn't posted. A finished bit also isn't repeated for TEXT_SEASONS
+# seasons after it was used. tools/bitter_check.py measures it.
+SHAPE_SEASON_MAX = 3
+TEXT_SEASONS = 5
 
 
 class Writer:
@@ -32,6 +49,20 @@ class Writer:
         self.bank = bank or BANK
         self.recent = defaultdict(list)
         self.errors = []
+        self.texts = {}                     # finished bits, lowercased -> the season used
+        self.new_season(0)
+
+    def new_season(self, season):
+        """Each season's choice of wording starts fresh (so looking at an earlier
+        season's games doesn't reword this one); finished bits from the last few
+        seasons stay off limits (TEXT_SEASONS)."""
+        self.season = season
+        self.recent.clear()
+        self.shapes = defaultdict(list)     # shape -> weeks it was used
+
+    def _taken(self, text):
+        used = self.texts.get(text.lower())
+        return used is not None and self.season - used < TEXT_SEASONS
 
     @staticmethod
     def _ok(opt, facts):
@@ -83,6 +114,45 @@ class Writer:
         """A finished sentence (or headline) for `name`, or '' if nothing fits."""
         t = self.pick(name, rng, facts, favor)
         return self.fill(t, rng, facts) if t is not None else ""
+
+    def fresh(self, name, rng, facts, week, tries=12):
+        """A bit for `name` whose shape and text haven't been used too much this
+        season (SHAPE_SEASON_MAX), or '' if nothing fresh fits."""
+        if name not in self.bank:
+            self.errors.append(f"no list {name!r}")
+            return ""
+        for _ in range(tries):
+            t = self.pick(name, rng, facts, 3)
+            if t is None:
+                return ""
+            words = self.expand(t, rng, facts)
+            shape = self.shape(words, facts)
+            used = self.shapes.get(shape, ())
+            if week in used or len(used) >= SHAPE_SEASON_MAX:
+                continue
+            text = self.fill(words, rng, facts)
+            if not text or self._taken(text):
+                continue
+            self.shapes[shape].append(week)
+            self.texts[text.lower()] = self.season
+            return text
+        return ""
+
+    @staticmethod
+    def shape(words, facts):
+        """The bit's wording with each fact as the same blank (an empty fact as
+        nothing), so two lists that come out alike ("Final: X X, X X.") share a
+        shape."""
+        out = _FACT.sub(lambda m: "x" if str(facts.get(m.group(1), "")).strip() else "", words)
+        return _SPACES.sub(" ", _DIGITS.sub("x", out.lower())).strip()
+
+    def claim(self, text):
+        """A bit written without the bank (a list, a stat line): True if its exact
+        text is new this season (and now taken)."""
+        if self._taken(text):
+            return False
+        self.texts[text.lower()] = self.season
+        return True
 
 
 # ---------------------------------------------------------------------------

@@ -163,9 +163,36 @@ def game_box(league, g):
 # The tab
 # ---------------------------------------------------------------------------
 
+SCOREBOARD_CSS = """
+<style>
+  .wk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 10px; }
+  .wk-card { background: var(--paper); border: 1px solid var(--line); border-top: 3px solid #3B4650;
+             border-radius: 3px; box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }
+  .wk-card.played { cursor: pointer; border-top-color: var(--turf); }
+  .wk-card.played:hover { box-shadow: 0 3px 10px rgba(20, 40, 30, .18); }
+  .wk-card.mine { border-top-color: var(--flag); background: #FFFCEC; }
+  .wk-card.is-selected { box-shadow: 0 0 0 2px var(--flag); }
+  .wk-team { display: grid; grid-template-columns: 52px 1fr 48px; align-items: center; padding: 6px 12px 2px; }
+  .wk-ab { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; color: var(--turf);
+           line-height: 1; }
+  .wk-nm { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .wk-pts { text-align: right; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 26px;
+            line-height: 1; }
+  .wk-team.win .wk-nm, .wk-team.win .wk-pts { font-weight: 700; color: var(--ink); }
+  .wk-team.win .wk-pts::after { content: ' \\25C2'; font-size: 16px; color: var(--turf); }
+  .wk-team.lose .wk-pts, .wk-team.lose .wk-ab { color: #9AA39A; }
+  .wk-home { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
+  .wk-foot { display: flex; justify-content: space-between; gap: 8px; padding: 5px 12px 6px; margin-top: 4px;
+             border-top: 1px solid #EEF1EC; font-size: 12.5px; color: var(--ink-soft); }
+  .wk-final { font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: .04em; }
+</style>
+"""
+
+
 def build_schedule_tab():
     """Builds the Schedule tab. Returns a function that refreshes it."""
     league = state.league
+    ui.add_head_html(SCOREBOARD_CSS)
     has_pre = bool(league.preseason)
     first_cal = 1 if has_pre else P + 1
 
@@ -205,7 +232,7 @@ def build_schedule_tab():
 
     with ui.row().classes("w-full px-8 py-4 gap-5 no-wrap items-start"):
         list_column = ui.column().classes("gap-0").style(
-            "flex: 1 1 0; min-width: 0; max-width: 1180px; height: calc(100vh - 200px); overflow-y: auto")
+            "flex: 1 1 0; min-width: 0; height: calc(100vh - 200px); overflow-y: auto")
         with list_column:
             @ui.refreshable
             def games_list():
@@ -239,29 +266,36 @@ def build_schedule_tab():
                 .classes("legend")
             return
 
-        for g in games:
+        # A scoreboard: one card per game, away team on top (Oct 22, "spruce up the UI").
+        grid = ui.element("div").classes("wk-grid w-full")
+        for g in sorted(games, key=lambda g: league.user_team_id not in (g["home"], g["away"])):
             h, a = league.team(g["home"]), league.team(g["away"])
             mine = league.user_team_id in (g["home"], g["away"])
             sel = " is-selected" if g["id"] == view["game"] else ""
-            joiner = "vs" if g.get("neutral") else "at"
             if g["played"]:
-                aw = "win" if g["away_score"] > g["home_score"] else ""
-                hw = "win" if g["home_score"] > g["away_score"] else ""
-                score = f'{g["away_score"]} - {g["home_score"]}'
+                aw = "win" if g["away_score"] > g["home_score"] else ("lose" if g["away_score"] < g["home_score"] else "")
+                hw = "win" if g["home_score"] > g["away_score"] else ("lose" if g["home_score"] < g["away_score"] else "")
+                scores = (g["away_score"], g["home_score"])
                 note = "Final" + (" (OT)" if g["overtime"] else "")
             else:
                 aw = hw = ""
-                score = joiner
+                scores = ("", "")
                 note = "Not played yet"
-            if g.get("neutral"):
-                note += f"  ·  {S.site_text(league, g)}"
-            row = ui.html(
-                f'<div class="sched-row{" mine" if mine else ""}{sel}">'
-                f'<span class="{aw}">{team_link(a)}{rec_txt(a.id)}</span>'
-                f'<span class="score num">{score}</span>'
-                f'<span class="{hw}">{team_link(h)}{rec_txt(h.id)}</span>'
-                f'<span class="legend">{note}</span></div>', sanitize=False).classes("w-full")
-            row.on("click", lambda _e, gid=g["id"]: pick_game(gid))
+            where = S.site_text(league, g) if g.get("neutral") else f"at {h.city}"
+
+            def line(t, cls, pts, tag=""):
+                return (f'<div class="wk-team {cls}"><span class="wk-ab">{escape(t.abbrev)}</span>'
+                        f'<span class="wk-nm">{team_link(t)}{tag}{rec_txt(t.id)}</span>'
+                        f'<span class="wk-pts num">{pts}</span></div>')
+            with grid:
+                card = ui.html(
+                    f'<div class="wk-card{" mine" if mine else ""}{" played" if g["played"] else ""}{sel}">'
+                    + line(a, aw, scores[0]) + line(h, hw, scores[1], ' <span class="wk-home">home</span>'
+                                                    if not g.get("neutral") else "")
+                    + f'<div class="wk-foot"><span class="{"wk-final" if g["played"] else ""}">{note}</span>'
+                      f'<span>{escape(where)}</span></div></div>', sanitize=False)
+            if g["played"]:
+                card.on("click", lambda _e, gid=g["id"]: pick_game(gid))
         playing = {t for g in games for t in (g["home"], g["away"])}
         off = sorted(t.abbrev for t in league.teams if t.id not in playing)
         if post:

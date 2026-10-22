@@ -14,12 +14,13 @@ from engine import formatting as fmt
 from engine import saves
 from engine import playoffs as po
 from engine import season
-from engine.scale import shown
+from engine.scale import shown, seen
 from . import nav, popups, theme
 from .home_page import build_home_tab, CSS as HOME_CSS
 from .state import (state, FREE_AGENTS, team_starter_ids, mark_changed, save_now, save_copy,
                     close_game, start_next_season, advance_offseason, finish_startup)
 from .contracts_page import build_contracts_tab
+from .staff_page import build_staff_tab
 from .draft_page import build_draft_tab
 from .roster_page import build_roster_tab
 from .depth_page import build_depth_tab
@@ -62,7 +63,7 @@ def build_page():
     # The pages that exist right now (during a new league's startup draft only the
     # Draft page: no rosters, games or contracts yet), and the one to open on.
     startup = draft_day.in_startup(league)
-    pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Draft", "Depth chart", "Position counts",
+    pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Staff", "Draft", "Depth chart", "Position counts",
                                         "Schedule", "Standings", "Stats", "Playoffs", "Bitter", "Awards", "Game"]
     if not startup and not season.in_offseason(league):
         pages.remove("Draft")    # Blake: the Draft section shows only in the offseason (scouting is offseason-only)
@@ -129,14 +130,14 @@ def build_page():
                     ids = team_starter_ids(team.id)
                     starters = [p for p in league.team_players(team.id) if p.id in ids]
                     if starters:
-                        avg = round(sum(shown(p.overall(), p.position) for p in starters) / len(starters))
+                        avg = round(sum(seen(league, p) for p in starters) / len(starters))
                         parts.append(f"Starters: {fmt.skill(avg)}")
                 sub = " · ".join(parts)
             with ui.element("button").classes("team-btn") \
                     .props('type="button" aria-label="Your team. Click to look at another team"'):
                 ui.html(f'<span style="display:flex;align-items:center;gap:10px"><span class="abbr">{escape(abbrev)}'
                         f'</span><span style="display:flex;flex-direction:column"><span class="tname">{escape(name)}'
-                        f'</span><span class="tsub">{escape(sub)}</span></span><svg width="12" height="12" '
+                        f'</span><span class="tsub" title="{escape(sub)}">{escape(sub)}</span></span><svg width="12" height="12" '
                         f'viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" '
                         f'aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg></span>', sanitize=False)
                 with ui.menu().props('max-height="70vh"'):
@@ -160,16 +161,16 @@ def build_page():
         @ui.refreshable
         def save_bar():
             if state.dirty:
-                ui.button("Unsaved changes: Save", on_click=lambda: do_save()) \
-                    .props("no-caps unelevated").style(f"background:{theme.FLAG};color:{theme.INK}") \
-                    .tooltip("Save your game (Ctrl+S)")
+                ui.button("Save", icon="save", on_click=lambda: do_save(), color=None) \
+                    .props("no-caps unelevated").classes("bar-btn save") \
+                    .tooltip("You have unsaved changes. Save your game (Ctrl+S)")
             else:
-                ui.label("Saved").classes("save-chip") \
-                    .tooltip("All changes are saved.")
+                ui.html('<span class="bar-saved"><i class="material-icons">check</i>Saved</span>',
+                        sanitize=False).tooltip("All changes are saved.")
         save_bar()
         state.on_save_status = save_bar.refresh
 
-        with ui.button("Menu").props("no-caps outline color=white") \
+        with ui.button("Menu", icon="menu", color=None).props("no-caps unelevated").classes("bar-btn alt") \
                 .tooltip(f"{league.name} · {league.season} season: save, save a copy, main menu"):
             with ui.menu():
                 ui.menu_item(f"{league.name}  ·  {league.season} season").props("disable")
@@ -235,8 +236,10 @@ def build_page():
                     if tip or len(bottom) > 60:
                         b.tooltip(tip or bottom)
 
-        BTN = "no-caps unelevated color=white text-color=green-10"
-        BTN_OUT = "no-caps outline color=white"
+        def bar_btn(text, on_click, kind="go", icon=None):
+            """A button in the green bar: "go" (yellow, the main action), "alt" (dark) or "flat"."""
+            return ui.button(text, icon=icon, on_click=on_click, color=None) \
+                .props("no-caps unelevated").classes(f"bar-btn {kind}")
 
         @ui.refreshable
         def season_bar():
@@ -250,7 +253,7 @@ def build_page():
                             + ("you're on the clock" if yours else f"{league.team(slot['team']).name} on the clock"))
                 two_lines(f"{league.season} startup draft", line,
                           "Every team drafts its 53-man roster. Training camp opens when it's over.")
-                ui.button("Go to the draft room", on_click=lambda: show_draft()).props(BTN)
+                bar_btn("Go to the draft room", lambda: show_draft(), "go", "sports_football")
                 return
             rec = season.records(league)
             total = season.n_weeks(league)
@@ -259,8 +262,7 @@ def build_page():
                 two_lines(f"{league.season} season complete",
                           f"{po.championship_name(league)} champion: {league.team(champ).name}" if champ else "",
                           user_season_text(rec) if league.user_team_id else None)
-                ui.button(f"Start the {league.season + 1} offseason", on_click=lambda: next_season()) \
-                    .props(BTN) \
+                bar_btn(f"Start the {league.season + 1} offseason", lambda: next_season(), "go", "skip_next") \
                     .tooltip("Keeps this season's stats and results for good, then starts the new league year: "
                              "players a year older, retirements, and your expiring contracts. The offseason "
                              "then goes step by step: re-signings, free agency waves, the draft, more free "
@@ -270,20 +272,23 @@ def build_page():
                 key, title, text = season.offseason_phase(league)
                 two_lines(f"{league.season} offseason", title, text)     # the full text is on Home
                 if league.offseason_report and league.offseason_report.get("season") == league.season:
-                    ui.button("Offseason report", on_click=lambda: popups.open_offseason()) \
-                        .props("no-caps flat color=white") \
+                    bar_btn("Offseason report", lambda: popups.open_offseason(), "flat", "description") \
                         .tooltip("Retirements, free agency, the draft and undrafted signings so far")
                 if key in ("draft", "drafting") or draft_day.scouting_open(league):
-                    ui.button("Go to the draft room" if key == "drafting" else "Scout the draft class",
-                              on_click=lambda: show_draft()) \
-                        .props(BTN_OUT) \
+                    bar_btn("Go to the draft room" if key == "drafting" else "Scout the draft class",
+                            lambda: show_draft(), "alt", "sports_football") \
                         .tooltip("The Draft page" + (": make your picks" if key == "drafting" else
                                                      ": scout this year's class before the draft"))
-                nxt = {"resign": "Next: open free agency", "draft": "Next: start the draft",
+                if key == "coaching":
+                    bar_btn("Coaching carousel", lambda: go("Staff"), "alt", "groups")                         .tooltip("The Staff page: fire or extend your coaches and make offers for open jobs")
+                nxt = {"coaching": "Next: settle this round", "resign": "Next: open free agency",
+                       "draft": "Next: start the draft",
                        "drafting": "Next: staff finishes the draft",
                        "camp": "Next: open training camp"}.get(key, "Next: play out this wave")
-                nxt_btn = ui.button(nxt, on_click=lambda: next_phase()).props(BTN)
-                tip = {"draft": "Scouting ends and the draft starts. It stops when you're on the clock.",
+                nxt_btn = bar_btn(nxt, lambda: next_phase(), "go", "skip_next")
+                tip = {"coaching": "Every candidate takes the offer he likes best, yours or another team's. "
+                                   "After round 3, any job still open gets your staff's pick.",
+                       "draft": "Scouting ends and the draft starts. It stops when you're on the clock.",
                        "drafting": "Your staff makes the rest of your picks (no trades) and the draft finishes; "
                                    "then free agency goes on (waves 5-7)."}.get(key)
                 if tip:
@@ -330,12 +335,10 @@ def build_page():
             two_lines(top, line)
             rep = league.offseason_report
             if pre and rep and rep.get("season") == league.season:
-                ui.button("Offseason report", on_click=lambda: popups.open_offseason()) \
-                    .props("no-caps flat color=white") \
+                bar_btn("Offseason report", lambda: popups.open_offseason(), "flat", "description") \
                     .tooltip("Retirements, the draft, undrafted signings and cuts this offseason")
             here = season.calendar(league)
-            ui.button("Sim week", on_click=lambda: sim_through(here)) \
-                .props(BTN) \
+            bar_btn("Sim week", lambda: sim_through(here), "go", "play_arrow") \
                 .tooltip("Play every game this week" + (" (yours too)" if g is not None and not g["played"] else "")
                          + ". To watch yours snap by snap, use Watch my game on the Home page.")
             P = season.PRESEASON_WEEKS
@@ -354,7 +357,8 @@ def build_page():
                 for r in range(league.playoff_round + 1, 4):
                     later[P + total + r] = f"Through the {po.ROUND_NAMES[r].lower()}"
             later[P + total + 5] = f"Through the {po.championship_name(league)}"
-            with ui.dropdown_button("Sim ahead", auto_close=True).props(BTN_OUT):
+            with ui.dropdown_button("Sim ahead", icon="fast_forward", auto_close=True, color=None) \
+                    .props("no-caps unelevated").classes("bar-btn alt"):
                 for cal, label in later.items():
                     ui.item(label, on_click=lambda _e, cal=cal: sim_through(cal))
         season_bar()
@@ -376,6 +380,7 @@ def build_page():
             home_tab = ui.tab("Home")        # the overview (home_page.py)
             roster_tab = ui.tab("Roster")
             contracts_tab = ui.tab("Contracts")
+            staff_tab = ui.tab("Staff")      # your coaching staff and the carousel (staff_page.py)
         draft_tab = ui.tab("Draft")          # scouting, the draft room, results (draft_page.py)
         if not startup:
             depth_tab = ui.tab("Depth chart")
@@ -418,6 +423,7 @@ def build_page():
     def noop(*_a, **_k):
         return None
     refresh_roster = refresh_contracts = refresh_depth = refresh_counts = refresh_schedule = noop
+    refresh_staff = noop
     refresh_standings = refresh_stats = refresh_playoffs = refresh_news = refresh_awards = noop
     refresh_home = noop
 
@@ -442,6 +448,8 @@ def build_page():
             with ui.tab_panel(contracts_tab).classes("p-0"):
                 refresh_contracts = build_contracts_tab(
                     on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster()))
+            with ui.tab_panel(staff_tab).classes("p-0"):
+                refresh_staff = build_staff_tab(on_change=lambda: (season_bar.refresh(), refresh_roster()))
         def draft_room():
             return build_draft_tab(
                 on_change=lambda: (season_bar.refresh(), team_banner.refresh()),
@@ -584,7 +592,8 @@ def build_page():
                                          f'18px">{items}</ul>')
                 unsigned_dialog.open()
                 return
-        sim_label.text = {"resign": "Opening free agency...", "draft": "Starting the draft...",
+        sim_label.text = {"coaching": "Coaches are choosing their offers...", "resign": "Opening free agency...",
+                          "draft": "Starting the draft...",
                           "drafting": "Finishing the draft and signing rookies...",
                           "camp": "Opening training camp..."}.get(key, "Playing out the free agency wave...")
         sim_bar.value = 0.5
@@ -632,6 +641,7 @@ def build_page():
         team_banner.refresh()
         refresh_roster()
         refresh_contracts()
+        refresh_staff()
         refresh_draft()
         refresh_depth()
         refresh_counts()
@@ -723,6 +733,7 @@ def build_page():
         state.selected_id = None
         team_banner.refresh()
         refresh_roster()
+        refresh_staff()
         refresh_depth()
         refresh_counts()
         refresh_schedule()

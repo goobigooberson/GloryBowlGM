@@ -4,6 +4,7 @@
 # Settings. The New game screen has its own file (new_game_page.py).
 
 from datetime import datetime
+from html import escape
 
 from nicegui import app, ui
 
@@ -80,33 +81,105 @@ def _open_and_play(path):
 # Main menu
 # ---------------------------------------------------------------------------
 
+# The title screen (Oct 22; Blake: "spruce up the rest of the ui"): a football field at
+# night behind the game's name, big menu buttons, and your latest saves as cards.
+TITLE_CSS = f"""
+<style>
+  .title-screen {{ min-height: 100vh; width: 100%; color: white; position: relative; overflow: hidden;
+    background-color: #173A29;
+    background-image:
+      linear-gradient(180deg, rgba(5, 18, 11, .55) 0%, rgba(5, 18, 11, .15) 45%, rgba(5, 18, 11, .7) 100%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 3px, transparent 3px 10vw),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.07) 0 5vw, transparent 5vw 10vw); }}
+  .title-screen .yard {{ position: absolute; bottom: 4vh; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 9vh; color: rgba(255,255,255,.10); letter-spacing: .05em; user-select: none; }}
+  .title-wrap {{ position: relative; z-index: 1; display: flex; gap: 48px; flex-wrap: wrap; align-items: flex-start;
+    padding: 9vh 7vw 6vh; }}
+  .title-kicker {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 20px;
+    letter-spacing: .32em; color: {theme.FLAG}; }}
+  .title-name {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 96px; line-height: .9;
+    letter-spacing: .01em; text-shadow: 0 4px 24px rgba(0,0,0,.35); }}
+  .title-tag {{ font-size: 17px; opacity: .85; margin-top: 10px; }}
+  .title-menu {{ display: flex; flex-direction: column; gap: 10px; width: 400px; max-width: 86vw; margin-top: 34px; }}
+  .title-menu .q-btn {{ justify-content: flex-start; min-height: 54px; border-radius: 4px; padding: 0 20px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 23px; font-weight: 600; text-align: left;
+    background: rgba(8, 24, 15, .55); color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+    backdrop-filter: blur(2px); }}
+  .title-menu .q-btn .q-btn__content {{ justify-content: flex-start; text-align: left; }}
+  .title-menu .q-btn:hover {{ background: rgba(255,255,255,.12); }}
+  .title-menu .q-btn.go {{ background: {theme.FLAG}; color: {theme.INK}; box-shadow: none; min-height: 72px; }}
+  .title-menu .q-btn.go:hover {{ background: #FFD43B; }}
+  .title-menu .q-btn.quiet {{ background: transparent; box-shadow: none; font-size: 19px; min-height: 40px;
+    opacity: .75; }}
+  .title-menu .go .sub {{ display: block; font-family: 'Barlow', sans-serif; font-size: 13.5px; font-weight: 500;
+    opacity: .8; line-height: 1.2; }}
+  .title-saves {{ flex: 1 1 380px; max-width: 560px; margin-top: 8px; }}
+  .title-saves h3 {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 18px;
+    letter-spacing: .14em; text-transform: uppercase; opacity: .8; margin: 0 0 10px; }}
+  .save-card {{ display: flex; align-items: center; gap: 16px; padding: 12px 16px; margin-bottom: 8px; cursor: pointer;
+    background: rgba(255,255,255,.94); color: {theme.INK}; border-radius: 4px; border-left: 5px solid var(--turf);
+    box-shadow: 0 6px 18px rgba(0,0,0,.25); }}
+  .save-card:hover {{ border-left-color: {theme.FLAG}; background: white; }}
+  .save-card .ab {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 34px; color: var(--turf);
+    width: 64px; text-align: center; line-height: 1; }}
+  .save-card .nm {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 21px; line-height: 1.1; }}
+  .save-card .dt {{ font-size: 12.5px; color: {theme.INK_SOFT}; line-height: 1.3; }}
+  .save-card .bad {{ font-size: 12.5px; color: #A3321F; }}
+</style>
+"""
+
+
 def build_main_menu():
-    _page_start("Front Office Football", "You're the general manager. Build a winner.")
+    ui.add_head_html(theme.HEAD_HTML)
+    ui.add_head_html(TITLE_CSS)
+    ui.query("body").style("background:#173A29")
     all_saves = saves.list_saves()
     last = saves.last_played()
 
-    with ui.column().classes("px-10 py-8 gap-4").style("width: 640px; max-width: 100%"):
-        with ui.column().classes("menu-panel p-5 gap-3 w-full"):
-            if last:
-                with ui.button(on_click=lambda: _open_and_play(last["path"])) \
-                        .props("no-caps unelevated color=green-10 size=lg").classes("menu-button"):
-                    with ui.column().classes("gap-0 items-start"):
-                        ui.label(f"Continue: {last['name']}").classes("condensed text-2xl")
-                        ui.label(save_details(last)).classes("text-sm opacity-80")
-            ui.button("New game", on_click=lambda: ui.navigate.to("/new")) \
-                .props(f"no-caps size=lg {'outline color=green-10' if last else 'unelevated color=green-10'}") \
-                .classes("menu-button")
-            ui.button(f"Load game ({len(all_saves)} saved)" if all_saves else "Load game",
-                      on_click=lambda: ui.navigate.to("/load")) \
-                .props(f"no-caps size=lg outline color=green-10 {'' if all_saves else 'disable'}") \
-                .classes("menu-button")
-            ui.button("Settings", on_click=lambda: ui.navigate.to("/settings")) \
-                .props("no-caps size=lg outline color=green-10").classes("menu-button")
-            ui.button("Quit game", on_click=app.shutdown) \
-                .props("no-caps size=lg flat color=grey-8").classes("menu-button")
-
-        if not all_saves:
-            ui.label("No saved games yet. Start with New game.").classes("legend")
+    with ui.element("div").classes("title-screen"):
+        for i, yard in enumerate(("10", "20", "30", "40", "50", "40", "30", "20", "10")):
+            ui.html(f'<span class="yard" style="left:calc({(i + 1) * 10}vw - 3.2vh)">{yard}</span>',
+                    sanitize=False)
+        with ui.element("div").classes("title-wrap"):
+            with ui.column().classes("gap-0"):
+                ui.label("GLORY BOWL").classes("title-kicker")
+                ui.label("GM").classes("title-name")
+                ui.label("You're the general manager. Build a winner.").classes("title-tag")
+                with ui.element("div").classes("title-menu"):
+                    if last:
+                        with ui.button(on_click=lambda: _open_and_play(last["path"]), color=None) \
+                                .props("no-caps unelevated").classes("go"):
+                            ui.html(f'<span>Continue: {escape(last["name"])}<span class="sub">'
+                                    f'{escape(save_details(last))}</span></span>', sanitize=False)
+                    ui.button("New game", on_click=lambda: ui.navigate.to("/new"), color=None) \
+                        .props("no-caps unelevated").classes("" if last else "go")
+                    ui.button(f"Load game ({len(all_saves)} saved)" if all_saves else "Load game",
+                              on_click=lambda: ui.navigate.to("/load"), color=None) \
+                        .props(f"no-caps unelevated {'' if all_saves else 'disable'}")
+                    ui.button("Settings", on_click=lambda: ui.navigate.to("/settings"), color=None) \
+                        .props("no-caps unelevated")
+                    ui.button("Quit game", on_click=app.shutdown, color=None) \
+                        .props("no-caps unelevated").classes("quiet")
+                if not all_saves:
+                    ui.label("No saved games yet. Start with New game.").classes("title-tag")
+            recent = [s for s in all_saves if not last or s["path"] != last["path"]][:4]
+            if recent:
+                with ui.element("div").classes("title-saves"):
+                    ui.html("<h3>Your other saves</h3>", sanitize=False)
+                    for s in recent:
+                        card = ui.element("div").classes("save-card") \
+                            .tooltip("Click to load this game" if not s["problem"] else s["problem"])
+                        if not s["problem"]:
+                            card.on("click", lambda s=s: _open_and_play(s["path"]))
+                        with card:
+                            ui.html(f'<span class="ab">{escape(s.get("team_abbrev") or "?")}</span>'
+                                    f'<span><div class="nm">{escape(s["name"])}</div>'
+                                    + (f'<div class="bad">{escape(s["problem"])}</div>' if s["problem"] else
+                                       f'<div class="dt">{escape(save_details(s))}</div>')
+                                    + '</span>', sanitize=False).style("display:flex;align-items:center;gap:16px")
+                    if len(all_saves) > len(recent) + (1 if last else 0):
+                        ui.button("All saves (Load game)", on_click=lambda: ui.navigate.to("/load")) \
+                            .props("flat no-caps color=white")
 
 
 # ---------------------------------------------------------------------------

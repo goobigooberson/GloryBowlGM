@@ -52,7 +52,7 @@ def build_player_card(pid):
     ui.query("body").style(f"background:{theme.CHALK}")
     with ui.element("div").classes("field-band w-full px-8 pt-4 pb-5"):
         with ui.row().classes("w-full items-center justify-between"):
-            ui.label(f"Front Office Football  |  {league.name}  |  Player card").classes("condensed text-lg opacity-90")
+            ui.label(f"Glory Bowl GM  |  {league.name}  |  Player card").classes("condensed text-lg opacity-90")
             ui.button("Back to the game", icon="arrow_back", on_click=lambda: ui.navigate.to("/game")) \
                 .props("outline color=white no-caps")
         if p is None:
@@ -115,8 +115,14 @@ def card_body(league, p):
                 ui.label("Ratings by season").classes("panel-heading")
                 ui.label("Overall and potential at each training camp (the first row is when he joined the "
                          "league). Development happens at camp; see how his ceiling moved.").classes("legend")
-                rows = "".join(f"<tr><td class='l'>{r['season']}</td><td>{shown(r['ovr'], p.position)}</td>"
-                               f"<td>{shown(r['pot'], p.position)}</td></tr>"
+                # As your staff sees him now (Oct 24): his history moved by your staff's
+                # current read of him, so the last row matches the ratings above.
+                from engine import evaluation as EV
+                off_o = EV.overall(league, league.user_team_id, p) - p.overall() if league.user_team_id is not None else 0
+                off_p = (EV.overall(league, league.user_team_id, p, "potential") - p.overall("potential")
+                         if league.user_team_id is not None else 0)
+                rows = "".join(f"<tr><td class='l'>{r['season']}</td><td>{shown(r['ovr'] + off_o, p.position)}</td>"
+                               f"<td>{shown(r['pot'] + off_p, p.position)}</td></tr>"
                                for r in sorted(hist, key=lambda r: r["season"]))
                 ui.html(f'<table class="box-table" style="max-width:360px"><thead><tr><th class="l">Season</th>'
                         f'<th>Overall</th><th>Potential</th></tr></thead><tbody>{rows}</tbody></table>',

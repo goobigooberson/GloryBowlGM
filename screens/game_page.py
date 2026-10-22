@@ -371,6 +371,96 @@ class GameTabControls:
         self.refresh = refresh    # redraw the "This week" line
 
 
+# Before kickoff: the two teams side by side (Oct 22, "spruce up the UI").
+TALE_CSS = """
+<style>
+  .tale { max-width: 980px; background: var(--paper); border: 1px solid var(--line); border-top: 3px solid var(--turf);
+          border-radius: 3px; box-shadow: 0 1px 3px rgba(20, 40, 30, .08); overflow: hidden; }
+  .tale-top { display: grid; grid-template-columns: 1fr auto 1fr; background: #18222B; color: white; }
+  .tale-side { padding: 12px 18px; display: flex; flex-direction: column; }
+  .tale-side.r { text-align: right; align-items: flex-end; }
+  .tale-ab { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 46px; line-height: 1; }
+  .tale-nm { font-size: 15px; opacity: .9; }
+  .tale-rec { font-size: 13px; opacity: .7; }
+  .tale-side.you .tale-ab { color: #F5C518; }
+  .tale-mid { display: flex; align-items: center; padding: 0 22px; font-family: 'Barlow Condensed', sans-serif;
+              font-weight: 700; font-size: 20px; letter-spacing: .1em; color: #F5C518; background: rgba(255,255,255,.06); }
+  .tale-row { display: grid; grid-template-columns: 1fr 220px 1fr; padding: 6px 18px; border-top: 1px solid #EEF1EC;
+              font-size: 14.5px; font-variant-numeric: tabular-nums; align-items: center; }
+  .tale-row > :first-child { text-align: left; }
+  .tale-row > :nth-child(2) { text-align: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+                              font-size: 13.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .05em; }
+  .tale-row > :last-child { text-align: right; }
+  .tale-row .edge { font-weight: 700; color: #23703A; }
+</style>
+"""
+
+
+def _unit_avg(league, tid, starters, unit):
+    from engine.scale import seen
+    from . import theme
+    ps = [p for p in league.team_players(tid) if p.id in starters and theme.unit_of(p.position) == unit
+          and p.position not in ("K", "P", "LS")]
+    return round(sum(seen(league, p) for p in ps) / len(ps)) if ps else None
+
+
+def tale_html(league, g, you):
+    """Away team on the left, home on the right; the better number in each row in green."""
+    from engine import formatting as fmt
+    from engine.scale import seen
+    from .state import team_starter_ids
+    rec = season.records(league)
+    pre = season.is_preseason_game(g)
+    sides = []
+    for tid in (g["away"], g["home"]):
+        r = rec[tid]
+        gp = max(1, r["w"] + r["l"] + r["t"])
+        starters = team_starter_ids(tid)
+        qb = next((p for p in league.team_players(tid) if p.id in starters and p.position == "QB"), None)
+        sides.append({"t": league.team(tid), "r": r, "gp": r["w"] + r["l"] + r["t"],
+                      "pf": r["pf"] / gp, "pa": r["pa"] / gp,
+                      "off": _unit_avg(league, tid, starters, "Offense"),
+                      "def": _unit_avg(league, tid, starters, "Defense"),
+                      "qb": qb, "qbr": seen(league, qb) if qb else None,
+                      "last5": r["results"][-5:]})
+    a, h = sides
+
+    def row(label, va, vh, text=str, higher_better=True):
+        ea = eh = ""
+        if va is not None and vh is not None and va != vh:
+            better_a = (va > vh) == higher_better
+            ea, eh = ("edge", "") if better_a else ("", "edge")
+        ta = text(va) if va is not None else "-"
+        th = text(vh) if vh is not None else "-"
+        return f'<div class="tale-row"><span class="{ea}">{ta}</span><span>{label}</span><span class="{eh}">{th}</span></div>'
+
+    def wl(res):
+        return "".join(f'<span class="wl-box wl-{x}">{x}</span>' for x in res) or "-"
+
+    def side(s, cls):
+        recs = "" if pre else season.record_text(s["r"])
+        return (f'<div class="tale-side {cls}{" you" if s["t"].id == you else ""}"><span class="tale-ab">'
+                f'{escape(s["t"].abbrev)}</span><span class="tale-nm">{escape(s["t"].name)}</span>'
+                f'<span class="tale-rec">{recs}</span></div>')
+    rows = ""
+    if a["gp"] and h["gp"] and not pre:
+        rows += row("Points per game", a["pf"], h["pf"], lambda v: f"{v:.1f}")
+        rows += row("Points allowed per game", a["pa"], h["pa"], lambda v: f"{v:.1f}", higher_better=False)
+        rows += (f'<div class="tale-row"><span>{wl(a["last5"])}</span><span>Last 5</span>'
+                 f'<span>{wl(h["last5"])}</span></div>')
+    rows += row("Offense starters", a["off"], h["off"], fmt.skill)
+    rows += row("Defense starters", a["def"], h["def"], fmt.skill)
+    qa = f'{escape(a["qb"].name)}, {fmt.skill(a["qbr"])}' if a["qb"] else "-"
+    qh = f'{escape(h["qb"].name)}, {fmt.skill(h["qbr"])}' if h["qb"] else "-"
+    ea = eh = ""
+    if a["qbr"] is not None and h["qbr"] is not None and a["qbr"] != h["qbr"]:
+        ea, eh = ("edge", "") if a["qbr"] > h["qbr"] else ("", "edge")
+    rows += f'<div class="tale-row"><span class="{ea}">{qa}</span><span>Starting QB</span><span class="{eh}">{qh}</span></div>'
+    mid = "VS" if g.get("neutral") else "AT"
+    return (f'<div class="tale"><div class="tale-top">{side(a, "")}<div class="tale-mid">{mid}</div>'
+            f'{side(h, "r")}</div>{rows}</div>')
+
+
 def build_game_tab(on_season_game_done=None, on_open_summary=None):
     """Builds the Game tab. on_season_game_done is called after a season game
     you watched has been recorded; on_open_summary(game id) opens a played
@@ -423,6 +513,9 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
                              "count in the standings.").classes("legend")
                 else:
                     ui.label("It counts: the result goes into the schedule and standings.").classes("legend")
+            if g is not None and not g["played"]:
+                ui.html(tale_html(league, g, league.user_team_id), sanitize=False).classes("w-full")
+        ui.add_head_html(TALE_CSS)
         this_week()
 
         board = ui.html("").classes("w-full")

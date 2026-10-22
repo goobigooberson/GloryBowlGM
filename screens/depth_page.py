@@ -12,12 +12,18 @@ from nicegui import ui
 from engine import depth
 from engine import formatting as fmt
 from engine.scale import shown
+from engine import evaluation
 from . import theme
 from .formations import formation_svg, UNIT_PACKAGES
 from .popups import player_link
 from .state import state, FREE_AGENTS, is_user_team, mark_changed, injury_tag
 
 RANK_NAMES = ["Starter", "2nd", "3rd", "4th"]
+
+
+def _v(p):
+    """The player as your staff sees him (Oct 24: every rating shown is your staff's evaluation)."""
+    return evaluation.user_view(state.league, p)
 UNITS = ["Offense", "Defense", "Special teams"]
 
 
@@ -118,7 +124,7 @@ def build_depth_tab(on_change):
                             cells.append('<span class="legend">-</span>')
                         else:
                             cells.append(f'<span>{marks(p)}{player_link(p)} <span class="legend">{p.position}</span> '
-                                         f'{chip(depth.rating_at(p, slot), depth.SLOTS[slot][1])}{injury_tag(p.id)}</span>')
+                                         f'{chip(depth.rating_at(_v(p), slot), depth.SLOTS[slot][1])}{injury_tag(p.id)}</span>')
                     selected = " is-selected" if slot == state.depth_slot else ""
                     row = ui.html(f'<div class="depth-row{selected}">{pos_tag(slot)}'
                                   f'<span class="legend">{escape(label)}</span>{"".join(cells)}</div>',
@@ -198,7 +204,7 @@ def build_depth_tab(on_change):
             if lst:
                 starts_at.setdefault(lst[0], []).append(s)
         candidates = sorted([p for p in roster() if p.id not in ids],
-                            key=lambda p: depth.rating_at(p, slot), reverse=True)
+                            key=lambda p: depth.rating_at(_v(p), slot), reverse=True)
         full = len(ids) >= depth.DEPTH_SIZE
         for p in candidates:
             with ui.row().classes("w-full items-center no-wrap gap-2 edit-row"):
@@ -214,7 +220,7 @@ def build_depth_tab(on_change):
 
     def player_line(p, slot):
         """Name, rating now, ceiling at this spot, and any penalty in words."""
-        fit = depth.spot_fit(p, slot)
+        fit = depth.spot_fit(_v(p), slot)
         side = {"L": "left side", "R": "right side", "B": "either side"}.get(p.side, "")
         side_txt = f' <span class="legend">({side})</span>' if side else ""
         spot_pos = depth.SLOTS[slot][1]

@@ -412,14 +412,17 @@ DESKTOP_CSS = f"""
   body .menu-panel {{ border-radius: 3px; box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
 
   /* Tables: shaded header, striped rows, row highlight under the mouse */
-  body .roster-table thead th {{ background: #E6ECE3; color: #2F3B34; border-bottom: 1px solid #C7D0C4; }}
+  /* Header rows in the accent green, like the draft board (Blake liked its look, Oct 22) */
+  body .roster-table thead th {{ background: var(--turf); color: white; border-bottom: 0; letter-spacing: .02em; }}
+  body .roster-table thead th .q-table__sort-icon {{ color: var(--flag); }}
+  body .roster-table thead tr th {{ position: sticky; top: 0; z-index: 2; }}
   body .roster-table tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
   body .roster-table tbody tr:hover td {{ background: #EAF2E6; }}
   body .roster-table tbody tr.is-selected td {{ background: #FFF6CF; }}
   body .box-table th {{ background: #EEF2EC; color: #2F3B34; }}
   body .box-table tbody tr:hover td {{ background: #F1F6EE; }}
   body .standings {{ border-radius: 3px; border-top: 3px solid var(--turf); box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
-  body .standings th {{ background: #E6ECE3; color: #2F3B34; border-bottom: 1px solid #C7D0C4; }}
+  body .standings th {{ background: var(--turf); color: white; border-bottom: 0; }}
   body .standings tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
   body .standings tbody tr:hover td {{ background: #EAF2E6; }}
   body .standings tr.mine td {{ background: #FFF6CF; }}

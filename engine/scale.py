@@ -133,6 +133,30 @@ def legacy_shown(internal, position=None):
     return round(_base_exact(internal))
 
 
+def seen(league, p, which="current", skill=None, viewer="user"):
+    """The rating a screen shows for a player: his overall (or one skill),
+    current or potential ("potential"), as YOUR staff evaluates him (Blake,
+    Oct 24: every rating you see is your staff's evaluation; evaluation.py).
+    viewer: a team id, "user" (your team) or None (the public view: what the
+    league as a whole believes, used before you have a team)."""
+    from . import evaluation
+    tid = league.user_team_id if viewer == "user" else viewer
+    if tid is None:
+        skills = evaluation.public_skills(league, p)
+    else:
+        skills = evaluation.seen_skills(league, tid, p)
+    index = 0 if which == "current" else 1
+    if skill is not None:
+        return shown(skills[skill][index], p.position)
+    from . import positions as pos
+    total = wsum = 0.0
+    for s, w in pos.POSITIONS[p.position][1]:
+        if w > 0:
+            total += skills[s][index] * w
+            wsum += w
+    return shown(total / wsum if wsum else 0.0, p.position)
+
+
 def internal(shown_value):
     """The lowest internal rating that shows as at least this value (for
     turning a shown-scale cutoff, e.g. 'shows 80+', into the engine's)."""

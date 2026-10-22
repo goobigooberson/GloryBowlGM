@@ -16,7 +16,7 @@ from engine import draft_day
 from engine import formatting as fmt
 from engine import saves
 from engine.league import ROSTER_METHODS
-from engine.scale import shown
+from engine.scale import shown, seen
 from . import theme
 from .state import state, generate_league, start_new_game
 
@@ -39,16 +39,16 @@ def team_rows(league):
         starters = [p for p in roster if p.id in ids]
 
         def avg(group):
-            return round(sum(shown(p.overall(), p.position) for p in group) / len(group)) if group else 0
+            return round(sum(seen(league, p, viewer=None) for p in group) / len(group)) if group else 0
         off = [p for p in starters if theme.unit_of(p.position) == "Offense"]
         dfn = [p for p in starters if theme.unit_of(p.position) == "Defense"]
         qb_ids = league.depth_charts.get(t.id, {}).get("QB", [])
         qb = next((p for p in roster if qb_ids and p.id == qb_ids[0]), None)
-        best = max(roster, key=lambda p: p.overall())
+        best = max(roster, key=lambda p: seen(league, p, viewer=None))   # what the league believes (no team of yours yet)
         row = {"id": t.id, "team": t.name, "div": f"{t.conference} {t.division}",
                "div_sort": f"{t.conference} {t.division} {t.name}",
-               "qb_name": qb.name if qb else "-", "qb_ovr": shown(qb.overall(), "QB") if qb else 0,
-               "best_name": f"{best.position} {best.name}", "best_ovr": shown(best.overall(), best.position)}
+               "qb_name": qb.name if qb else "-", "qb_ovr": seen(league, qb, viewer=None) if qb else 0,
+               "best_name": f"{best.position} {best.name}", "best_ovr": seen(league, best, viewer=None)}
         for key, value in (("all", avg(starters)), ("off", avg(off)), ("def", avg(dfn)),
                            ("qb", row["qb_ovr"]), ("best", row["best_ovr"])):
             word = fmt.skill_word(value)

@@ -15,7 +15,7 @@ from . import theme
 # Section -> its pages (the tab names in main_page.py), in order.
 SECTIONS = [
     ("Home", ["Home"]),
-    ("Team", ["Roster", "Depth chart", "Position counts", "Contracts"]),
+    ("Team", ["Roster", "Depth chart", "Position counts", "Contracts", "Staff"]),
     ("Schedule", ["Schedule", "Game", "Playoffs"]),
     ("League", ["Standings", "Stats", "Awards"]),
     ("Draft", ["Draft"]),
@@ -92,20 +92,40 @@ CSS = f"""
   .team-btn:hover {{ background: rgba(255,255,255,.08); }}
   .team-btn .abbr {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; line-height: 1; }}
   .team-btn .tname {{ font-weight: 600; font-size: 16px; line-height: 1.15; white-space: nowrap; }}
-  .team-btn .tsub {{ font-size: 12.5px; opacity: .85; line-height: 1.15; white-space: nowrap; }}
+  .team-btn .tsub {{ font-size: 12.5px; opacity: .85; line-height: 1.15; white-space: nowrap;
+                   max-width: 210px; overflow: hidden; text-overflow: ellipsis; }}
   .view-only {{ background: {theme.FLAG}; color: {theme.INK}; font-weight: 600; font-size: 13px;
                padding: 3px 8px; border-radius: 3px; white-space: nowrap; }}
   .hub-btn {{ background: transparent; border: 0; border-bottom: 3px solid transparent;
              color: rgba(255,255,255,.85); font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
-             font-size: 18px; padding: 8px 11px 5px; min-height: 44px; cursor: pointer; }}
+             font-size: 18px; padding: 8px 9px 5px; min-height: 44px; cursor: pointer; }}
   .hub-btn:hover {{ color: white; }}
   .hub-btn.on {{ color: white; border-bottom-color: {theme.FLAG}; }}
   .band-week {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.2;
                white-space: nowrap; }}
-  .band-sub {{ font-size: 12.5px; opacity: .9; line-height: 1.25; max-width: 440px;
+  .band-sub {{ font-size: 12.5px; opacity: .9; line-height: 1.25; max-width: 340px;
               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
   .save-chip {{ font-size: 13px; padding: 3px 9px; border-radius: 3px; background: rgba(255,255,255,.14);
                white-space: nowrap; }}
+  /* The bar's buttons (Oct 22; Blake: the top-right boxes "look like google form boxes").
+     go = the main action (Sim week, Next...), yellow like a penalty flag; alt = dark
+     buttons that sit in the bar; flat = text only. */
+  .top-band .bar-btn {{ font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700;
+     letter-spacing: .02em; border-radius: 4px; min-height: 40px; padding: 0 14px; }}
+  .top-band .bar-btn .q-icon {{ font-size: 20px; margin-right: 6px; }}
+  .top-band .bar-btn.go {{ background: {theme.FLAG}; color: {theme.INK};
+     box-shadow: 0 2px 0 #B8900A, 0 3px 8px rgba(0,0,0,.25); }}
+  .top-band .bar-btn.go:hover {{ background: #FFD43B; }}
+  .top-band .bar-btn.alt {{ background: rgba(0,0,0,.22); color: white; box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); }}
+  .top-band .bar-btn.alt:hover {{ background: rgba(0,0,0,.34); }}
+  .top-band .bar-btn.flat {{ background: transparent; color: white; opacity: .9; padding: 0 8px; }}
+  .top-band .bar-btn.flat:hover {{ opacity: 1; background: rgba(255,255,255,.08); }}
+  .top-band .bar-btn.save {{ background: transparent; color: {theme.FLAG}; box-shadow: inset 0 0 0 2px {theme.FLAG}; }}
+  .top-band .bar-btn.save:hover {{ background: rgba(245,197,24,.15); }}
+  .top-band .q-btn-dropdown.bar-btn .q-btn-dropdown__arrow {{ margin-left: 4px; }}
+  .bar-saved {{ display: inline-flex; align-items: center; gap: 4px; font-size: 13px; opacity: .75;
+     white-space: nowrap; padding: 0 4px; }}
+  .bar-saved .material-icons {{ font-size: 16px; color: #8FD19E; }}
   .sub-row {{ display: flex; flex-wrap: wrap; gap: 2px; padding: 0 16px; background: #E9EEE6;
              border-bottom: 1px solid {theme.LINE}; }}
   .sub-btn {{ background: transparent; border: 0; border-bottom: 3px solid transparent;

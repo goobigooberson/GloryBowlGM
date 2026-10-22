@@ -194,6 +194,8 @@ def save_league(league: League, path, created=None):
         **{key: json.dumps(getattr(league, key, None) or {}) for key in MONEY_INFO},
         # Awards and the Pro Bowl (awards.py, Oct 23): lists of records by season.
         "awards": json.dumps(getattr(league, "awards", None) or {}, separators=(",", ":")),
+        # Coaching staffs and front offices (staff.py, Oct 24).
+        "staff": json.dumps(getattr(league, "staff", None) or {}, separators=(",", ":")),
     }
     db = sqlite3.connect(tmp)
     try:
@@ -520,6 +522,13 @@ def load_league(path):
         league.awards = json.loads(info.get("awards") or "{}")
         from . import awards
         awards.ensure(league)
+        # Coaching staffs (saves from before Oct 24 have none: every team gets one,
+        # seeded by the save's salt so it's the same staff every time it loads).
+        league.staff = json.loads(info.get("staff") or "{}") or None
+        from . import staff
+        if not league.staff:
+            staff.ensure(league)
+            league.filled_on_load = True
         if "transactions" in tables:
             for r in db.execute("SELECT * FROM transactions ORDER BY rowid"):
                 league.transactions.append({"season": r["season"], "when": r["happened"], "team": r["team_id"],
@@ -542,6 +551,13 @@ def load_league(path):
             # Seeded by season and team, so an older save gets the same
             # captains every time it loads (keeps the sim reproducible).
             league.vote_captains(team.id, rng=random.Random(f"captains-{league.season}-{team.id}"))
+    # A draft class's hidden notes (draft.py: the truth, the league's shared mistake...) go back
+    # on its prospects, so every screen and tool sees the same grades from the moment it loads.
+    notes = league.draft.get("notes") if isinstance(league.draft, dict) else None
+    if notes:
+        from .draft import load_notes
+        by_id = {p.id: p for p in league.players}
+        load_notes([by_id[int(k)] for k in notes if int(k) in by_id], notes)
     # New players made after loading (draft classes, etc.) must get fresh ids.
     if league.players:
         player_module._next_id = max(player_module._next_id, max(p.id for p in league.players) + 1)

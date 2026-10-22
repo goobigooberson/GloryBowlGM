@@ -172,7 +172,8 @@ def keep_value(league, p, tid):
     money (keep players whose cut would leave dead money, let go of players
     whose cut saves real cap room)."""
     last_53 = getattr(league, "last_53", None) or {}
-    v = roster_value(p)
+    from .evaluation import seen
+    v = roster_value(seen(league, tid, p))      # as this team's staff sees him (Oct 24)
     if p.draft_year == league.season:
         v += DRAFT_KEEP.get(p.draft_round, UDFA_KEEP)
     elif p.experience <= INCUMBENT_YOUNG_EXP and last_53.get(p.id) == tid:
@@ -347,6 +348,13 @@ def offseason_start(league, season_lines, rng=None):
     league.offseason_report = {"season": league.season, "retired": retired, "draft": [], "udfa": [], "cuts": [],
                                "signed": [], "fa_left": [], "free_agency": dict(fa_report or {}),
                                "draft_trades": [], "fa_signings": []}
+    # The coaching carousel comes first (staff.py, Oct 24; real: Black Monday into
+    # February). Its own dice, so the rest of the offseason draws exactly as before.
+    from . import staff
+    if getattr(league, "staff", None):
+        staff.carousel_start(league, season_lines,
+                             random.Random(f"coaching-{league.settings.get('salt', '')}-{league.season}"))
+        league.offseason["phase"] = "coaching"
     return league.offseason_report
 
 
@@ -356,7 +364,14 @@ def offseason_next(league, rng=None):
     st = league.offseason
     rep = league.offseason_report
     phase = st["phase"]
-    if phase == "resign":
+    if phase == "coaching":
+        # One round of the coaching carousel (staff.py); after the last, the league year.
+        from . import staff
+        rnd = (league.staff.get("carousel") or {}).get("round", 3)
+        if staff.carousel_next(league, random.Random(
+                f"coaching-{league.settings.get('salt', '')}-{league.season}-{rnd}")):
+            st["phase"] = "resign"
+    elif phase == "resign":
         # The market opens: your expiring players you haven't re-signed become free agents.
         FA.open_market(league)
         st["phase"] = "fa"

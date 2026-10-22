@@ -364,3 +364,7 @@ Housekeeping for the same session (files I wasn't allowed to edit tonight):
 - `tools/README.md`: one line for `news_check.py`.
 - `docs/build-log.md`: a Progress entry pointing to this file, with the PROVISIONAL list
   above for Blake.
+
+## Bitter rehaul, Oct 24 (freshness)
+
+See `docs/build-log.md` (Oct 24). Blake's answers: about 80 bits a week in For you, snark like now, and accounts remember their takes. Rules (`news_words.SHAPE_SEASON_MAX` 3, `TEXT_SEASONS` 5): no bit repeats word for word (within 5 seasons), and no shape repeats in a week or more than 3 times a season. Check with `python tools/bitter_check.py --cache <league.pkl>`. PROVISIONAL: the For you mix by account (`bitter.FOR_YOU_MIX`), the new fan takes (parade and doom), and which takes get follow-ups.

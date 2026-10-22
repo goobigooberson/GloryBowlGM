@@ -150,6 +150,8 @@ def next_season(league, lines, share, rng):
     # Camp rosters (90) to the 53 and practice squads, as after the preseason (no
     # preseason games or camp injuries here).
     league.stage = "preseason"
+    league.pre_week = 5     # the cut comes after the last preseason game, as in the game (staffs
+                            # see most of camp's changes by then: evaluation.py's staged reveals)
     transactions.final_cuts(league, {}, {}, 5, random.Random(rng.random()))
     league.season_injuries = {}
     return report

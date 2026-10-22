@@ -48,6 +48,18 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8105", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\e151205b-9506-4fd9-bd09-d1dc168de603\\scratchpad\\draftsaves"],
       "port": 8105
+    },
+    {
+      "name": "staff-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8111", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\67e89c54-e0f2-4497-87ec-1a89214023c3\\scratchpad\\staffsaves"],
+      "port": 8111
+    },
+    {
+      "name": "bitter-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8117", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\db75c05e-e934-4f85-9935-fcae87925633\\scratchpad\\bittersaves"],
+      "port": 8117
     }
   ]
 }

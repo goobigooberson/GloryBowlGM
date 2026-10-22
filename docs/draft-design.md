@@ -400,8 +400,9 @@ at his position in this class ("4.52 sec (8th of 24 DEs)").
   **Revised the same day (QBs were undervalued):** teams now value a pick by what it adds over the
   starter they'd be stuck with by waiting, times position importance (QB 3.0, LT 1.3, most 1.0,
   K 0.3, P 0.25, LS 0.1); backups count a quarter and don't take starter-caliber players from teams
-  that need one; every team has its QB by round 4 (`STARTUP_POS_WEIGHT`, `STARTUP_WAIT_DEPTH`,
-  `STARTUP_QB_BY`, `STARTUP_BACKUP_SHARE`). Spread after it: SD ~2.5 (about 1.5x random rosters).
+  that need one; a team without a QB gets a little keener each round after round 3, never for a QB
+  no better than what it would find later (Blake, Oct 22: no reaching for the best of a bad bunch)
+  (`STARTUP_POS_WEIGHT`, `STARTUP_WAIT_DEPTH`, `STARTUP_QB_EAGER`, `STARTUP_BACKUP_SHARE`). Spread after it: SD ~2.5 (about 1.5x random rosters).
 
 **Fixed on the way:** a prospect's college was re-drawn when he was drafted (by the round he
 went in); now it's set once, by where the media expects him to go. Prospects were counted in

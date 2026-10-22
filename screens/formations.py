@@ -71,7 +71,9 @@ def formation_svg(chart, package, player_lookup):
             parts.append(f'<text x="{x}" y="{y + 5}" text-anchor="middle" class="f-slot">{slot}</text>')
             parts.append(f'<text x="{x}" y="{y + 38}" text-anchor="middle" class="f-name">empty</text>')
             continue
-        rating = shown(depth.rating_at(p, slot), depth.SLOTS[slot][1] if slot in depth.SLOTS else p.position)
+        from engine.evaluation import user_view       # your staff's evaluation (Oct 24)
+        from .state import state
+        rating = shown(depth.rating_at(user_view(state.league, p), slot), depth.SLOTS[slot][1] if slot in depth.SLOTS else p.position)
         rcolor = theme.RATING_COLORS[fmt.skill_word(rating)]
         natural = depth.SLOTS[slot][1]
         color = theme.POSITION_COLORS[natural]

@@ -73,9 +73,14 @@ PS_TEMPLATE = {"QB": 1, "RB": 1, "TE": 1, "WR": 3, "T": 1, "G": 1, "C": 1,
 PS_POSITION_FLEX = 1             # a squad may run this many over or under at a position
 
 
-def value(p):
+def value(p, league=None, tid=None):
     """How a team rates a player for a move during the season: mostly what he
-    can do now, some for his upside."""
+    can do now, some for his upside. With league and team: as that team's
+    staff sees him (Oct 24, Blake: AI teams judge players through their own
+    staff's eyes; evaluation.py)."""
+    if tid is not None and getattr(league, "staff", None):
+        from .evaluation import overall
+        return 0.75 * overall(league, tid, p) + 0.25 * overall(league, tid, p, "potential")
     return 0.75 * p.overall() + 0.25 * p.overall("potential")
 
 
@@ -256,7 +261,7 @@ def release_candidate(league, injuries, tid, protect=(), avoid=None, guard=True)
     if not options:
         options = [p for p in _healthy(league, injuries, roster) if p.id not in starters and p.position != avoid
                    and healthy[p.position] > GAME_DAY_MIN.get(p.position, 0)]
-    return min(options, key=value) if options else None
+    return min(options, key=lambda q: value(q, league, tid)) if options else None
 
 
 # Your staff checks in with you before a bigger-than-normal move (Blake, Oct 22:
@@ -272,10 +277,12 @@ STARTER_COUNT = {"QB": 1, "RB": 1, "FB": 1, "WR": 3, "TE": 1, "T": 2, "G": 2, "C
 def important_reason(league, tid, p):
     """Why letting this player go would be a big decision ('' if it wouldn't)."""
     roster = [x for x in league.players if league.rosters.get(x.id) == tid]
-    same = sorted((x for x in roster if x.position == p.position), key=value, reverse=True)
+    def val(q):
+        return value(q, league, tid)
+    same = sorted((x for x in roster if x.position == p.position), key=val, reverse=True)
     if p in same[:STARTER_COUNT.get(p.position, 1) + 1]:
         return "a starter or first backup at his position"
-    if p in sorted(roster, key=value, reverse=True)[:IMPORTANT_TOP_ROSTER]:
+    if p in sorted(roster, key=val, reverse=True)[:IMPORTANT_TOP_ROSTER]:
         return "one of the team's best players"
     if p.id in league.captains.get(tid, {}).values():
         return "a team captain"
@@ -357,7 +364,7 @@ def fill_practice_squad(league, injuries, recovering, tid, label, prefer=(), log
             pool += [p for p in by_pos.get(position, ()) if team_of(league, p.id)[0] is None
                      and ps_eligible(p, squad) and (money is None or money.ok(tid, p.id))]
             if pool:
-                pick = max(pool, key=lambda p: 0.5 * p.overall() + 0.5 * p.overall("potential"))
+                pick = max(pool, key=lambda p: camp_value(p, league, tid))
                 break
         if pick is None:
             # Nobody suitable left: a made-up young player (a street free agent, at
@@ -426,7 +433,10 @@ def roster_limit(league):
     return roster_rules.CAMP_LIMIT if in_camp(league) else ROSTER_SIZE
 
 
-def camp_value(p):
+def camp_value(p, league=None, tid=None):
+    if tid is not None and getattr(league, "staff", None):
+        from .evaluation import overall
+        return 0.5 * overall(league, tid, p) + 0.5 * overall(league, tid, p, "potential")
     return 0.5 * p.overall() + 0.5 * p.overall("potential")
 
 
@@ -548,15 +558,15 @@ def camp_week(league, injuries, recovering, tid, cal, label, rng, pool, fill=Tru
             by_pos[p.position].append(p)
         bodies = []
         for position, group in by_pos.items():
-            group.sort(key=value, reverse=True)
+            group.sort(key=lambda q: value(q, league, tid), reverse=True)
             # Players outside the team's best 53-man count at the position, and not
             # one of this year's draft picks: camp bodies.
             bodies += [p for p in group[ROSTER_TEMPLATE.get(position, 0):]
                        if not (p.draft_year == league.season and p.draft_round >= 1)]
         if bodies:
-            worst = min(bodies, key=camp_value)
+            worst = min(bodies, key=lambda q: camp_value(q, league, tid))
             lst = [p for p in pool.get(worst.position, []) if team_of(league, p.id)[0] is None]
-            if lst and camp_value(lst[0]) > camp_value(worst) + CAMP_SWAP_MARGIN:
+            if lst and camp_value(lst[0], league, tid) > camp_value(worst, league, tid) + CAMP_SWAP_MARGIN:
                 best = lst[0]
                 pool[worst.position].remove(best)
                 release(league, worst.id, cal, label, "camp roster move")
@@ -743,23 +753,23 @@ def process_waivers(league, injuries, recovering, cal, label, records=None, rng=
         p = league.player(w["pid"])
         if p.retired is not None or team_of(league, p.id)[0] is not None:
             continue
-        vp = value(p)
         for t in order:
             if t.id == w["team"] or t.id == league.user_team_id or t.id in claimed_by:
                 continue
+            vp = value(p, league, t.id)
             same = list(groups.get((t.id, p.position), ()))
             margin = CLAIM_MARGIN
             if camp:
-                same = sorted(same, key=value, reverse=True)[:ROSTER_TEMPLATE.get(p.position, 1)]
+                same = sorted(same, key=lambda q, t=t: value(q, league, t.id), reverse=True)[:ROSTER_TEMPLATE.get(p.position, 1)]
                 margin = CAMP_CLAIM_MARGIN
-            worst = min(same, key=value) if same else None
-            if worst is not None and vp > value(worst) + margin and (money is None or money.ok(t.id, p.id)):
+            worst = min(same, key=lambda q, t=t: value(q, league, t.id)) if same else None
+            if worst is not None and vp > value(worst, league, t.id) + margin and (money is None or money.ok(t.id, p.id)):
                 if camp and len([1 for x in league.rosters.values() if x == t.id]) < roster_rules.CAMP_LIMIT:
                     out = None
                 else:
                     if same_spot:
                         spare = [x for x in _healthy(league, injuries, same) if x.id not in _just_added(league, t.id)]
-                        out = min(spare, key=value) if spare else None
+                        out = min(spare, key=lambda q, t=t: value(q, league, t.id)) if spare else None
                     else:
                         out = release_candidate(league, injuries, t.id)
                     if out is None:
@@ -778,8 +788,9 @@ def process_waivers(league, injuries, recovering, cal, label, records=None, rng=
             if w["team"] != league.user_team_id:
                 squad = practice_players(league, w["team"])
                 if ps_eligible(p, squad) and squad:
-                    worst = min(squad, key=value)
-                    if len(squad) < PRACTICE_SQUAD_SIZE or value(p) > value(worst) + PS_UPGRADE_MARGIN:
+                    worst = min(squad, key=lambda q: value(q, league, w["team"]))
+                    if len(squad) < PRACTICE_SQUAD_SIZE or (value(p, league, w["team"]) >
+                                                            value(worst, league, w["team"]) + PS_UPGRADE_MARGIN):
                         if len(squad) >= PRACTICE_SQUAD_SIZE:
                             release(league, worst.id, cal, label)
                         sign(league, injuries, recovering, p.id, w["team"], label, to="practice")
@@ -811,9 +822,9 @@ def fill_roster_spot(league, injuries, recovering, tid, label, rng, position=Non
     own = [p for p in practice_players(league, tid) if p.position == position
            and injured_weeks(league, injuries, p.id) == 0 and can_afford(league, tid, p.id)]
     outside = free_agent_pool(league, injuries, position, tid=tid)
-    best_own = max(own, key=value) if own else None
-    best_out = max(outside, key=value) if outside else None
-    if best_own and (best_out is None or value(best_own) + OWN_PS_BONUS >= value(best_out)):
+    best_own = max(own, key=lambda q: value(q, league, tid)) if own else None
+    best_out = max(outside, key=lambda q: value(q, league, tid)) if outside else None
+    if best_own and (best_out is None or value(best_own, league, tid) + OWN_PS_BONUS >= value(best_out, league, tid)):
         promote(league, best_own.id, label)
         return best_own
     if best_out is None:
@@ -860,11 +871,11 @@ def practice_squad_week(league, injuries, recovering, tid, cal, label, rng, pres
     if len(squad) < PRACTICE_SQUAD_SIZE:
         fill_practice_squad(league, injuries, recovering, tid, label, rng=rng)
     elif upgrades and not preseason and rng.random() < PS_UPGRADE_CHANCE:
-        worst = min(squad, key=value)
+        worst = min(squad, key=lambda q: value(q, league, tid))
         pool = [p for p in free_agent_pool(league, injuries, worst.position)
                 if ps_eligible(p, [x for x in squad if x.id != worst.id])]
-        best = max(pool, key=value) if pool else None
-        if best and value(best) > value(worst) + PS_UPGRADE_MARGIN:
+        best = max(pool, key=lambda q: value(q, league, tid)) if pool else None
+        if best and value(best, league, tid) > value(worst, league, tid) + PS_UPGRADE_MARGIN:
             release(league, worst.id, cal, label)
             sign(league, injuries, recovering, best.id, tid, label, to="practice")
 
@@ -991,15 +1002,15 @@ def _upgrade(league, injuries, recovering, tid, cal, label):
                 and not (p.draft_year == league.season and 1 <= p.draft_round <= 3)]
         if not mine:
             continue
-        worst = min(mine, key=value)
-        cands = [(value(p), p, "fa") for p in free_agent_pool(league, injuries, position, tid=tid)]
-        cands += [(value(p) + OWN_PS_BONUS, p, "ps") for p in practice_players(league, tid)
+        worst = min(mine, key=lambda q: value(q, league, tid))
+        cands = [(value(p, league, tid), p, "fa") for p in free_agent_pool(league, injuries, position, tid=tid)]
+        cands += [(value(p, league, tid) + OWN_PS_BONUS, p, "ps") for p in practice_players(league, tid)
                   if p.position == position and injured_weeks(league, injuries, p.id) == 0
                   and can_afford(league, tid, p.id)]
         if not cands:
             continue
         v, best, src = max(cands, key=lambda c: c[0])
-        gain = v - value(worst)
+        gain = v - value(worst, league, tid)
         if gain > UPGRADE_MARGIN and gain > best_gain:
             best_gain, move = gain, (worst, best, src)
     if not move:
@@ -1117,7 +1128,7 @@ def elevations_for_game(league, injuries, tid, unavailable, routine=True):
         options = [p for p in squad if p not in picked and (p.position in short or not short)]
         if not options:
             break
-        p = max(options, key=value)
+        p = max(options, key=lambda q: value(q, league, tid))
         picked.append(p)
         roster.append(p)
     if routine and not picked and squad:
@@ -1128,7 +1139,7 @@ def elevations_for_game(league, injuries, tid, unavailable, routine=True):
             have = _counts(roster)
             thin = min(ROSTER_TEMPLATE, key=lambda x: (have[x] - ROSTER_TEMPLATE[x], -ROSTER_TEMPLATE[x]))
             options = [p for p in squad if p.position == thin] or squad
-            picked.append(max(options, key=value))
+            picked.append(max(options, key=lambda q: value(q, league, tid)))
     return picked
 
 
@@ -1222,10 +1233,11 @@ def staff_minimum(league, injuries, recovering, tid, cal, label, rng):
 
 
 def _best_for(league, injuries, tid, positions):
-    cands = [(value(p) + OWN_PS_BONUS, p, "ps") for p in practice_players(league, tid)
+    cands = [(value(p, league, tid) + OWN_PS_BONUS, p, "ps") for p in practice_players(league, tid)
              if p.position in positions and injured_weeks(league, injuries, p.id) == 0
              and can_afford(league, tid, p.id)]
-    cands += [(value(p), p, "fa") for p in free_agent_pool(league, injuries, tid=tid) if p.position in positions]
+    cands += [(value(p, league, tid), p, "fa") for p in free_agent_pool(league, injuries, tid=tid)
+              if p.position in positions]
     if not cands:
         return None
     _v, p, src = max(cands, key=lambda c: c[0])

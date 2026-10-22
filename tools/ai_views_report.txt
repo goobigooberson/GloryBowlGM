@@ -1,0 +1,27 @@
+== evaluation.py: OWN_SD 1.5, OTHER_SD 6.5, SHARED 0.4, EVAL_K 0.45 ==
+Market deals measured: 2882 (own 1623, other 1259); real 2,409 (1,263 / 1,146)
+Mean snap share next season: own 0.61 (real 0.47), other 0.56 (real 0.43)
+
+                                       game own  real own   game other  real other
+corr(price, snap share)                   0.38      0.46        0.27       0.33
+paid like a starter, <25% of snaps         6%       12%         13%        17%      (n 790 / 365)
+
+By last season's snap share (tape)       corr own/other (real)        bust own/other (real)
+  0%-30%   n  285/ 230             0.47/ 0.22 (0.34/0.25)          7%/ 33% (24%/32%)
+  30%-60%  n  388/ 302             0.35/ 0.21 (0.36/0.19)          8%/ 19% (14%/20%)
+  60%+     n  950/ 727             0.16/ 0.22 (0.22/0.27)          5%/  8% (10%/12%)
+
+By position group: corr own / other
+  QB     0.41 (n  98)    0.25 (n  89)
+  RB     0.44 (n 133)    0.23 (n  91)
+  WR     0.48 (n 168)    0.34 (n 110)
+  TE     0.50 (n  86)    0.44 (n  98)
+  OT     0.49 (n 142)    0.20 (n  86)
+  IOL    0.40 (n 189)    0.27 (n 185)
+  EDGE   0.46 (n 175)    0.47 (n 136)
+  IDL    0.37 (n 165)    0.39 (n 128)
+  LB     0.31 (n 149)    0.21 (n 164)
+  CB     0.49 (n 157)    0.16 (n  73)
+  S      0.31 (n 161)    0.15 (n  99)
+
+(928 s)

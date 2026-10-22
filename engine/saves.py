@@ -28,10 +28,13 @@ def _documents_folder():
     return Path.home() / "Documents"
 
 
-# In the packaged game (the .exe), saves go in Documents\Front Office Football\saves,
+# In the packaged game (the .exe), saves go in Documents\Glory Bowl GM\saves,
 # so they're kept even if the .exe was run straight from inside its zip.
 if getattr(sys, "frozen", False):
-    SAVES_DIR = _documents_folder() / "Front Office Football" / "saves"
+    SAVES_DIR = _documents_folder() / "Glory Bowl GM" / "saves"
+    _OLD_DIR = _documents_folder() / "Front Office Football" / "saves"   # before the rename (Oct 22)
+    if _OLD_DIR.exists() and not SAVES_DIR.exists():
+        SAVES_DIR = _OLD_DIR
 else:
     SAVES_DIR = Path(__file__).resolve().parent.parent / "saves"
 SETTINGS_FILE = SAVES_DIR / "settings.json"

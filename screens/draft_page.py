@@ -34,7 +34,7 @@ from engine import positions as pos
 from engine import scouting as S
 from engine import season as SEASON
 from engine.draft import ROSTER_SIZE, STARTUP_SNAKE
-from engine.scale import shown
+from engine.scale import seen     # your staff's evaluation (Oct 24; engine/evaluation.py)
 from engine.teams import ROSTER_TEMPLATE
 from . import popups, theme
 from .state import state, mark_changed
@@ -210,9 +210,14 @@ PROSPECT_COLS = [
     _col("age", "Age", "age", "Age on draft day", align="right"),
     _col("height", "Ht", "height", "Height (feet-inches)", align="right", **HEIGHT_FMT),
     _col("weight", "Wt", "weight", "Weight (lbs)", align="right"),
-    _col("now", "Now", "now_mid", "Your staff's grade of his ability now, as a range (the truth is inside "
-                                  "about 2 times in 3; scouting narrows it)"),
-    _col("ceiling", "Ceiling", "ceil_mid", "Your staff's grade of how good he could become, as a range"),
+    _col("pot_cloud", "Potential", "pot_mid", "Your staff's view of how good he can become: where the cloud sits "
+                                              "is their best guess, how wide and blurry it is is how unsure they are "
+                                              "(scouting tightens it). Sort to rank by their best guess."),
+    _col("devl", "Devl", "devl", "Developed %: how much of his potential he arrives with, your staff's estimate "
+                                 "(it sharpens as you scout)", align="right", **{":format": 'v => v + "%"'}),
+    _col("take", "Staff take", "take_sort", "Your staff's impression vs his buzz, once your scouts have watched his "
+                                            "film: Hidden gem, Sleeper, Fair value, Wild card, Overhyped, Fool's "
+                                            "gold. It's their opinion: better staffs are wrong less."),
 ] + combine_columns() + [
     _col("scouted", "Scouted", "scout_n", "What your scouts have done: F film study, C cross-check, V top-30 "
                                           "visit, I interview"),
@@ -256,6 +261,11 @@ def add_board_slots(table, rating_cells):
         <q-td :props="props"><span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span></q-td>""")
     table.add_slot("body-cell-scouted", r"""
         <q-td :props="props"><span v-html="props.row.scouted"></span></q-td>""")
+    table.add_slot("body-cell-pot_cloud", r"""
+        <q-td :props="props"><span v-html="props.row.pot_html"></span></q-td>""")
+    table.add_slot("body-cell-take", r"""
+        <q-td :props="props"><span v-if="props.row.take" class="take-chip" :title="props.row.take_tip"
+          :style="{background: props.row.take_color}">{{ props.row.take }}</span></q-td>""")
     table.add_slot("body-cell-flag", r"""
         <q-td :props="props"><span v-if="props.row.flag" class="inj-tag inj-out">{{ props.row.flag }}</span></q-td>""")
     for col, text, color in rating_cells:
@@ -291,15 +301,18 @@ def prospect_rows(league, players, marks=frozenset()):
         now, ceil = S.grade_ranges(league, uid, p, st)
         steps = S.done_steps(league, p.id)
         rep_flag = (S.known_flag(league, uid, p) or "").title()
+        imp = S.impression(league, uid, p, st)
         row = {
             "id": p.id, "marked": p.id in marks, "board": board_rank.get(p.id, 999), "media": media.get(p.id, 999),
             "pos": p.position, "pos_style": theme.position_style(p.position),
             "pos_sort": POSITION_ORDER.index(p.position) * 1000 + board_rank.get(p.id, 999),
             "name": p.name, "age": round(_draft_age(league, p), 1),
             "college": p.college, "height": p.height, "weight": p.weight,
-            "now": range_text(now), "now_mid": (now[0] + now[1]) / 2, "now_color": range_color(now),
-            "ceil": range_text(ceil), "ceil_mid": (ceil[0] + ceil[1]) / 2, "ceil_color": range_color(ceil),
+            "pot_html": mini_cloud(ceil), "pot_mid": (ceil[0] + ceil[1]) / 2,
+            "devl": S.developed(league, uid, p),
             "scouted": scouted_html(steps), "scout_n": len(steps), "flag": rep_flag,
+            "take": imp["word"] if imp else "", "take_color": imp["color"] if imp else "",
+            "take_tip": imp["tip"] if imp else "", "take_sort": TAKE_ORDER.get(imp["key"] if imp else None, 9),
         }
         row.update(combine_fields(p, cr.get(p.id, {})))
         rows.append(row)
@@ -330,11 +343,113 @@ def _toggle_mark(league, pid):
 
 
 # ---------------------------------------------------------------------------
+# How your staff's knowledge looks (Blake, Oct 22: fuzzy cloud bars and a skill web
+# that tighten as you scout; the staff's impression in scout slang)
+# ---------------------------------------------------------------------------
+
+TAKE_ORDER = {"gem": 0, "sleeper": 1, "wild": 2, "fair": 3, "hyped": 4, "fools": 5}
+_PREV = {}          # pid -> the skill ranges last shown in his report (the clouds shrink from there)
+
+
+def take_chip(imp, big=False):
+    """Your staff's impression as a colored chip (or a note that film comes first)."""
+    if not imp:
+        return ('<span class="take-chip none" title="Your scouts form an opinion once they\'ve watched his '
+                'film">No read yet</span>')
+    return (f'<span class="take-chip{" big" if big else ""}" style="background:{imp["color"]}" '
+            f'title="{escape(imp["tip"])}">{escape(imp["word"])}</span>')
+
+
+POT_CLOUD = "#2F6FBF"             # one color for every cloud (a rating-tier color would give the band away)
+
+
+def mini_cloud(r, big=False):
+    """Your staff's read of his potential as a small cloud on a track, no number: where it
+    sits is their best guess, how wide and blurry it is is how unsure they are (Blake,
+    Oct 22: "youre supposed to visually guess and not know the exact number")."""
+    w = max(3, r[1] - r[0])
+    return (f'<span class="mcloud-track{" big" if big else ""}"><span class="mcloud" style="left:{r[0]}%;'
+            f'width:{w}%;--c:{POT_CLOUD};filter:blur({_blur(w * 0.6)})"></span></span>')
+
+
+def _blur(width):
+    return f"{max(0.0, min(6.0, (width - 4) / 5)):.1f}px"
+
+
+def cloud_row(label, pot, prev=None):
+    """One skill as a fuzzy cloud on a 0-100 track: your staff's view of how good he can
+    become at it (Blake, Oct 22: one bar, shrinking toward the staff's view of his
+    potential; his Developed % says how much of it he arrives with). Wide and blurry =
+    your staff isn't sure; it tightens into a sharp mark as you scout. prev: the range
+    last shown, so the cloud visibly shrinks from there. No numbers, words or number
+    tooltips: you judge him by eye, like FOF8."""
+    r0 = prev or pot
+    w, w0 = max(2, pot[1] - pot[0]), max(2, r0[1] - r0[0])
+    style = (f"--l0:{r0[0]}%;--w0:{w0}%;--l1:{pot[0]}%;--w1:{w}%;--c:{POT_CLOUD};"
+             f"--b0:{_blur(w0)};--b1:{_blur(w)}")
+    mid = (pot[0] + pot[1]) / 2
+    return (f'<div class="cloud-row"><span>{escape(label)}</span>'
+            f'<div class="cloud-track"><div class="cloud pot" style="{style}"></div>'
+            f'<div class="cloud-mid" style="left:{mid}%;opacity:{0.9 if pot[1] - pot[0] <= 6 else 0.0}"></div>'
+            f'</div></div>')
+
+
+def skill_web(skills, prev=None, size=270):
+    """His skills as a web: the shaded band runs from the low to the high end of your
+    staff's view of his potential at each skill, tightening into a crisp outline as you
+    scout. skills: [(label, potential range)]; prev: {label: range} last shown, so the
+    band shrinks from there."""
+    import math
+    n = len(skills)
+    if n < 3:
+        return ""
+    cx = cy = size / 2
+    rad = size / 2 - 46
+
+    def pt(i, v):
+        a = -math.pi / 2 + 2 * math.pi * i / n
+        r = rad * max(0, min(100, v)) / 100
+        return cx + r * math.cos(a), cy + r * math.sin(a)
+
+    def poly(vals):
+        return " ".join(f"{x:.1f},{y:.1f}" for x, y in (pt(i, v) for i, v in enumerate(vals)))
+
+    def band(hi, lo):
+        outer = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in (pt(i, v) for i, v in enumerate(hi))) + " Z"
+        inner = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in (pt(i, v) for i, v in enumerate(lo))) + " Z"
+        return outer + " " + inner
+    p0 = prev or {}
+    hi = [r[1] for _l, r in skills]
+    lo = [r[0] for _l, r in skills]
+    hi0 = [p0.get(lab, r)[1] for lab, r in skills]
+    lo0 = [p0.get(lab, r)[0] for lab, r in skills]
+    grid = "".join(f'<polygon points="{poly([g] * n)}" class="web-grid"/>' for g in (25, 50, 75, 100))
+    spokes = "".join(f'<line x1="{cx}" y1="{cy}" x2="{pt(i, 100)[0]:.1f}" y2="{pt(i, 100)[1]:.1f}" class="web-grid"/>'
+                     for i in range(n))
+    labels = []
+    for i, (lab, _r) in enumerate(skills):
+        x, y = pt(i, 118)
+        anchor = "middle" if abs(x - cx) < 8 else ("start" if x > cx else "end")
+        short = lab.replace("Pass Rush ", "Rush ").replace("Coverage", "Cov.").replace("Passing", "Pass")
+        labels.append(f'<text x="{x:.1f}" y="{y + 3:.1f}" text-anchor="{anchor}" class="web-label">{escape(short)}</text>')
+    d1, d0 = band(hi, lo), band(hi0, lo0)
+    pad = 70                       # room for the labels on the left and right
+    return (f'<svg viewBox="{-pad} 0 {size + 2 * pad} {size}" class="skill-web" role="img" aria-label="Skill web">'
+            f'{grid}{spokes}'
+            f'<path d="{d1}" class="web-band" fill-rule="evenodd">'
+            f'<animate attributeName="d" from="{d0}" to="{d1}" dur="0.9s" fill="freeze" calcMode="spline" '
+            f'keySplines="0.2 0.8 0.3 1" keyTimes="0;1"/></path>'
+            f'{"".join(labels)}</svg>')
+
+
+# ---------------------------------------------------------------------------
 # A prospect's report (pop-up)
 # ---------------------------------------------------------------------------
 
-def prospect_html(league, p):
-    """(header html, left column html, right column html) of a prospect's report."""
+def prospect_html(league, p, prev_store=None):
+    """(header html, left column html, right column html) of a prospect's report.
+    prev_store: where the skill ranges last shown are kept (the clouds and the web
+    shrink from there after a scouting step)."""
     uid = league.user_team_id
     media = DD.media_ranks(league)
     st = DD.stats(league)
@@ -362,17 +477,36 @@ def prospect_html(league, p):
     if flags:
         facts.append(("Red flags", "<br>".join(f'<b style="color:#A3321F">{escape(f)}</b>' for f in flags)))
 
-    def skill_row(label, now, ceil):
-        word, color = fmt.skill_word((now[0] + now[1]) // 2), range_color(now)
-        return (f'<div class="skill-row"><span>{escape(label)}</span>'
-                f'<div class="skill-bar" title="Now {now[0]}-{now[1]}, ceiling {ceil[0]}-{ceil[1]}">'
-                f'<div style="position:absolute;top:0;bottom:0;left:{ceil[0]}%;width:{max(1, ceil[1] - ceil[0])}%;'
-                f'background:#D7E3D3;border-radius:2px"></div>'
-                f'<div style="position:absolute;top:0;bottom:0;left:{now[0]}%;width:{max(1, now[1] - now[0])}%;'
-                f'background:{color};border-radius:2px"></div></div>'
-                f'<span class="num">{word} ({now[0]}-{now[1]}) / {ceil[0]}-{ceil[1]}</span></div>')
-    skills = "".join(skill_row(pos.SKILLS[s][0], staff["skills"][s]["now"], staff["skills"][s]["ceiling"])
-                     for s, _w in pos.POSITIONS[p.position][1] if s in staff["skills"])
+    listed = [(pos.SKILLS[s][0], staff["skills"][s]["ceiling"])
+              for s, _w in pos.POSITIONS[p.position][1] if s in staff["skills"]]
+    prev = (prev_store or {}).get(p.id)
+    skills = skill_web(listed, prev) + "".join(cloud_row(lab, r, (prev or {}).get(lab)) for lab, r in listed)
+    if prev_store is not None:
+        prev_store[p.id] = {lab: r for lab, r in listed}
+    devl = S.developed(league, uid, p)
+    imp = S.impression(league, uid, p, st)
+    proj = S.projections(league, uid, p, st, media.get(p.id))
+    if proj["scouts"]:
+        (a, pa), (b, pb) = proj["scouts"]
+        proj_line = (f"Big boards: <b>{escape(proj['media'] or '-')}</b> · {escape(a)}: <b>{escape(pa)}</b> · "
+                     f"{escape(b)}: <b>{escape(pb)}</b> <span style='opacity:.8'>(a cross-check settles it)</span>")
+    elif proj["staff"]:
+        proj_line = (f"Big boards: <b>{escape(proj['media'] or '-')}</b> · Your staff: "
+                     f"<b>{escape(proj['staff'])}</b>")
+    else:
+        proj_line = (f"Big boards: <b>{escape(proj['media'] or '-')}</b> · Your staff: no read until your scouts "
+                     f"watch his film")
+    note_items = S.notes(league, uid, p, st, cr)
+    film_notes = [n["text"] for n in note_items if n["kind"] == "film"]
+    person_notes = [n["text"] for n in note_items if n["kind"] == "person"]
+    if note_items:
+        notes_html = ('<div class="scout-notes">'
+                      + "".join(f'<div class="sn film">{escape(t)}</div>' for t in film_notes)
+                      + "".join(f'<div class="sn person">{escape(t)}</div>' for t in person_notes)
+                      + '</div><div class="legend" style="margin-top:4px">From your scouts: film notes, then the '
+                        'interview. Their view, so they can be wrong.</div>')
+    else:
+        notes_html = '<div class="legend">No notes yet: your scouts start with his film.</div>'
 
     combine_rows = []
     for key, _label, what in COMBINE_COLS:
@@ -407,20 +541,25 @@ def prospect_html(league, p):
       <span style="opacity:.85">{escape(pos.POSITIONS[p.position][0])} · {escape(pub["college"])} ·
         draft prospect</span>
     </div>
-    <div style="display:flex;gap:22px;margin-top:8px;flex-wrap:wrap;font-size:17px">
-      <span class="rating"><span class="swatch" style="background:{range_color(now)};width:13px;height:13px"></span>
-        Now {range_text(now)}</span>
-      <span class="rating"><span class="swatch" style="background:{range_color(ceil)};width:13px;height:13px"></span>
-        Ceiling {range_text(ceil)}</span>
+    <div style="display:flex;gap:22px;margin-top:8px;flex-wrap:wrap;font-size:17px;align-items:center">
+      {take_chip(imp, big=True)}
+      <span class="grade-cloud">Potential {mini_cloud(ceil, big=True)}</span>
+      <span class="grade-cloud">Developed {devl}%</span>
     </div>
-    <div style="opacity:.85;font-size:13px;margin-top:4px">Your staff's grade. Scouted: {escape(scouted)}. The
-      ranges narrow as you scout him; the truth is inside about 2 times in 3, and some doubt always stays.</div>"""
+    <div style="font-size:14px;margin-top:6px">{proj_line}</div>
+    <div style="opacity:.85;font-size:13px;margin-top:4px">Your staff's read. Scouted: {escape(scouted)}. The clouds
+      are how good he can become (where one sits is their best guess, how wide and blurry it is is how unsure they
+      are); Developed % is how much of that he arrives with. Both sharpen as you scout him, and some doubt always
+      stays.</div>"""
     left_col = f"""
     <h3 style="margin-top:0">Bio</h3>{fact_grid(facts)}
     <h3>Ratings (your staff's view)</h3>{skills}
-    <div class="legend" style="margin-top:6px">Dark: his ability now. Light: how good he could become.</div>"""
+    <div class="legend" style="margin-top:6px">Each cloud is your staff's view of how good he can become at
+      that skill; the web shows the same thing for all of them at once. Wide and blurry means they aren't sure.
+      They tighten as you scout.</div>"""
     right_col = f"""
-    <h3 style="margin-top:0">Combine</h3>{combine}
+    <h3 style="margin-top:0">Scout's notes</h3>{notes_html}
+    <h3>Combine</h3>{combine}
     <h3>Interview</h3>{person}"""
     return head, left_col, right_col
 
@@ -553,6 +692,43 @@ CSS = f"""
   @media (max-height: 820px) {{ :root {{ --dlog-h: 96px; }} }}
   .dorder tr.now td {{ background:#FFE98A; }}
   .dorder tr.me td {{ background:#FFF6CF; }}
+
+  .take-chip {{ display:inline-block; color:white; font-size:12px; font-weight:600; padding:1px 8px;
+               border-radius:10px; white-space:nowrap; letter-spacing:.01em; }}
+  .take-chip.big {{ font-size:15px; padding:3px 12px; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.25); }}
+  .take-chip.none {{ background:#E3E8E1; color:#7A847A; font-weight:500; }}
+  .cloud-row {{ display:grid; grid-template-columns:150px 1fr; align-items:center; gap:10px;
+               padding:3px 0; font-size:13.5px; }}
+  .cloud-track {{ position:relative; height:16px; border-radius:8px; overflow:hidden;
+                 background:repeating-linear-gradient(90deg,#F0F3EE 0 calc(25% - 1px),#DDE3DA calc(25% - 1px) 25%); }}
+  .cloud {{ position:absolute; top:1px; bottom:1px; left:var(--l1); width:var(--w1); border-radius:999px;
+           filter:blur(var(--b1)); animation:cloud-in .9s cubic-bezier(.2,.8,.3,1) both; }}
+  .cloud.pot {{ background:radial-gradient(ellipse at center,var(--c) 0%,var(--c) 45%,transparent 100%);
+               top:2px; bottom:2px; }}
+  .cloud-mid {{ position:absolute; top:2px; bottom:2px; width:2px; margin-left:-1px; background:#1E2A22;
+               border-radius:1px; transition:opacity .6s; }}
+  @keyframes cloud-in {{ from {{ left:var(--l0); width:var(--w0); filter:blur(var(--b0)); }}
+                        to {{ left:var(--l1); width:var(--w1); filter:blur(var(--b1)); }} }}
+  .skill-web {{ display:block; width:410px; max-width:100%; height:270px; margin:2px auto 6px; }}
+  .skill-web .web-grid {{ fill:none; stroke:#DCE2D9; stroke-width:1; }}
+  .skill-web .web-band {{ fill:rgba(47,111,191,.32); stroke:rgba(47,111,191,.8); stroke-width:1; }}
+  .skill-web .web-label {{ font-size:10px; fill:#4F5A63; font-family:'Barlow',sans-serif; }}
+  .scout-notes {{ background:#FFFBEA; border:1px solid #EADFAE; border-left:4px solid #D9B84A; border-radius:3px;
+                 padding:6px 10px; }}
+  .scout-notes .sn {{ font-family:'Barlow Condensed',sans-serif; font-size:16px; padding:2px 0 2px 16px;
+                     position:relative; }}
+  .scout-notes .sn::before {{ content:'\u2022'; position:absolute; left:2px; color:#B08A1C; }}
+  .scout-notes .sn.person {{ color:#5A4A86; }}
+
+  .mcloud-track {{ position:relative; display:inline-block; vertical-align:middle; width:86px; height:12px;
+                  border-radius:6px; overflow:hidden;
+                  background:repeating-linear-gradient(90deg,#EEF2EC 0 calc(25% - 1px),#D9E0D6 calc(25% - 1px) 25%); }}
+  .mcloud-track.big {{ width:150px; height:16px; border-radius:8px; }}
+  .mcloud {{ position:absolute; top:1px; bottom:1px; border-radius:999px;
+            background:radial-gradient(ellipse at center,var(--c) 0%,var(--c) 45%,transparent 100%); }}
+  .grade-cloud {{ display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }}
+  .grade-cloud.small {{ font-size:13.5px; gap:6px; margin:1px 0; }}
+  .grade-cloud.small .mcloud-track {{ width:150px; }}
 </style>
 """
 
@@ -807,10 +983,13 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                     sanitize=False)
             ui.label(p.name).classes("rc-name pname").on("click", lambda: open_report(pid)) \
                 .tooltip("His full report")
-            ui.html(f'<div class="rating" style="font-size:13.5px"><span class="swatch" style="background:'
-                    f'{range_color(now)}"></span>Now {range_text(now)}</div>'
-                    f'<div class="rating" style="font-size:13.5px"><span class="swatch" style="background:'
-                    f'{range_color(ceil)}"></span>Ceiling {range_text(ceil)}</div>', sanitize=False)
+            imp = S.impression(league, league.user_team_id, p, DD.stats(league))
+            proj = S.projections(league, league.user_team_id, p, DD.stats(league), DD.media_ranks(league).get(p.id))
+            ui.html(f'<div class="grade-cloud small">Potential {mini_cloud(ceil)}</div>'
+                    f'<div class="grade-cloud small">Developed {S.developed(league, league.user_team_id, p)}%</div>'
+                    f'<div style="margin-top:4px">{take_chip(imp)}</div>'
+                    f'<div class="legend" style="margin-top:2px">Boards: {escape(proj["media"] or "-")}'
+                    + (f' · Staff: {escape(proj["staff"])}' if proj["staff"] else "") + '</div>', sanitize=False)
             open_ = DD.scouting_open(league)
             if scouting and (open_ or S.done_steps(league, pid)):
                 with ui.element("div").style("display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px"):
@@ -857,7 +1036,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
 
         @ui.refreshable
         def content():
-            _h, left_col, right_col = prospect_html(league, p)
+            _h, left_col, right_col = prospect_html(league, p, _PREV)
             with ui.element("div").classes("report px-6 py-4 m-4"):
                 actions(p)
                 with ui.element("div").style("display:grid;grid-template-columns:1fr 1fr;gap:6px 30px"):
@@ -897,8 +1076,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             with ui.column().classes("gap-1").style("flex:1 1 0;min-width:0"):
                 toolbar()
                 board_table(prospect_rows(league, filtered(DD.available(league)), _marks(league)), PROSPECT_COLS,
-                            [("now", "now", "now_color"), ("ceiling", "ceil", "ceil_color")],
-                            "prospects", on_open=open_report)
+                            [], "prospects", on_open=open_report)
                 ui.html(_legend_html(), sanitize=False)
             with ui.element("div").classes("rail"):
                 rail()
@@ -932,8 +1110,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                 toolbar(hint="Sorted by your staff's board · click a row to select · double-click or click a "
                              "name for his report · right-click to mark")
                 board_table(prospect_rows(league, filtered(DD.available(league)), _marks(league)), PROSPECT_COLS,
-                            [("now", "now", "now_color"), ("ceiling", "ceil", "ceil_color")],
-                            "room", on_open=open_report)
+                            [], "room", on_open=open_report)
                 ui.html(_legend_html(), sanitize=False)
                 with ui.element("div").classes("dbottom w-full"):
                     draft_log()
@@ -1428,7 +1605,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
         cr = ctx.get("cr") or {}
         rows = []
         for i, p in enumerate(avail[:300]):
-            ovr, pot = shown(p.overall(), p.position), shown(p.overall("potential"), p.position)
+            ovr, pot = seen(league, p), seen(league, p, "potential")
             row = {"id": p.id, "marked": p.id in marks, "board": i + 1, "pos": p.position,
                    "pos_style": theme.position_style(p.position),
                    "pos_sort": POSITION_ORDER.index(p.position) * 1000 + i, "name": p.name,
@@ -1452,7 +1629,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             f'{_pos_tag(league.player(pk["pid"]).position)} '
             f'<a class="pname" style="color:inherit;text-decoration:none" href="/player/{pk["pid"]}">'
             f'{escape(league.player(pk["pid"]).name)}</a> '
-            f'<span class="legend">({shown(league.player(pk["pid"]).overall(), league.player(pk["pid"]).position)})'
+            f'<span class="legend">({seen(league, league.player(pk["pid"]))})'
             f'</span></div>' for pk in reversed(picks)) or '<div class="legend">No picks yet.</div>'
         ui.html(f'<div class="dlog"><div class="lh">Draft log (latest first; yours highlighted)</div>{lines}</div>',
                 sanitize=False).style("flex:1 1 0;min-width:0")
@@ -1508,7 +1685,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                         '<div class="legend">Click a row to select a player.</div>', sanitize=False)
                 return
             p = league.player(pid)
-            ovr, pot = shown(p.overall(), p.position), shown(p.overall("potential"), p.position)
+            ovr, pot = seen(league, p), seen(league, p, "potential")
             exp = "Rookie" if p.experience == 0 else f"{p.experience} season{'s' if p.experience != 1 else ''}"
             ui.html(f'<div style="display:flex;gap:6px;align-items:center">{_pos_tag(p.position)}'
                     f'<span class="legend">Age {p.age(_sept1(league))} · {exp}</span></div>', sanitize=False)
@@ -1539,7 +1716,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             lines = []
             for position in POSITION_ORDER:
                 need = r_need.get(position, {"have": 0, "spots": ROSTER_TEMPLATE[position]})
-                names = ", ".join(f'<a href="/player/{p.id}">{escape(p.name)}</a> ({shown(p.overall(), p.position)})'
+                names = ", ".join(f'<a href="/player/{p.id}">{escape(p.name)}</a> ({seen(league, p)})'
                                   for p in by_pos.get(position, []))
                 short = ' style="color:#A3321F;font-weight:600"' if need["have"] < need["spots"] else ""
                 lines.append(f'<tr><td class="l">{_pos_tag(position)}</td><td{short}>'

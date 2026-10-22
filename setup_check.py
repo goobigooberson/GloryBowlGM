@@ -5,7 +5,7 @@
 import sys
 
 print("=" * 50)
-print("  New Front Office Football - Setup Check")
+print("  Glory Bowl GM - Setup Check")
 print("=" * 50)
 
 # 1. Python version

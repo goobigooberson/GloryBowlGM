@@ -133,7 +133,7 @@ if __name__ in {"__main__", "__mp_main__"}:
                     webbrowser.open(f"http://127.0.0.1:{port}")
 
             threading.Thread(target=browser_if_no_window, daemon=True).start()
-        ui.run(title="Front Office Football", native=True, window_size=(1600, 950),
+        ui.run(title="Glory Bowl GM", native=True, window_size=(1600, 950),
                reload=False, port=port)
     else:
         print("Opening in your browser.")
@@ -145,5 +145,5 @@ if __name__ in {"__main__", "__mp_main__"}:
         port = next((int(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--port=")), 8085)
         if getattr(sys, "frozen", False) and not any(a.startswith("--port=") for a in sys.argv):
             port = native.find_open_port()  # packaged game: any free port
-        ui.run(title="Front Office Football", favicon="🏈", reload=False,
+        ui.run(title="Glory Bowl GM", favicon="🏈", reload=False,
                show="--no-show" not in sys.argv, port=port)

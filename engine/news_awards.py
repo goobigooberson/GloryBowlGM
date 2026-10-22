@@ -12,6 +12,7 @@ from . import awards as A
 from . import playoffs as po
 from . import season as S
 from .news import (POS_WORD, _f, game_phrase, join_and, num, phrase, plural, pos_abbr, sacks_text, stat_line, yds)
+from .news_words import Say
 
 
 # ---------------------------------------------------------------------------
@@ -138,7 +139,7 @@ def _news_weekly(ctx, season):
     for (week, conf), kinds in sorted(by.items()):
         rng = ctx.rng(season, "pow", week, conf)
         cal = _week_cal(week)
-        sents, names, players, teams = [], [], [], []
+        sents, names, players, teams, by_pid = [], [], [], [], {}
         for kind in ("off", "def", "st"):
             r = kinds.get(kind)
             if not r:
@@ -159,6 +160,7 @@ def _news_weekly(ctx, season):
             names.append(ctx.short(p, r["team"]))
             players.append(p.id)
             teams.append(r["team"])
+            by_pid[p.id] = r
         if not names:
             continue
         head = ctx.pick(("powhead", season, conf), rng, [
@@ -167,16 +169,22 @@ def _news_weekly(ctx, season):
             f"Week {week} honors in the {conf}: {join_and(names)}"])
         ctx.add(season, cal, "awards", head, f"The league's {conf} Conference Players of the Week for Week {week}.\n"
                 + "\n".join(sents), teams=teams, players=players, importance=36, key=f"pow-{season}-{week}-{conf}")
-        ctx.post(season, cal, ctx.stat_desk(), f"{conf} Players of the Week, Week {week}: " + "; ".join(
-            f"{ {'off': 'Offense', 'def': 'Defense', 'st': 'Special teams'}[k]} {ctx.player(kinds[k]['pid']).name}" for k in ("off", "def", "st")
-            if k in kinds and ctx.player(kinds[k]["pid"])), teams=teams, players=players, importance=32)
+        picked = [(k, ctx.player(kinds[k]["pid"]), kinds[k]["team"]) for k in ("off", "def", "st")
+                  if k in kinds and ctx.player(kinds[k]["pid"])]
+        side = {"off": "offense", "def": "defense", "st": "special teams"}
+        ctx.post(season, cal, ctx.stat_desk(), Say("stat_pow", {
+            "conf": conf, "week": week,
+            "who": "; ".join(f"{side[k].capitalize()} {q.name}" for k, q, _t in picked),
+            "who2": join_and([f"{q.name} ({side[k]})" for k, q, _t in picked]),
+            "who3": join_and([f"{pos_abbr(q)} {q.name} of {ctx.city(t)}" for _k, q, t in picked])}),
+            teams=teams, players=players, importance=32)
         for pid, tid in zip(players, teams):
             prng = ctx.rng(season, "powpost", week, pid)
             if prng.random() < 0.3:
-                ctx.post(season, cal, ctx.player_voice(ctx.player(pid)), prng.choice([
-                    "Appreciate it. Credit to everybody in that locker room.", "Blessed. Back to work.",
-                    "Team award with my name on it.", "Thankful. Onto the next one."]),
-                    teams=[tid], players=[pid], importance=22)
+                r = by_pid[pid]
+                ctx.post(season, cal, ctx.player_voice(ctx.player(pid)), Say("player_pow", {
+                    "week": week, "opp": ctx.nick(r["opp"]), "score": f"{max(r['pf'], r['pa'])}-{min(r['pf'], r['pa'])}",
+                    "won": r["pf"] > r["pa"], "lost": r["pf"] < r["pa"]}), teams=[tid], players=[pid], importance=22)
 
 
 def _news_monthly(ctx, season):
@@ -239,9 +247,10 @@ def _news_mvp_watch(ctx, season):
             f"the vote comes after the season):\n" + "\n".join(lines), teams=teams, players=players,
             importance=44, key=f"watch-{season}-{week}")
         names = [ctx.player(pid).last_name for pid in players[:3]]
-        ctx.post(season, cal, ctx.insider(rng), f"My MVP ballot if the votes were due today: 1. {names[0]}"
-                 + "".join(f" {i}. {nm}" for i, nm in enumerate(names[1:], start=2)), teams=teams[:3],
-                 players=players[:3], importance=36)
+        ctx.post(season, cal, ctx.insider(rng), Say("ins_mvp_ballot", {
+            "week": week, "list": " ".join(f"{i}. {nm}" for i, nm in enumerate(names, start=1)),
+            "first": names[0], "rest": join_and(names[1:]), "two": len(names) >= 2,
+            "lead_city": ctx.city(teams[0])}), teams=teams[:3], players=players[:3], importance=36)
 
 
 _OUT_WHY = {"injured": "is injured", "declined": "will not play"}
@@ -299,15 +308,11 @@ def _news_pro_bowl(ctx, season, n):
         for p in ps:
             prng = ctx.rng(season, "pbpost", p.id)
             if prng.random() < 0.35:
-                ctx.post(season, cal, ctx.player_voice(p), prng.choice([
-                    "PRO BOWL. Thank you to the fans, my teammates and my family.", "Pro Bowler. Dream come true.",
-                    "Grateful for this one. Still got work to do this season.", "Thank you for every vote."]),
-                    teams=[tid], players=[p.id], importance=24)
+                ctx.post(season, cal, ctx.player_voice(p), Say("player_probowl", {
+                    "season": season, "city": ctx.city(tid)}), teams=[tid], players=[p.id], importance=24)
         if rng.random() < 0.5:
-            ctx.post(season, cal, ctx.fan(tid, rng), rng.choice([
-                f"{len(ps)} Pro Bowlers. Respect the {ctx.nick(tid)}.", "Deserved. Every one of them.",
-                f"Should've been more than {len(ps)}. Disrespect."]) if len(ps) > 1 else rng.choice([
-                    f"{ps[0].last_name} Pro Bowl. Earned it.", "Only one?? Robbery."]),
+            ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_probowl", {
+                "n": num(len(ps)).capitalize(), "Nick": ctx.nick(tid), "last": ps[0].last_name, "one": len(ps) == 1}),
                 teams=[tid], players=[p.id for p in ps], importance=18)
     # Snubs: the first alternates with the strongest cases.
     firsts = [r for r in rows if r["role"] == "alternate" and r["spot"] not in ("RS", "ST", "LS")
@@ -331,8 +336,8 @@ def _news_pro_bowl(ctx, season, n):
         for r in snubs:
             prng = ctx.rng(season, "snubpost", r["pid"])
             if prng.random() < 0.4:
-                ctx.post(season, cal, ctx.player_voice(ctx.player(r["pid"])), prng.choice(
-                    ["Noted.", "It's all good. Back to work.", "Chip on the shoulder, always."]),
+                ctx.post(season, cal, ctx.player_voice(ctx.player(r["pid"])), Say("player_snub", {
+                    "spot": A.PRO_BOWL_LABEL[r["spot"]].lower(), "season": season}),
                     teams=[r["team"]], players=[r["pid"]], importance=26)
     # Changes once the Glory Bowl teams are set.
     changes = [r for r in rows if r.get("added")]
@@ -364,9 +369,8 @@ def _news_pro_bowl(ctx, season, n):
                 for pid, tid in zip(players[::2], teams[::2]):
                     prng = ctx.rng(season, "pbadd", pid)
                     if prng.random() < 0.35:
-                        ctx.post(season, cal2, ctx.player_voice(ctx.player(pid)),
-                                 prng.choice(["Pro Bowl bound. Let's go!", "Got the call. Thankful."]),
-                                 teams=[tid], players=[pid], importance=20)
+                        ctx.post(season, cal2, ctx.player_voice(ctx.player(pid)), Say("player_pb_add", {
+                            "season": season, "city": ctx.city(tid)}), teams=[tid], players=[pid], importance=20)
 
 
 def _news_all_pro(ctx, season, n):
@@ -415,9 +419,9 @@ def _news_all_pro(ctx, season, n):
                 key=f"ap-{season}-{r['spot']}-{r['pid']}")
         prng = ctx.rng(season, "appost", p.id)
         if r["team_no"] == 1 and prng.random() < 0.35:
-            ctx.post(season, cal, ctx.player_voice(p), prng.choice([
-                "First-team All-Pro. Can't do it without my guys.", "All-Pro. Grateful. Not done yet.",
-                "Kid from {} made it. All-Pro.".format(p.hometown.split(",")[0] if p.hometown else "nowhere")]),
+            ctx.post(season, cal, ctx.player_voice(p), Say("player_allpro", {
+                "home": p.hometown.split(",")[0] if p.hometown else "", "season": season, "city": ctx.city(r["team"]),
+                "votes": r["firsts"]}),
                 teams=[r["team"]], players=[p.id], importance=28)
     ctx.post(season, cal, ctx.stat_desk(), f"{season} first-team All-Pros by team: " + ", ".join(
         f"{ctx.teams[t].abbrev} {c}" for t, c in sorted(
@@ -548,15 +552,12 @@ def _news_season_awards(ctx, season, n):
                  (f" Unanimous." if firsts == 50 else f" {firsts} of 50 first-place votes."),
                  teams=[tid], players=[p.id], importance=imp[r["award"]] - 15)
         if rng.random() < 0.6:
-            ctx.post(season, cal, ctx.player_voice(p), rng.choice([
-                f"{name}. I don't have the words. Thank you to my teammates and coaches.",
-                "Couldn't do any of this without the guys around me. Thank you.",
-                "Grateful. This one's for my family."]), teams=[tid], players=[p.id], importance=imp[r["award"]] - 20)
+            ctx.post(season, cal, ctx.player_voice(p), Say("player_award", {"award": name, "city": ctx.city(tid)}),
+                     teams=[tid], players=[p.id], importance=imp[r["award"]] - 20)
         if rng.random() < 0.6:
-            ctx.post(season, cal, ctx.fan(tid, rng), rng.choice([f"{p.last_name.upper()} {name.upper()}!!!",
-                                                                  f"Never a doubt. {p.last_name} deserved it.",
-                                                                  f"{ctx.nick(tid)} have the {name}. Say it louder."]),
-                     teams=[tid], players=[p.id], importance=20)
+            ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_award", {
+                "last": p.last_name, "LAST": p.last_name.upper(), "award": name, "AWARD": name.upper(),
+                "Nick": ctx.nick(tid)}), teams=[tid], players=[p.id], importance=20)
     if len(winners) >= 3:
         ctx.add(season, cal, "awards", f"The {season} award winners",
                 f"The league handed out its {season} awards, voted by a 50-member media panel on the regular season, "

@@ -167,7 +167,11 @@ class League:
         """Let the AI set this team's depth chart (giving its recent high draft
         picks a real chance: draft.draft_capital)."""
         pick_of = {d["pid"]: d["pick"] for d in self.draft_history[-1000:]}
-        self.depth_charts[team_id] = depth.auto_depth_chart(self.team_players(team_id), pick_of=pick_of)
+        # As the team's own staff sees its players (Oct 24; evaluation.py: close to the truth,
+        # since coaches see their players every day).
+        from .evaluation import seen
+        players = [seen(self, team_id, p) for p in self.team_players(team_id)]
+        self.depth_charts[team_id] = depth.auto_depth_chart(players, pick_of=pick_of)
 
     def vote_captains(self, team_id, rng=random):
         """Captains are voted on by the players, not picked by the GM: one for
@@ -315,6 +319,9 @@ def create_league(season=2026, seed=None, camp=True):
         league.settings["salt"] = random.randrange(1 << 30)
     from . import free_agency
     free_agency.initial_contracts(league)
+    # 10. Coaching staffs and front offices (staff.py, Oct 24; seeded by the league's salt).
+    from . import staff
+    staff.ensure(league)
     if camp:
         # 10. Training camp opens (Oct 23): practice squads and camp bodies join the 53s.
         league.stage = "preseason"

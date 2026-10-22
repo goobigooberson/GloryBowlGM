@@ -163,8 +163,23 @@ def team_style(league, tid):
     return _style(_salt(league), tid)
 
 
+# Since Oct 24 (Blake: AI teams judge players through their own staff's eyes) a team's
+# judgment comes from its staff (evaluation.py): how far its staff misjudges him
+# (evaluation.misjudgment: its luck, without the pull toward average every unsure estimate
+# has; comparing its view with the league's directly made teams overpay their own stars
+# and end up over the cap at week 1), turned into money. A one-point misjudgment in overall
+# is worth about STAFF_EVAL_K of his price (PROVISIONAL: a market rank ladder is steep near
+# the top), limited like the old draw.
+STAFF_EVAL_K = 0.04
+STAFF_EVAL_RANGE = (0.80, 1.25)
+
+
 def _eval(league, tid, pid):
-    """How this team's staff judges this player this year (fixed for the year)."""
+    """How this team's staff judges this player (fixed until its view changes)."""
+    if getattr(league, "staff", None):
+        from . import evaluation as E
+        diff = E.misjudgment(league, tid, league.player(pid))
+        return max(STAFF_EVAL_RANGE[0], min(STAFF_EVAL_RANGE[1], math.exp(STAFF_EVAL_K * diff)))
     return _eval_draw(_salt(league), league.season, tid, pid)
 
 
@@ -1270,7 +1285,8 @@ def cut_down(league):
                 continue
 
             def keep_value(p):
-                v = roster_value(p)
+                from .evaluation import seen
+                v = roster_value(seen(league, t.id, p))      # as this team's staff sees him
                 if p.draft_year == league.season and 1 <= p.draft_round <= 3:
                     v += HIGH_PICK_KEEP
                 return v + cut_money_value(league, p)

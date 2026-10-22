@@ -35,7 +35,7 @@ from . import names
 from . import playoffs as po
 from . import season as S
 from . import storylines as SL
-from .news_words import Writer
+from .news_words import Say, Writer
 from .scale import legacy_shown
 from .sim.text import short_name
 
@@ -664,25 +664,68 @@ class _Ctx:
             if p and p.last_name in headline and p.name not in headline:
                 headline = headline.replace(p.last_name, p.name, 1)
         heads.add((season, int(cal), headline))
-        self.items.append({"id": key or f"{kind}-{season}-{cal}-{len(self.items)}", "season": season, "cal": cal,
+        if key is None:      # an id that stays the same as later weeks are played
+            keys = self.__dict__.setdefault("_item_keys", defaultdict(int))
+            keys[(kind, season, cal)] += 1
+            key = f"{kind}-{season}-{cal}-{keys[(kind, season, cal)]}"
+        self.items.append({"id": key, "season": season, "cal": cal,
                            "when": self.when(season, cal), "kind": kind, "headline": headline, "body": body,
                            "teams": [t for t in teams if t], "players": [p for p in players if p],
                            "importance": max(0, min(100, round(importance)))})
 
     def post(self, season, cal, who, text, teams=(), players=(), importance=20, reply_to=None, quote=None,
              kind=None):
-        """A bit on Bitter (engine/bitter.py). reply_to: the id of the bit it answers;
-        quote: {name, handle, text, when} of a bit it quotes. Returns its id."""
+        """A bit on Bitter (engine/bitter.py). text: the words, or a news_words.Say
+        (worded later, in calendar order, by finish_posts, so nothing repeats).
+        reply_to: the id of the bit it answers; quote: {"of": the id of the bit it
+        quotes, "when": its week label}. Returns its id (a bit that can't be said
+        freshly is dropped later, with its replies)."""
         name, handle, role, team = who
-        pid = f"post-{season}-{cal}-{len(self.posts)}"
-        if not text:
+        if not text or reply_to is False:
             return None
+        # The id stays the same as later weeks are played (likes and rebits are seeded by it).
+        keys = self.__dict__.setdefault("_post_keys", defaultdict(int))
+        keys[(season, cal, handle)] += 1
+        pid = f"post-{season}-{cal}-{handle}-{keys[(season, cal, handle)]}"
         self.posts.append({"id": pid, "season": season, "cal": cal,
                            "when": self.when(season, cal), "name": name, "handle": "@" + handle, "role": role,
                            "team": team, "text": text, "teams": [t for t in teams if t],
                            "players": [p for p in players if p], "importance": max(0, min(100, round(importance))),
                            "reply_to": reply_to, "quote": quote, "kind": kind})
         return pid
+
+    def finish_posts(self, start):
+        """Word the bits made since posts[start] (one season's), in calendar order:
+        each Say gets wording that hasn't been used too much this season
+        (news_words.Writer.fresh), and a bit written in full must not repeat one
+        word for word. A bit that can't be said freshly is dropped, with its
+        replies and any bit quoting it. Calendar order (not the order the
+        sections run in) keeps a week's bits the same after later weeks are played."""
+        new = self.posts[start:]
+        order = sorted(range(len(new)), key=lambda i: (new[i]["season"], new[i]["cal"], i))
+        done, keep = {}, []
+        for i in order:
+            b = new[i]
+            q = b["quote"]
+            if (b["reply_to"] and b["reply_to"] not in done) or (q and "of" in q and q["of"] not in done):
+                continue
+            t = b["text"]
+            if isinstance(t, Say):
+                rng = random.Random(f"bit-{self.salt}-{b['season']}-{b['cal']}-{b['handle']}-{t.name}-"
+                                    f"{b['teams']}-{b['players']}")
+                t = self.writer.fresh(t.name, rng, t.facts, int(b["cal"]))
+            elif not self.writer.claim(t):
+                t = ""
+            if not t:
+                continue
+            b["text"] = t
+            if q and "of" in q:
+                src = done[q["of"]]
+                b["quote"] = {"name": src["name"], "handle": src["handle"], "text": src["text"],
+                              "when": q.get("when") or src["when"]}
+            done[b["id"]] = b
+            keep.append(b)
+        self.posts[start:] = keep
 
     # ---- social personas (invented; no real reporters) ----
     def insider(self, rng):
@@ -1211,33 +1254,24 @@ def _game_story(ctx, season, phase, g, box, recs, track=None, posts=True):
                       phase, week, after.get(tid) if regular else None, sp if won and not tie else None, W, L, ws, ls)
     else:
         from . import bitter
-        f.update(upset=upset, _wrec=after.get(W), _lrec=after.get(L))
+        f.update(upset=upset, _wrec=after.get(W), _lrec=after.get(L), _late=late)
         if late and goahead and "field goal" in (goahead.get("text") or ""):
             f["_kicker"] = (f.get("goahead") or "").split("'")[0]
         star_def = None
         if sp and max(impact(starW[1]).items(), key=lambda kv: kv[1], default=("", 0))[0] == "def" \
                 and impact(starW[1]).get("def", 0) >= 16:
             star_def = (sp, game_noun(starW[1], rng, parts=1))
+        f["_season"] = season
         bitter.react_game(ctx, season, cal, phase, g, f, W, L, sp, lp, imp, ctx.rng(season, "bitter", g["id"]),
-                          tw_, tl_, star_def, lines)
+                          tw_, tl_, star_def, lines, track=track, stars=(starW, starL))
         if phase == "playoffs" and week == 5:
             # The TV host takes a victory lap if he called it.
-            for t in ctx.__dict__.get("rex_takes", []):
-                if t["season"] == season and t["team"] == W and t["kind"] == "champ" and not t.get("settled"):
+            for t in bitter._takes(ctx):
+                if t["season"] == season and t.get("team") == W and t["kind"] == "rex_champ" and not t.get("settled"):
                     t["settled"] = True
-                    ctx.post(season, cal, bitter.persona("RexTakes"), W_.say("rex_right_champ", rng, {
+                    ctx.post(season, cal, bitter.persona("RexTakes"), Say("rex_right_champ", {
                         "k": t["week"], "Tc": ctx.city(W), "champ": ctx.champ_name(season)}), teams=[W],
-                        quote={"name": "Rex Harmon", "handle": "@RexTakes", "text": t["text"], "when": f"Week {t['week']}"},
-                        importance=60)
-    if phase != "preseason":
-        for tid in (W, L):
-            st = starW if tid == W else starL
-            line = ""
-            if st and ctx.player(st[0]) and st[2] >= 8:
-                line = f" {ctx.player(st[0]).name}: {stat_line(st[1])}."
-            ctx.post(season, cal, ctx.beat(tid),
-                     f"Final{(' (OT)' if ot else '')}: {ctx.city(a)} {as_}, {ctx.city(h)} {hs}.{line}",
-                     teams=[W, L], players=[st[0]] if st else (), importance=imp - 10)
+                        quote={"of": t["id"], "when": f"Week {t['week']}"}, importance=60)
         if phase == "playoffs" and week == 5 and not tie:
             ctx.post(season, cal, ctx.insider(ctx.rng(season, "beat", g["id"])),
                      f"The {ctx.full(W)} are your {ctx.champ_name(season)} champions. {ws}-{ls}"
@@ -1245,6 +1279,7 @@ def _game_story(ctx, season, phase, g, box, recs, track=None, posts=True):
 
 
 def _fan_post(ctx, season, cal, tid, rng, won, margin, phase, week, rec, star, W, L, ws, ls):
+    """A fan after a preseason game or a tie (other games: engine/bitter.py, react_game)."""
     opp = L if tid == W else W
     if phase == "preseason":
         if rng.random() > 0.3:
@@ -1252,26 +1287,11 @@ def _fan_post(ctx, season, cal, tid, rng, won, margin, phase, week, rec, star, W
         bucket = "fan_preseason"
     elif won is None:
         bucket = "fan_tie"
-    elif phase == "playoffs":
-        bucket = "fan_champ" if won and week == 5 else ("fan_playoff_win" if won else "fan_playoff_loss")
     else:
-        streak = _streak(rec[3]) if rec else ("", 0)
-        if won and streak[0] == "W" and streak[1] >= 4 and rng.random() < 0.5:
-            bucket = "fan_streak_win"
-        elif not won and streak[0] == "L" and streak[1] >= 4 and rng.random() < 0.5:
-            bucket = "fan_streak_loss"
-        elif won:
-            bucket = "fan_win_big" if margin >= 17 and rng.random() < 0.6 else (
-                "fan_win_close" if margin <= 3 and rng.random() < 0.6 else "fan_win")
-        else:
-            bucket = "fan_loss_big" if margin >= 21 and rng.random() < 0.6 else "fan_loss"
-    streak = _streak(rec[3])[1] if rec else 0
-    facts = {"NICK": ctx.nick(tid).upper(), "nick": ctx.nick(tid), "rec": _rec_text(rec) if rec else "",
-             "star": star.last_name if star else "", "city": ctx.city(tid), "opp": ctx.nick(opp),
-             "n": (num(streak).capitalize() if streak < 10 else str(streak)), "score": f"{ws}-{ls}"}
-    text = ctx.writer.say(bucket, rng, facts)
-    imp = {"fan_champ": 70, "fan_playoff_win": 40, "fan_playoff_loss": 35}.get(bucket, 12)
-    ctx.post(season, cal, ctx.fan(tid, rng), text, teams=[tid], importance=imp)
+        return
+    facts = {"NICK": ctx.nick(tid).upper(), "nick": ctx.nick(tid), "star": star.last_name if star else "",
+             "city": ctx.city(tid), "opp": ctx.nick(opp), "score": f"{ws}-{ls}", "lost": won is False}
+    ctx.post(season, cal, ctx.fan(tid, rng), Say(bucket, facts), teams=[tid], importance=12)
 
 
 # ---------------------------------------------------------------------------
@@ -1466,29 +1486,29 @@ def _performance(ctx, season, week, cal, g, p, s, running, best_game, track=None
     else:
         imp = 32
     from . import bitter
-    bitter.react_performance(ctx, season, cal, week, p, tid, stat, f["got"], num(_f(s, "pass_int")), rng, imp)
-    # Social: the stat desk always; the player himself sometimes.
+    bitter.react_performance(ctx, season, cal, week, p, tid, stat, f["got"], num(_f(s, "pass_int")), rng, imp,
+                             opp=opp, track=track)
+    # Social: the stat desk on dominant games; the player himself and a fan sometimes.
     if stat != "pass_int":
         if level == 2:
-            ctx.post(season, cal, ctx.stat_desk(), f"{p.name} ({ctx.teams[tid].abbrev}) vs "
-                     f"{ctx.teams[opp].abbrev}: {stat_line(s)}", teams=[tid], players=[p.id],
-                     importance=imp - (15 if stat in ("fgm", "fg_long") else 5))
+            ctx.post(season, cal, ctx.stat_desk(), Say("stat_dominant", {
+                "name": p.name, "abbr": ctx.teams[tid].abbrev, "oabbr": ctx.teams[opp].abbrev, "line": stat_line(s),
+                "rank": bool(f.get("rank")), "rank_t": f"{f.get('season_amount', '')}, {f.get('rank', '')}".capitalize()
+                if f.get("rank") else ""}), teams=[tid], players=[p.id],
+                importance=imp - (15 if stat in ("fgm", "fg_long") else 5))
         if stat in ("fgm", "fg_long"):
             return
+        pf, pa = (g["home_score"], g["away_score"]) if g["home"] == tid else (g["away_score"], g["home_score"])
+        rec = SL.rec_text(track.record(tid, week)) if track else ""
         if rng.random() < 0.45:
-            bitter.player_post(ctx, season, cal, p, tid, won, rng, imp - 15, opp)
+            bitter.player_post(ctx, season, cal, p, tid, won, rng, imp - 15, opp, {
+                "score": f"{max(pf, pa)}-{min(pf, pa)}", "rec": rec, "got": f["got"]})
         if rng.random() < 0.5:
-            L = p.last_name
-            if won is not False:
-                options = [f"{L.upper()}!!!!", f"Pay {L}. Pay the man.", f"{L} was unreal today"]
-                if stat in ("pass_yds", "pass_td", "rush_yds", "rush_td", "rec_yds", "rec_td", "rec"):
-                    options.append(f"Give {L} the ball every play" if p.position != "QB" else f"{L} is a franchise QB. Period.")
-                else:
-                    options.append(f"Offenses are scared of {L}")
-            else:
-                options = [f"{L} did everything he could", f"Wasted a monster game from {L}"]
-            ctx.post(season, cal, ctx.fan(tid, rng), ctx.pick(("perf-fan", season, tid), rng, options),
-                     teams=[tid], players=[p.id], importance=15)
+            skill = stat in ("pass_yds", "pass_td", "rush_yds", "rush_td", "rec_yds", "rec_td", "rec")
+            ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_perf_win" if won is not False else "fan_perf_loss", {
+                "last": p.last_name, "LAST": p.last_name.upper(), "got": f["got"], "opp": ctx.nick(opp),
+                "skill": skill, "qb": skill and p.position == "QB", "defense": not skill}),
+                teams=[tid], players=[p.id], importance=15)
 
 
 def _milestones(ctx, season, week, cal, g, p, s, before, after, games_played, career, records, team_games):
@@ -1511,8 +1531,9 @@ def _milestones(ctx, season, week, cal, g, p, s, before, after, games_played, ca
                 f"{ctx.full(opp)}, the most in a season since the league began in {ctx.first}. The old record was "
                 f"{val:g} by {who}.", teams=[tid], players=[p.id] + ([holder] if hp else []), importance=75,
                 key=f"rec-{season}-{stat}-{p.id}")
-            ctx.post(season, cal, ctx.stat_desk(), f"NEW LEAGUE RECORD: {p.name} now has {amount} {words} this "
-                     f"season. Previous mark: {val:g}, {who}.", teams=[tid], players=[p.id], importance=70)
+            ctx.post(season, cal, ctx.stat_desk(), Say("stat_record", {
+                "name": p.name, "amount": amount, "words": words, "old": f"{val:g}", "who": who}),
+                teams=[tid], players=[p.id], importance=70)
             done.add(stat)
     # Season marks.
     for stat, marks in SEASON_MARKS.items():
@@ -1538,8 +1559,11 @@ def _milestones(ctx, season, week, cal, g, p, s, before, after, games_played, ca
             f"against the {ctx.full(opp)}. He has {season_amount(stat, a)} through "
             f"{plural(games_played, 'game')}.{pace}", teams=[tid], players=[p.id],
             importance=34 + 6 * marks.index(m), key=f"smark-{season}-{stat}-{p.id}-{m}")
-        ctx.post(season, cal, ctx.stat_desk(), f"{p.name} has {f'{a:g}' if stat == 'sacks' else f'{int(a):,}'} "
-                 f"{words} through Week {week}.", teams=[tid], players=[p.id], importance=30 + 6 * marks.index(m))
+        ctx.post(season, cal, ctx.stat_desk(), Say("stat_mark", {
+            "name": p.name, "abbr": ctx.teams[tid].abbrev, "amount": f"{a:g}" if stat == "sacks" else f"{int(a):,}",
+            "words": words, "week": week, "mark": mark, "gp_t": plural(games_played, "game"), "pace": bool(pace) and
+            f"about {int(round(proj, -1 if proj >= 100 else 0)):,}"}), teams=[tid], players=[p.id],
+            importance=30 + 6 * marks.index(m))
     # Career marks (only players whose whole career is on record).
     if not _whole_career_known(ctx, p):
         return
@@ -1655,16 +1679,17 @@ def _clinches(ctx, season, week, games, recs):
         if news:
             ctx.add(season, cal, "playoffs", news[0], news[1], teams=[tid], importance=news[2],
                     key=f"clinch-{season}-{tid}-{news[3]}")
+            ff = {"rec": r, "city": c}
             if news[3] == "elim":
-                ctx.post(season, cal, ctx.fan(tid, rng), rng.choice(["Mock draft season it is",
-                         "Well. There's always next year.", "Officially playing for pride now"]), teams=[tid],
-                         importance=20)
+                ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_elim", ff), teams=[tid], importance=20)
             else:
-                ctx.post(season, cal, ctx.fan(tid, rng), rng.choice(["PLAYOFFS!!!", "January football in " + c + "!!!",
-                         "We're in. Let's go win it."]), teams=[tid], importance=40)
-                ctx.post(season, cal, ctx.beat(tid), news[0] + ".", teams=[tid], importance=news[2] - 10)
+                ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_clinch", ff), teams=[tid], importance=40)
+                ctx.post(season, cal, ctx.beat(tid), Say("beat_clinch", {
+                    "headline": news[0], "headline_lc": news[0][:1].lower() + news[0][1:], "rec": r}),
+                    teams=[tid], importance=news[2] - 10)
                 from . import bitter
-                bitter.react_clinch(ctx, season, cal, tid, news[3], rng)
+                bitter.react_clinch(ctx, season, cal, tid, news[3], rng, rec=r,
+                                    left_t=plural(left[tid], "game") if left[tid] else "one weekend")
 
 
 # ---------------------------------------------------------------------------
@@ -1769,22 +1794,18 @@ def _injuries(ctx, season, games):
                 key=f"inj-{season}-{n}")
         if notable and imp >= 40:
             wk = int(cal)
-            top = ctx.post(season, cal, ctx.insider(rng), ctx.pick(("inj-ins", season, wk), rng, [
-                f"{c} {pos_abbr(p)} {p.name} ({part}) {vp}, per sources.", f"Bad news in {c}: {p.name} {vp}.",
-                f"{c} {pos_abbr(p)} {p.name} {vp}. The injury: {bare}.", f"Hearing {p.name} ({part}) {vp}."]),
-                teams=[tid], players=[p.id], importance=imp - 5)
-            ctx.post(season, cal, ctx.fan(tid, rng), ctx.pick(("inj-fan", season, wk), rng, [
-                f"Not {L}. Please not {L}.", "Next man up I guess", f"Losing {L} hurts", f"Get well soon {L}",
-                "Our injury luck is unreal", f"Can't catch a break. Heal up {L}."]),
-                teams=[tid], players=[p.id], importance=imp - 15, reply_to=top)
+            inf = {"c": c, "pos": pos_abbr(p), "pos_word": POS_WORD[p.position], "name": p.name, "last": p.last_name,
+                   "part": part, "vp": vp, "bare": bare, "partok": part not in ("injury", "undisclosed"),
+                   "city": ctx.city(tid)}
+            top = ctx.post(season, cal, ctx.insider(rng), Say("ins_injury", inf), teams=[tid], players=[p.id],
+                           importance=imp - 5)
+            ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_injury", inf), teams=[tid], players=[p.id],
+                     importance=imp - 15, reply_to=top)
             from . import bitter
             bitter.react_injury(ctx, season, cal, p, tid, part, vp, rng, imp, top)
             if long_out and rng.random() < 0.6:
-                ctx.post(season, cal, ctx.player_voice(p), ctx.pick(("inj-pl", season, wk), rng, [
-                    "I'll be back stronger. Thank you for all the love.", "God's plan. See y'all next year.",
-                    "This one hurts. Can't wait to get back out there with my brothers.",
-                    "Setback for a comeback.", "Appreciate all the messages. Rehab starts now."]),
-                    teams=[tid], players=[p.id], importance=imp - 10)
+                ctx.post(season, cal, ctx.player_voice(p), Say("player_injury", dict(inf, season_out="season" in vp)),
+                         teams=[tid], players=[p.id], importance=imp - 10)
 
 
 _MOVE_TEXT = {
@@ -1905,8 +1926,9 @@ def _notable_move(ctx, season, cal, n, t, p, last_release):
             body += f" Note: {t['note']}."
         ctx.add(season, cal, "moves", ctx.pick(("rel", season, int(cal)), rng, heads), body, teams=[tid],
                 players=[p.id], importance=26 + (10 if cal_imp >= NOTABLE else 0), key=f"rel-{season}-{n}")
-        ctx.post(season, cal, ctx.insider(rng), f"{c} is releasing {vet}{pos_abbr(p)} {p.name}.", teams=[tid],
-                 players=[p.id], importance=28)
+        ctx.post(season, cal, ctx.insider(rng), Say("ins_release", {
+            "c": c, "vet": vet, "pos": pos_abbr(p), "name": p.name, "exp": p.experience >= 4,
+            "exp_t": f"{p.experience}-year"}), teams=[tid], players=[p.id], importance=28)
     elif move == "Signed" and (cal_imp >= NOTABLE - 4 or p.experience >= 6):
         prior = [x for x in last_release.get(p.id, []) if x[0] < n and x[1]["team"] != tid]
         frm = (f" He was {'waived' if prior[-1][1]['move'] == 'Waived' else 'released'} by the "
@@ -1918,10 +1940,12 @@ def _notable_move(ctx, season, cal, n, t, p, last_release):
         ctx.add(season, cal, "moves", ctx.pick(("sign", season, int(cal)), rng, heads), body, teams=[tid],
                 players=[p.id], importance=24 + (8 if cal_imp >= NOTABLE else 0), key=f"sign-{season}-{n}")
         from . import bitter
-        bitter.react_sign(ctx, season, cal, tid, p, rng)
+        bitter.react_sign(ctx, season, cal, tid, p, rng, extra={
+            "prev": bool(prior), "prev_team": ctx.full(prior[-1][1]["team"]) if prior else ""})
     elif move.startswith("Activated from") and ctx.notable(p, tid):
         from . import bitter
-        bitter.react_sign(ctx, season, cal, tid, p, rng, back=True)
+        list_name = "injured reserve" if "injured" in move else "the PUP list"
+        bitter.react_sign(ctx, season, cal, tid, p, rng, back=True, extra={"list_name": list_name})
         ctx.add(season, cal, "moves", ctx.pick(("act", season, int(cal)), rng, [
             f"{c} activates {pos_abbr(p)} {L} from {'injured reserve' if 'injured' in move else 'PUP'}",
             f"{c} gets {L} back"]),
@@ -1929,17 +1953,20 @@ def _notable_move(ctx, season, cal, n, t, p, last_release):
             f"{'injured reserve' if 'injured' in move else 'the physically unable to perform list'}"
             f"{' in ' + t['when'] if t.get('when') else ''}.", teams=[tid], players=[p.id], importance=34,
             key=f"act-{season}-{n}")
-        ctx.post(season, cal, ctx.fan(tid, rng), rng.choice([f"{L.upper()} IS BACK", f"Welcome back {L}!"]),
-                 teams=[tid], players=[p.id], importance=22)
+        ctx.post(season, cal, ctx.fan(tid, rng), Say("fan_back", {
+            "last": p.last_name, "LAST": p.last_name.upper(), "list_name": list_name}),
+            teams=[tid], players=[p.id], importance=15)
     elif move == "Promoted from practice squad":
         ctx.add(season, cal, "moves", ctx.pick(("promo", season, int(cal)), rng, [
             f"{c} promotes {pos_abbr(p)} {L} to the 53", f"{L} earns a roster spot in {c}"]),
             f"The {ctx.full(tid)} promoted {POS_WORD[p.position]} {p.name} from the practice squad to the 53-man "
             f"roster.", teams=[tid], players=[p.id], importance=16, key=f"promo-{season}-{n}")
-        if rng.random() < 0.5:
-            ctx.post(season, cal, ctx.player_voice(p), rng.choice(["Dream come true. Not done yet.",
-                     "Thank you " + c + ". Time to work.", "53. Let's go."]), teams=[tid], players=[p.id],
-                     importance=14)
+        # The player celebrates his first call-up of the season (not every game-day elevation).
+        promoted = ctx.__dict__.setdefault("_promoted", set())
+        if (season, p.id) not in promoted and rng.random() < 0.3:
+            ctx.post(season, cal, ctx.player_voice(p), Say("player_promo", {"city": c, "Nick": ctx.nick(tid)}),
+                     teams=[tid], players=[p.id], importance=14)
+        promoted.add((season, p.id))
 
 
 def _draft(ctx, season):
@@ -1973,11 +2000,10 @@ def _draft(ctx, season):
             f"The {ctx.full(tid)} made {POS_WORD[p.position]} {p.name} of {p.college} the first pick of the {season} "
             f"draft.{why} {combine_note(p)}".strip(), teams=[tid], players=[p.id], importance=75,
             key=f"draft1-{season}")
-        ctx.post(season, cal, ctx.insider(rng), f"With the first pick, {ctx.city(tid)} selects {p.name}, "
-                 f"{pos_abbr(p)}, {p.college}.", teams=[tid], players=[p.id], importance=70)
-        ctx.post(season, cal, ctx.player_voice(p), rng.choice([f"Dream come true. {ctx.city(tid)}, let's work!",
-                 f"Thank you {ctx.city(tid)}! Can't wait to get started.", "Mom, we made it."]),
-                 teams=[tid], players=[p.id], importance=50)
+        pf = {"c": ctx.city(tid), "city": ctx.city(tid), "name": p.name, "pos": pos_abbr(p), "college": p.college}
+        ctx.post(season, cal, ctx.insider(rng), Say("ins_first_pick", pf), teams=[tid], players=[p.id], importance=70)
+        ctx.post(season, cal, ctx.player_voice(p), Say("player_first_pick", pf), teams=[tid], players=[p.id],
+                 importance=50)
     rnd1 = [d for d in picks if d["round"] == 1]
     lines = []
     for d in rnd1:
@@ -2002,12 +2028,11 @@ def _draft(ctx, season):
             if q is None:
                 continue
             frng = ctx.rng(season, "dfan", d["pick"])
-            bitter.react_pick(ctx, season, cal, d, q, frng)
-            ctx.post(season, cal, ctx.fan(d["team"], frng), frng.choice([
-                f"Love the {q.last_name} pick", f"A {POS_WORD[q.position]} at {d['pick']}?? Who is running this team",
-                f"Never heard of {q.last_name}. Trusting the process.", f"{q.last_name}! Welcome to {ctx.city(d['team'])}",
-                "Great value right there", "Not who I wanted but ok"]), teams=[d["team"]], players=[q.id],
-                importance=18)
+            first_of_team = d["pick"] == min(x["pick"] for x in picks if x["team"] == d["team"])
+            bitter.react_pick(ctx, season, cal, d, q, frng, first_of_team=first_of_team)
+            ctx.post(season, cal, ctx.fan(d["team"], frng), Say("fan_pick", {
+                "last": q.last_name, "pick": d["pick"], "pos_word": POS_WORD[q.position], "college": q.college,
+                "city": ctx.city(d["team"])}), teams=[d["team"]], players=[q.id], importance=18)
     # Each team's class.
     by_team = defaultdict(list)
     for d in picks:
@@ -2033,7 +2058,12 @@ def _draft(ctx, season):
 
 def _career_summary(ctx, p):
     """(seasons on record, teams, regular-season totals, titles) from his career lines."""
-    rows = [r for r in ctx.league.career if r["pid"] == p.id]
+    by_pid = ctx.__dict__.get("_career_by_pid")
+    if by_pid is None:      # indexed once per build (looping over every career line per player was slow)
+        by_pid = ctx._career_by_pid = defaultdict(list)
+        for r in ctx.league.career:
+            by_pid[r["pid"]].append(r)
+    rows = by_pid.get(p.id, ())
     reg = [r for r in rows if r["phase"] == "regular"]
     totals = defaultdict(float)
     for r in reg:
@@ -2073,10 +2103,10 @@ def _retirements(ctx, season):
     for p in league.players:
         if p.retired != season - 1:
             continue
-        seasons, teams, totals, titles = _career_summary(ctx, p)
         cal_now = ctx.caliber(p)
         if p.experience < 6 and cal_now < NOTABLE:
             continue
+        seasons, teams, totals, titles = _career_summary(ctx, p)
         rng = ctx.rng(season, "retire", p.id)
         whole = _whole_career_known(ctx, p)
         last_team = teams[-1] if teams else from_roster.get(p.id)
@@ -2111,11 +2141,10 @@ def _retirements(ctx, season):
             from . import bitter
             bitter.react_retire(ctx, season, -3, last_team, p, rng)
         if imp >= 35:
-            ctx.post(season, -3, ctx.player_voice(p), rng.choice([
-                "Thank you, football. It was the ride of a lifetime.",
-                "Hanging them up. Grateful for every snap, every teammate, every fan.",
-                "It's time. Thank you to everyone who believed in me."]), teams=[last_team] if last_team else [],
-                players=[p.id], importance=imp)
+            ctx.post(season, -3, ctx.player_voice(p), Say("player_retire", {
+                "seasons_t": f"{num(p.experience).capitalize()} seasons", "has_city": last_team in ctx.teams,
+                "city": ctx.city(last_team) if last_team in ctx.teams else ""}),
+                teams=[last_team] if last_team else [], players=[p.id], importance=imp)
 
 
 def _season_summary(ctx, season, games):
@@ -2191,8 +2220,7 @@ def _playoff_field(ctx, season):
             rng = ctx.rng(season, "fieldfan", t)
             if rng.random() < 0.5:
                 seed = seeds[conf].index(t) + 1
-                ctx.post(season, cal, ctx.fan(t, rng), rng.choice([f"#{seed} seed. Let's ride.",
-                         "Playoff week. I'm not sleeping.", f"Bring on whoever. {ctx.nick(t).upper()}!"]),
+                ctx.post(season, cal, ctx.fan(t, rng), Say("fan_field", {"seed": seed, "NICK": ctx.nick(t).upper()}),
                          teams=[t], importance=25)
 
 
@@ -2363,7 +2391,8 @@ def _features(ctx, season, track):
         bitter.react_week(ctx, season, track, w, track.schedule)
         if w >= 2:
             prev_order = _power_rankings(ctx, season, track, w, cal + 0.1, prev_order)
-            bitter.react_rankings(ctx, season, cal + 0.1, prev_order[0], ctx.rng(season, "rexrank", w))
+            bitter.react_rankings(ctx, season, cal + 0.1, prev_order[0], ctx.rng(season, "rexrank", w),
+                                  rec=SL.rec_text(track.record(prev_order[0], w)))
         elif w == 1:
             prev_order = SL.rank_order(track, 1)
         if w < ctx.n_weeks:
@@ -2402,10 +2431,10 @@ def _streak_stories(ctx, season, track, w, cal):
         imp = min(55, 36 + 3 * (n - at)) + (6 if ctx.caliber(p) >= STAR else 0)
         ctx.add(season, cal, "storyline", W_.say("streak_head", rng, f), body, teams=[tid], players=[pid],
                 importance=imp, key=f"streak-{season}-{pid}-{key}-{n}")
-        ctx.post(season, cal, ctx.stat_desk(), W_.say("stat_streak", rng, f), teams=[tid], players=[pid],
+        ctx.post(season, cal, ctx.stat_desk(), Say("stat_streak", f), teams=[tid], players=[pid],
                  importance=imp - 6)
         if rng.random() < 0.35:
-            ctx.post(season, cal, ctx.player_voice(p), W_.say("player_streak", rng, f), teams=[tid], players=[pid],
+            ctx.post(season, cal, ctx.player_voice(p), Say("player_streak", f), teams=[tid], players=[pid],
                      importance=imp - 16)
 
 
@@ -2427,7 +2456,7 @@ def _comeback_stories(ctx, season, track, w, cal):
                 teams=[tid], players=[pid], importance=30 + 12 * star + min(10, missed),
                 key=f"comeback-{season}-{pid}-{w}")
         if rng.random() < 0.6:
-            ctx.post(season, cal, ctx.player_voice(p), W_.say("player_comeback", rng, f), teams=[tid], players=[pid],
+            ctx.post(season, cal, ctx.player_voice(p), Say("player_comeback", f), teams=[tid], players=[pid],
                      importance=26 + 10 * star)
 
 
@@ -2465,7 +2494,8 @@ def _breakout_stories(ctx, season, track, w, cal, done):
         return
     W_ = ctx.writer
     for pid, gl in track.player_games.items():
-        if gl[-1][0] != w or ("breakout", pid) in done or len(gl) < 3:
+        gl = [x for x in gl if x[0] <= w]          # only what was known after week w
+        if not gl or gl[-1][0] != w or ("breakout", pid) in done or len(gl) < 3:
             continue
         p = ctx.player(pid)
         if p is None or p.position in ("K", "P", "LS") or ctx.caliber(p) >= STAR:
@@ -2483,7 +2513,8 @@ def _breakout_stories(ctx, season, track, w, cal, done):
         origin = ("an undrafted free agent" if p.draft_round == 0 else
                   f"{article(ordinal(p.draft_round))} {ordinal(p.draft_round)}-round pick in {p.draft_year}")
         if pro_year == 1:
-            origin += ", and he's a rookie"
+            origin = ("an undrafted free agent this year" if p.draft_round == 0 else
+                      f"{article(ordinal(p.draft_round))} {ordinal(p.draft_round)}-round pick this year")
         f = {"last": ctx.short(p, tid), "name": p.name, "Tc": ctx.city(tid), "Tc_poss": possessive(ctx.city(tid)),
              "T": ctx.full(tid), "origin": origin, "late_pick": p.draft_round == 0 or p.draft_round >= 4,
              "recent_got": game_noun(_sum_lines(x[3] for x in last3), rng)}
@@ -2495,14 +2526,17 @@ def _breakout_stories(ctx, season, track, w, cal, done):
             body.append(f"For the season: {season_amount(stat, t[stat])} in {plural(len(track.games_of(pid, w)), 'game')}.")
         ctx.add(season, cal, "storyline", W_.say("breakout_head", rng, f), " ".join(body), teams=[tid],
                 players=[pid], importance=45, key=f"breakout-{season}-{pid}")
-        ctx.post(season, cal, ctx.fan(tid, rng), W_.say("fan_breakout", rng, f), teams=[tid], players=[pid],
-                 importance=28)
+        who = ctx.fan(tid, rng)
+        bid = ctx.post(season, cal, who, Say("fan_breakout", f), teams=[tid], players=[pid], importance=28)
+        from . import bitter
+        bitter.remember(ctx, "fan_believe", season, w, who, bid, pid_=pid, team=tid)
 
 
 def _slump_stories(ctx, season, track, w, cal, slumps):
     W_ = ctx.writer
     for pid, gl in track.player_games.items():
-        if gl[-1][0] != w:
+        gl = [x for x in gl if x[0] <= w]          # only what was known after week w
+        if not gl or gl[-1][0] != w:
             continue
         p = ctx.player(pid)
         if p is None or p.position != "QB" or w - slumps.get(pid, -99) < 4:
@@ -2525,8 +2559,10 @@ def _slump_stories(ctx, season, track, w, cal, slumps):
                 W_.say("slump_body", rng, f) + " " + W_.say("slump_team", rng, f), teams=[tid], players=[pid],
                 importance=40 + (8 if ctx.notable(p, tid) else 0), key=f"slump-{season}-{pid}-{w}")
         if rng.random() < 0.6:
-            ctx.post(season, cal, ctx.fan(tid, rng), W_.say("fan_slump", rng, f), teams=[tid], players=[pid],
-                     importance=24)
+            who = ctx.fan(tid, rng)
+            bid = ctx.post(season, cal, who, Say("fan_slump", f), teams=[tid], players=[pid], importance=24)
+            from . import bitter
+            bitter.remember(ctx, "fan_bench", season, w, who, bid, pid_=pid, team=tid)
 
 
 def _team_turn_stories(ctx, season, track, w, cal, done):
@@ -2556,7 +2592,7 @@ def _team_turn_stories(ctx, season, track, w, cal, done):
              "rec": SL.rec_text(now), "n_t": num(n)}
         ctx.add(season, cal, "storyline", W_.say(f"{story[0]}_head", rng, f), W_.say(f"{story[0]}_body", rng, f),
                 teams=[tid], importance=45, key=f"{story[0]}-{season}-{tid}")
-        ctx.post(season, cal, ctx.fan(tid, rng), W_.say(story[1], rng, f), teams=[tid], importance=26)
+        ctx.post(season, cal, ctx.fan(tid, rng), Say(story[1], f), teams=[tid], importance=26)
 
 
 def _pace_stories(ctx, season, track, w, cal, records):
@@ -2656,7 +2692,8 @@ def _rank_blurb(ctx, track, tid, w, rng):
         extra.append(f"{SL.rec_text(fo[4])} since losing {pos_abbr(p)} {p.last_name}.")
     best = None
     for pid, gl in track.player_games.items():
-        if gl[-1][0] == w and gl[-1][2] == tid:
+        lw = next((x for x in reversed(gl) if x[0] <= w), None)     # his latest game as of week w
+        if lw and lw[0] == w and lw[2] == tid:
             for s in track.streaks_for(pid, w):
                 if s[1] >= 3 and (best is None or s[1] > best[1][1]):
                     best = (pid, s)
@@ -2694,13 +2731,14 @@ def _power_rankings(ctx, season, track, w, cal, prev):
             W_.say("rank_intro", rng, f) + "\n" + "\n".join(lines), teams=list(order), importance=50,
             key=f"rank-{season}-{w}")
     # Fans react.
-    ctx.post(season, cal, ctx.fan(order[0], rng), W_.say("fan_rank_top", rng, {}), teams=[order[0]], importance=30)
+    rk = lambda tid: {"rank": order.index(tid) + 1, "rec": SL.rec_text(track.record(tid, w)),
+                      "jump": num(abs(moves.get(tid, 0))), "same_top": f["same_top"]}
+    frng = ctx.rng(season, "rankfans", w)
+    ctx.post(season, cal, ctx.fan(order[0], frng), Say("fan_rank_top", rk(order[0])), teams=[order[0]], importance=30)
     if riser is not None and moves[riser] >= 3:
-        ctx.post(season, cal, ctx.fan(riser, rng), W_.say("fan_rank_up", rng, {"rank": order.index(riser) + 1}),
-                 teams=[riser], importance=24)
+        ctx.post(season, cal, ctx.fan(riser, frng), Say("fan_rank_up", rk(riser)), teams=[riser], importance=24)
     if faller is not None and moves[faller] <= -3:
-        ctx.post(season, cal, ctx.fan(faller, rng), W_.say("fan_rank_down", rng, {"rank": order.index(faller) + 1}),
-                 teams=[faller], importance=24)
+        ctx.post(season, cal, ctx.fan(faller, frng), Say("fan_rank_down", rk(faller)), teams=[faller], importance=24)
     return order
 
 
@@ -2803,8 +2841,9 @@ def _watch(ctx, season, track, w, cal, rookies):
             W_.say(f"{kind}_intro", rng, f) + "\n" + "\n".join(lines), teams=[x[2] for x in top],
             players=[x[1] for x in top], importance=40 if rookies else 50, key=f"{kind}-{season}-{w}")
     if not rookies:
-        ctx.post(season, cal, ctx.fan(top[0][2], rng), W_.say("fan_mvp", rng, {"last": lead.last_name}),
-                 teams=[top[0][2]], players=[lead.id], importance=26)
+        ctx.post(season, cal, ctx.fan(top[0][2], rng), Say("fan_mvp", {
+            "last": lead.last_name, "line": _season_line(top[0][3], lead.position)}),
+            teams=[top[0][2]], players=[lead.id], importance=26)
 
 
 # ---------------------------------------------------------------------------
@@ -2837,25 +2876,26 @@ def build(league, past_games=None):
     seasons = sorted({ctx.first, league.season} | {h["season"] for h in league.team_history}
                      | {d["season"] for d in league.draft_history} | {r["season"] for r in (past_games or ())})
     for season in seasons:
+        ctx.writer.new_season(season)
+        start = len(ctx.posts)
         games = _season_games(ctx, season, past_games)
         recs = _records_by_week(ctx, games)
         track = SL.SeasonTrack(ctx, season, games)
-        for phase, g, box in games:
-            if g.get("played") and box:
-                _game_story(ctx, season, phase, g, box, recs, track)
-        _performances_and_milestones(ctx, season, games, recs, track)
-        _features(ctx, season, track)
-        _injuries(ctx, season, games)
-        _moves(ctx, season)
-        _draft(ctx, season)
-        _retirements(ctx, season)
-        _playoff_field(ctx, season)
-        _season_summary(ctx, season, games)
-        _captains(ctx, season)
         from .news_awards import awards_news   # awards and the Pro Bowl (Oct 23)
-        awards_news(ctx, season)
         from .news_money import money_news     # the cap, TV and labor deals (Oct 24)
-        money_news(ctx, season)
+        sections = [lambda: [_game_story(ctx, season, phase, g, box, recs, track)
+                             for phase, g, box in games if g.get("played") and box],
+                    lambda: _performances_and_milestones(ctx, season, games, recs, track),
+                    lambda: _features(ctx, season, track), lambda: _injuries(ctx, season, games),
+                    lambda: _moves(ctx, season), lambda: _draft(ctx, season), lambda: _retirements(ctx, season),
+                    lambda: _playoff_field(ctx, season), lambda: _season_summary(ctx, season, games),
+                    lambda: _captains(ctx, season), lambda: awards_news(ctx, season), lambda: money_news(ctx, season),
+                    lambda: ctx.finish_posts(start)]   # Bitter's bits, worded in calendar order (Oct 24)
+        for section in sections:
+            # Each kind of news keeps its own memory of recent wording, so a story
+            # written for Week 3 reads the same after Week 9 is played.
+            ctx.writer.recent.clear()
+            section()
     _injury_reports(ctx)
     _playoff_picture(ctx)
     order = lambda x: (-x["season"], -x["cal"], -x["importance"])
