@@ -8,8 +8,8 @@
 # potential, ratings history, depth chart fit) through shown() below, so:
 #   - the typical NFL player shows about 50 (internal ~54)
 #   - an average starter shows about 63, backups high 30s to low 40s
-#   - about 1 rostered player in 30 shows 80+ (~50 a league), about 1 in 160
-#     shows 90+ (~1 per position)
+#   - top ratings are rare (Oct 24, "FOF8-rare", see _TOP): the league's top
+#     ~15-25 players show 80+, about 2 show 90+, 95+ is almost never seen
 # One curve for every position, so positions keep their differences
 # (QBs are the scarcest; most kickers still read "Good").
 #
@@ -34,8 +34,9 @@ _LOW, _HIGH = 45, 92
 _TOP_SLOPE = (99 - _MIDDLE[_HIGH]) / (99 - _HIGH)
 
 
-def shown_exact(internal):
-    """Internal rating (any number) -> shown rating, unrounded."""
+def _base_exact(internal):
+    """The Oct 22 curve (internal -> shown, unrounded), before the top was
+    stretched. Still used by legacy_shown()."""
     v = float(internal)
     if v <= _LOW:
         x = _MIDDLE[_LOW] - (_LOW - v)
@@ -47,8 +48,38 @@ def shown_exact(internal):
     return max(1.0, min(99.0, x))
 
 
+# ---- Top ratings rare, FOF8-style (Blake, Oct 24: "i want higher ratings to feel
+# more rare and special and much less common. in fof8 it is extremely rare to have a
+# 90+qb"; he picked "FOF8-rare"). Display only, like the rest of this file: below 70
+# nothing changes (the median player stays 50); above it the Oct 22 curve's values
+# are stretched through these points (Oct 22 shown -> shown now). Measured Oct 24
+# on 6 leagues (fresh and 1-5 seasons in; scratchpad rating_ranks.py), every
+# rostered player: before, ~50 showed 80+, ~11-15 showed 90+, and a new league could
+# open with four QBs at 96-97 (the top of the old curve packed internal 92-95 into
+# 96.7-97.7). Now 80+ is internal 88 and up (the league's top ~15-25), 90+ is 93 and
+# up (about 0-5 a league, ~2 on average), 95+ needs internal 96, higher than any
+# player measured (only a generational player at his best could get there).
+_TOP = [(69.8, 69.8), (87.8, 80.0), (96.7, 88.0), (97.0, 90.0), (97.4, 92.0), (97.7, 94.0),
+        (98.0, 95.5), (99.0, 99.0)]
+
+
+def _stretch(x):
+    if x <= _TOP[0][0]:
+        return x
+    for (a, fa), (b, fb) in zip(_TOP, _TOP[1:]):
+        if x <= b:
+            return fa + (fb - fa) * (x - a) / (b - a)
+    return _TOP[-1][1]
+
+
+def shown_exact(internal):
+    """Internal rating (any number) -> shown rating, unrounded."""
+    return _stretch(_base_exact(internal))
+
+
 # Lookup for whole numbers (what the screens use almost always).
 _TABLE = [round(shown_exact(v)) for v in range(101)]
+_BASE_TABLE = [round(_base_exact(v)) for v in range(101)]
 
 # Kickers, punters and long snappers (Blake, Oct 21): rated among their own
 # kind. A starting specialist at a given rank among starting specialists shows
@@ -85,10 +116,21 @@ def shown(internal, position=None):
     position: the player's position (or the spot's), so kickers, punters and
     snappers use their own curve."""
     if position in SPECIALISTS and _SPECIALIST is not None:
-        return max(1, min(99, round(_special(internal))))
+        return max(1, min(99, round(_stretch(_special(internal)))))
     if isinstance(internal, int) and 0 <= internal <= 100:
         return _TABLE[internal]
     return round(shown_exact(internal))
+
+
+def legacy_shown(internal, position=None):
+    """The Oct 22 scale, before top ratings were made rarer. Never shown on a
+    screen: only for hidden judgments tuned on it (award voters' "film", which
+    players the news treats as notable or stars), so they behave as tuned."""
+    if position in SPECIALISTS and _SPECIALIST is not None:
+        return max(1, min(99, round(_special(internal))))
+    if isinstance(internal, int) and 0 <= internal <= 100:
+        return _BASE_TABLE[internal]
+    return round(_base_exact(internal))
 
 
 def internal(shown_value):

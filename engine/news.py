@@ -17,7 +17,7 @@
 #     events, numbers or quotes about decisions are not.
 #   - Never mention hidden ratings (consistency, durability, Generational
 #     status, development). Ratings only decide which players are newsworthy,
-#     on the shown scale (scale.shown), and are never printed.
+#     on the Oct 22 shown scale (scale.legacy_shown), and are never printed.
 #   - Varied wording: each kind of story has several ways to say it, and the
 #     same way isn't used twice in the same week while others are unused.
 #
@@ -36,7 +36,7 @@ from . import playoffs as po
 from . import season as S
 from . import storylines as SL
 from .news_words import Writer
-from .scale import shown
+from .scale import legacy_shown
 from .sim.text import short_name
 
 # ---- Knobs (PROVISIONAL, for Blake's review) ---------------------------------
@@ -588,7 +588,9 @@ class _Ctx:
         return p.last_name
 
     def caliber(self, p):
-        return shown(p.overall(), p.position)
+        # The Oct 22 scale NOTABLE and STAR were tuned on (never printed), not the
+        # rarer top ratings screens show since Oct 24.
+        return legacy_shown(p.overall(), p.position)
 
     def notable(self, p, tid=None):
         return p is not None and (self.caliber(p) >= NOTABLE or p.id in self.starters.get(tid, ()))

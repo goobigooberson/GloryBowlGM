@@ -22,7 +22,7 @@ from fastapi.responses import RedirectResponse
 from nicegui import app, native, ui
 
 from screens import main_page, menu_page, new_game_page, offseason_page, player_card_page
-from screens.state import state, write_recovery
+from screens.state import state
 
 from engine import saves
 
@@ -108,8 +108,9 @@ def player_card(pid: int):
     player_card_page.build_player_card(pid)
 
 
-# Closing the window with unsaved changes keeps them in a recovery copy.
-app.on_shutdown(write_recovery)
+# Closing the window with unsaved changes throws them away: the game only saves when
+# you press Save (Blake, Oct 24: "if i close the game without saving i dont want it to
+# still save cause then whats the point of saving"). Until then a recovery copy was kept.
 
 
 if __name__ in {"__main__", "__mp_main__"}:

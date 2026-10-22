@@ -2,9 +2,11 @@
 # What the screens are currently looking at, plus opening, creating and
 # saving games. Shared by every screen.
 #
-# Saving (Blake): manual by default. Changes stay in memory and the header
-# shows "Unsaved changes" until you press Save (or Ctrl+S). With autosave
-# turned on in Settings, every change is saved right away instead.
+# Saving (Blake): manual only. Changes stay in memory and the header shows
+# "Unsaved changes" until you press Save (or Ctrl+S); leaving without saving
+# throws them away. (Blake, Oct 24: no autosave and no recovery copy when the
+# window is closed: "then whats the point of saving".) A new game is saved
+# once when you create it, so it shows up in Load game.
 
 from engine import depth
 from engine import saves
@@ -115,11 +117,9 @@ def close_game():
 
 def mark_changed():
     """Call after anything that changes the league (depth chart edit, signing,
-    simmed week...). Saves right away if autosave is on."""
+    simmed week...): the header shows "Unsaved changes" until you save."""
     state.dirty = True
-    if saves.load_app_settings()["autosave"]:
-        save_now()
-    elif state.on_save_status:
+    if state.on_save_status:
         state.on_save_status()
 
 
@@ -127,7 +127,7 @@ def save_now():
     if state.league is None or state.save_path is None:
         return
     save_league(state.league, state.save_path)
-    saves.discard_recovery(state.save_path)
+    saves.discard_recovery(state.save_path)     # an old recovery copy (from before Oct 24) is out of date now
     state.dirty = False
     if state.on_save_status:
         state.on_save_status()
@@ -171,13 +171,6 @@ def finish_startup():
     from engine import draft_day
     draft_day.startup_finish(state.league)
     mark_changed()
-
-
-def write_recovery():
-    """The window is closing. If there are unsaved changes, keep them in a
-    recovery copy so the main menu can offer them back next time."""
-    if state.dirty and state.league is not None and state.save_path is not None:
-        save_league(state.league, saves.recovery_path(state.save_path))
 
 
 INJURY_TAGS = {"Questionable": "Q", "Doubtful": "D", "Out": "OUT", "Injured reserve": "IR",

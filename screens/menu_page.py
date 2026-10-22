@@ -9,7 +9,6 @@ from nicegui import app, ui
 
 from engine import saves
 from engine.league import ROSTER_METHODS
-from engine.database import read_save_info
 from . import theme
 from .state import open_save
 
@@ -84,13 +83,9 @@ def _open_and_play(path):
 def build_main_menu():
     _page_start("Front Office Football", "You're the general manager. Build a winner.")
     all_saves = saves.list_saves()
-    recoveries = [s for s in all_saves if s["has_recovery"]]
     last = saves.last_played()
 
     with ui.column().classes("px-10 py-8 gap-4").style("width: 640px; max-width: 100%"):
-        for s in recoveries:
-            _recovery_notice(s)
-
         with ui.column().classes("menu-panel p-5 gap-3 w-full"):
             if last:
                 with ui.button(on_click=lambda: _open_and_play(last["path"])) \
@@ -112,32 +107,6 @@ def build_main_menu():
 
         if not all_saves:
             ui.label("No saved games yet. Start with New game.").classes("legend")
-
-
-def _recovery_notice(s):
-    """'You closed the game with unsaved changes': restore or discard."""
-    rp = saves.recovery_path(s["path"])
-    try:
-        closed_at = when(read_save_info(rp).get("saved_at"))
-    except Exception:
-        closed_at = "earlier"
-    with ui.column().classes("notice w-full gap-1"):
-        ui.label(f'Unsaved changes found for "{s["name"]}"').classes("condensed text-xl")
-        ui.label(f"The game was closed ({closed_at}) before these changes were saved. "
-                 "Restore them, or throw them away and keep the save as it was.").classes("text-sm")
-        with ui.row().classes("gap-2 mt-1"):
-            ui.button("Restore and continue", on_click=lambda: restore(s["path"])) \
-                .props("no-caps unelevated color=green-10 dense").classes("px-3")
-            ui.button("Throw them away", on_click=lambda: discard(s["path"])) \
-                .props("no-caps flat color=grey-9 dense").classes("px-3")
-
-    def restore(path):
-        saves.restore_recovery(path)
-        _open_and_play(path)
-
-    def discard(path):
-        saves.discard_recovery(path)
-        ui.navigate.reload()
 
 
 # ---------------------------------------------------------------------------
@@ -168,10 +137,6 @@ def build_load_page():
                             ui.label(save_details(s)).classes("legend")
                             ui.label(f"{method}   ·   started {when(s.get('created'))}"
                                      if s.get("created") else method).classes("legend")
-                        if s["has_recovery"]:
-                            ui.label("Has unsaved changes from when the game was closed "
-                                     "(restore them from the main menu).").classes("text-sm") \
-                                .style("color:#8A6A00")
                     with ui.row().classes("gap-1 no-wrap"):
                         if not s["problem"]:
                             ui.button("Load", on_click=lambda s=s: _open_and_play(s["path"])) \
@@ -239,17 +204,10 @@ def build_load_page():
 
 def build_settings_page():
     _page_start("Settings", "These apply to every save.", back=("Main menu", "/"))
-    settings = saves.load_app_settings()
-
     with ui.column().classes("px-10 py-8 gap-4").style("width: 760px; max-width: 100%"):
         with ui.column().classes("menu-panel p-6 gap-1 w-full"):
             ui.label("Saving").classes("menu-heading")
-            ui.switch("Autosave", value=settings["autosave"],
-                      on_change=lambda e: (saves.set_app_setting("autosave", e.value),
-                                           ui.notify("Autosave on" if e.value else "Autosave off")))
-            ui.label("Off (default): changes stay unsaved until you press Save or Ctrl+S, so you can "
-                     "go back to the main menu without saving to undo them. If you close the window "
-                     "with unsaved changes, the game keeps a recovery copy and offers it back next time.") \
-                .classes("legend")
-            ui.label("On: every change is saved the moment you make it. Use \"Save a copy\" first "
-                     "if you want a backup to go back to.").classes("legend")
+            ui.label("The game saves only when you press Save (or Ctrl+S). Changes stay unsaved until "
+                     "then: go back to the main menu or close the window without saving and they're "
+                     "gone, and the save is as you last left it. Use \"Save a copy\" for a backup to "
+                     "go back to.").classes("legend")

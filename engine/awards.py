@@ -50,7 +50,7 @@ from collections import defaultdict
 
 from . import playoffs as po
 from . import schedule as sched
-from .scale import shown
+from .scale import legacy_shown
 
 VOTERS = 50                       # media panel for season awards and All-Pro
 BALLOT_POINTS = (10, 5, 3, 2, 1)  # points for 1st..5th on a season-award ballot
@@ -304,7 +304,9 @@ def vote_value(position, s):
 
 
 def film(p):
-    return shown(p.overall(), p.position)
+    # The Oct 22 scale the voters were tuned on (tools/awards_check.py), not the
+    # rarer top ratings screens show since Oct 24.
+    return legacy_shown(p.overall(), p.position)
 
 
 # ---------------------------------------------------------------------------

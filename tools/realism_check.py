@@ -13,7 +13,8 @@
 #     python tools/realism_check.py
 #     python tools/realism_check.py --leagues saved,101,102,103 --seasons 3
 #
-# --leagues: comma list; "saved" = your saved league, a number = a generated
+# --leagues: comma list; "saved" = the fixed test league (tools/data/realism_league.db,
+#            a copy of Blake's first save), a number = a generated
 #            league from that seed. Default: saved (if it exists) + 101,102,103.
 # --seasons: seasons per league (default 2). More seasons = steadier averages;
 #            16 total is what calibration used.

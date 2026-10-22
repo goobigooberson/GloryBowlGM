@@ -2,12 +2,12 @@
 # Save slots: every game you start is its own file in the "saves" folder,
 # so you can keep several leagues going at once. This file lists them,
 # names new ones, copies and deletes them, and keeps the game's own settings
-# (saves/settings.json), such as whether autosave is on.
+# (saves/settings.json), such as which save you played last.
 #
-# Recovery copies: the game window can't be stopped from closing, so if you
-# close it with unsaved changes, the game writes a recovery copy next to the
-# save (e.g. bears-2026.recovery.db). Next time, the main menu offers to
-# restore it. The real save is never touched unless you choose to.
+# Saving is manual only (Blake, Oct 24): closing the window with unsaved
+# changes throws them away. Until then the game kept a "recovery copy" next to
+# the save (e.g. bears-2026.recovery.db); the functions below still clean up
+# any that are left (deleting a save deletes its copy; saving discards it).
 
 import json
 import re
@@ -39,9 +39,8 @@ RECOVERY = ".recovery.db"
 HISTORY = ".history.db"      # past seasons' box scores, beside each save (database.write_history)
 
 DEFAULT_APP_SETTINGS = {
-    "autosave": False,     # Blake: manual save by default; autosave can be turned on in Settings
     "last_opened": None,   # file name of the save you played last (for Continue)
-}
+}                          # (no autosave: Blake, Oct 24, saving is manual only)
 
 
 # ---- Game settings (not part of any one save) -----------------------------

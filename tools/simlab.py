@@ -23,18 +23,21 @@ from engine.sim.norms import build_norms         # noqa: E402
 GROUP = {"QB": "QB", "RB": "RB", "FB": "RB", "WR": "WR", "TE": "TE",
          "DE": "DL", "DT": "DL", "OLB": "LB", "ILB": "LB", "CB": "DB", "S": "DB",
          "K": "K", "P": "P"}
-SAVE_FILE = ROOT / "saves" / "league.db"
+# The fixed test league the realism tools call "saved": a copy of Blake's first saved
+# league (saves/league.db, Oct 19), kept here since Oct 24 when he cleared his saves,
+# so the reports stay comparable with earlier ones. Never changed by the tools.
+SAVE_FILE = ROOT / "tools" / "data" / "realism_league.db"
 
 
 def get_league(name, camp=True):
-    """'saved' = your saved league (saves/league.db, never changed);
+    """'saved' = the fixed test league (tools/data/realism_league.db, never changed);
     a number = a brand-new generated league from that seed (not saved).
     camp: a new league starts at training camp with 90-man rosters, as in
     the game (play_season makes the final cuts before week 1); camp=False
     for tools that play games without a preseason (53s + practice squads)."""
     if name == "saved":
         if not SAVE_FILE.exists():
-            raise SystemExit("No saved league found at saves/league.db")
+            raise SystemExit(f"No test league found at {SAVE_FILE}")
         return load_league(SAVE_FILE)
     return create_league(seed=int(name), camp=camp)
 
