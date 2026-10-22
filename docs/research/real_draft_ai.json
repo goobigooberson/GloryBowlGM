@@ -1,0 +1,686 @@
+{
+ "board_vs_pick_2023": {
+  "note": "ESPN final big board rank vs actual pick, 2023 draft (the only year in the file). positive = went later than ranked",
+  "matched": 89,
+  "rank_pick_correlation": 0.877,
+  "by_rank_band": {
+   "1-10": {
+    "n": 9,
+    "median_pick_minus_rank": 1,
+    "p10": -6,
+    "p90": 6,
+    "abs_median": 3
+   },
+   "11-32": {
+    "n": 20,
+    "median_pick_minus_rank": 1,
+    "p10": -13,
+    "p90": 18,
+    "abs_median": 5
+   },
+   "33-64": {
+    "n": 32,
+    "median_pick_minus_rank": -2,
+    "p10": -15,
+    "p90": 37,
+    "abs_median": 14
+   },
+   "65-100": {
+    "n": 28,
+    "median_pick_minus_rank": 12,
+    "p10": -28,
+    "p90": 95,
+    "abs_median": 22
+   }
+  },
+  "ranked_top100_undrafted": [
+   4,
+   16,
+   24,
+   34,
+   72,
+   75,
+   81,
+   83,
+   87,
+   93,
+   95,
+   96
+  ],
+  "biggest_reaches": [
+   [
+    51,
+    18,
+    "LB",
+    "Jack Campbell"
+   ],
+   [
+    68,
+    37,
+    "DE",
+    "Derick Hall"
+   ],
+   [
+    66,
+    38,
+    "OL",
+    "Matthew Bergeron"
+   ],
+   [
+    78,
+    50,
+    "WR",
+    "Jayden Reed"
+   ],
+   [
+    85,
+    63,
+    "WR",
+    "Marvin Mims"
+   ],
+   [
+    55,
+    34,
+    "TE",
+    "Sam LaPorta"
+   ],
+   [
+    60,
+    40,
+    "DT",
+    "Isaiah Foskey"
+   ],
+   [
+    28,
+    12,
+    "RB",
+    "Jahmyr Gibbs"
+   ]
+  ],
+  "biggest_falls": [
+   [
+    74,
+    195,
+    "WR",
+    "A.T. Perry"
+   ],
+   [
+    69,
+    186,
+    "OL",
+    "Jaelyn Duncan"
+   ],
+   [
+    84,
+    190,
+    "OL",
+    "Luke Wypler"
+   ],
+   [
+    61,
+    160,
+    "DB",
+    "Antonio Johnson"
+   ],
+   [
+    99,
+    194,
+    "DT",
+    "Keondre Coburn"
+   ],
+   [
+    76,
+    154,
+    "OL",
+    "Olusegun Oluwatimi"
+   ],
+   [
+    41,
+    110,
+    "DT",
+    "Adetomiwa Adebawore"
+   ],
+   [
+    47,
+    111,
+    "OL",
+    "Dawand Jones"
+   ]
+  ],
+  "position_log_ratio_top100": {
+   "DB": {
+    "n": 16,
+    "mean_log_pick_over_rank": 0.17
+   },
+   "DE": {
+    "n": 5,
+    "mean_log_pick_over_rank": -0.03
+   },
+   "DT": {
+    "n": 14,
+    "mean_log_pick_over_rank": 0.16
+   },
+   "LB": {
+    "n": 9,
+    "mean_log_pick_over_rank": 0.14
+   },
+   "OL": {
+    "n": 15,
+    "mean_log_pick_over_rank": 0.17
+   },
+   "QB": {
+    "n": 6,
+    "mean_log_pick_over_rank": 0.1
+   },
+   "RB": {
+    "n": 4,
+    "mean_log_pick_over_rank": 0.06
+   },
+   "TE": {
+    "n": 7,
+    "mean_log_pick_over_rank": 0.23
+   },
+   "WR": {
+    "n": 13,
+    "mean_log_pick_over_rank": 0.08
+   }
+  }
+ },
+ "need_recent_first_rounder": {
+  "QB": {
+   "p_take_r1_r2": 0.152,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.056,
+   "team_drafts_with_recent_r1": 215
+  },
+  "RB": {
+   "p_take_r1_r2": 0.148,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.065,
+   "team_drafts_with_recent_r1": 139
+  },
+  "WR": {
+   "p_take_r1_r2": 0.32,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.162,
+   "team_drafts_with_recent_r1": 278
+  },
+  "TE": {
+   "p_take_r1_r2": 0.1,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.026,
+   "team_drafts_with_recent_r1": 76
+  },
+  "OL": {
+   "p_take_r1_r2": 0.355,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.287,
+   "team_drafts_with_recent_r1": 348
+  },
+  "DE": {
+   "p_take_r1_r2": 0.218,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.167,
+   "team_drafts_with_recent_r1": 240
+  },
+  "DT": {
+   "p_take_r1_r2": 0.2,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.113,
+   "team_drafts_with_recent_r1": 212
+  },
+  "LB": {
+   "p_take_r1_r2": 0.243,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.168,
+   "team_drafts_with_recent_r1": 220
+  },
+  "DB": {
+   "p_take_r1_r2": 0.37,
+   "p_take_r1_r2_after_r1_pick_there_in_last_3_drafts": 0.335,
+   "team_drafts_with_recent_r1": 346
+  }
+ },
+ "qb_need": {
+  "note": "last season's main passer (most attempts). young = drafted R1-2 within 4 years; good = 350+ attempts and EPA/attempt >= 0.10",
+  "young_R1-2_starter_good": {
+   "team_drafts": 58,
+   "p_qb_r1_r2": 0.0,
+   "p_qb_r1": 0.0
+  },
+  "young_R1-2_starter_not_good": {
+   "team_drafts": 167,
+   "p_qb_r1_r2": 0.072,
+   "p_qb_r1": 0.054
+  },
+  "other_starter_good": {
+   "team_drafts": 199,
+   "p_qb_r1_r2": 0.055,
+   "p_qb_r1": 0.03
+  },
+  "other_starter_not_good": {
+   "team_drafts": 344,
+   "p_qb_r1_r2": 0.212,
+   "p_qb_r1": 0.172
+  }
+ },
+ "draft_trades": {
+  "note": "same-year pick-for-pick trades 2010-2026 (no players, no future picks). ratio = value the team moving up gave / value it got; 1.0 = fair",
+  "n": 358,
+  "per_draft": 21.1,
+  "by_top_pick": {
+   "1-10": {
+    "n": 13,
+    "jimmy_johnson_ratio_median": 0.99,
+    "av_chart_ratio_median": 1.38,
+    "picks_given_median": 2,
+    "spots_moved_median": 5
+   },
+   "11-32": {
+    "n": 46,
+    "jimmy_johnson_ratio_median": 1.01,
+    "av_chart_ratio_median": 1.4,
+    "picks_given_median": 2,
+    "spots_moved_median": 5
+   },
+   "33-64": {
+    "n": 95,
+    "jimmy_johnson_ratio_median": 1.0,
+    "av_chart_ratio_median": 1.32,
+    "picks_given_median": 2,
+    "spots_moved_median": 7
+   },
+   "65-128": {
+    "n": 106,
+    "jimmy_johnson_ratio_median": 0.98,
+    "av_chart_ratio_median": 1.42,
+    "picks_given_median": 2,
+    "spots_moved_median": 10
+   },
+   "129-262": {
+    "n": 98,
+    "jimmy_johnson_ratio_median": 1.12,
+    "av_chart_ratio_median": 1.51,
+    "picks_given_median": 2,
+    "spots_moved_median": 12
+   }
+  },
+  "examples": [
+   {
+    "season": 2012,
+    "top_pick": 3,
+    "gave": [
+     4,
+     118,
+     139,
+     211
+    ],
+    "got": [
+     3
+    ],
+    "jj_ratio": 0.8703323863636364,
+    "av_ratio": 1.4774305555555554
+   },
+   {
+    "season": 2013,
+    "top_pick": 3,
+    "gave": [
+     12,
+     42
+    ],
+    "got": [
+     3
+    ],
+    "jj_ratio": 0.7681818181818182,
+    "av_ratio": 1.3229166666666667
+   },
+   {
+    "season": 2012,
+    "top_pick": 5,
+    "gave": [
+     7,
+     101
+    ],
+    "got": [
+     5
+    ],
+    "jj_ratio": 0.9438786764705882,
+    "av_ratio": 1.2338403041825097
+   },
+   {
+    "season": 2012,
+    "top_pick": 6,
+    "gave": [
+     14,
+     45
+    ],
+    "got": [
+     6
+    ],
+    "jj_ratio": 0.975,
+    "av_ratio": 1.4455445544554455
+   },
+   {
+    "season": 2023,
+    "top_pick": 6,
+    "gave": [
+     12,
+     34,
+     168
+    ],
+    "got": [
+     6,
+     81
+    ],
+    "jj_ratio": 1.0034462269756388,
+    "av_ratio": 1.2966714905933432
+   },
+   {
+    "season": 2018,
+    "top_pick": 7,
+    "gave": [
+     12,
+     53,
+     56
+    ],
+    "got": [
+     7
+    ],
+    "jj_ratio": 1.2866666666666666,
+    "av_ratio": 1.971774193548387
+   }
+  ]
+ },
+ "age_effect": {
+  "note": "career AV divided by the typical career AV at that pick (1.00 = as expected)",
+  "21 or younger": {
+   "n": 514,
+   "career_av_vs_slot": 1.22,
+   "median_pick": 58
+  },
+  "22": {
+   "n": 1697,
+   "career_av_vs_slot": 1.25,
+   "median_pick": 115
+  },
+  "23": {
+   "n": 1878,
+   "career_av_vs_slot": 1.03,
+   "median_pick": 138
+  },
+  "24+": {
+   "n": 485,
+   "career_av_vs_slot": 0.88,
+   "median_pick": 152
+  }
+ },
+ "combine_signal_beyond_slot": {
+  "note": "correlation of each drill (oriented so + = better result) with career AV relative to draft slot; ~0 = teams already priced it in",
+  "QB": {
+   "forty": {
+    "n": 190,
+    "corr_with_beating_slot": 0.101
+   },
+   "vertical": {
+    "n": 151,
+    "corr_with_beating_slot": 0.116
+   },
+   "broad_jump": {
+    "n": 154,
+    "corr_with_beating_slot": 0.181
+   },
+   "cone": {
+    "n": 144,
+    "corr_with_beating_slot": 0.021
+   },
+   "shuttle": {
+    "n": 144,
+    "corr_with_beating_slot": 0.12
+   },
+   "wt": {
+    "n": 196,
+    "corr_with_beating_slot": 0.025
+   }
+  },
+  "RB": {
+   "forty": {
+    "n": 363,
+    "corr_with_beating_slot": 0.253
+   },
+   "vertical": {
+    "n": 303,
+    "corr_with_beating_slot": 0.064
+   },
+   "broad_jump": {
+    "n": 297,
+    "corr_with_beating_slot": 0.173
+   },
+   "cone": {
+    "n": 222,
+    "corr_with_beating_slot": 0.218
+   },
+   "shuttle": {
+    "n": 223,
+    "corr_with_beating_slot": 0.082
+   },
+   "bench": {
+    "n": 282,
+    "corr_with_beating_slot": -0.042
+   },
+   "wt": {
+    "n": 369,
+    "corr_with_beating_slot": -0.205
+   }
+  },
+  "WR": {
+   "forty": {
+    "n": 494,
+    "corr_with_beating_slot": 0.008
+   },
+   "vertical": {
+    "n": 399,
+    "corr_with_beating_slot": 0.096
+   },
+   "broad_jump": {
+    "n": 387,
+    "corr_with_beating_slot": -0.058
+   },
+   "cone": {
+    "n": 309,
+    "corr_with_beating_slot": 0.048
+   },
+   "shuttle": {
+    "n": 318,
+    "corr_with_beating_slot": 0.062
+   },
+   "bench": {
+    "n": 234,
+    "corr_with_beating_slot": 0.017
+   },
+   "wt": {
+    "n": 503,
+    "corr_with_beating_slot": 0.025
+   }
+  },
+  "TE": {
+   "forty": {
+    "n": 219,
+    "corr_with_beating_slot": 0.231
+   },
+   "vertical": {
+    "n": 178,
+    "corr_with_beating_slot": 0.171
+   },
+   "broad_jump": {
+    "n": 174,
+    "corr_with_beating_slot": 0.09
+   },
+   "cone": {
+    "n": 156,
+    "corr_with_beating_slot": 0.07
+   },
+   "shuttle": {
+    "n": 158,
+    "corr_with_beating_slot": 0.066
+   },
+   "bench": {
+    "n": 180,
+    "corr_with_beating_slot": -0.016
+   },
+   "wt": {
+    "n": 228,
+    "corr_with_beating_slot": -0.148
+   }
+  },
+  "OL": {
+   "forty": {
+    "n": 611,
+    "corr_with_beating_slot": 0.089
+   },
+   "vertical": {
+    "n": 503,
+    "corr_with_beating_slot": 0.048
+   },
+   "broad_jump": {
+    "n": 495,
+    "corr_with_beating_slot": 0.089
+   },
+   "cone": {
+    "n": 474,
+    "corr_with_beating_slot": 0.097
+   },
+   "shuttle": {
+    "n": 483,
+    "corr_with_beating_slot": 0.151
+   },
+   "bench": {
+    "n": 514,
+    "corr_with_beating_slot": 0.036
+   },
+   "wt": {
+    "n": 623,
+    "corr_with_beating_slot": -0.033
+   }
+  },
+  "DE": {
+   "forty": {
+    "n": 339,
+    "corr_with_beating_slot": 0.028
+   },
+   "vertical": {
+    "n": 272,
+    "corr_with_beating_slot": -0.032
+   },
+   "broad_jump": {
+    "n": 269,
+    "corr_with_beating_slot": -0.037
+   },
+   "cone": {
+    "n": 236,
+    "corr_with_beating_slot": 0.076
+   },
+   "shuttle": {
+    "n": 239,
+    "corr_with_beating_slot": 0.0
+   },
+   "bench": {
+    "n": 261,
+    "corr_with_beating_slot": 0.053
+   },
+   "wt": {
+    "n": 346,
+    "corr_with_beating_slot": 0.071
+   }
+  },
+  "DT": {
+   "forty": {
+    "n": 326,
+    "corr_with_beating_slot": 0.046
+   },
+   "vertical": {
+    "n": 251,
+    "corr_with_beating_slot": 0.113
+   },
+   "broad_jump": {
+    "n": 245,
+    "corr_with_beating_slot": 0.065
+   },
+   "cone": {
+    "n": 218,
+    "corr_with_beating_slot": 0.053
+   },
+   "shuttle": {
+    "n": 222,
+    "corr_with_beating_slot": 0.067
+   },
+   "bench": {
+    "n": 251,
+    "corr_with_beating_slot": 0.093
+   },
+   "wt": {
+    "n": 331,
+    "corr_with_beating_slot": 0.087
+   }
+  },
+  "LB": {
+   "forty": {
+    "n": 488,
+    "corr_with_beating_slot": 0.149
+   },
+   "vertical": {
+    "n": 396,
+    "corr_with_beating_slot": 0.089
+   },
+   "broad_jump": {
+    "n": 401,
+    "corr_with_beating_slot": 0.069
+   },
+   "cone": {
+    "n": 326,
+    "corr_with_beating_slot": 0.167
+   },
+   "shuttle": {
+    "n": 333,
+    "corr_with_beating_slot": 0.187
+   },
+   "bench": {
+    "n": 399,
+    "corr_with_beating_slot": -0.026
+   },
+   "wt": {
+    "n": 499,
+    "corr_with_beating_slot": -0.004
+   }
+  },
+  "DB": {
+   "forty": {
+    "n": 730,
+    "corr_with_beating_slot": 0.003
+   },
+   "vertical": {
+    "n": 602,
+    "corr_with_beating_slot": 0.051
+   },
+   "broad_jump": {
+    "n": 607,
+    "corr_with_beating_slot": 0.039
+   },
+   "cone": {
+    "n": 468,
+    "corr_with_beating_slot": 0.071
+   },
+   "shuttle": {
+    "n": 473,
+    "corr_with_beating_slot": 0.05
+   },
+   "bench": {
+    "n": 598,
+    "corr_with_beating_slot": 0.049
+   },
+   "wt": {
+    "n": 747,
+    "corr_with_beating_slot": 0.073
+   }
+  }
+ },
+ "team_drafting_skill": {
+  "teams": 34,
+  "odd_vs_even_year_correlation": 0.532,
+  "team_av_vs_slot_best": 1.58,
+  "worst": 0.74,
+  "p25": 0.96,
+  "p75": 1.16
+ }
+}

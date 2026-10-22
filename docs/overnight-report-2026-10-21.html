@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overnight Sim Report</title>
+<style>
+  :root { --bg: #f7f6f1; --text: #1d2a22; --muted: #5b6b60; --card: #ffffff; --line: #d9ddd5; --accent: #1f5c3a; --warn: #8a5a00; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #131a15; --text: #e8ece6; --muted: #a3b0a6; --card: #1c251f; --line: #2e3a32; --accent: #7cc49a; --warn: #e3b35c; } }
+  body { background: var(--bg); color: var(--text); font: 16px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 16px; }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 28px 0 8px; color: var(--accent); }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+  .card h3 { font-size: 1rem; margin: 0 0 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .scroll { overflow-x: auto; }
+  .tag { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--line); color: var(--muted); }
+  .warn { color: var(--warn); }
+  ul { padding-left: 20px; margin: 6px 0; }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>Overnight sim report</h1>
+<p class="sub">Night of Oct 20–21, 2026. Every change was checked over 16 simulated seasons (your saved league + 3 generated leagues), plus the team-sport and consistency tests. Nothing committed. Full detail: <code>docs/build-log.md</code>, "Overnight Oct 20-21".</p>
+
+<h2>What changed</h2>
+
+<div class="card">
+<h3>1. Bug fix: receivers were playing running back</h3>
+<p>When a team's backup running backs were hurt, the sim's "give the backup a series" rotation brought in the receiver listed last on the RB depth chart, even with a healthy starter. About 15 carries per team per season went to receivers, or to the QB keeping a handoff. Now only another RB (or the fullback) comes in. A receiver still plays there as the emergency option when every back is hurt.</p>
+<p>Result: running backs get 370 carries per team per season, exactly the real number.</p>
+</div>
+
+<div class="card">
+<h3>2. Backups get a little less work</h3>
+<p>On teams that split carries, the starter now gets a bit more. True workhorse backs weren't affected.</p>
+<div class="scroll"><table>
+<tr><th>Carries per team (typical)</th><th class="n">Before</th><th class="n">After</th><th class="n">Real</th></tr>
+<tr><td>Lead back</td><td class="n">198</td><td class="n">212</td><td class="n">216</td></tr>
+<tr><td>Backup</td><td class="n">103</td><td class="n">104</td><td class="n">99</td></tr>
+<tr><td>Third back</td><td class="n">38</td><td class="n">34</td><td class="n">34</td></tr>
+<tr><td>200-carry backs per season</td><td class="n">16.4</td><td class="n">17.8</td><td class="n">18–23</td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h3>3. A QB's accuracy matters more</h3>
+<p>Completion % barely depended on the QB, so good and bad QBs looked too alike. The top passers got their yards from deep balls instead of accuracy.</p>
+<div class="scroll"><table>
+<tr><th>Completion % by passing rank</th><th class="n">Before</th><th class="n">After</th><th class="n">Real</th></tr>
+<tr><td>Top 3</td><td class="n">64.3</td><td class="n">67.0</td><td class="n">68.2</td></tr>
+<tr><td>4th–10th</td><td class="n">65.3</td><td class="n">65.7</td><td class="n">66.2</td></tr>
+<tr><td>11th–20th</td><td class="n">64.6</td><td class="n">64.2</td><td class="n">65.2</td></tr>
+<tr><td>21st–32nd</td><td class="n">64.7</td><td class="n">64.5</td><td class="n">63.9</td></tr>
+</table></div>
+<p>League averages held: completion % 64.7 (real 64.4), yards per attempt 7.05 (real 7.02). In the team test, QBs matter a bit more: the league's best QB on a bad roster wins about 9 of 17.</p>
+</div>
+
+<div class="card">
+<h3>Also</h3>
+<ul>
+<li>Fixed a crash in the realism tool (a 200-carry back with zero rushing TDs).</li>
+<li>Your <code>python step6_season_test.py</code> runs fine on the new code.</li>
+</ul>
+</div>
+
+<h2>Rushing, start to finish (Oct 20)</h2>
+<div class="scroll"><table>
+<tr><th></th><th class="n">Start</th><th class="n">Now</th><th class="n">Real</th></tr>
+<tr><td>Rushing leader, average</td><td class="n">1,883</td><td class="n">1,673</td><td class="n">1,710</td></tr>
+<tr><td>Carry leader</td><td class="n">357</td><td class="n">348</td><td class="n">326 (max 349)</td></tr>
+<tr><td>Star backs' yards per carry (200+ carries)</td><td class="n">4.62</td><td class="n">4.56</td><td class="n">4.45</td></tr>
+</table></div>
+<p>The day's changes: defenses stack the box against star backs, and teams rest their lead back in blowouts. Then the two fixes above.</p>
+
+<h2>How to read the leaderboards</h2>
+<p>The "real range" comes from only 5 real seasons, but each check plays 16 sim seasons. Even a perfect sim would put about 1 in 6 seasons above the best real one by chance. One 2,000-yard season in a run isn't a red flag; several would be. Records are judged by per-game pace (17 vs 16 games), as you said.</p>
+
+<h2>Looked into, not changed</h2>
+<ul>
+<li><b>Defense</b>: too many 80-tackle, 12-sack and 20-QB-hit seasons. Real teams sign replacements and use about 32 defenders a season; a sim team uses its same ~24 all year. Should settle once in-season signings exist (Step 7 piece 6).</li>
+<li><b>Top passers and #1 tight end a little low</b>: the most pass-heavy sim teams throw less than real. That's what loosening the pass-heavy limit (below) will test.</li>
+<li><b>Receiving backs</b>: total volume is right. What's missing is a 3rd-down back (below).</li>
+<li><b>Plays per game</b> 61.3 vs 62.4: a small gap in clock and drive logic that touches every stat. Left for a supervised session.</li>
+</ul>
+
+<h2>Your calls (done this morning)</h2>
+
+<div class="card">
+<h3>Pass-heavy limit loosened (0.36 → 0.50)</h3>
+<div class="scroll"><table>
+<tr><th></th><th class="n">Before</th><th class="n">After</th><th class="n">Real</th></tr>
+<tr><td>Passing leader, average</td><td class="n">4,765</td><td class="n">5,004</td><td class="n">4,963</td></tr>
+<tr><td>4,500-yard passers per season</td><td class="n">1.7</td><td class="n">2.6</td><td class="n">3.8 (3–6)</td></tr>
+<tr><td>4,000-yard passers per season</td><td class="n">6.8</td><td class="n">7.7</td><td class="n">8.2</td></tr>
+<tr><td>Passing TD leader</td><td class="n">37.6</td><td class="n">40.2</td><td class="n">41.8</td></tr>
+</table></div>
+<p class="warn">Watch: the extremes grew. One run had a 5,666-yard passer and two receivers near 2,090 yards (Calvin Johnson's per-game record pace over 17 games). One run is noisy, so I'm watching it, not reacting.</p>
+</div>
+
+<div class="card">
+<h3>3rd-down back: built</h3>
+<p>New spot on your Depth chart tab (Offense): <b>3rd-down back</b>. Rated on pass blocking, hands and route running (3 parts each) plus elusiveness (1 part). He plays running back in passing situations: 3rd/4th and 4+, 2nd and 8+, the two-minute drill, and two scores down in the 4th quarter (85% of those snaps).</p>
+<p>AI teams: the best backup takes the job if he's within 4 points of the starter at it (staffs keep the lead back fresh). Otherwise the starter keeps it. About 29% of AI teams use a different back. If your starter is also your 3rd-down back, nothing changes.</p>
+<div class="scroll"><table>
+<tr><th>Receiving backs</th><th class="n">Before</th><th class="n">After</th><th class="n">Real</th></tr>
+<tr><td>Top receiving back is also the lead rusher</td><td class="n">86%</td><td class="n">76%</td><td class="n">67%</td></tr>
+<tr><td>60-catch backs per season</td><td class="n">6.8</td><td class="n">6.3</td><td class="n">4.6 (3–6)</td></tr>
+<tr><td>Catches: team's top / 2nd receiving back</td><td class="n">44.6 / 21.3</td><td class="n">44.7 / 21.9</td><td class="n">43.4 / 21.5</td></tr>
+</table></div>
+<p>Trade-off: lead backs lost a few carries to the 3rd-down back (typical lead back 201 carries; real 216), so 200-carry backs are just under the real range (16.8 a season vs 18–23).</p>
+<p>Old saves: until the save-loading fix lands (the main session's file), the spot shows empty on your Depth chart tab and the game picks a 3rd-down back automatically. You can set it yourself anytime.</p>
+</div>
+</main>
+</body>
+</html>

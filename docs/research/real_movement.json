@@ -1,0 +1,136 @@
+{
+ "source": "nflverse weekly rosters",
+ "offseason": {
+  "by_position": {
+   "DB": {
+    "n_per_season": 412.4,
+    "same": 0.658,
+    "new_team": 0.238,
+    "gone": 0.103
+   },
+   "DL": {
+    "n_per_season": 316.6,
+    "same": 0.652,
+    "new_team": 0.253,
+    "gone": 0.095
+   },
+   "K": {
+    "n_per_season": 38.7,
+    "same": 0.675,
+    "new_team": 0.177,
+    "gone": 0.148
+   },
+   "LB": {
+    "n_per_season": 296.9,
+    "same": 0.642,
+    "new_team": 0.236,
+    "gone": 0.122
+   },
+   "LS": {
+    "n_per_season": 36.0,
+    "same": 0.79,
+    "new_team": 0.087,
+    "gone": 0.123
+   },
+   "OL": {
+    "n_per_season": 369.3,
+    "same": 0.673,
+    "new_team": 0.224,
+    "gone": 0.103
+   },
+   "P": {
+    "n_per_season": 35.4,
+    "same": 0.75,
+    "new_team": 0.157,
+    "gone": 0.093
+   },
+   "QB": {
+    "n_per_season": 94.9,
+    "same": 0.593,
+    "new_team": 0.322,
+    "gone": 0.084
+   },
+   "RB": {
+    "n_per_season": 163.6,
+    "same": 0.649,
+    "new_team": 0.234,
+    "gone": 0.117
+   },
+   "TE": {
+    "n_per_season": 139.6,
+    "same": 0.649,
+    "new_team": 0.24,
+    "gone": 0.112
+   },
+   "WR": {
+    "n_per_season": 239.1,
+    "same": 0.652,
+    "new_team": 0.256,
+    "gone": 0.091
+   }
+  },
+  "by_experience_end_of_season": {
+   "0-2": {
+    "n_per_season": 990.1,
+    "same": 0.809,
+    "new_team": 0.137,
+    "gone": 0.054
+   },
+   "3-4": {
+    "n_per_season": 473.4,
+    "same": 0.544,
+    "new_team": 0.367,
+    "gone": 0.089
+   },
+   "5-7": {
+    "n_per_season": 440.7,
+    "same": 0.537,
+    "new_team": 0.323,
+    "gone": 0.14
+   },
+   "8+": {
+    "n_per_season": 238.1,
+    "same": 0.47,
+    "new_team": 0.247,
+    "gone": 0.283
+   }
+  },
+  "all": {
+   "n_per_season": 2142.4,
+   "same": 0.657,
+   "new_team": 0.238,
+   "gone": 0.105
+  },
+  "note": "players on a 53 or reserve list in their last regular-season week of season Y; 'new_team' = on a different team's week-1 roster/PS/reserve in Y+1 (free agency, trades, cuts and claims); 'gone' = on no team in week 1 (retired, unsigned, or back later in the season)"
+ },
+ "practice_squad": {
+  "team_weeks": 2176,
+  "players_per_team_week": 15.17,
+  "by_position_per_squad": {
+   "WR": 2.6,
+   "CB": 1.5,
+   "DT": 1.35,
+   "T": 1.35,
+   "TE": 1.17,
+   "RB": 1.13,
+   "DE": 1.02,
+   "G": 0.95,
+   "S": 0.92,
+   "ILB": 0.88,
+   "OLB": 0.7,
+   "QB": 0.59,
+   "C": 0.48,
+   "DB": 0.34,
+   "K": 0.13,
+   "FB": 0.04,
+   "P": 0.02,
+   "LS": 0.01
+  },
+  "by_experience_share": {
+   "0": 0.306,
+   "1": 0.182,
+   "2": 0.154,
+   "3+": 0.358
+  }
+ }
+}

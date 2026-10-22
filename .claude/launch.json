@@ -1,0 +1,41 @@
+﻿{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "game-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\testsaves"],
+      "port": 8085
+    },
+    {
+      "name": "awards-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8091", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\87ad8cce-55ac-4b81-8fa1-adcd52c9752c\\scratchpad\\awardsaves"],
+      "port": 8091
+    },
+    {
+      "name": "contracts-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8094", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\6b06e712-122b-4d53-860c-5b60c73a7131\\scratchpad\\testsaves"],
+      "port": 8094
+    },
+    {
+      "name": "draft-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8097", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\fcbed005-e4df-4835-8fda-b5e3c362ff30\\scratchpad\\testsaves"],
+      "port": 8097
+    },
+    {
+      "name": "popups-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8099", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\43180dc5-475d-4bb6-a2ae-025d82948fa1\\scratchpad\\popsaves"],
+      "port": 8099
+    },
+    {
+      "name": "game-blake-copy",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\blakecopy"],
+      "port": 8085
+    }
+  ]
+}

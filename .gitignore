@@ -1,0 +1,15 @@
+# What git leaves out of the project's snapshots.
+# Python's own temporary files
+__pycache__/
+*.pyc
+# Your saved games (they're play data, not the game itself; back them up separately if you want)
+saves/
+*.saving
+# Built copies of the app (made from the code)
+dist/
+build/
+*.spec
+# Real NFL data downloaded by tools/download_nflverse.py (643 MB; run it again to get it back)
+tools/data/nflverse/
+# Per-machine Claude settings
+.claude/settings.local.json

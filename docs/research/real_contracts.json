@@ -1,0 +1,2698 @@
+{
+ "source": "OverTheCap via nflverse historical_contracts.csv (snapshot 2022-05-29); amounts are APY as a share of that year's cap; veteran = not a rookie deal; age = at signing (birth date, else draft year + 22)",
+ "salary_cap_millions": {
+  "2011": 120.0,
+  "2012": 120.6,
+  "2013": 123.0,
+  "2014": 133.0,
+  "2015": 143.28,
+  "2016": 155.27,
+  "2017": 167.0,
+  "2018": 177.2,
+  "2019": 188.2,
+  "2020": 198.2,
+  "2021": 182.5,
+  "2022": 208.2,
+  "2023": 224.8,
+  "2024": 255.4,
+  "2025": 279.2,
+  "2026": 301.2
+ },
+ "notes": {
+  "benefits_2026": "2026: $301.2M cap plus $77.6M benefits per club",
+  "vet_minimum_rule": "veteran minimums are ~0.4-0.6% of the cap; a 4+ year vet on a 1-year minimum deal counts only ~0.4% (veteran salary benefit)"
+ },
+ "positions": {
+  "C": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 13.3,
+    "cap_pct_p50": 0.022,
+    "years_mean": 2.19,
+    "years_dist": {
+     "1": 0.35,
+     "2": 0.275,
+     "3": 0.25,
+     "4": 0.087,
+     "5": 0.037,
+     "6": 0.0
+    },
+    "guaranteed_share_median": 0.462,
+    "age_dist": {
+     "<=25": 0.225,
+     "26-27": 0.4,
+     "28-29": 0.15,
+     "30-31": 0.125,
+     "32+": 0.1
+    },
+    "years_by_age": {
+     "<=25": 2.5,
+     "26-27": 2.09,
+     "28-29": 2.33,
+     "30-31": 2.1,
+     "32+": 1.75
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.0175,
+     "26-27": 0.016,
+     "28-29": 0.031,
+     "30-31": 0.044,
+     "32+": 0.0395
+    }
+   },
+   "veteran_deals_2017_22": 488,
+   "veteran_deals_per_season": 81.3,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.005,
+    "p90": 0.0163,
+    "p95": 0.0426,
+    "p99": 0.062,
+    "max": 0.074
+   },
+   "minimum_share": 0.82,
+   "one_year_share": 0.779,
+   "tiers": {
+    "top10": {
+     "n": 49,
+     "cap_pct_median": 0.043,
+     "years_median": 3.0,
+     "years_mean": 2.71,
+     "years_dist": {
+      "1": 0.143,
+      "2": 0.265,
+      "3": 0.388,
+      "4": 0.143,
+      "5": 0.061,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.562,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 117,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.2,
+     "years_dist": {
+      "1": 0.812,
+      "2": 0.179,
+      "3": 0.009,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 86,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.24,
+     "years_dist": {
+      "1": 0.767,
+      "2": 0.221,
+      "3": 0.012,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 25.0
+    },
+    "below50": {
+     "n": 236,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.11,
+     "years_dist": {
+      "1": 0.898,
+      "2": 0.089,
+      "3": 0.013,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 239,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.005,
+     "top10_share": 0.046,
+     "years_mean": 1.3
+    },
+    "26-27": {
+     "n": 150,
+     "cap_pct_median": 0.004,
+     "cap_pct_p90": 0.016,
+     "top10_share": 0.093,
+     "years_mean": 1.33
+    },
+    "28-29": {
+     "n": 69,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0228,
+     "top10_share": 0.145,
+     "years_mean": 1.23
+    },
+    "30-31": {
+     "n": 20,
+     "cap_pct_median": 0.009,
+     "cap_pct_p90": 0.0582,
+     "top10_share": 0.35,
+     "years_mean": 1.6
+    },
+    "32+": {
+     "n": 10,
+     "cap_pct_median": 0.032,
+     "cap_pct_p90": 0.0562,
+     "top10_share": 0.7,
+     "years_mean": 1.6
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.074,
+    "3": 0.067,
+    "5": 0.062,
+    "10": 0.034,
+    "16": 0.024,
+    "24": 0.012,
+    "32": 0.007,
+    "48": 0.005,
+    "64": 0.004
+   }
+  },
+  "CB": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 36.0,
+    "cap_pct_p50": 0.022,
+    "years_mean": 2.09,
+    "years_dist": {
+     "1": 0.468,
+     "2": 0.181,
+     "3": 0.218,
+     "4": 0.065,
+     "5": 0.069,
+     "6": 0.0
+    },
+    "guaranteed_share_median": 0.5,
+    "age_dist": {
+     "<=25": 0.157,
+     "26-27": 0.458,
+     "28-29": 0.199,
+     "30-31": 0.111,
+     "32+": 0.074
+    },
+    "years_by_age": {
+     "<=25": 1.85,
+     "26-27": 2.4,
+     "28-29": 1.81,
+     "30-31": 2,
+     "32+": 1.5
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.016,
+     "26-27": 0.026,
+     "28-29": 0.019,
+     "30-31": 0.022,
+     "32+": 0.0265
+    }
+   },
+   "veteran_deals_2017_22": 1688,
+   "veteran_deals_per_season": 281.3,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.003,
+    "p75": 0.005,
+    "p90": 0.013,
+    "p95": 0.0286,
+    "p99": 0.0781,
+    "max": 0.106
+   },
+   "minimum_share": 0.851,
+   "one_year_share": 0.791,
+   "tiers": {
+    "top10": {
+     "n": 171,
+     "cap_pct_median": 0.028,
+     "years_median": 2.0,
+     "years_mean": 2.31,
+     "years_dist": {
+      "1": 0.386,
+      "2": 0.175,
+      "3": 0.269,
+      "4": 0.082,
+      "5": 0.088,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.504,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 349,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.12,
+     "years_dist": {
+      "1": 0.883,
+      "2": 0.115,
+      "3": 0.003,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 608,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.36,
+     "years_dist": {
+      "1": 0.663,
+      "2": 0.319,
+      "3": 0.018,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    },
+    "below50": {
+     "n": 560,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.02,
+     "years_dist": {
+      "1": 0.998,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 1038,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.022,
+     "years_mean": 1.25
+    },
+    "26-27": {
+     "n": 397,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0334,
+     "top10_share": 0.209,
+     "years_mean": 1.4
+    },
+    "28-29": {
+     "n": 150,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0305,
+     "top10_share": 0.213,
+     "years_mean": 1.26
+    },
+    "30-31": {
+     "n": 63,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0298,
+     "top10_share": 0.317,
+     "years_mean": 1.38
+    },
+    "32+": {
+     "n": 37,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0324,
+     "top10_share": 0.351,
+     "years_mean": 1.22
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.106,
+    "3": 0.101,
+    "5": 0.097,
+    "10": 0.079,
+    "16": 0.065,
+    "24": 0.044,
+    "32": 0.035,
+    "48": 0.019,
+    "64": 0.014,
+    "96": 0.007
+   }
+  },
+  "DT": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 37.0,
+    "cap_pct_p50": 0.025,
+    "years_mean": 2.12,
+    "years_dist": {
+     "1": 0.392,
+     "2": 0.261,
+     "3": 0.221,
+     "4": 0.095,
+     "5": 0.027,
+     "6": 0.005
+    },
+    "guaranteed_share_median": 0.5,
+    "age_dist": {
+     "<=25": 0.099,
+     "26-27": 0.441,
+     "28-29": 0.221,
+     "30-31": 0.14,
+     "32+": 0.099
+    },
+    "years_by_age": {
+     "<=25": 2.09,
+     "26-27": 2.27,
+     "28-29": 2.27,
+     "30-31": 1.84,
+     "32+": 1.55
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.016,
+     "26-27": 0.0275,
+     "28-29": 0.024,
+     "30-31": 0.021,
+     "32+": 0.025
+    }
+   },
+   "veteran_deals_2017_22": 1450,
+   "veteran_deals_per_season": 241.7,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.005,
+    "p90": 0.0191,
+    "p95": 0.034,
+    "p99": 0.081,
+    "max": 0.127
+   },
+   "minimum_share": 0.817,
+   "one_year_share": 0.768,
+   "tiers": {
+    "top10": {
+     "n": 145,
+     "cap_pct_median": 0.034,
+     "years_median": 2.0,
+     "years_mean": 2.5,
+     "years_dist": {
+      "1": 0.241,
+      "2": 0.262,
+      "3": 0.31,
+      "4": 0.138,
+      "5": 0.041,
+      "6": 0.007
+     },
+     "guaranteed_share_median": 0.567,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 353,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.2,
+     "years_dist": {
+      "1": 0.847,
+      "2": 0.133,
+      "3": 0.014,
+      "4": 0.003,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 272,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.32,
+     "years_dist": {
+      "1": 0.688,
+      "2": 0.305,
+      "3": 0.007,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 25.0
+    },
+    "below50": {
+     "n": 680,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.13,
+     "years_dist": {
+      "1": 0.872,
+      "2": 0.125,
+      "3": 0.003,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 766,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.01,
+     "years_mean": 1.26
+    },
+    "26-27": {
+     "n": 387,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0324,
+     "top10_share": 0.178,
+     "years_mean": 1.38
+    },
+    "28-29": {
+     "n": 180,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.031,
+     "top10_share": 0.183,
+     "years_mean": 1.37
+    },
+    "30-31": {
+     "n": 80,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0403,
+     "top10_share": 0.263,
+     "years_mean": 1.45
+    },
+    "32+": {
+     "n": 35,
+     "cap_pct_median": 0.015,
+     "cap_pct_p90": 0.047,
+     "top10_share": 0.4,
+     "years_mean": 1.34
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.127,
+    "3": 0.106,
+    "5": 0.099,
+    "10": 0.077,
+    "16": 0.052,
+    "24": 0.043,
+    "32": 0.034,
+    "48": 0.022,
+    "64": 0.015,
+    "96": 0.006
+   }
+  },
+  "EDGE": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 36.0,
+    "cap_pct_p50": 0.028,
+    "years_mean": 2.11,
+    "years_dist": {
+     "1": 0.449,
+     "2": 0.245,
+     "3": 0.134,
+     "4": 0.097,
+     "5": 0.065,
+     "6": 0.009
+    },
+    "guaranteed_share_median": 0.508,
+    "age_dist": {
+     "<=25": 0.097,
+     "26-27": 0.463,
+     "28-29": 0.194,
+     "30-31": 0.116,
+     "32+": 0.13
+    },
+    "years_by_age": {
+     "<=25": 2.05,
+     "26-27": 2.18,
+     "28-29": 2.38,
+     "30-31": 1.84,
+     "32+": 1.75
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.013,
+     "26-27": 0.029,
+     "28-29": 0.036,
+     "30-31": 0.028,
+     "32+": 0.024
+    }
+   },
+   "veteran_deals_2017_22": 1085,
+   "veteran_deals_per_season": 180.8,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.006,
+    "p90": 0.0276,
+    "p95": 0.0656,
+    "p99": 0.0962,
+    "max": 0.153
+   },
+   "minimum_share": 0.774,
+   "one_year_share": 0.754,
+   "tiers": {
+    "top10": {
+     "n": 109,
+     "cap_pct_median": 0.066,
+     "years_median": 3.0,
+     "years_mean": 2.82,
+     "years_dist": {
+      "1": 0.257,
+      "2": 0.174,
+      "3": 0.229,
+      "4": 0.193,
+      "5": 0.128,
+      "6": 0.018
+     },
+     "guaranteed_share_median": 0.619,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 185,
+     "cap_pct_median": 0.011,
+     "years_median": 1.0,
+     "years_mean": 1.24,
+     "years_dist": {
+      "1": 0.778,
+      "2": 0.2,
+      "3": 0.022,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.291,
+     "age_median": 28.0
+    },
+    "p50_75": {
+     "n": 291,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.24,
+     "years_dist": {
+      "1": 0.773,
+      "2": 0.213,
+      "3": 0.014,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 26.0
+    },
+    "below50": {
+     "n": 500,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.17,
+     "years_dist": {
+      "1": 0.842,
+      "2": 0.148,
+      "3": 0.01,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 578,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.012,
+     "years_mean": 1.28
+    },
+    "26-27": {
+     "n": 272,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.072,
+     "top10_share": 0.191,
+     "years_mean": 1.5
+    },
+    "28-29": {
+     "n": 123,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0636,
+     "top10_share": 0.203,
+     "years_mean": 1.48
+    },
+    "30-31": {
+     "n": 63,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0566,
+     "top10_share": 0.206,
+     "years_mean": 1.33
+    },
+    "32+": {
+     "n": 45,
+     "cap_pct_median": 0.018,
+     "cap_pct_p90": 0.0486,
+     "top10_share": 0.267,
+     "years_mean": 1.47
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.153,
+    "3": 0.133,
+    "5": 0.113,
+    "10": 0.088,
+    "16": 0.081,
+    "24": 0.07,
+    "32": 0.048,
+    "48": 0.027,
+    "64": 0.016,
+    "96": 0.008
+   }
+  },
+  "FB": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 2.7,
+    "cap_pct_p50": 0.0125,
+    "years_mean": 2.94,
+    "years_dist": {
+     "1": 0.062,
+     "2": 0.312,
+     "3": 0.312,
+     "4": 0.25,
+     "5": 0.062,
+     "6": 0.0
+    },
+    "guaranteed_share_median": 0.428,
+    "age_dist": {
+     "<=25": 0.25,
+     "26-27": 0.375,
+     "28-29": 0.188,
+     "30-31": 0.125,
+     "32+": 0.062
+    },
+    "years_by_age": {
+     "<=25": 2.5,
+     "26-27": 3.33,
+     "28-29": 2.67,
+     "30-31": 3.5,
+     "32+": 2
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.0135,
+     "26-27": 0.0155,
+     "28-29": 0.011,
+     "30-31": 0.02,
+     "32+": 0.012
+    }
+   },
+   "veteran_deals_2017_22": 107,
+   "veteran_deals_per_season": 17.8,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.003,
+    "p50": 0.004,
+    "p75": 0.006,
+    "p90": 0.0104,
+    "p95": 0.0157,
+    "p99": 0.0293,
+    "max": 0.031
+   },
+   "minimum_share": 0.776,
+   "one_year_share": 0.664,
+   "tiers": {
+    "top10": {
+     "n": 11,
+     "cap_pct_median": 0.016,
+     "years_median": 3.0,
+     "years_mean": 3,
+     "years_dist": {
+      "1": 0.091,
+      "2": 0.273,
+      "3": 0.273,
+      "4": 0.273,
+      "5": 0.091,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.417,
+     "age_median": 26.0
+    },
+    "p75_90": {
+     "n": 22,
+     "cap_pct_median": 0.007,
+     "years_median": 1.0,
+     "years_mean": 1.68,
+     "years_dist": {
+      "1": 0.545,
+      "2": 0.273,
+      "3": 0.136,
+      "4": 0.045,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.227,
+     "age_median": 28.0
+    },
+    "p50_75": {
+     "n": 34,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.24,
+     "years_dist": {
+      "1": 0.824,
+      "2": 0.147,
+      "3": 0.0,
+      "4": 0.029,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 26.0
+    },
+    "below50": {
+     "n": 40,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.27,
+     "years_dist": {
+      "1": 0.75,
+      "2": 0.225,
+      "3": 0.025,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 23.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 57,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.005,
+     "top10_share": 0.053,
+     "years_mean": 1.39
+    },
+    "26-27": {
+     "n": 22,
+     "cap_pct_median": 0.0055,
+     "cap_pct_p90": 0.0159,
+     "top10_share": 0.182,
+     "years_mean": 1.77
+    },
+    "28-29": {
+     "n": 14,
+     "cap_pct_median": 0.0065,
+     "cap_pct_p90": 0.0107,
+     "top10_share": 0.143,
+     "years_mean": 1.57
+    },
+    "30-31": {
+     "n": 10,
+     "cap_pct_median": 0.0055,
+     "cap_pct_p90": 0.012,
+     "top10_share": 0.1,
+     "years_mean": 1.6
+    },
+    "32+": {
+     "n": 3,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0108,
+     "top10_share": 0.333,
+     "years_mean": 1.33
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.03,
+    "3": 0.016,
+    "5": 0.015,
+    "10": 0.007,
+    "16": 0.004
+   }
+  },
+  "G": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 24.0,
+    "cap_pct_p50": 0.024,
+    "years_mean": 2.33,
+    "years_dist": {
+     "1": 0.396,
+     "2": 0.174,
+     "3": 0.236,
+     "4": 0.097,
+     "5": 0.09,
+     "6": 0.007
+    },
+    "guaranteed_share_median": 0.462,
+    "age_dist": {
+     "<=25": 0.146,
+     "26-27": 0.41,
+     "28-29": 0.25,
+     "30-31": 0.125,
+     "32+": 0.069
+    },
+    "years_by_age": {
+     "<=25": 2.81,
+     "26-27": 2.49,
+     "28-29": 2.28,
+     "30-31": 1.94,
+     "32+": 1.3
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.02,
+     "26-27": 0.028,
+     "28-29": 0.0215,
+     "30-31": 0.0235,
+     "32+": 0.02
+    }
+   },
+   "veteran_deals_2017_22": 1022,
+   "veteran_deals_per_season": 170.3,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.003,
+    "p75": 0.005,
+    "p90": 0.015,
+    "p95": 0.031,
+    "p99": 0.0709,
+    "max": 0.099
+   },
+   "minimum_share": 0.822,
+   "one_year_share": 0.77,
+   "tiers": {
+    "top10": {
+     "n": 107,
+     "cap_pct_median": 0.031,
+     "years_median": 3.0,
+     "years_mean": 2.71,
+     "years_dist": {
+      "1": 0.262,
+      "2": 0.168,
+      "3": 0.308,
+      "4": 0.131,
+      "5": 0.121,
+      "6": 0.009
+     },
+     "guaranteed_share_median": 0.5,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 236,
+     "cap_pct_median": 0.006,
+     "years_median": 1.0,
+     "years_mean": 1.14,
+     "years_dist": {
+      "1": 0.869,
+      "2": 0.123,
+      "3": 0.008,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.024,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 368,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.36,
+     "years_dist": {
+      "1": 0.66,
+      "2": 0.323,
+      "3": 0.016,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    },
+    "below50": {
+     "n": 311,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1,
+     "years_dist": {
+      "1": 1.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 551,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.022,
+     "years_mean": 1.3
+    },
+    "26-27": {
+     "n": 248,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.032,
+     "top10_share": 0.177,
+     "years_mean": 1.44
+    },
+    "28-29": {
+     "n": 128,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0263,
+     "top10_share": 0.234,
+     "years_mean": 1.41
+    },
+    "30-31": {
+     "n": 71,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.025,
+     "top10_share": 0.197,
+     "years_mean": 1.27
+    },
+    "32+": {
+     "n": 24,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0305,
+     "top10_share": 0.292,
+     "years_mean": 1.12
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.088,
+    "3": 0.079,
+    "5": 0.078,
+    "10": 0.051,
+    "16": 0.041,
+    "24": 0.026,
+    "32": 0.02,
+    "48": 0.011,
+    "64": 0.007,
+    "96": 0.005
+   }
+  },
+  "K": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 10.8,
+    "cap_pct_p50": 0.018,
+    "years_mean": 2.43,
+    "years_dist": {
+     "1": 0.369,
+     "2": 0.169,
+     "3": 0.215,
+     "4": 0.154,
+     "5": 0.092,
+     "6": 0.0
+    },
+    "guaranteed_share_median": 0.444,
+    "age_dist": {
+     "<=25": 0.169,
+     "26-27": 0.277,
+     "28-29": 0.077,
+     "30-31": 0.123,
+     "32+": 0.354
+    },
+    "years_by_age": {
+     "<=25": 2.82,
+     "26-27": 2.61,
+     "28-29": 2.8,
+     "30-31": 2.88,
+     "32+": 1.87
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.019,
+     "26-27": 0.016,
+     "28-29": 0.016,
+     "30-31": 0.0155,
+     "32+": 0.018
+    }
+   },
+   "veteran_deals_2017_22": 326,
+   "veteran_deals_per_season": 54.3,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.003,
+    "p75": 0.005,
+    "p90": 0.0175,
+    "p95": 0.022,
+    "p99": 0.024,
+    "max": 0.027
+   },
+   "minimum_share": 0.782,
+   "one_year_share": 0.748,
+   "tiers": {
+    "top10": {
+     "n": 33,
+     "cap_pct_median": 0.022,
+     "years_median": 3.0,
+     "years_mean": 3.27,
+     "years_dist": {
+      "1": 0.121,
+      "2": 0.152,
+      "3": 0.242,
+      "4": 0.303,
+      "5": 0.182,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.516,
+     "age_median": 31.0
+    },
+    "p75_90": {
+     "n": 86,
+     "cap_pct_median": 0.006,
+     "years_median": 1.0,
+     "years_mean": 1.26,
+     "years_dist": {
+      "1": 0.814,
+      "2": 0.116,
+      "3": 0.07,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 29.0
+    },
+    "p50_75": {
+     "n": 105,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.4,
+     "years_dist": {
+      "1": 0.648,
+      "2": 0.305,
+      "3": 0.048,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    },
+    "below50": {
+     "n": 102,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1,
+     "years_dist": {
+      "1": 1.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 25.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 165,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.005,
+     "top10_share": 0.036,
+     "years_mean": 1.36
+    },
+    "26-27": {
+     "n": 62,
+     "cap_pct_median": 0.004,
+     "cap_pct_p90": 0.0198,
+     "top10_share": 0.129,
+     "years_mean": 1.52
+    },
+    "28-29": {
+     "n": 25,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0144,
+     "top10_share": 0.08,
+     "years_mean": 1.44
+    },
+    "30-31": {
+     "n": 26,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0175,
+     "top10_share": 0.115,
+     "years_mean": 1.58
+    },
+    "32+": {
+     "n": 45,
+     "cap_pct_median": 0.01,
+     "cap_pct_p90": 0.022,
+     "top10_share": 0.311,
+     "years_mean": 1.44
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.027,
+    "3": 0.024,
+    "5": 0.024,
+    "10": 0.022,
+    "16": 0.018,
+    "24": 0.01,
+    "32": 0.004
+   }
+  },
+  "LB": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 30.0,
+    "cap_pct_p50": 0.018,
+    "years_mean": 2.07,
+    "years_dist": {
+     "1": 0.467,
+     "2": 0.222,
+     "3": 0.156,
+     "4": 0.083,
+     "5": 0.072,
+     "6": 0.0
+    },
+    "guaranteed_share_median": 0.49,
+    "age_dist": {
+     "<=25": 0.133,
+     "26-27": 0.5,
+     "28-29": 0.233,
+     "30-31": 0.061,
+     "32+": 0.072
+    },
+    "years_by_age": {
+     "<=25": 2.58,
+     "26-27": 2.01,
+     "28-29": 2.07,
+     "30-31": 1.91,
+     "32+": 1.69
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.019,
+     "26-27": 0.017,
+     "28-29": 0.0185,
+     "30-31": 0.024,
+     "32+": 0.02
+    }
+   },
+   "veteran_deals_2017_22": 1353,
+   "veteran_deals_per_season": 225.5,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.005,
+    "p90": 0.013,
+    "p95": 0.0254,
+    "p99": 0.068,
+    "max": 0.108
+   },
+   "minimum_share": 0.833,
+   "one_year_share": 0.793,
+   "tiers": {
+    "top10": {
+     "n": 141,
+     "cap_pct_median": 0.025,
+     "years_median": 2.0,
+     "years_mean": 2.29,
+     "years_dist": {
+      "1": 0.376,
+      "2": 0.248,
+      "3": 0.177,
+      "4": 0.106,
+      "5": 0.092,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.498,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 321,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.12,
+     "years_dist": {
+      "1": 0.897,
+      "2": 0.09,
+      "3": 0.012,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.013,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 270,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.29,
+     "years_dist": {
+      "1": 0.748,
+      "2": 0.215,
+      "3": 0.037,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 25.0
+    },
+    "below50": {
+     "n": 621,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.17,
+     "years_dist": {
+      "1": 0.853,
+      "2": 0.122,
+      "3": 0.024,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 714,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.027,
+     "years_mean": 1.3
+    },
+    "26-27": {
+     "n": 346,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0235,
+     "top10_share": 0.191,
+     "years_mean": 1.34
+    },
+    "28-29": {
+     "n": 196,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.019,
+     "top10_share": 0.173,
+     "years_mean": 1.26
+    },
+    "30-31": {
+     "n": 67,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0198,
+     "top10_share": 0.149,
+     "years_mean": 1.15
+    },
+    "32+": {
+     "n": 22,
+     "cap_pct_median": 0.014,
+     "cap_pct_p90": 0.0352,
+     "top10_share": 0.545,
+     "years_mean": 1.41
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.108,
+    "3": 0.09,
+    "5": 0.072,
+    "10": 0.056,
+    "16": 0.038,
+    "24": 0.02,
+    "32": 0.017,
+    "48": 0.012,
+    "64": 0.008,
+    "96": 0.006
+   }
+  },
+  "LS": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 0.0
+   },
+   "veteran_deals_2017_22": 208,
+   "veteran_deals_per_season": 34.7,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.003,
+    "p50": 0.004,
+    "p75": 0.006,
+    "p90": 0.006,
+    "p95": 0.007,
+    "p99": 0.007,
+    "max": 0.008
+   },
+   "minimum_share": 0.933,
+   "one_year_share": 0.683,
+   "tiers": {
+    "top10": {
+     "n": 65,
+     "cap_pct_median": 0.006,
+     "years_median": 1.0,
+     "years_mean": 1.98,
+     "years_dist": {
+      "1": 0.585,
+      "2": 0.108,
+      "3": 0.077,
+      "4": 0.215,
+      "5": 0.0,
+      "6": 0.015
+     },
+     "guaranteed_share_median": 0.139,
+     "age_median": 32.0
+    },
+    "p75_90": {
+     "n": 0,
+     "cap_pct_median": null,
+     "years_median": null,
+     "years_mean": null,
+     "years_dist": {},
+     "guaranteed_share_median": null,
+     "age_median": null
+    },
+    "p50_75": {
+     "n": 71,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.3,
+     "years_dist": {
+      "1": 0.789,
+      "2": 0.155,
+      "3": 0.042,
+      "4": 0.0,
+      "5": 0.014,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "below50": {
+     "n": 72,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.49,
+     "years_dist": {
+      "1": 0.667,
+      "2": 0.181,
+      "3": 0.153,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 81,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.062,
+     "years_mean": 1.72
+    },
+    "26-27": {
+     "n": 27,
+     "cap_pct_median": 0.004,
+     "cap_pct_p90": 0.006,
+     "top10_share": 0.296,
+     "years_mean": 2.07
+    },
+    "28-29": {
+     "n": 19,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.007,
+     "top10_share": 0.421,
+     "years_mean": 2
+    },
+    "30-31": {
+     "n": 28,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.006,
+     "top10_share": 0.286,
+     "years_mean": 1.32
+    },
+    "32+": {
+     "n": 53,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.007,
+     "top10_share": 0.679,
+     "years_mean": 1.09
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.008,
+    "3": 0.006,
+    "5": 0.006,
+    "10": 0.006,
+    "16": 0.006,
+    "24": 0.005,
+    "32": 0.004
+   }
+  },
+  "P": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 6.5,
+    "cap_pct_p50": 0.014,
+    "years_mean": 2.85,
+    "years_dist": {
+     "1": 0.154,
+     "2": 0.205,
+     "3": 0.359,
+     "4": 0.231,
+     "5": 0.026,
+     "6": 0.026
+    },
+    "guaranteed_share_median": 0.379,
+    "age_dist": {
+     "<=25": 0.154,
+     "26-27": 0.205,
+     "28-29": 0.179,
+     "30-31": 0.154,
+     "32+": 0.308
+    },
+    "years_by_age": {
+     "<=25": 3.33,
+     "26-27": 3,
+     "28-29": 3.14,
+     "30-31": 3.17,
+     "32+": 2.17
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.0155,
+     "26-27": 0.0125,
+     "28-29": 0.012,
+     "30-31": 0.0145,
+     "32+": 0.012
+    }
+   },
+   "veteran_deals_2017_22": 210,
+   "veteran_deals_per_season": 35.0,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.006,
+    "p90": 0.0131,
+    "p95": 0.015,
+    "p99": 0.02,
+    "max": 0.022
+   },
+   "minimum_share": 0.757,
+   "one_year_share": 0.695,
+   "tiers": {
+    "top10": {
+     "n": 21,
+     "cap_pct_median": 0.015,
+     "years_median": 3.0,
+     "years_mean": 3.57,
+     "years_dist": {
+      "1": 0.0,
+      "2": 0.048,
+      "3": 0.476,
+      "4": 0.381,
+      "5": 0.048,
+      "6": 0.048
+     },
+     "guaranteed_share_median": 0.431,
+     "age_median": 29.0
+    },
+    "p75_90": {
+     "n": 38,
+     "cap_pct_median": 0.009,
+     "years_median": 1.0,
+     "years_mean": 1.55,
+     "years_dist": {
+      "1": 0.605,
+      "2": 0.263,
+      "3": 0.105,
+      "4": 0.026,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.267,
+     "age_median": 29.5
+    },
+    "p50_75": {
+     "n": 59,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.2,
+     "years_dist": {
+      "1": 0.814,
+      "2": 0.169,
+      "3": 0.017,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 26.0
+    },
+    "below50": {
+     "n": 92,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.26,
+     "years_dist": {
+      "1": 0.815,
+      "2": 0.109,
+      "3": 0.076,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 100,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.005,
+     "top10_share": 0.05,
+     "years_mean": 1.46
+    },
+    "26-27": {
+     "n": 46,
+     "cap_pct_median": 0.004,
+     "cap_pct_p90": 0.0105,
+     "top10_share": 0.087,
+     "years_mean": 1.48
+    },
+    "28-29": {
+     "n": 26,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0125,
+     "top10_share": 0.077,
+     "years_mean": 1.58
+    },
+    "30-31": {
+     "n": 9,
+     "cap_pct_median": 0.014,
+     "cap_pct_p90": 0.018,
+     "top10_share": 0.556,
+     "years_mean": 2.44
+    },
+    "32+": {
+     "n": 25,
+     "cap_pct_median": 0.009,
+     "cap_pct_p90": 0.0146,
+     "top10_share": 0.2,
+     "years_mean": 1.56
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.02,
+    "3": 0.016,
+    "5": 0.015,
+    "10": 0.012,
+    "16": 0.006,
+    "24": 0.005,
+    "32": 0.004
+   }
+  },
+  "QB": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 21.8,
+    "cap_pct_p50": 0.028,
+    "years_mean": 1.95,
+    "years_dist": {
+     "1": 0.496,
+     "2": 0.298,
+     "3": 0.069,
+     "4": 0.076,
+     "5": 0.046,
+     "6": 0.008
+    },
+    "guaranteed_share_median": 0.667,
+    "age_dist": {
+     "<=25": 0.107,
+     "26-27": 0.244,
+     "28-29": 0.176,
+     "30-31": 0.13,
+     "32+": 0.344
+    },
+    "years_by_age": {
+     "<=25": 3,
+     "26-27": 1.75,
+     "28-29": 1.83,
+     "30-31": 2.24,
+     "32+": 1.73
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.101,
+     "26-27": 0.015,
+     "28-29": 0.037,
+     "30-31": 0.03,
+     "32+": 0.028
+    }
+   },
+   "veteran_deals_2017_22": 615,
+   "veteran_deals_per_season": 102.5,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.006,
+    "p90": 0.03,
+    "p95": 0.1185,
+    "p99": 0.1937,
+    "max": 0.241
+   },
+   "minimum_share": 0.759,
+   "one_year_share": 0.776,
+   "tiers": {
+    "top10": {
+     "n": 63,
+     "cap_pct_median": 0.117,
+     "years_median": 2.0,
+     "years_mean": 2.54,
+     "years_dist": {
+      "1": 0.349,
+      "2": 0.27,
+      "3": 0.095,
+      "4": 0.159,
+      "5": 0.095,
+      "6": 0.016
+     },
+     "guaranteed_share_median": 0.75,
+     "age_median": 29.0
+    },
+    "p75_90": {
+     "n": 128,
+     "cap_pct_median": 0.01,
+     "years_median": 1.0,
+     "years_mean": 1.27,
+     "years_dist": {
+      "1": 0.758,
+      "2": 0.219,
+      "3": 0.023,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.25,
+     "age_median": 29.5
+    },
+    "p50_75": {
+     "n": 163,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.22,
+     "years_dist": {
+      "1": 0.785,
+      "2": 0.209,
+      "3": 0.006,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 26.0
+    },
+    "below50": {
+     "n": 261,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.12,
+     "years_dist": {
+      "1": 0.881,
+      "2": 0.119,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 283,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.028,
+     "years_mean": 1.3
+    },
+    "26-27": {
+     "n": 122,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0279,
+     "top10_share": 0.098,
+     "years_mean": 1.26
+    },
+    "28-29": {
+     "n": 83,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0594,
+     "top10_share": 0.157,
+     "years_mean": 1.28
+    },
+    "30-31": {
+     "n": 43,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0984,
+     "top10_share": 0.209,
+     "years_mean": 1.53
+    },
+    "32+": {
+     "n": 84,
+     "cap_pct_median": 0.01,
+     "cap_pct_p90": 0.1309,
+     "top10_share": 0.25,
+     "years_mean": 1.42
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.241,
+    "3": 0.227,
+    "5": 0.219,
+    "10": 0.17,
+    "16": 0.067,
+    "24": 0.043,
+    "32": 0.026,
+    "48": 0.01,
+    "64": 0.006,
+    "96": 0.004
+   }
+  },
+  "RB": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 18.5,
+    "cap_pct_p50": 0.018,
+    "years_mean": 1.99,
+    "years_dist": {
+     "1": 0.45,
+     "2": 0.279,
+     "3": 0.144,
+     "4": 0.09,
+     "5": 0.027,
+     "6": 0.009
+    },
+    "guaranteed_share_median": 0.497,
+    "age_dist": {
+     "<=25": 0.288,
+     "26-27": 0.369,
+     "28-29": 0.153,
+     "30-31": 0.081,
+     "32+": 0.108
+    },
+    "years_by_age": {
+     "<=25": 2.41,
+     "26-27": 1.88,
+     "28-29": 1.82,
+     "30-31": 1.89,
+     "32+": 1.58
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.0205,
+     "26-27": 0.023,
+     "28-29": 0.013,
+     "30-31": 0.016,
+     "32+": 0.015
+    }
+   },
+   "veteran_deals_2017_22": 1041,
+   "veteran_deals_per_season": 173.5,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.005,
+    "p90": 0.01,
+    "p95": 0.019,
+    "p99": 0.0636,
+    "max": 0.082
+   },
+   "minimum_share": 0.856,
+   "one_year_share": 0.802,
+   "tiers": {
+    "top10": {
+     "n": 111,
+     "cap_pct_median": 0.018,
+     "years_median": 2.0,
+     "years_mean": 1.99,
+     "years_dist": {
+      "1": 0.45,
+      "2": 0.279,
+      "3": 0.144,
+      "4": 0.09,
+      "5": 0.027,
+      "6": 0.009
+     },
+     "guaranteed_share_median": 0.497,
+     "age_median": 26.0
+    },
+    "p75_90": {
+     "n": 232,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.08,
+     "years_dist": {
+      "1": 0.922,
+      "2": 0.073,
+      "3": 0.004,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 181,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.36,
+     "years_dist": {
+      "1": 0.674,
+      "2": 0.293,
+      "3": 0.033,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 25.0
+    },
+    "below50": {
+     "n": 517,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.14,
+     "years_dist": {
+      "1": 0.868,
+      "2": 0.126,
+      "3": 0.006,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 639,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.005,
+     "top10_share": 0.05,
+     "years_mean": 1.29
+    },
+    "26-27": {
+     "n": 233,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.019,
+     "top10_share": 0.176,
+     "years_mean": 1.21
+    },
+    "28-29": {
+     "n": 95,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0126,
+     "top10_share": 0.179,
+     "years_mean": 1.16
+    },
+    "30-31": {
+     "n": 48,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0153,
+     "top10_share": 0.188,
+     "years_mean": 1.17
+    },
+    "32+": {
+     "n": 26,
+     "cap_pct_median": 0.0075,
+     "cap_pct_p90": 0.021,
+     "top10_share": 0.462,
+     "years_mean": 1.27
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.081,
+    "3": 0.076,
+    "5": 0.066,
+    "10": 0.034,
+    "16": 0.029,
+    "24": 0.016,
+    "32": 0.012,
+    "48": 0.007,
+    "64": 0.006,
+    "96": 0.005
+   }
+  },
+  "S": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 26.7,
+    "cap_pct_p50": 0.022,
+    "years_mean": 2.18,
+    "years_dist": {
+     "1": 0.4,
+     "2": 0.225,
+     "3": 0.212,
+     "4": 0.131,
+     "5": 0.019,
+     "6": 0.013
+    },
+    "guaranteed_share_median": 0.5,
+    "age_dist": {
+     "<=25": 0.106,
+     "26-27": 0.406,
+     "28-29": 0.269,
+     "30-31": 0.131,
+     "32+": 0.087
+    },
+    "years_by_age": {
+     "<=25": 2.53,
+     "26-27": 2.23,
+     "28-29": 2.12,
+     "30-31": 2.19,
+     "32+": 1.71
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.024,
+     "26-27": 0.024,
+     "28-29": 0.021,
+     "30-31": 0.022,
+     "32+": 0.021
+    }
+   },
+   "veteran_deals_2017_22": 1092,
+   "veteran_deals_per_season": 182.0,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.004,
+    "p75": 0.005,
+    "p90": 0.014,
+    "p95": 0.03,
+    "p99": 0.072,
+    "max": 0.096
+   },
+   "minimum_share": 0.812,
+   "one_year_share": 0.773,
+   "tiers": {
+    "top10": {
+     "n": 112,
+     "cap_pct_median": 0.03,
+     "years_median": 2.5,
+     "years_mean": 2.54,
+     "years_dist": {
+      "1": 0.259,
+      "2": 0.241,
+      "3": 0.268,
+      "4": 0.188,
+      "5": 0.027,
+      "6": 0.018
+     },
+     "guaranteed_share_median": 0.507,
+     "age_median": 27.5
+    },
+    "p75_90": {
+     "n": 287,
+     "cap_pct_median": 0.006,
+     "years_median": 1.0,
+     "years_mean": 1.17,
+     "years_dist": {
+      "1": 0.85,
+      "2": 0.129,
+      "3": 0.021,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.047,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 175,
+     "cap_pct_median": 0.004,
+     "years_median": 1.0,
+     "years_mean": 1.25,
+     "years_dist": {
+      "1": 0.754,
+      "2": 0.246,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 25.0
+    },
+    "below50": {
+     "n": 518,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1.16,
+     "years_dist": {
+      "1": 0.847,
+      "2": 0.143,
+      "3": 0.01,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 544,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.017,
+     "years_mean": 1.29
+    },
+    "26-27": {
+     "n": 297,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.025,
+     "top10_share": 0.158,
+     "years_mean": 1.33
+    },
+    "28-29": {
+     "n": 129,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.026,
+     "top10_share": 0.256,
+     "years_mean": 1.42
+    },
+    "30-31": {
+     "n": 88,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0235,
+     "top10_share": 0.159,
+     "years_mean": 1.31
+    },
+    "32+": {
+     "n": 31,
+     "cap_pct_median": 0.009,
+     "cap_pct_p90": 0.037,
+     "top10_share": 0.29,
+     "years_mean": 1.32
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.096,
+    "3": 0.084,
+    "5": 0.074,
+    "10": 0.062,
+    "16": 0.048,
+    "24": 0.026,
+    "32": 0.019,
+    "48": 0.011,
+    "64": 0.009,
+    "96": 0.005
+   }
+  },
+  "T": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 26.5,
+    "cap_pct_p50": 0.028,
+    "years_mean": 2.28,
+    "years_dist": {
+     "1": 0.403,
+     "2": 0.214,
+     "3": 0.182,
+     "4": 0.113,
+     "5": 0.082,
+     "6": 0.006
+    },
+    "guaranteed_share_median": 0.477,
+    "age_dist": {
+     "<=25": 0.145,
+     "26-27": 0.34,
+     "28-29": 0.27,
+     "30-31": 0.126,
+     "32+": 0.119
+    },
+    "years_by_age": {
+     "<=25": 2.43,
+     "26-27": 2.67,
+     "28-29": 2.02,
+     "30-31": 1.75,
+     "32+": 2.11
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.023,
+     "26-27": 0.0345,
+     "28-29": 0.027,
+     "30-31": 0.02,
+     "32+": 0.049
+    }
+   },
+   "veteran_deals_2017_22": 917,
+   "veteran_deals_per_season": 152.8,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.003,
+    "p75": 0.005,
+    "p90": 0.023,
+    "p95": 0.0532,
+    "p99": 0.0925,
+    "max": 0.126
+   },
+   "minimum_share": 0.808,
+   "one_year_share": 0.714,
+   "tiers": {
+    "top10": {
+     "n": 93,
+     "cap_pct_median": 0.053,
+     "years_median": 3.0,
+     "years_mean": 3,
+     "years_dist": {
+      "1": 0.14,
+      "2": 0.226,
+      "3": 0.29,
+      "4": 0.194,
+      "5": 0.14,
+      "6": 0.011
+     },
+     "guaranteed_share_median": 0.529,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 188,
+     "cap_pct_median": 0.006,
+     "years_median": 1.0,
+     "years_mean": 1.15,
+     "years_dist": {
+      "1": 0.862,
+      "2": 0.128,
+      "3": 0.011,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.089,
+     "age_median": 28.0
+    },
+    "p50_75": {
+     "n": 376,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.44,
+     "years_dist": {
+      "1": 0.585,
+      "2": 0.394,
+      "3": 0.021,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    },
+    "below50": {
+     "n": 260,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1,
+     "years_dist": {
+      "1": 1.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 542,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.022,
+     "years_mean": 1.34
+    },
+    "26-27": {
+     "n": 193,
+     "cap_pct_median": 0.004,
+     "cap_pct_p90": 0.0562,
+     "top10_share": 0.192,
+     "years_mean": 1.56
+    },
+    "28-29": {
+     "n": 96,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.0465,
+     "top10_share": 0.229,
+     "years_mean": 1.49
+    },
+    "30-31": {
+     "n": 44,
+     "cap_pct_median": 0.007,
+     "cap_pct_p90": 0.0438,
+     "top10_share": 0.205,
+     "years_mean": 1.34
+    },
+    "32+": {
+     "n": 40,
+     "cap_pct_median": 0.0075,
+     "cap_pct_p90": 0.0652,
+     "top10_share": 0.325,
+     "years_mean": 1.52
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.126,
+    "3": 0.111,
+    "5": 0.101,
+    "10": 0.093,
+    "16": 0.085,
+    "24": 0.064,
+    "32": 0.034,
+    "48": 0.017,
+    "64": 0.012,
+    "96": 0.006
+   }
+  },
+  "TE": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 21.7,
+    "cap_pct_p50": 0.0225,
+    "years_mean": 2.18,
+    "years_dist": {
+     "1": 0.338,
+     "2": 0.292,
+     "3": 0.238,
+     "4": 0.115,
+     "5": 0.008,
+     "6": 0.008
+    },
+    "guaranteed_share_median": 0.484,
+    "age_dist": {
+     "<=25": 0.085,
+     "26-27": 0.415,
+     "28-29": 0.238,
+     "30-31": 0.092,
+     "32+": 0.169
+    },
+    "years_by_age": {
+     "<=25": 2.73,
+     "26-27": 2.28,
+     "28-29": 2.19,
+     "30-31": 2.42,
+     "32+": 1.55
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.028,
+     "26-27": 0.027,
+     "28-29": 0.018,
+     "30-31": 0.0195,
+     "32+": 0.0225
+    }
+   },
+   "veteran_deals_2017_22": 1109,
+   "veteran_deals_per_season": 184.8,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.003,
+    "p75": 0.005,
+    "p90": 0.0122,
+    "p95": 0.028,
+    "p99": 0.053,
+    "max": 0.078
+   },
+   "minimum_share": 0.864,
+   "one_year_share": 0.766,
+   "tiers": {
+    "top10": {
+     "n": 111,
+     "cap_pct_median": 0.028,
+     "years_median": 2.0,
+     "years_mean": 2.33,
+     "years_dist": {
+      "1": 0.27,
+      "2": 0.306,
+      "3": 0.27,
+      "4": 0.135,
+      "5": 0.009,
+      "6": 0.009
+     },
+     "guaranteed_share_median": 0.503,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 188,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.13,
+     "years_dist": {
+      "1": 0.878,
+      "2": 0.117,
+      "3": 0.005,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 462,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.38,
+     "years_dist": {
+      "1": 0.665,
+      "2": 0.292,
+      "3": 0.043,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    },
+    "below50": {
+     "n": 348,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1,
+     "years_dist": {
+      "1": 1.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 682,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.012,
+     "years_mean": 1.28
+    },
+    "26-27": {
+     "n": 241,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.028,
+     "top10_share": 0.207,
+     "years_mean": 1.35
+    },
+    "28-29": {
+     "n": 114,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0254,
+     "top10_share": 0.237,
+     "years_mean": 1.36
+    },
+    "30-31": {
+     "n": 38,
+     "cap_pct_median": 0.006,
+     "cap_pct_p90": 0.035,
+     "top10_share": 0.263,
+     "years_mean": 1.47
+    },
+    "32+": {
+     "n": 31,
+     "cap_pct_median": 0.014,
+     "cap_pct_p90": 0.04,
+     "top10_share": 0.516,
+     "years_mean": 1.39
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.078,
+    "3": 0.076,
+    "5": 0.068,
+    "10": 0.053,
+    "16": 0.039,
+    "24": 0.027,
+    "32": 0.017,
+    "48": 0.007,
+    "64": 0.006,
+    "96": 0.005
+   }
+  },
+  "WR": {
+   "market_deals_1pct_plus": {
+    "n_per_season": 40.8,
+    "cap_pct_p50": 0.027,
+    "years_mean": 2.07,
+    "years_dist": {
+     "1": 0.482,
+     "2": 0.188,
+     "3": 0.163,
+     "4": 0.114,
+     "5": 0.053,
+     "6": 0.0
+    },
+    "guaranteed_share_median": 0.528,
+    "age_dist": {
+     "<=25": 0.147,
+     "26-27": 0.429,
+     "28-29": 0.192,
+     "30-31": 0.127,
+     "32+": 0.106
+    },
+    "years_by_age": {
+     "<=25": 2,
+     "26-27": 2.29,
+     "28-29": 1.96,
+     "30-31": 2.1,
+     "32+": 1.46
+    },
+    "cap_pct_median_by_age": {
+     "<=25": 0.016,
+     "26-27": 0.032,
+     "28-29": 0.021,
+     "30-31": 0.04,
+     "32+": 0.0245
+    }
+   },
+   "veteran_deals_2017_22": 2152,
+   "veteran_deals_per_season": 358.7,
+   "cap_pct": {
+    "p10": 0.001,
+    "p25": 0.001,
+    "p50": 0.003,
+    "p75": 0.005,
+    "p90": 0.011,
+    "p95": 0.031,
+    "p99": 0.092,
+    "max": 0.144
+   },
+   "minimum_share": 0.868,
+   "one_year_share": 0.79,
+   "tiers": {
+    "top10": {
+     "n": 231,
+     "cap_pct_median": 0.028,
+     "years_median": 2.0,
+     "years_mean": 2.11,
+     "years_dist": {
+      "1": 0.468,
+      "2": 0.186,
+      "3": 0.169,
+      "4": 0.121,
+      "5": 0.056,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.538,
+     "age_median": 27.0
+    },
+    "p75_90": {
+     "n": 316,
+     "cap_pct_median": 0.005,
+     "years_median": 1.0,
+     "years_mean": 1.11,
+     "years_dist": {
+      "1": 0.896,
+      "2": 0.101,
+      "3": 0.003,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 27.0
+    },
+    "p50_75": {
+     "n": 888,
+     "cap_pct_median": 0.003,
+     "years_median": 1.0,
+     "years_mean": 1.35,
+     "years_dist": {
+      "1": 0.667,
+      "2": 0.313,
+      "3": 0.02,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    },
+    "below50": {
+     "n": 717,
+     "cap_pct_median": 0.001,
+     "years_median": 1.0,
+     "years_mean": 1,
+     "years_dist": {
+      "1": 1.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0
+     },
+     "guaranteed_share_median": 0.0,
+     "age_median": 24.0
+    }
+   },
+   "by_age": {
+    "<=25": {
+     "n": 1381,
+     "cap_pct_median": 0.003,
+     "cap_pct_p90": 0.004,
+     "top10_share": 0.025,
+     "years_mean": 1.24
+    },
+    "26-27": {
+     "n": 463,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.0378,
+     "top10_share": 0.218,
+     "years_mean": 1.36
+    },
+    "28-29": {
+     "n": 186,
+     "cap_pct_median": 0.005,
+     "cap_pct_p90": 0.027,
+     "top10_share": 0.226,
+     "years_mean": 1.25
+    },
+    "30-31": {
+     "n": 74,
+     "cap_pct_median": 0.007,
+     "cap_pct_p90": 0.0734,
+     "top10_share": 0.378,
+     "years_mean": 1.47
+    },
+    "32+": {
+     "n": 41,
+     "cap_pct_median": 0.014,
+     "cap_pct_p90": 0.041,
+     "top10_share": 0.61,
+     "years_mean": 1.34
+    }
+   },
+   "ladder_active_2022": {
+    "1": 0.144,
+    "3": 0.134,
+    "5": 0.115,
+    "10": 0.099,
+    "16": 0.086,
+    "24": 0.063,
+    "32": 0.048,
+    "48": 0.019,
+    "64": 0.015,
+    "96": 0.008
+   }
+  }
+ },
+ "rookie_scale_by_round": {
+  "1": {
+   "n": 195,
+   "p10": 0.015,
+   "median": 0.019,
+   "p90": 0.042,
+   "max": 0.05
+  },
+  "2": {
+   "n": 198,
+   "p10": 0.007,
+   "median": 0.0085,
+   "p90": 0.011,
+   "max": 0.012
+  },
+  "3": {
+   "n": 251,
+   "p10": 0.005,
+   "median": 0.006,
+   "p90": 0.007,
+   "max": 0.007
+  },
+  "4": {
+   "n": 241,
+   "p10": 0.004,
+   "median": 0.005,
+   "p90": 0.006,
+   "max": 0.006
+  },
+  "5": {
+   "n": 259,
+   "p10": 0.003,
+   "median": 0.004,
+   "p90": 0.005,
+   "max": 0.005
+  },
+  "6": {
+   "n": 336,
+   "p10": 0.001,
+   "median": 0.004,
+   "p90": 0.005,
+   "max": 0.005
+  },
+  "7": {
+   "n": 363,
+   "p10": 0.001,
+   "median": 0.004,
+   "p90": 0.005,
+   "max": 0.005
+  }
+ },
+ "active_cap_share_by_position": {
+  "WR": 0.127,
+  "EDGE": 0.117,
+  "CB": 0.105,
+  "QB": 0.103,
+  "T": 0.098,
+  "DT": 0.095,
+  "LB": 0.067,
+  "S": 0.065,
+  "G": 0.059,
+  "TE": 0.054,
+  "RB": 0.049,
+  "C": 0.029,
+  "K": 0.014,
+  "P": 0.008,
+  "LS": 0.005,
+  "FB": 0.004
+ }
+}

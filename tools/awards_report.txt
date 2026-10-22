@@ -1,0 +1,259 @@
+Seasons: 17 (101-2026, 102-2026, 103-2026, 104-2026, 105-2026, 106-2026, 107-2026, 108-2026, 201-2026, 201-2027, 201-2028, 202-2026, 202-2027, 202-2028, 203-2026, 203-2027, 203-2028)
+Real = AP winners 2000-2025 (tools/real_awards.py); stats are per 17 team games.
+
+== MVP ==  (game: 17 winners)
+  positions   game: QB 94%, RB 6%
+              real: QB 85%, RB 15%
+  team win%   game 0.761 / real 0.799;  made playoffs game 100% / real 100%;  played game 100% / real 98%
+  MVP's team the No. 1 seed: 53%
+  MVP also first-team All-Pro: 65% (real: almost always; 2024 was an exception, Allen MVP and Jackson All-Pro)
+  winner's first-place votes (of 50): avg 41, unanimous 7, under 30: 4
+  QB   game: pass_yds 4641.1, pass_td 34.0, pass_int 8.2, rush_yds 647.9  (n=16)
+       real: pass_yds 4547.0, pass_td 40.0, pass_int 8.6, rush_yds 250.4
+  RB   game: rush_yds 1569.0, rush_td 18.0, rec_yds 785.0  (n=1)
+       real: rush_yds 2112.8, rush_td 20.7, rec_yds 156.7
+    2026 Luke Washington          QB   team 0.706 #1  4707 yds 35 TD 13 INT, rush 727  (50 first-place, 500 pts, by 250)
+    2026 Malcolm Keller           QB   team 0.824 #2  4163 yds 41 TD 6 INT, rush 780  (50 first-place, 500 pts, by 280)
+    2026 Rob Anderson             QB   team 0.765 #5  4384 yds 28 TD 9 INT, rush 1061  (50 first-place, 500 pts, by 250)
+    2026 Michael Newton           QB   team 0.882 #1  5088 yds 50 TD 8 INT, rush 393  (50 first-place, 500 pts, by 254)
+    2026 Russell Martin           QB   team 0.765 #1  3980 yds 31 TD 6 INT, rush 736  (50 first-place, 500 pts, by 316)
+    2026 Mason Willis             QB   team 0.706 #4  5487 yds 43 TD 11 INT, rush 211  (50 first-place, 500 pts, by 272)
+    2026 Ray Perry                QB   team 0.765 #1  4466 yds 28 TD 12 INT, rush 494  (47 first-place, 485 pts, by 247)
+    2026 Dean Stone               QB   team 0.765 #1  5208 yds 35 TD 4 INT, rush 354  (27 first-place, 385 pts, by 20)
+    2026 Brandon Pierce           QB   team 0.647 #5  4821 yds 32 TD 7 INT, rush 618  (37 first-place, 420 pts, by 260)
+    2027 Brandon Payne            QB   team 0.882 #1  5082 yds 34 TD 15 INT, rush 662  (38 first-place, 432 pts, by 247)
+    2028 Andre Caldwell           RB   team 0.647 #5  rush 1569 yds 18 TD, rec 785  (33 first-place, 399 pts, by 115)
+    2026 Joseph Sanders           QB   team 0.824 #1  4333 yds 37 TD 5 INT, rush 823  (50 first-place, 500 pts, by 305)
+    2027 Garrett Carter           QB   team 0.765 #1  4322 yds 26 TD 7 INT, rush 277  (29 first-place, 384 pts, by 48)
+    2028 Troy Newton              QB   team 0.824 #2  4499 yds 32 TD 8 INT, rush 609  (46 first-place, 477 pts, by 363)
+    2026 Joel Kennedy             QB   team 0.765 #2  4441 yds 28 TD 7 INT, rush 1208  (28 first-place, 364 pts, by 54)
+    2027 Keith Lewis              QB   team 0.706 #1  4630 yds 32 TD 10 INT, rush 468  (25 first-place, 349 pts, by 109)
+    2028 Levi Brown               QB   team 0.706 #2  4646 yds 32 TD 4 INT, rush 945  (44 first-place, 470 pts, by 199)
+
+== Offensive Player of the Year ==  (game: 17 winners)
+  positions   game: WR 41%, RB 35%, QB 12%, TE 12%
+              real: RB 50%, QB 35%, WR 15%
+  team win%   game 0.595 / real 0.737;  made playoffs game 82% / real 87%;  played game 100% / real 99%
+  winner's first-place votes (of 50): avg 35, unanimous 3, under 30: 6
+  QB   game: pass_yds 4867.0, pass_td 46.5, pass_int 8.5, rush_yds 658.0  (n=2)
+       real: pass_yds 5102.6, pass_td 46.4, pass_int 10.9, rush_yds 147.0
+  RB   game: rush_yds 1598.7, rush_td 14.0, rec_yds 549.3  (n=6)
+       real: rush_yds 1922.9, rush_td 16.6, rec_yds 402.2
+  WR   game: rec 129.1, rec_yds 1887.7, rec_td 12.9  (n=7)
+       real: rec 137.6, rec_yds 1845.5, rec_td 10.9
+  also MVP    game 6% / real 42% (since 2016 20%)
+    2026 Keith Wright             RB   team 0.588 #7  rush 1570 yds 11 TD, rec 505  (42 first-place, 457 pts, by 264)
+    2026 Tim Norris               RB   team 0.618 #5  rush 1996 yds 25 TD, rec 343  (50 first-place, 500 pts, by 272)
+    2026 Calvin Caldwell          RB   team 0.647 #3  rush 1295 yds 9 TD, rec 659  (19 first-place, 289 pts, by 91)
+    2026 Michael Newton           QB   team 0.882 #1  5088 yds 50 TD 8 INT, rush 393  (24 first-place, 354 pts, by 48)
+    2026 Spencer Martin           RB   team 0.529 #7  rush 1415 yds 11 TD, rec 608  (48 first-place, 490 pts, by 263)
+    2026 Calvin Taylor            TE   team 0.706 #2  128 rec 1535 yds 16 TD  (50 first-place, 500 pts, by 348)
+    2026 Cole Anderson            TE   team 0.765 #1  114 rec 1656 yds 12 TD  (47 first-place, 485 pts, by 220)
+    2026 Gabe Payne               QB   team 0.824 #1  4646 yds 43 TD 9 INT, rush 923  (50 first-place, 500 pts, by 331)
+    2026 Derek Shaw               RB   team 0.529 #6  rush 1640 yds 9 TD, rec 679  (20 first-place, 293 pts, by 82)
+    2027 Javon Wheeler            WR   team 0.206 --  130 rec 1756 yds 14 TD  (10 first-place, 197 pts, by 13)
+    2028 Mario Reese              WR   team 0.529 #6  128 rec 1943 yds 13 TD  (49 first-place, 495 pts, by 294)
+    2026 Ryan Hall                WR   team 0.588 #7  110 rec 1743 yds 11 TD  (32 first-place, 380 pts, by 177)
+    2027 Ryan Hudson              WR   team 0.588 #4  144 rec 2045 yds 12 TD  (49 first-place, 495 pts, by 301)
+    2028 Elijah Green             WR   team 0.588 #5  129 rec 1891 yds 11 TD  (14 first-place, 252 pts, by 41)
+    2026 Noah Wade                RB   team 0.471 --  rush 1676 yds 19 TD, rec 502  (35 first-place, 414 pts, by 201)
+    2027 Cameron Malone           WR   team 0.529 --  130 rec 2067 yds 16 TD  (30 first-place, 394 pts, by 78)
+    2028 Jeremiah Ward            WR   team 0.529 #7  133 rec 1769 yds 13 TD  (18 first-place, 275 pts, by 10)
+
+== Defensive Player of the Year ==  (game: 17 winners)
+  positions   game: EDGE 47%, CB 24%, LB 18%, S 6%, DT 6%
+              real: EDGE 46%, LB 19%, S 12%, CB 12%, DT 12%
+  team win%   game 0.578 / real 0.652;  made playoffs game 71% / real 80%;  played game 98% / real 97%
+  winner's first-place votes (of 50): avg 42, unanimous 6, under 30: 1
+  EDGE game: sacks 18.9, ff 4.2, tackles 69.8  (n=8)
+       real: sacks 19.1, ff 5.1, tackles 64.4
+  DT   game: sacks 10.0, tackles 72.0  (n=1)
+       real: sacks 15.9, tackles 48.2
+  LB   game: tackles 57.7, sacks 13.8, def_int 0.0  (n=3)
+       real: tackles 128.8, sacks 2.9, def_int 3.6
+  CB   game: def_int 7.5, pd 22.2  (n=4)
+       real: def_int 6.6, pd 17.1
+  S    game: def_int 7.0, pd 29.0, tackles 94.0  (n=1)
+       real: def_int 6.4, pd 12.0, tackles 65.9
+    2026 Roman Webb               S    team 0.529 #5  0.0 sk 7 INT 94 tkl 29 PD 0 FF  (50 first-place, 500 pts, by 292)
+    2026 Vince Henderson          EDGE team 0.588 #6  19.0 sk 0 INT 67 tkl 0 PD 3 FF  (50 first-place, 500 pts, by 252)
+    2026 Jordan Dunn              CB   team 0.412 --  0.0 sk 5 INT 115 tkl 22 PD 1 FF  (30 first-place, 367 pts, by 187)
+    2026 Wes Davis                EDGE team 0.324 --  20.0 sk 0 INT 73 tkl 3 PD 1 FF  (50 first-place, 500 pts, by 250)
+    2026 Jeremiah Wilson          CB   team 0.647 #6  0.0 sk 11 INT 94 tkl 24 PD 2 FF  (49 first-place, 495 pts, by 240)
+    2026 Collin Mathis            CB   team 0.588 #3  0.0 sk 6 INT 134 tkl 14 PD 1 FF  (38 first-place, 440 pts, by 132)
+    2026 Leon Thompson            CB   team 0.588 #4  0.0 sk 8 INT 103 tkl 29 PD 1 FF  (50 first-place, 500 pts, by 292)
+    2026 Derrick Roberts          LB   team 0.588 #4  14.5 sk 0 INT 67 tkl 3 PD 7 FF  (48 first-place, 490 pts, by 250)
+    2026 Jalen Ford               EDGE team 0.765 #1  21.5 sk 0 INT 86 tkl 3 PD 7 FF  (50 first-place, 500 pts, by 378)
+    2027 Wes Hart                 LB   team 0.353 --  15.0 sk 0 INT 58 tkl 3 PD 6 FF  (40 first-place, 440 pts, by 233)
+    2028 Devin Cooper             EDGE team 0.824 #1  18.0 sk 0 INT 57 tkl 0 PD 4 FF  (33 first-place, 390 pts, by 143)
+    2026 Isaiah Miller            EDGE team 0.529 --  20.5 sk 0 INT 73 tkl 2 PD 5 FF  (47 first-place, 485 pts, by 275)
+    2027 Victor Turner            EDGE team 0.706 #5  13.0 sk 0 INT 66 tkl 2 PD 7 FF  (37 first-place, 419 pts, by 281)
+    2028 Lamar Wallace            EDGE team 0.471 --  22.0 sk 0 INT 71 tkl 3 PD 4 FF  (50 first-place, 500 pts, by 317)
+    2026 Cole Kennedy             LB   team 0.735 #2  12.0 sk 0 INT 48 tkl 3 PD 5 FF  (17 first-place, 266 pts, by 30)
+    2027 Cody Martin              DT   team 0.588 #4  10.0 sk 0 INT 72 tkl 1 PD 3 FF  (46 first-place, 478 pts, by 295)
+    2028 Troy Campbell            EDGE team 0.588 #6  17.5 sk 0 INT 65 tkl 2 PD 3 FF  (36 first-place, 425 pts, by 177)
+
+== Offensive Rookie of the Year ==  (game: 17 winners)
+  positions   game: RB 35%, QB 35%, WR 29%
+              real: QB 42%, RB 35%, WR 23%
+  team win%   game 0.612 / real 0.566;  made playoffs game 71% / real 58%;  played game 97% / real 95%
+  winner's first-place votes (of 50): avg 37, unanimous 3, under 30: 5
+  QB   game: pass_yds 4428.2, pass_td 33.7, pass_int 9.3, rush_yds 298.0  (n=6)
+       real: pass_yds 3661.4, pass_td 21.8, pass_int 10.2, rush_yds 465.1
+  RB   game: rush_yds 1146.3, rush_td 12.0, rec_yds 340.0  (n=6)
+       real: rush_yds 1207.5, rush_td 10.1, rec_yds 400.6
+  WR   game: rec 89.4, rec_yds 1213.6, rec_td 8.8  (n=5)
+       real: rec 83.6, rec_yds 1210.2, rec_td 8.6
+    2026 Shane Edwards            RB   team 0.529 --  rush 923 yds 12 TD, rec 169  (38 first-place, 440 pts, by 134)
+    2026 Colby Freeman            RB   team 0.559 #6  rush 1142 yds 13 TD, rec 214  (50 first-place, 500 pts, by 250)
+    2026 Zach Jenkins             QB   team 0.647 #3  4425 yds 35 TD 12 INT, rush 147  (47 first-place, 485 pts, by 220)
+    2026 Carson Ellis             WR   team 0.235 --  111 rec 1401 yds 14 TD  (50 first-place, 500 pts, by 297)
+    2026 Anthony Morris           QB   team 0.647 #6  4237 yds 32 TD 4 INT, rush 334  (50 first-place, 500 pts, by 294)
+    2026 Ian Cooper               QB   team 0.588 #3  4245 yds 38 TD 9 INT, rush 122  (30 first-place, 400 pts, by 50)
+    2026 Tyler Hart               RB   team 0.706 #2  rush 1232 yds 16 TD, rec 255  (48 first-place, 490 pts, by 243)
+    2026 Garrett Foster           RB   team 0.588 #7  rush 1238 yds 13 TD, rec 280  (46 first-place, 480 pts, by 210)
+    2026 Jerome Palmer            WR   team 0.765 #1  64 rec 1012 yds 9 TD  (38 first-place, 432 pts, by 226)
+    2027 Brandon Payne            QB   team 0.882 #1  5082 yds 34 TD 15 INT, rush 662  (30 first-place, 392 pts, by 87)
+    2028 Roman Clark              RB   team 0.412 --  rush 1080 yds 8 TD, rec 381  (22 first-place, 297 pts, by 74)
+    2026 Marquise Sims            WR   team 0.471 --  71 rec 1126 yds 11 TD  (28 first-place, 369 pts, by 120)
+    2027 Jerome Morris            WR   team 0.765 #1  121 rec 1506 yds 5 TD  (22 first-place, 321 pts, by 38)
+    2028 Jeremiah Harper          WR   team 0.853 #1  80 rec 1023 yds 5 TD  (24 first-place, 341 pts, by 16)
+    2026 Matt Mathis              QB   team 0.706 #5  3746 yds 27 TD 10 INT, rush 196  (42 first-place, 456 pts, by 264)
+    2027 Jacob Young              QB   team 0.647 #2  4834 yds 36 TD 6 INT, rush 327  (27 first-place, 357 pts, by 47)
+    2028 Jerome Sims              RB   team 0.412 --  rush 1263 yds 10 TD, rec 741  (40 first-place, 450 pts, by 195)
+
+== Defensive Rookie of the Year ==  (game: 17 winners)
+  positions   game: CB 41%, EDGE 41%, S 12%, LB 6%
+              real: LB 42%, EDGE 35%, DT 12%, CB 12%
+  team win%   game 0.571 / real 0.539;  made playoffs game 59% / real 52%;  played game 94% / real 95%
+  winner's first-place votes (of 50): avg 33, unanimous 0, under 30: 6
+  EDGE game: sacks 14.3, ff 2.3, tackles 48.0  (n=7)
+       real: sacks 9.4, ff 2.9, tackles 44.4
+  LB   game: tackles 181.0, sacks 0.0, def_int 0.0  (n=1)
+       real: tackles 119.7, sacks 5.3, def_int 1.5
+  CB   game: def_int 3.4, pd 12.4  (n=7)
+       real: def_int 5.3, pd 22.2
+    2026 Corey Riley              CB   team 0.588 #7  1.0 sk 3 INT 72 tkl 9 PD 1 FF  (26 first-place, 370 pts, by 16)
+    2026 Brandon Owens            CB   team 0.353 --  0.0 sk 2 INT 81 tkl 16 PD 0 FF  (24 first-place, 336 pts, by 105)
+    2026 Austin Hardy             CB   team 0.588 #3  0.0 sk 4 INT 96 tkl 13 PD 3 FF  (35 first-place, 425 pts, by 100)
+    2026 Keenan Payne             CB   team 0.676 #3  0.0 sk 4 INT 82 tkl 10 PD 0 FF  (33 first-place, 410 pts, by 144)
+    2026 Colby Ward               CB   team 0.294 --  0.0 sk 4 INT 82 tkl 10 PD 3 FF  (34 first-place, 412 pts, by 115)
+    2026 Andre Fowler             S    team 0.412 --  3.0 sk 1 INT 82 tkl 10 PD 0 FF  (24 first-place, 342 pts, by 42)
+    2026 Josh Gray                CB   team 0.588 #6  0.0 sk 2 INT 97 tkl 14 PD 2 FF  (26 first-place, 359 pts, by 70)
+    2026 Will Phillips            EDGE team 0.471 --  15.0 sk 0 INT 36 tkl 1 PD 2 FF  (30 first-place, 383 pts, by 179)
+    2026 Jacob Oliver             LB   team 0.706 #1  0.0 sk 0 INT 181 tkl 9 PD 2 FF  (31 first-place, 388 pts, by 84)
+    2027 Colby Ferguson           S    team 0.824 #1  3.0 sk 5 INT 96 tkl 15 PD 1 FF  (31 first-place, 387 pts, by 139)
+    2028 Reggie Hudson            EDGE team 0.471 --  15.0 sk 0 INT 47 tkl 2 PD 2 FF  (40 first-place, 450 pts, by 164)
+    2026 Dalton Hicks             CB   team 0.824 #1  0.0 sk 5 INT 80 tkl 15 PD 0 FF  (20 first-place, 295 pts, by 44)
+    2027 Carson Banks             EDGE team 0.588 #3  11.0 sk 0 INT 43 tkl 0 PD 2 FF  (36 first-place, 421 pts, by 169)
+    2028 Darren Thompson          EDGE team 0.618 #3  18.0 sk 0 INT 63 tkl 2 PD 5 FF  (49 first-place, 495 pts, by 311)
+    2026 Jason Webb               EDGE team 0.824 #1  11.5 sk 0 INT 34 tkl 2 PD 2 FF  (26 first-place, 335 pts, by 168)
+    2027 Noah Harris              EDGE team 0.471 --  16.0 sk 0 INT 62 tkl 1 PD 1 FF  (40 first-place, 444 pts, by 175)
+    2028 Patrick Hudson           EDGE team 0.412 --  13.5 sk 0 INT 51 tkl 1 PD 2 FF  (48 first-place, 490 pts, by 325)
+
+== Comeback Player of the Year ==  (game: 6 winners)
+  positions   game: RB 33%, QB 33%, EDGE 17%, WR 17%
+              real: QB 63%, WR 11%, EDGE 7%, RB 7%, LB 4%, TE 4%, S 4%
+  team win%   game 0.637 / real 0.636;  made playoffs game 100% / real 88%;  played game 95% / real 89%
+  winner's first-place votes (of 50): avg 35, unanimous 0, under 30: 2
+  QB   game: pass_yds 4082.0, pass_td 36.0, pass_int 7.5, rush_yds 326.0  (n=2)
+       real: pass_yds 3829.1, pass_td 27.6, pass_int 11.9, rush_yds 149.9
+  RB   game: rush_yds 1532.5, rush_td 15.5, rec_yds 538.5  (n=2)
+       real: rush_yds 1241.7, rush_td 7.1, rec_yds 646.3
+  WR   game: rec 133.0, rec_yds 1769.0, rec_td 13.0  (n=1)
+       real: rec 107.0, rec_yds 1492.1, rec_td 11.3
+  EDGE game: sacks 15.5, ff 6.0, tackles 67.0  (n=1)
+       real: sacks 13.0, ff 3.2, tackles 34.0
+  kind        game: injury 67%, revival 33%; real: injury 67%, revival 33%
+  seasons without one: 11 (No Comeback Player of the Year: it needs a season on record to come back from (the league's first season has none).)
+    2027 Eric Hughes              RB   team 0.706 #2  rush 1533 yds 12 TD, rec 385  (41 first-place, 455 pts, by 238)
+    2028 Troy Graham              QB   team 0.706 #2  3957 yds 38 TD 4 INT, rush 271  (22 first-place, 329 pts, by 18)
+    2027 Mario Alexander          RB   team 0.765 #1  rush 1532 yds 19 TD, rec 692  (34 first-place, 418 pts, by 94)
+    2028 Ryan Patterson           EDGE team 0.529 #7  15.5 sk 0 INT 67 tkl 0 PD 6 FF  (36 first-place, 416 pts, by 261)
+    2027 Devin Sims               QB   team 0.588 #5  4207 yds 34 TD 11 INT, rush 381  (29 first-place, 379 pts, by 129)
+    2028 Jeremiah Ward            WR   team 0.529 #7  133 rec 1769 yds 13 TD  (49 first-place, 495 pts, by 307)
+
+== All-Pro ==
+  2026 (101-2026): 31 first-teamers from 21 teams; most from one team 3; unanimous 4
+  2026 (102-2026): 31 first-teamers from 18 teams; most from one team 4; unanimous 4
+  2026 (103-2026): 31 first-teamers from 22 teams; most from one team 3; unanimous 2
+  2026 (104-2026): 31 first-teamers from 22 teams; most from one team 3; unanimous 1
+  2026 (105-2026): 31 first-teamers from 20 teams; most from one team 3; unanimous 3
+  2026 (106-2026): 31 first-teamers from 20 teams; most from one team 4; unanimous 3
+  2026 (107-2026): 31 first-teamers from 18 teams; most from one team 4; unanimous 3
+  2026 (108-2026): 31 first-teamers from 18 teams; most from one team 5; unanimous 2
+  2026 (201-2026): 31 first-teamers from 19 teams; most from one team 4; unanimous 6
+  2027 (201-2027): 31 first-teamers from 18 teams; most from one team 3; unanimous 3
+  2028 (201-2028): 31 first-teamers from 21 teams; most from one team 3; unanimous 5
+  2026 (202-2026): 31 first-teamers from 19 teams; most from one team 3; unanimous 3
+  2027 (202-2027): 31 first-teamers from 18 teams; most from one team 4; unanimous 4
+  2028 (202-2028): 31 first-teamers from 23 teams; most from one team 3; unanimous 4
+  2026 (203-2026): 31 first-teamers from 19 teams; most from one team 4; unanimous 1
+  2027 (203-2027): 31 first-teamers from 20 teams; most from one team 3; unanimous 5
+  2028 (203-2028): 31 first-teamers from 23 teams; most from one team 4; unanimous 6
+  first-teamers' team win% avg 0.534 (real All-Pros lean to good teams; no clean real number on file)
+  Sample, 2028 first team:
+    Quarterback        Levi Brown               QB  DAL (37 first-team votes)
+    Running back       Jesse Carter             RB  HOU (34 first-team votes)
+    Fullback           Cameron Franklin         FB  SAN (30 first-team votes)
+    Wide receiver      Jeremiah Ward            WR  POR (48 first-team votes)
+    Wide receiver      Grant Kelly              WR  KCY (37 first-team votes)
+    Wide receiver      Dean Fuller              WR  NYK (25 first-team votes)
+    Tight end          Evan Bradley             TE  WAS (50 first-team votes)
+    All-purpose        Jerome Sims              RB  LVG (21 first-team votes)
+    Left tackle        Derrick Watson           T   PHX (23 first-team votes)
+    Left guard         Tyrone Foster            G   SDG (50 first-team votes)
+    Center             Thomas Hill              C   KCY (21 first-team votes)
+    Right guard        Jalen Willis             G   POR (50 first-team votes)
+    Right tackle       Jay Warren               T   POR (50 first-team votes)
+    Edge rusher        Isaiah Griffin           DE  DAL (40 first-team votes)
+    Edge rusher        Troy Campbell            DE  BOS (38 first-team votes)
+    Edge rusher        Jeff Payne               DE  BUF (30 first-team votes)
+    Interior lineman   Darius Stanley           DT  PHI (50 first-team votes)
+    Interior lineman   Cody Martin              DT  BAL (17 first-team votes)
+    Linebacker         Nick Woods               OLB STL (50 first-team votes)
+    Linebacker         Sam Hudson               OLB TAM (33 first-team votes)
+    Cornerback         Ryan Cox                 CB  DET (36 first-team votes)
+    Cornerback         Demarcus Jones           CB  POR (15 first-team votes)
+    Slot cornerback    Joel Roberts             CB  CLE (14 first-team votes)
+    Safety             Sam Mitchell             S   SEA (48 first-team votes)
+    Safety             Bennett Keller           S   DEN (35 first-team votes)
+    Kicker             Cody Fuller              K   SAN (22 first-team votes)
+    Punter             Eli Henderson            P   NYK (33 first-team votes)
+    Kick returner      Paul Ferguson            RB  MIN (27 first-team votes)
+    Punt returner      Chase Willis             RB  NSH (48 first-team votes)
+    Special teamer     Marquise Watkins         CB  BUF (24 first-team votes)
+    Long snapper       David Chambers           LS  MIA (48 first-team votes)
+
+== Pro Bowl ==
+  selected per conference: 43-44 (should be 44); playing in the game: 42-44
+  selected players' popularity avg 37 vs all regulars 28
+  selected players' performance (z vs regulars at the position) avg 1.39; below the typical regular: 2 (0 except thin positions, e.g. fullbacks, filled from the rest)
+  selected players' snap share avg 85%, lowest 13%
+  from playoff teams 53% (14 of 32 teams make it)
+  replaced per season: glory_bowl: 8.5, declined: 11.4, injured: 7.7; total 27.6 of 88 (real: often 40+, counting the Super Bowl teams)
+  picks changed by the personality boost per season: 8.4 of 88
+  2026 Pro Bowl at Phoenix: Western 24, Eastern 20
+  2026 Pro Bowl at Houston: Western 22, Eastern 37
+  2026 Pro Bowl at Houston: Western 26, Eastern 6
+  2026 Pro Bowl at Phoenix: Western 29, Eastern 24
+  2026 Pro Bowl at Miami: Western 24, Eastern 20
+  2026 Pro Bowl at San Diego: Western 22, Eastern 29
+  2026 Pro Bowl at Las Vegas: Western 26, Eastern 27
+  2026 Pro Bowl at San Diego: Western 27, Eastern 32
+  2026 Pro Bowl at Miami: Western 24, Eastern 27
+  2027 Pro Bowl at Las Vegas: Eastern 19, Western 32
+  2028 Pro Bowl at Miami: Western 20, Eastern 34
+  2026 Pro Bowl at New Orleans: Western 35, Eastern 18
+  2027 Pro Bowl at Tampa: Eastern 38, Western 31
+  2028 Pro Bowl at Los Angeles: Western 17, Eastern 9
+  2026 Pro Bowl at Houston: Western 17, Eastern 24
+  2027 Pro Bowl at New Orleans: Eastern 38, Western 45
+  2028 Pro Bowl at New Orleans: Western 41, Eastern 34
+  (Real Pro Bowl tackle games 2010-2022 averaged about 60-70 combined points; this game plays it like a real game, so expect normal scores)
+
+== Players of the Week ==
+  Offensive: QB 67%, RB 23%, WR 10%, TE 1%, FB 0%;  from the winning team 92%
+  Defensive: DE 57%, OLB 16%, CB 10%, DT 7%, ILB 6%, S 4%;  from the winning team 85%
+  Special Teams: K 46%, P 20%, RB 20%, WR 9%, CB 4%;  from the winning team 75%
+
