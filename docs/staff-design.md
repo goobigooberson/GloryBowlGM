@@ -224,9 +224,12 @@ level, Blake's 88-90% moving 0-3 points a year, stars 80+/90+), plus sample care
   - **Your own players:** about 1.5 for an average staff (best ~0.75, worst ~2.5): your
     coaches see them every day; the coach whose background is his group counts most. A new
     arrival starts at the "other team" level and narrows over his first weeks with you.
-  - **Other teams' players and free agents:** about 3.5 (best ~2, worst ~5.5), mostly from
-    the pro personnel director; part of it is shared across the league (everyone
-    overrates the same player a little).
+  - **Other teams' players and free agents:** by how much tape there is (his share of his
+    team's snaps over his last two seasons): about 8 for a player who barely played, 5 for a
+    part-timer (45%), 3 for a full-time starter (80%+); other teams' rookies 4.9 (Oct 22,
+    sized to real data; was a flat 3.5). Better or worse pro personnel directors scale it
+    (best about half, worst about 1.6 times). Part of it is shared across the league
+    (everyone overrates the same player a little).
   - **Draft prospects:** the draft's existing model (`scouting.py`), with the college
     scouting director's skill taking the place of the hidden front-office skill.
   - **The startup draft:** veterans at the "other team" level from the pro personnel
@@ -254,12 +257,18 @@ level, Blake's 88-90% moving 0-3 points a year, stars 80+/90+), plus sample care
     with the league's public view directly; views of different sureness are pulled toward
     average by different amounts, so teams overpaid their own stars and 3 AI teams ended
     over the cap at week 1 in `free_agency_check` (101,102,103 x 4); with misjudgment, 0.
-  - Not yet on staff views: `cap_market` (deliberately the consensus), `draft.sign_undrafted`,
-    the startup room's AI boards (`draft.StartupRoom`, its own scouting model; your screen's
-    numbers there come from `evaluation.py`), draft needs. Real-data sizing of OWN_SD /
-    OTHER_SD / SHARED: the "AI views of pros" side session (its notes: real teams judge
-    their own re-signings better mainly for players with little tape; suggests scaling the
-    other-team mistake by snaps played).
+  - Built (Oct 22, AI-eyes session): free agency's roles and upgrade size ("is he better than
+    our starter, by how much": `free_agency.team_score`, the league's market score moved by
+    the team's misjudgment, now and ceiling, for the free agent and its own players alike),
+    fifth-year option / extension / re-sign role checks, `set_approaches` (its window from
+    its own view of its roster), `draft.team_needs` / `qb_situation` / `sign_undrafted`'s
+    weakest player, game-day actives' tiebreak and the emergency QB (`roster_rules`, rating
+    from `gameteam`). The tape behind the other-team mistake is each season's snap shares
+    (`evaluation.record_tape`, at the end of the season; a league with none on record reads
+    it from the depth charts).
+  - Still on true ratings or its own model: `cap_market` (the price, deliberately the
+    consensus), the startup room's AI boards (`draft.StartupRoom`, its own scouting model;
+    your screen's numbers there come from `evaluation.py`), cap cuts' "worth" (the price).
 
 ## 7. The coaching carousel (PROVISIONAL)
 

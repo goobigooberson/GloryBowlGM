@@ -12,8 +12,9 @@
 # within that about 2 times in 3), PROVISIONAL:
 #   your own players       OWN_SD   (your coaches see them every day; the coach
 #                                    whose background is his group counts most)
-#   everyone else          OTHER_SD (other teams' players, free agents: mostly the
-#                                    director of pro personnel; part of the mistake
+#   everyone else          OTHER_SD_BY_TAPE (other teams' players, free agents:
+#                                    mostly the director of pro personnel; bigger for
+#                                    a player with little tape; part of the mistake
 #                                    is shared by the whole league)
 #   draft prospects        the draft's own model (scouting.py), cleared by scouting
 # times e^(-EVAL_K x the staff's evaluation skill in spreads, staff.eval_z).
@@ -45,8 +46,20 @@ from . import positions as pos
 
 # ---- Knobs (PROVISIONAL) -----------------------------------------------------
 OWN_SD = 1.5
-OTHER_SD = 3.5
-ROOKIE_MULT = 1.4          # a player who hasn't played a pro season yet is harder to read
+# Everyone else: how far off depends on how much of him a staff has seen (AI-views side
+# session, Oct 22, real data: 2,409 veteran deals 2014-21; teams signing another team's
+# part-timer misjudge him far more than its full-time starter, and know full-time starters
+# about as well as their own). By his share of his team's snaps over his last two seasons
+# (the average; a season he didn't play counts 0): straight lines between these points, flat
+# past the ends. Sized with tools/ai_views_check.py (8 leagues x 3 offseasons, ~5,700 market
+# deals) to the real gap between new-team signings and re-signings (Oct 22): busts (paid like
+# a starter, under 25% of snaps next season) other minus own +4 points (real +5), little tape
+# +7 (+8), part-time +4 (+6), full-time +2 (+2); price-to-snaps correlation own minus other
+# 0.12 (0.13). 6/4/2.5 gave 0, -7, -1, +1 and 0.06; 4.5/3.5/2.5 gave +1, +1, -1, +1 and 0.12.
+OTHER_SD_BY_TAPE = ((0.15, 8.0), (0.45, 5.0), (0.80, 3.0))
+ROOKIE_OTHER_SD = 4.9      # other teams' rookies (no pro tape; the real deals measured had no rookies:
+                           # kept at the size before tape counted, 3.5 x ROOKIE_MULT)
+ROOKIE_MULT = 1.4          # your own staff: a player who hasn't played a pro season yet is harder to read
 POT_MULT = 1.5
 EVAL_K = 0.45              # a staff 1.5 spreads better than average halves the mistake
 SHARED = 0.40              # share of the "everyone else" mistake the whole league shares
@@ -136,6 +149,72 @@ def _known_since(league, tid, pid):
     start = now if rec else now - KNOW_TICKS
     seen[key] = [tid, start]
     return start
+
+
+def record_tape(league, shares, season):
+    """Keep every player's share of his team's snaps in the season just played
+    ({player id: share}; season.begin_offseason, and the check tools for their
+    made-up seasons): his last two seasons are the tape other staffs have seen."""
+    st = getattr(league, "staff", None)
+    if not st:
+        return
+    old = st.get("tape") or {}
+    now = {str(pid): round(v, 2) for pid, v in shares.items() if v >= 0.005}
+    if old.get("season") == season:
+        before = old.get("before", {})
+    elif old.get("season") == season - 1:
+        before = old.get("last", {})
+    elif not old:
+        # The first season on record (a new league, an older save): the season before it is
+        # read from who started (the depth charts are public).
+        before = {str(pid): v for pid, v in _chart_tape(league).items()}
+    else:
+        before = {}
+    st["tape"] = {"season": season, "last": now, "before": before}
+
+
+def _chart_tape(league):
+    """Snap shares guessed from the depth charts (starters most of the snaps,
+    first backups some, the rest few), for a league with no season on record."""
+    from . import depth
+    memo = league.__dict__.setdefault("_eval_chart_tape", {})
+    key = (league.season, league.stage)
+    if key not in memo:
+        memo.clear()
+        out = {}
+        for t in league.teams:
+            chart = league.depth_charts.get(t.id, {})
+            starters = depth.starter_ids(chart)
+            backups = {ids[1] for ids in chart.values() if len(ids) > 1}
+            for pid in {pid for ids in chart.values() for pid in ids}:
+                out[pid] = 0.85 if pid in starters else 0.3 if pid in backups else 0.05
+        memo[key] = out
+    return memo[key]
+
+
+def tape(league, p):
+    """His share of his team's snaps over his last two seasons (0 to 1)."""
+    if p.experience == 0:
+        return 0.0
+    t = (getattr(league, "staff", None) or {}).get("tape")
+    if not t:
+        return _chart_tape(league).get(p.id, 0.05)
+    key = str(p.id)
+    return (t["last"].get(key, 0.0) + t["before"].get(key, 0.0)) / 2
+
+
+def other_sd(league, p):
+    """An average staff's mistake on another team's player (internal points)."""
+    if p.experience == 0:
+        return ROOKIE_OTHER_SD
+    x = tape(league, p)
+    pts = OTHER_SD_BY_TAPE
+    if x <= pts[0][0]:
+        return pts[0][1]
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        if x <= x1:
+            return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+    return pts[-1][1]
 
 
 def _eval_z(league, tid, kind, position=None):
@@ -301,7 +380,7 @@ def seen_skills(league, tid, p):
     rookie = p.experience == 0
     salt = league.settings.get("salt", "")
     z_pro = _eval_z(league, tid, "college" if rookie else "pro")
-    sd_other = OTHER_SD * math.exp(-EVAL_K * z_pro) * (ROOKIE_MULT if rookie else 1.0)
+    sd_other = other_sd(league, p) * math.exp(-EVAL_K * z_pro)
     if rel == "own":
         z_own = _eval_z(league, tid, "own", p.position)
         sd_own = OWN_SD * math.exp(-EVAL_K * z_own) * (ROOKIE_MULT if rookie else 1.0)
@@ -383,7 +462,7 @@ def public_skills(league, p):
         return dict(p.skills)
     base = _true_view(league, p, "other")
     shared = _draws(f"eval-shared-{league.settings.get('salt', '')}-{p.id}-{league.season}", base)
-    sd = OTHER_SD * (ROOKIE_MULT if p.experience == 0 else 1.0)
+    sd = other_sd(league, p)
     pp = PLAYER_PART
     q = math.sqrt(1 - pp * pp)
     priors = _priors(league, p)

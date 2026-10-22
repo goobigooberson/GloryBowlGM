@@ -64,6 +64,23 @@ EXP_GROUPS = (("0-2", 0, 2), ("3-4", 3, 4), ("5-7", 5, 7), ("8+", 8, 99))
 REAL_FA_OPEN_2024 = [101.8, 91.5, 78.7, 75.7, 70.1, 69.7, 56.8, 52.5, 48.6, 42.0, 41.9, 40.9, 37.6, 37.6, 35.0,
                      34.8, 32.6, 29.2, 20.7, 13.6, 12.5, 12.2, 8.0, 6.8, 3.5, 0, 0, 0, 0, 0, 0, 0]
 REAL_CAP_2024 = 255.4
+# Cap room just after each new league year opened, after the first day or two of signings
+# (OverTheCap's "Cap Space" via the Internet Archive: March 19, 2021, March 17, 2022, March 17,
+# 2023, March 14, 2024, March 13, 2025; $M). The game's match is right after free agency's
+# first wave. The target is the average without 2021 (the COVID year, when the cap fell).
+REAL_FA_DAY1_TARGET_YEARS = (2022, 2023, 2024, 2025)
+REAL_FA_DAY1 = {
+    2021: (182.5, [43.6, 37.6, 34.1, 32.4, 29.1, 28.0, 21.2, 15.7, 15.1, 14.1, 12.5, 12.5, 11.7, 10.7, 10.6, 9.0,
+                   8.7, 7.1, 5.5, 4.0, 3.0, 2.7, 1.5, 1.3, 0.6, 0.4, -1.3, -2.3, -3.6, -7.6, -12.0, -18.7]),
+    2022: (208.2, [44.3, 39.7, 37.3, 34.6, 32.1, 29.4, 26.6, 24.8, 22.7, 21.0, 19.8, 17.4, 16.3, 15.7, 14.0, 14.0,
+                   13.3, 13.1, 13.0, 12.0, 12.0, 9.2, 8.3, 6.6, 0.9, 0.8, 0.7, -3.6, -8.2, -9.4, -9.6, -10.7]),
+    2023: (224.8, [44.9, 33.6, 23.8, 23.2, 22.8, 22.7, 21.4, 21.3, 21.0, 20.3, 19.8, 19.3, 18.7, 17.5, 17.4, 17.3,
+                   15.5, 15.1, 14.7, 14.1, 12.3, 11.9, 10.6, 9.3, 8.5, 8.4, 7.9, 5.8, 5.3, 3.3, -1.4, -2.5]),
+    2024: (255.4, [72.1, 68.0, 57.2, 56.3, 45.7, 40.6, 40.0, 34.2, 31.9, 29.2, 26.8, 26.0, 21.0, 18.9, 17.8, 17.3,
+                   15.3, 15.1, 12.9, 11.9, 10.8, 9.8, 4.7, 3.6, 3.4, 3.0, 2.2, 1.2, 1.1, -1.8, -2.2, -7.8]),
+    2025: (279.2, [100.9, 83.0, 70.2, 66.1, 60.8, 55.3, 53.6, 48.2, 47.5, 47.3, 46.4, 43.7, 35.1, 34.5, 33.8, 32.8,
+                   32.2, 32.1, 28.4, 27.5, 26.1, 23.9, 22.6, 16.5, 13.8, 11.8, 9.9, 6.9, 6.3, 6.2, 0.8, -10.3]),
+}
 
 out_lines = []
 
@@ -204,7 +221,11 @@ def offseason(lg, rng, stats, lines):
     cap = C.cap_for(lg, S)
     stats["fa_open"].append(sorted((C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id),
                                    reverse=True))
-    sign1 = FA.market(lg, FA.PRE_DRAFT_WAVES, rng)
+    sign1 = FA.market(lg, FA.PRE_DRAFT_WAVES[:1], rng)
+    # ...and right after the first wave (the real day-after snapshots include the first day's signings).
+    stats["fa_day1"].append(sorted((C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id),
+                                   reverse=True))
+    sign1 += FA.market(lg, FA.PRE_DRAFT_WAVES[1:], rng)
     stats["legal"].append(("pre-draft FA", [t for t, _ in C.audit(lg)]))
     from engine import draft as D       # the real draft (Step 8; the placeholder in offseason.py is gone)
     rookies = D.make_class(lg, rng)
@@ -452,6 +473,21 @@ def report(stats, n_leagues, real_deals_in_season):
     low = [sum(1 for x in v if x < 0.02) for v in stats["fa_open"]]
     say(f"  teams with under 2% of the cap: {st.mean(low):.1f} a year  [7-8 of 32 in 2024 and 2025]")
     say()
+    years = sorted(REAL_FA_DAY1)
+    say("CAP ROOM AFTER FREE AGENCY'S FIRST WAVE (share of the cap, AI teams; real just after the league year "
+        f"opened: target = {REAL_FA_DAY1_TARGET_YEARS[0]}-{REAL_FA_DAY1_TARGET_YEARS[-1]} average, then "
+        f"{' | '.join(str(y) for y in years)})")
+    reals = {y: sorted((x / c for x in v), reverse=True) for y, (c, v) in REAL_FA_DAY1.items()}
+    for label, rank in (("most room", 0), ("2nd", 1), ("5th", 4), ("8th", 7), ("median", None), ("24th", 23)):
+        vals = [(st.median(v) if rank is None else v[rank]) for v in stats["fa_day1"] if len(v) > (rank or 0)]
+        rv = {y: (st.median(r) if rank is None else r[rank]) for y, r in reals.items()}
+        target = st.mean(rv[y] for y in REAL_FA_DAY1_TARGET_YEARS)
+        say(f"  {label:10} {pct(st.mean(vals))}  [target {pct(target)}; {' | '.join(pct(rv[y]) for y in years)}]")
+    low = [sum(1 for x in v if x < 0.02) for v in stats["fa_day1"]]
+    lows = {y: sum(1 for x in r if x < 0.02) for y, r in reals.items()}
+    say(f"  teams with under 2% of the cap: {st.mean(low):.1f} a year  "
+        f"[target {st.mean(lows[y] for y in REAL_FA_DAY1_TARGET_YEARS):.1f}; {' | '.join(str(lows[y]) for y in years)}]")
+    say()
     say("ROOKIE SCALE (average per year, share of the cap) by round: sim [real median 2017-22]")
     rk = defaultdict(list)
     for d in stats["deals"]:
@@ -498,7 +534,7 @@ def main():
     stats = {"legal": [], "missing": 0, "move_all": Counter(), "move_exp": defaultdict(Counter),
              "move_pos": defaultdict(Counter), "year": Counter(), "waves": Counter(), "waves_market": Counter(),
              "deals": [], "ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [],
-             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": []}
+             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": [], "fa_day1": []}
     in_season = []
     day1 = {"ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [], "dead": []}
     seeds = [int(x) for x in args.leagues.split(",")]

@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from engine import depth, development, injuries, offseason, transactions   # noqa: E402
+from engine import depth, development, evaluation, injuries, offseason, transactions   # noqa: E402
 from engine.league import create_league                                     # noqa: E402
 
 # Pro Bowl players per position per season, both conferences: the real roster
@@ -137,6 +137,7 @@ def fake_season(league, rng):
 def next_season(league, lines, share, rng):
     """The offseason and training camp, as season.start_next_season does them."""
     serious = dict(league.season_injuries)
+    evaluation.record_tape(league, share, league.season)     # the tape other staffs have seen (as the game does)
     league.team_history.extend({k: v for k, v in r.items() if k != "conf"} for r in lines)
     transactions.end_of_season(league)
     for p in league.players:

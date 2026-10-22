@@ -455,11 +455,11 @@ def _future(p, season):
 
 def team_needs(league, team_id, stats):
     """{position: (weakest starter's rating in a season or two, bodies on the
-    roster)} for one team, and its QB situation."""
-    from .development import season_number
+    roster)} for one team, and its QB situation, as its staff sees its players."""
+    from .evaluation import seen
     by_pos = defaultdict(list)
     for p in league.team_players(team_id):
-        by_pos[p.position].append(p)
+        by_pos[p.position].append(seen(league, team_id, p))
     # Recent high picks still on the team, by position.
     recent = defaultdict(int)
     for d in league.draft_history:
@@ -476,18 +476,20 @@ def team_needs(league, team_id, stats):
 
 
 def qb_situation(league, team_id, stats):
-    """'young_good', 'young', 'good', 'other' (the real-data groups)."""
+    """'young_good', 'young', 'good', 'other' (the real-data groups), as the
+    team's staff sees its quarterback."""
+    from .evaluation import overall
     chart = league.depth_charts.get(team_id, {})
     ids = [pid for pid in chart.get("QB", []) if league.rosters.get(pid) == team_id]
     if not ids:
         qbs = [p for p in league.team_players(team_id) if p.position == "QB"]
         if not qbs:
             return "other", None
-        qb = max(qbs, key=lambda p: p.overall())
+        qb = max(qbs, key=lambda p: overall(league, team_id, p))
     else:
         qb = league.player(ids[0])
     m, sd = stats["QB"]
-    good = (qb.overall() - m) / sd >= QB_GOOD
+    good = (overall(league, team_id, qb) - m) / sd >= QB_GOOD
     young = qb.experience <= 3 and qb.draft_round in (1, 2)
     if young:
         return ("young_good" if good else "young"), qb
@@ -851,7 +853,9 @@ def sign_undrafted(league, undrafted, rng):
     of them (the draft boards), not by their true ratings. (offseason.py's
     placeholder signs by true ratings, so teams saw through every undrafted
     prospect: 19% of starters were undrafted, real 13%, and late-round picks
-    started too rarely.) Returns ([(pid, team id)], the unsigned)."""
+    started too rarely.) Its own weakest player there is judged by its staff
+    too (evaluation.py). Returns ([(pid, team id)], the unsigned)."""
+    from . import evaluation as E
     room = league.__dict__.get("_last_draft")
     stats = room.stats if room else starter_stats(league)
     misses = room.misses if room else {}
@@ -864,16 +868,18 @@ def sign_undrafted(league, undrafted, rng):
             sd = stats.get(p.position, (65.0, 8.0))[1]
             return roster_value(p) + miss.get(p.id, 0.0) * sd
         roster = league.team_players(t.id)
+        own = {x.id: roster_value(E.seen(league, t.id, x)) for x in roster}
         n = 0
         for p in sorted(pool, key=seen, reverse=True):
             if n >= UDFA_PER_TEAM:
                 break
             same = [x for x in roster if x.position == p.position]
-            worst = min(same, key=roster_value) if same else None
-            if worst is None or seen(p) > roster_value(worst) + 1:
+            worst = min(same, key=lambda x: own[x.id]) if same else None
+            if worst is None or seen(p) > own[worst.id] + 1:
                 league.rosters[p.id] = t.id
                 pool.remove(p)
                 roster.append(p)
+                own[p.id] = seen(p)
                 signed.append((p.id, t.id))
                 n += 1
     return signed, pool

@@ -76,13 +76,14 @@ def age_on(p, season):
     return p.age(date(season, 9, 1))
 
 
-def project(p, season, n=3):
+def project(p, season, n=3, cur=None, pot=None):
     """His expected overall rating for each of the next n seasons, starting
     with the coming one (its training camp comes first). Uses the position's
     normal growth and prime (development.py's tables), not his hidden
-    personal aging profile."""
-    cur = float(p.overall())
-    pot = float(p.overall("potential"))
+    personal aging profile. cur / pot: his overall now and ceiling as someone
+    sees them (default: his own)."""
+    cur = float(p.overall()) if cur is None else float(cur)
+    pot = float(p.overall("potential")) if pot is None else float(pot)
     _start, end = D.PEAK_SEASONS.get(p.position, (3, 10))
     season_no = p.experience + 1          # the pro season he's about to play
     age = age_on(p, season)
@@ -100,10 +101,10 @@ def project(p, season, n=3):
     return out
 
 
-def market_score(p, season):
+def market_score(p, season, cur=None, pot=None):
     """How teams rate him for a new contract: projected overall over the next
-    three seasons, the next one counting most."""
-    proj = project(p, season, len(SCORE_WEIGHTS))
+    three seasons, the next one counting most (cur / pot: see project)."""
+    proj = project(p, season, len(SCORE_WEIGHTS), cur, pot)
     return sum(w * v for w, v in zip(SCORE_WEIGHTS, proj))
 
 

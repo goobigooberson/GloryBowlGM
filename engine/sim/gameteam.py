@@ -99,12 +99,15 @@ class GameTeam:
             # Everyone healthy dresses in the preseason (no 48-man game-day limit).
             self.actives = {p.id for p in self.roster if p.id not in unavailable}
         else:
-            self.actives = roster_rules.game_day_actives(self.roster, chart, unavailable)
+            # Who dresses is the staff's call: ties go by how its staff rates them (evaluation.py).
+            from .. import evaluation
+            staff_rating = lambda p: evaluation.overall(league, team_id, p)     # noqa: E731
+            self.actives = roster_rules.game_day_actives(self.roster, chart, unavailable, rating=staff_rating)
         self.out = {p.id for p in self.roster if p.id not in self.actives}
         # The emergency third QB (real rule since 2023): inactive, but he can come in
         # if both active quarterbacks are out for the game (available() below).
         self.emergency_qb = (None if preseason_game else
-                             roster_rules.emergency_qb(self.roster, self.actives, unavailable))
+                             roster_rules.emergency_qb(self.roster, self.actives, unavailable, rating=staff_rating))
         self._active_qbs = [p.id for p in self.roster if p.position == "QB" and p.id in self.actives]
         # Preseason: who sits as the game goes on (see preseason_clock).
         self.resting = set()

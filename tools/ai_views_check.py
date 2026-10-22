@@ -23,7 +23,8 @@
 #
 #   python tools/ai_views_check.py                       (leagues 101,102; 3 offseasons each)
 #   python tools/ai_views_check.py --leagues 101,102,103,104 --seasons 3
-#   python tools/ai_views_check.py --other-sd 4.5 --own-sd 1.5 --shared 0.4   (try knobs)
+#   python tools/ai_views_check.py --tape-sd 6,4,2.5 --own-sd 1.5 --shared 0.4   (try knobs:
+#                                  evaluation.OTHER_SD_BY_TAPE's spreads, least tape to most)
 #   python tools/ai_views_check.py --truth                (AI teams see true ratings: the old way)
 # Writes tools/ai_views_report.txt. Nothing is saved; your saves are never touched.
 
@@ -99,7 +100,7 @@ def new_stats():
             "move_pos": defaultdict(lambda: defaultdict(int)), "year": defaultdict(int), "waves": defaultdict(int),
             "waves_market": defaultdict(int), "deals": [], "ladder": defaultdict(list), "spend": defaultdict(list),
             "payroll": [], "room": [], "dead": [], "seasons": 0, "gone_why": defaultdict(lambda: defaultdict(int)),
-            "fa_open": []}
+            "fa_open": [], "fa_day1": []}
 
 
 def run_league(seed, seasons, rows):
@@ -111,6 +112,7 @@ def run_league(seed, seasons, rows):
     stats = new_stats()
     last = snap_shares(simlab.play_season(lg, f"ai-views-{seed}-0"))
     for k in range(seasons):
+        E.record_tape(lg, {pid: share for pid, (_t, share) in last.items()}, lg.season)   # as the game does
         lines = FAC.fake_season_lines(lg, rng)
         lg.team_history.extend(lines)
         n_log = len(lg.contract_log)
@@ -189,22 +191,23 @@ def main():
     ap.add_argument("--leagues", default="101,102")
     ap.add_argument("--seasons", type=int, default=3)
     ap.add_argument("--own-sd", type=float)
-    ap.add_argument("--other-sd", type=float)
+    ap.add_argument("--tape-sd", help="spreads at evaluation.OTHER_SD_BY_TAPE's points, e.g. 6,4,2.5")
     ap.add_argument("--shared", type=float)
     ap.add_argument("--truth", action="store_true", help="AI teams see true ratings (the old way)")
     args = ap.parse_args()
     t0 = time.time()
     if args.own_sd is not None:
         E.OWN_SD = args.own_sd
-    if args.other_sd is not None:
-        E.OTHER_SD = args.other_sd
+    if args.tape_sd:
+        E.OTHER_SD_BY_TAPE = tuple((x, float(v)) for (x, _y), v in zip(E.OTHER_SD_BY_TAPE, args.tape_sd.split(",")))
     if args.shared is not None:
         E.SHARED = args.shared
     if args.truth:
         E.seen_skills = lambda league, tid, p: dict(p.skills)
         E.public_skills = lambda league, p: dict(p.skills)
     label = ("AI teams see TRUE ratings" if args.truth else
-             f"evaluation.py: OWN_SD {E.OWN_SD}, OTHER_SD {E.OTHER_SD}, SHARED {E.SHARED}, EVAL_K {E.EVAL_K}")
+             f"evaluation.py: OWN_SD {E.OWN_SD}, OTHER_SD_BY_TAPE {E.OTHER_SD_BY_TAPE}, SHARED {E.SHARED}, "
+             f"EVAL_K {E.EVAL_K}")
     rows = []
     for seed in [int(x) for x in args.leagues.split(",")]:
         run_league(seed, args.seasons, rows)

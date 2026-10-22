@@ -682,6 +682,8 @@ def begin_offseason(league, rng=None):
     if not season_over(league):
         raise ValueError("The season isn't over yet.")
     played_share = snap_shares(league)
+    from . import evaluation
+    evaluation.record_tape(league, played_share, league.season)    # the tape other teams' staffs have seen
     serious = dict(league.season_injuries)
     # 1. Keep everything from this season for good.
     lines = stats.season_lines(league)

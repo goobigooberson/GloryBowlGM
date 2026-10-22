@@ -95,13 +95,15 @@ def meets_minimums(players):
     return all(count(players, positions) >= required for _l, positions, required, _g in ROWS)
 
 
-def game_day_actives(roster, chart, unavailable=frozenset()):
+def game_day_actives(roster, chart, unavailable=frozenset(), rating=None):
     """Pick who dresses on game day: 48 with 8 offensive linemen among them
     (when 8 are healthy), else 47. Everyone healthy starts active; then the
     least-needed players are made inactive one at a time, never breaking a
     position minimum or leaving a starting spot empty (and keeping 8 linemen
     when there are 8). (Later you'll be able to set your own inactives;
-    injured players are always inactive.)"""
+    injured players are always inactive.) rating: how the team's staff rates
+    a player (evaluation.overall; default his own overall), for ties."""
+    rating = rating or (lambda p: p.overall())
     healthy = [p for p in roster if p.id not in unavailable]
     starters = depth.starter_ids(chart)
     keep_ol = count(healthy, _OL) >= OL_FOR_FULL_LIMIT
@@ -110,7 +112,7 @@ def game_day_actives(roster, chart, unavailable=frozenset()):
     def need(p):
         """Higher = more needed on game day."""
         best_rank = min((ids.index(p.id) for ids in chart.values() if p.id in ids), default=9)
-        return (p.id in starters, -best_rank, p.overall())
+        return (p.id in starters, -best_rank, rating(p))
 
     active = list(healthy)
     for p in sorted(healthy, key=need):
@@ -124,11 +126,13 @@ def game_day_actives(roster, chart, unavailable=frozenset()):
     return {p.id for p in active}
 
 
-def emergency_qb(roster, actives, unavailable=frozenset()):
+def emergency_qb(roster, actives, unavailable=frozenset(), rating=None):
     """The emergency third quarterback: the best healthy QB who isn't active
-    (he can come in only if both active QBs are out for the game), or None."""
+    (he can come in only if both active QBs are out for the game), or None.
+    rating: as in game_day_actives."""
+    rating = rating or (lambda p: p.overall())
     qbs = [p for p in roster if p.position == "QB" and p.id not in actives and p.id not in unavailable]
-    return max(qbs, key=lambda p: p.overall()).id if qbs else None
+    return max(qbs, key=rating).id if qbs else None
 
 
 def roster_problems(roster, active_ids, limit=ROSTER_LIMIT):

@@ -40,9 +40,10 @@ from .transactions import STARTER_COUNT
 # ---- Knobs: AI teams ------------------------------------------------------------------
 OFFSEASON_ROSTER_MAX = 90       # real offseason roster limit
 CAMP_EXTRA_SHARE = 0.5          # bodies a team takes to camp beyond its roster count, per position (x count, at least 1)
-IN_SEASON_BUFFER = 0.035        # cap room AI teams keep for in-season moves (share of the cap; about $10M at the
-                                # 2026 cap, the low end of what real teams carry: injured reserve players keep
-                                # counting while their replacements are paid; 1.5% put teams over by week 1)
+IN_SEASON_BUFFER = 0.025        # cap room AI teams keep for in-season moves (share of the cap; about $7.5M at the
+                                # 2026 cap: injured reserve players keep counting while their replacements are
+                                # paid; 1.5% put teams over by week 1. Oct 22: 0.035 -> 0.025 with the spending
+                                # changes below, cap room at free agency's opening toward real; legality 0)
 WEEK1_EXTRA = 0.025             # ...plus, in the offseason, room for what starts counting at week 1 (all 53
                                 # instead of the top 51, the practice squad's pay: about 2% of the cap)
 ROOKIE_RESERVE = 0.035          # cap room kept for the draft class before the draft (if the picks aren't known)
@@ -50,7 +51,8 @@ STYLE_SD = 0.04                 # front offices differ in how freely they spend 
 EVAL_SD = 0.05                  # and in how they judge a given player (scouting misjudgment)
 RESIGN_SLACK = 0.10             # re-signing: a deal happens if the team's top figure is within this share of his ask
                                 # (they meet in between); otherwise he goes to the market
-UPGRADE_K = 0.06               # a team pays up to this much over his price for a big upgrade at a starting job
+UPGRADE_K = 0.10               # a team pays up to this much over his price for a big upgrade at a starting job
+                                # (Oct 22: 0.06 -> 0.10; real teams with room pay up, see OFFERS_PER_WAVE)
 UPGRADE_FULL = 10.0             # ...reached at this many rating points over the starter he'd replace
 MIN_UPGRADE = 1.5               # less of an upgrade than this: he's priced as a backup there
 DEPTH_KEEP = 0.55               # chance a team keeps a cheap depth player it could keep (teams churn depth)
@@ -69,9 +71,10 @@ ALLIN_RISE = 0.15               # ...back-load new deals (base salary climbs thi
                                 # a small cap hit now, bigger ones later)
 ALLIN_NEXT_MAX = 1.15           # ...and let next season's commitments run past next season's cap (it'll
                                 # restructure or cut in March, as real contenders do; EXTEND_NEXT_MAX otherwise)
-REBUILD_KEEP = 0.02             # rebuilding: keep this share of the cap unspent in the offseason (it carries over)
+REBUILD_KEEP = 0.0              # rebuilding: keep this share of the cap unspent in the offseason (it carries over;
+                                # Oct 22: 0.02 -> 0 with the real opening-day data, rebuilders sat on too much)
 REBUILD_AGE = 29                # ...pay players this old or older less
-REBUILD_OLD_PAY = 0.8
+REBUILD_OLD_PAY = 0.9           # (Oct 22: 0.8 -> 0.9)
 REBUILD_CUT_CHANCE = 0.85       # ...and cut overpaid veterans more readily (CUT_CHANCE otherwise)
 # ---- Knobs: the market ---------------------------------------------------------------
 # A free agent's ask, as a share of his price, by wave: high early (the first days,
@@ -85,7 +88,12 @@ ASK_BY_WAVE = {1: 1.08, 2: 1.0, 3: 0.93, 4: 0.86, 5: 0.74, 6: 0.5, 7: 0.3}
 ASK_FLOOR = 0.5                 # starter-caliber players, until camp...
 ASK_FLOOR_CAMP = 0.4            # ...and once camp opens (wave 7)
 IN_SEASON_ASK = 0.5             # in-season, a market-level free agent still wants this share of his price
-OFFERS_PER_WAVE = {1: 3, 2: 3, 3: 4, 4: 5, 5: 6, 6: 8, 7: 10}
+OFFERS_PER_WAVE = {1: 5, 2: 4, 3: 4, 4: 5, 5: 6, 6: 8, 7: 10}   # Oct 22: waves 1-2 were 3 / 3. Real teams with
+# room spend most of it in the first days (OverTheCap the day after each league year opened, 2022-25):
+# with these and the knobs marked Oct 22, room after the first wave (3 leagues x 4 offseasons, two league
+# sets) went most 37.7-38.3 -> 29.4-30.6% [real 4-yr average 26.4], 5th 22.4-23.4 -> 19.2-19.3 [16.3],
+# median 10.4-11.4 -> 9.5-10.0 [8.0], 24th 5.6-6.5 -> 5.9-6.2 [3.7], teams under 2% 2.2-3.3 -> 2.0-2.5 [5.8].
+# The low end needs teams that truly spend themselves into a corner (see the build log).
 # ---- Knobs: players --------------------------------------------------------------------
 WINNER_K = 0.30                 # how much a winning team counts, for a player who most wants to win
 LOYALTY_K = 0.10                # how much a loyal player leans toward his old team (disloyal ones lean away)
@@ -183,6 +191,26 @@ def _eval(league, tid, pid):
     return _eval_draw(_salt(league), league.season, tid, pid)
 
 
+def team_score(league, tid, p, info):
+    """His market score as this team's staff sees him, for its role decisions
+    (is he better than our starter, by how much; Oct 24: AI teams judge players
+    through their own staff's eyes): the league's score moved by the staff's
+    misjudgment of him, now and ceiling (evaluation.misjudgment). Not its view
+    as such: its own players, seen surely, would barely be pulled toward
+    average while other teams' players would be pulled more, and a role
+    decision compares the two (the same reason bids use the misjudgment)."""
+    if tid is None or not getattr(league, "staff", None):
+        return info["score"]
+    from . import evaluation as E
+    d_now = E.misjudgment(league, tid, p)
+    d_pot = E.misjudgment(league, tid, p, "potential")
+    if not d_now and not d_pot:
+        return info["score"]
+    cur, pot = float(p.overall()), float(p.overall("potential"))
+    S = league.season
+    return info["score"] + M.market_score(p, S, cur + d_now, pot + d_pot) - M.market_score(p, S, cur, pot)
+
+
 def ai_teams(league):
     return [t.id for t in league.teams if t.id != league.user_team_id]
 
@@ -195,13 +223,13 @@ def approach(league, tid):
 
 def set_approaches(league, table):
     """Each AI team reads its window: last season's record and the talent on its
-    roster (its best 22 players' market scores), plus its own judgment. The most
-    promising go all in, the least promising rebuild."""
+    roster (its best 22 players' market scores, as its staff sees them), plus its
+    own judgment. The most promising go all in, the least promising rebuild."""
     quality = team_quality(league)
     strength = {}
     for tid in ai_teams(league):
-        scores = sorted((table[pid]["score"] for pid, t in league.rosters.items() if t == tid and pid in table),
-                        reverse=True)[:22]
+        scores = sorted((team_score(league, tid, league.player(pid), table[pid])
+                         for pid, t in league.rosters.items() if t == tid and pid in table), reverse=True)[:22]
         strength[tid] = sum(scores) / max(1, len(scores))
     if not strength:
         league.fa["approach"] = {}
@@ -287,14 +315,17 @@ def roster_count(league, tid):
 
 
 def depth_lists(league, table, exclude=()):
-    """{team: {position: [market scores, best first]}} for players on the 53 or reserve lists."""
+    """{team: {position: [market scores as its staff sees them (team_score), best
+    first]}} for players on the 53 or reserve lists."""
     d = defaultdict(lambda: defaultdict(list))
     for pid, tid in league.rosters.items():
         if pid not in exclude:
-            d[tid][league.player(pid).position].append(table[pid]["score"])
+            p = league.player(pid)
+            d[tid][p.position].append(team_score(league, tid, p, table[pid]))
     for pid, r in getattr(league, "reserve", {}).items():
         if pid not in exclude:
-            d[r["team"]][league.player(pid).position].append(table[pid]["score"])
+            p = league.player(pid)
+            d[r["team"]][p.position].append(team_score(league, r["team"], p, table[pid]))
     for tid in d:
         for lst in d[tid].values():
             lst.sort(reverse=True)
@@ -316,17 +347,19 @@ def starter_level(info):
     return info["rank"] <= 32 * STARTER_COUNT.get(info["position"], 1) * mult
 
 
-def willingness(league, tid, p, info, depth, quality=None):
+def willingness(league, tid, p, info, depth, quality=None, score=None):
     """(most this team would pay him, as a share of the cap; his role there:
     'starter' / 'backup' / 'depth'), or (0, None). A team pays a starter about
     his price (a bit more for a big upgrade); for a backup or depth job, no
-    more than that role is worth league-wide."""
+    more than that role is worth league-wide. Role and upgrade are judged by
+    its staff (team_score; score: already worked out)."""
     pos = p.position
     lst = depth[tid][pos]
     count = len(lst)
     if count >= camp_max(pos):
         return 0.0, None
-    s, price = info["score"], info["price"]
+    s = team_score(league, tid, p, info) if score is None else score
+    price = info["price"]
     starters = STARTER_COUNT.get(pos, 1)
     slot = sum(1 for x in lst if x > s)
     role = None
@@ -390,6 +423,14 @@ def _sign(league, p, c, label, note, phase, new_team=None):
     log(league, label, c["team"], p.id, "Signed", note)
 
 
+def _open_spots_share(league, tid):
+    """Room (share of the cap) to fill out the roster at the minimum: a team
+    can't spend it all on a few stars."""
+    signed = sum(1 for c in league.contracts.values() if c["team"] == tid and c["kind"] != "practice")
+    open_spots = max(0, (C.TOP_51 if C.top51_in_force(league) else ROSTER_SIZE) - signed)
+    return open_spots * C.min_salary(league, 1) / C.cap_for(league, league.season)
+
+
 def _reserve_share(league, tid, before_draft):
     """Cap room (share of the cap) an AI team keeps free: for in-season moves,
     in the offseason also for week 1's extra costs, and before the draft for
@@ -402,10 +443,7 @@ def _reserve_share(league, tid, before_draft):
         r += WEEK1_EXTRA
         if way == "rebuild":
             r += REBUILD_KEEP
-    # Room to fill out the roster at the minimum (a team can't spend it all on a few stars).
-    signed = sum(1 for c in league.contracts.values() if c["team"] == tid and c["kind"] != "practice")
-    open_spots = max(0, (C.TOP_51 if top51 else ROSTER_SIZE) - signed)
-    r += open_spots * C.min_salary(league, 1) / C.cap_for(league, league.season)
+    r += _open_spots_share(league, tid)
     if before_draft:
         picks = league.fa.get("pick_reserve", {}).get(tid)
         r += picks if picks is not None else ROOKIE_RESERVE
@@ -542,7 +580,8 @@ def _option_terms(league, c, table, depth):
     first-rounder's fifth-year option."""
     p = league.player(c["pid"])
     lst = depth[c["team"]][p.position]
-    starter = sum(1 for x in lst if x > table[p.id]["score"]) < STARTER_COUNT.get(p.position, 1)
+    s = team_score(league, c["team"], p, table[p.id])
+    starter = sum(1 for x in lst if x > s) < STARTER_COUNT.get(p.position, 1)
     salary = C.option_salary(league, p.position, starter)
     return starter, salary, table[p.id]["price"] * C.cap_for(league, league.season + 1)
 
@@ -608,8 +647,9 @@ def league_year_start(league, rng=None, draft_order=None):
         age = _age(league, p)
         if info["price"] < EXTEND_MIN_PRICE or age > EXTEND_MAX_AGE.get(p.position, 29):
             continue
-        lst = [x for x in depth[c["team"]][p.position] if x != info["score"]]
-        if sum(1 for x in lst if x > info["score"]) >= STARTER_COUNT.get(p.position, 1):
+        s = team_score(league, c["team"], p, info)
+        lst = [x for x in depth[c["team"]][p.position] if x != s]
+        if sum(1 for x in lst if x > s) >= STARTER_COUNT.get(p.position, 1):
             continue
         if rng.random() < (ALLIN_EXTEND if approach(league, c["team"]) == "all_in" else EXTEND_CHANCE):
             apy = info["price"] * (1 + RESIGN_PREMIUM * (1.5 - p.loyalty / 100)) * team_style(league, c["team"])
@@ -675,7 +715,7 @@ def league_year_start(league, rng=None, draft_order=None):
                     signed = None
         if signed is not None:
             C.sign(league, signed, phase="re-sign", new_team=False)
-            s = table[pid]["score"]
+            s = team_score(league, tid, p, table[pid])
             depth[tid][p.position].append(s)
             depth[tid][p.position].sort(reverse=True)
         else:
@@ -988,7 +1028,7 @@ def staff_resign_pending(league, rng=None):
             continue
         C.sign(league, c, phase="re-sign", new_team=False)
         league.fa["pending"].remove(pid)
-        depth[user][p.position].append(info["score"])
+        depth[user][p.position].append(team_score(league, user, p, info))
         depth[user][p.position].sort(reverse=True)
         log(league, "Start of league year", user, pid, "Re-signed",
             f"{len(c['years'])} yr, {C.fmt_money(c['apy'])} a year; staff move" + (f" ({key})" if key else ""))
@@ -1042,11 +1082,14 @@ def market(league, waves, rng=None, before_draft=None):
             cands = []
             for p in fas:
                 info = table[p.id]
-                w, role = willingness(league, tid, p, info, depth, quality)
+                if len(depth[tid][p.position]) >= camp_max(p.position):
+                    continue
+                s = team_score(league, tid, p, info)
+                w, role = willingness(league, tid, p, info, depth, quality, score=s)
                 if w <= 0 or w < ask_share(info, wave):
                     continue
-                gain = info["score"] - (depth[tid][p.position][STARTER_COUNT.get(p.position, 1) - 1]
-                                        if len(depth[tid][p.position]) >= STARTER_COUNT.get(p.position, 1) else 0)
+                gain = s - (depth[tid][p.position][STARTER_COUNT.get(p.position, 1) - 1]
+                            if len(depth[tid][p.position]) >= STARTER_COUNT.get(p.position, 1) else 0)
                 cands.append(({"starter": 0, "backup": 1, "depth": 2}[role], -gain, p, w, role))
             cands.sort(key=lambda x: (x[0], x[1]))
             used_pos = set()
@@ -1110,7 +1153,7 @@ def market(league, waves, rng=None, before_draft=None):
                     if C.top51_in_force(league):
                         # never less than what starts counting at week 1 (an all-in team keeps less
                         # for in-season moves, and could otherwise be over the cap at week 1)
-                        keep = max(keep, (WEEK1_EXTRA + 0.005) * cap)
+                        keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
                     if C.room_after(league, tid, _first_hit(league, c)) < keep and \
                             not (role_of.get((pid, tid)) == "starter" and _make_room(league, tid, _first_hit(league, c) + keep, rng)):
                         continue
@@ -1313,14 +1356,19 @@ def in_season_terms(league, pid, week=None):
     return {"apy_share": share, "week": week}
 
 
-def affordable(league, tid, pid, week=None):
-    """Can this team sign this free agent now and stay under the cap (AI
-    teams also keep their in-season buffer)?"""
+def asking_hit(league, tid, pid, week=None):
+    """This season's cap hit ($K) of the deal this free agent would sign now."""
     terms = in_season_terms(league, pid, week)
     p = league.player(pid)
     rng = random.Random(0)
     c = make_deal(league, p, tid, terms["apy_share"], rng, years=1, week=terms["week"])
-    left = C.room_after(league, tid, C.cap_hit(league, c))
+    return C.cap_hit(league, c)
+
+
+def affordable(league, tid, pid, week=None, also=0):
+    """Can this team sign this free agent now and stay under the cap (also:
+    $K of other signings it's making that aren't on the books yet)?"""
+    left = C.room_after(league, tid, asking_hit(league, tid, pid, week) + also)
     return left >= (0 if tid == league.user_team_id else 0)
 
 

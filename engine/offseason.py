@@ -218,24 +218,35 @@ def cut_to_53(league):
 
 def fill_short_positions(league, rng, teams=None):
     """Any position still short (more retirements than rookies there): sign
-    the best free agent at that position."""
+    the best free agent at that position the team can afford (with contracts:
+    he's paid what he asks, so a capped-out team takes a street free agent)."""
+    from . import free_agency as FA
+    money = bool(getattr(league, "contracts", None))
     signed = []
     for t in (teams if teams is not None else league.teams):
         roster = league.team_players(t.id)
         have = defaultdict(int)
         for p in roster:
             have[p.position] += 1
+        due = 0             # $K of this team's fills here, not on the books until free_agency.sync
         for position, want in ROSTER_TEMPLATE.items():
             while have[position] < want:
                 fas = [p for p in league.free_agents() if p.position == position]
+                if money:
+                    fas = [p for p in fas if FA.affordable(league, t.id, p.id, also=due)]
                 if not fas:
                     # A made-up street free agent, at undrafted-rookie level (draft.py; made at
                     # full starting-league level before Oct 23, an outside source of talent).
                     from .draft import street_free_agent
                     p = street_free_agent(position, experience=rng.choice([0, 1, 2]), season_year=league.season)
                     league.players.append(p)
+                    if money:
+                        from . import contracts as C
+                        due += C.min_salary(league, p.experience)
                 else:
                     p = max(fas, key=roster_value)
+                    if money:
+                        due += FA.asking_hit(league, t.id, p.id)
                 league.rosters[p.id] = t.id
                 have[position] += 1
                 signed.append((p.id, t.id))
