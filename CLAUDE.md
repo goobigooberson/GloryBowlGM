@@ -56,10 +56,12 @@ priorities" section overrides everything else in that document.
   bar with six sections (Home, Team, Schedule, League, Draft, Bitter), page
   buttons under it, side panels on the pages (Oct 22; `screens/nav.py` sorts
   pages into sections, `screens/home_page.py` is the overview; new pages get a
-  tab in `main_page.py` plus an entry in `nav.SECTIONS`); detail views (player card, game summary, offseason report)
-  open as pop-ups over it, FOF8-style, and they stack (Blake, Oct 21; reverses
-  the old "no floating pop-ups" rule). Use `screens/popups.py` for new ones;
-  any `<a href="/player/ID">` on the game screen opens a card pop-up by itself.
+  tab in `main_page.py` plus an entry in `nav.SECTIONS`); detail views (player card, team window, game summary, offseason report)
+  and the draft room open as pop-ups over it, FOF8-style, and they stack (Blake,
+  Oct 21-22; reverses the old "no floating pop-ups" rule). Use `screens/popups.py`
+  for new ones; any `<a href="/player/ID">`, `/team/ID` or `/game/ID` link on the
+  game screen opens its pop-up by itself (`popups.player_link`, `team_link`).
+  The look's "desktop feel" layer is `theme.DESKTOP_CSS`.
 - Design AI teams to resist the FOF8 exploits: TEs falling late in the draft,
   easy trades for certain positions, underpriced free agents, and drafting a QB
   over a good young starter.

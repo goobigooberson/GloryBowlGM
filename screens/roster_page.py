@@ -99,6 +99,35 @@ COLUMNS = [
 ]
 
 
+def add_table_slots(table):
+    """How the roster table draws its cells (also the team window's roster,
+    popups.py): position tag with starter dot and captain star, the name as a
+    link to his card (click elsewhere in the row for the side panel), rating
+    words with their color, draft round."""
+    table.add_slot("body-cell-pos", r"""
+        <q-td :props="props">
+          <span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span>
+          <span v-if="props.row.starter" class="starter-dot" title="Starter"> ●</span>
+          <span v-if="props.row.captain" class="captain-star" title="Captain"> ★</span>
+        </q-td>""")
+    for key in ("ovr", "pot"):
+        table.add_slot(f"body-cell-{key}", f"""
+            <q-td :props="props">
+              <span class="rating num">
+                <span class="swatch" :style="{{background: props.row.{key}_color}}"></span>
+                {{{{ props.row.{key}_word }}}} ({{{{ props.row.{key} }}}})
+              </span>
+            </q-td>""")
+    table.add_slot("body-cell-name", r"""
+        <q-td :props="props"><a class="plink pname" :href="'/player/' + props.row.id">{{ props.row.name }}</a><span
+          v-if="props.row.inj" :class="props.row.inj_class"
+          :title="props.row.inj">{{ props.row.inj_code }}</span><span v-if="props.row.cut" class="cut-tag"
+          title="Your staff would cut him at final cuts (unless you cut someone else or mark him Keep)">CUT</span><span
+          v-if="props.row.keep" class="cut-tag keep" title="You marked him: your staff won't cut him">KEEP</span></q-td>""")
+    table.add_slot("body-cell-draft", r"""
+        <q-td :props="props">{{ props.row.draft_text }}</q-td>""")
+
+
 # ---------------------------------------------------------------------------
 # Player report (right-hand panel)
 # ---------------------------------------------------------------------------
@@ -347,7 +376,7 @@ def build_roster_tab():
         notices()
 
     # ---- Filters --------------------------------------------------------
-    with ui.row().classes("w-full px-8 pt-4 items-center gap-4"):
+    with ui.row().classes("w-full px-8 pt-3 items-center gap-3"):
         ui.toggle(GROUPS, value=state.roster_group, on_change=lambda e: set_filter(group=e.value)) \
             .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9") \
             .tooltip("Roster: the 53 who can play (up to 90 in training camp, until final cuts after the "
@@ -362,9 +391,9 @@ def build_roster_tab():
             .props("dense outlined options-dense").classes("w-44")
         ui.html('<span class="key"><span class="starter-dot">●</span> Starter on the depth chart '
                 '<span class="captain-star">★</span> Captain</span>', sanitize=False)
-        ui.label("Click a player to see his full report.").classes("legend")
         if state.team_id == league.user_team_id:
-            ui.toggle({False: "I run my practice squad", True: "Staff runs practice squad + injury cover"},
+            ui.element("div").style("flex:1")
+            ui.toggle({False: "I run my practice squad", True: "Staff runs it"},
                       value=transactions.staff_runs_practice_squad(league),
                       on_change=lambda e: set_ps_staff(e.value)) \
                 .props("no-caps unelevated dense toggle-color=green-10 color=white text-color=grey-9") \
@@ -377,32 +406,12 @@ def build_roster_tab():
                          "go, like an AI team. Injured reserve, activations and other cuts stay yours.")
 
     # ---- Table and report ----------------------------------------------
-    with ui.row().classes("w-full px-8 py-4 gap-5 no-wrap items-start"):
+    with ui.row().classes("w-full px-8 py-3 gap-5 no-wrap items-start"):
         table = ui.table(rows=[], columns=COLUMNS, row_key="id",
                          pagination={"rowsPerPage": 0, "sortBy": "pos"}) \
             .props("flat dense virtual-scroll hide-bottom") \
             .classes("roster-table").style("flex: 1 1 0; min-width: 0; height: calc(100vh - 230px)")
-        table.add_slot("body-cell-pos", r"""
-            <q-td :props="props">
-              <span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span>
-              <span v-if="props.row.starter" class="starter-dot" title="Starter"> ●</span>
-              <span v-if="props.row.captain" class="captain-star" title="Captain"> ★</span>
-            </q-td>""")
-        for key in ("ovr", "pot"):
-            table.add_slot(f"body-cell-{key}", f"""
-                <q-td :props="props">
-                  <span class="rating num">
-                    <span class="swatch" :style="{{background: props.row.{key}_color}}"></span>
-                    {{{{ props.row.{key}_word }}}} ({{{{ props.row.{key} }}}})
-                  </span>
-                </q-td>""")
-        table.add_slot("body-cell-name", r"""
-            <q-td :props="props">{{ props.row.name }}<span v-if="props.row.inj" :class="props.row.inj_class"
-              :title="props.row.inj">{{ props.row.inj_code }}</span><span v-if="props.row.cut" class="cut-tag"
-              title="Your staff would cut him at final cuts (unless you cut someone else or mark him Keep)">CUT</span><span
-              v-if="props.row.keep" class="cut-tag keep" title="You marked him: your staff won't cut him">KEEP</span></q-td>""")
-        table.add_slot("body-cell-draft", r"""
-            <q-td :props="props">{{ props.row.draft_text }}</q-td>""")
+        add_table_slots(table)
         table.on("rowClick", lambda e: select_player(e.args[1]["id"]))
         moves_box = ui.element("div").classes("report px-6 py-5") \
             .style("flex: 1 1 0; min-width: 0; height: calc(100vh - 230px); overflow-y: auto")
@@ -418,9 +427,9 @@ def build_roster_tab():
             def report():
                 p = next((x for x in league.players if x.id == state.selected_id), None)
                 if p is None:
-                    ui.label("No player selected").classes("condensed text-2xl")
-                    ui.label("Click any row in the table to see that player's bio, "
-                             "ratings, combine results and personality.").classes("legend")
+                    ui.label("No player selected").classes("panel-heading").style("margin-top:0")
+                    ui.label("Click a player's row for his report and your moves here (release, injured "
+                             "reserve, practice squad...). Click his name for his full player card.")                         .classes("legend")
                 else:
                     ui.button("Open player card", icon="badge",
                               on_click=lambda pid=p.id: popups.show_player(pid)) \

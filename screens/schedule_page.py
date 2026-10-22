@@ -5,8 +5,9 @@
 #     regular-season week.
 #   Team season: one team's whole schedule, preseason first, with results
 #     and its record (preseason games don't count in the record).
-# Click a played game to see its box score in the panel on the right (the
-# same layout as the Game tab's box score).
+# Click a played game for its summary (box score, scoring, drives) in a
+# pop-up (popups.py; Oct 22, Blake: more FOF8-style windows). Click a team
+# name for its team window.
 #
 # Weeks are counted on one calendar here: 1-5 are the preseason (1 = Hall of
 # Fame Game), then regular-season week 1 is calendar week 6.
@@ -19,6 +20,8 @@ from nicegui import ui
 from engine import playoffs as po
 from engine import season as S
 from engine import schedule as sched
+from . import popups
+from .popups import team_link
 from .state import state, FREE_AGENTS
 from . import game_page as G
 
@@ -184,7 +187,7 @@ def build_schedule_tab():
         def week_picker():
             if view["mode"] != "League week":
                 ui.label("Showing the team picked in the Team list at the top. Click a played game "
-                         "for its box score.").classes("legend")
+                         "for its summary, a team for its window.").classes("legend")
                 return
             weeks = {}
             for cal in range(first_cal, last_cal() + 1):
@@ -197,12 +200,12 @@ def build_schedule_tab():
             ui.button(icon="chevron_right", on_click=lambda: set_week(view["week"] + 1)) \
                 .props("flat round dense" + (" disable" if view["week"] >= last_cal() else "")) \
                 .tooltip("Next week")
-            ui.label("Click a played game for its box score.").classes("legend")
+            ui.label("Click a played game for its summary, a team for its window.").classes("legend")
         week_picker()
 
     with ui.row().classes("w-full px-8 py-4 gap-5 no-wrap items-start"):
         list_column = ui.column().classes("gap-0").style(
-            "flex: 1 1 0; min-width: 0; height: calc(100vh - 330px); overflow-y: auto")
+            "flex: 1 1 0; min-width: 0; max-width: 1180px; height: calc(100vh - 200px); overflow-y: auto")
         with list_column:
             @ui.refreshable
             def games_list():
@@ -211,19 +214,6 @@ def build_schedule_tab():
                     league_week(rec)
                 else:
                     team_season(rec)
-
-        box_column = ui.element("div").classes("report px-5 py-4") \
-            .style("flex: 0 0 640px; height: calc(100vh - 330px); overflow-y: auto")
-        with box_column:
-            @ui.refreshable
-            def box_panel():
-                g = next((x for x in S.all_games(league) if x["id"] == view["game"]), None)
-                if g is None or not g["played"]:
-                    ui.label("No game selected").classes("condensed text-2xl")
-                    ui.label("Click a game that's been played to see its box score: line score, "
-                             "team stats, both teams' players, scoring and drives.").classes("legend")
-                    return
-                game_box(league, g)
 
     # ---- views ----------------------------------------------------------
     def league_week(rec):
@@ -267,9 +257,9 @@ def build_schedule_tab():
                 note += f"  ·  {S.site_text(league, g)}"
             row = ui.html(
                 f'<div class="sched-row{" mine" if mine else ""}{sel}">'
-                f'<span class="{aw}">{escape(a.name)}{rec_txt(a.id)}</span>'
+                f'<span class="{aw}">{team_link(a)}{rec_txt(a.id)}</span>'
                 f'<span class="score num">{score}</span>'
-                f'<span class="{hw}">{escape(h.name)}{rec_txt(h.id)}</span>'
+                f'<span class="{hw}">{team_link(h)}{rec_txt(h.id)}</span>'
                 f'<span class="legend">{note}</span></div>', sanitize=False).classes("w-full")
             row.on("click", lambda _e, gid=g["id"]: pick_game(gid))
         playing = {t for g in games for t in (g["home"], g["away"])}
@@ -353,7 +343,7 @@ def build_schedule_tab():
             extra += f' <span class="legend">(#{po.seed_of(league, opp.id)} seed)</span>'
             if g.get("neutral"):
                 extra += f' <span class="legend">· {po.championship_name(league)}, {S.site_text(league, g)}</span>'
-        opp_txt = f'{where} {escape(opp.name)}{extra}'
+        opp_txt = f'{where} {team_link(opp)}{extra}'
         sel = " is-selected" if g["id"] == view["game"] else ""
         record = ""
         if g["played"]:
@@ -387,7 +377,7 @@ def build_schedule_tab():
     def pick_game(gid):
         view["game"] = gid
         games_list.refresh()
-        box_panel.refresh()
+        popups.open_game(gid)
 
     def refresh(follow_week=False):
         if follow_week:
@@ -395,10 +385,9 @@ def build_schedule_tab():
             view["week"] = clamp(S.calendar(league) - 1 if not S.season_over(league) else last_cal())
         week_picker.refresh()
         games_list.refresh()
-        box_panel.refresh()
 
     def show_game(gid):
-        """Open one game's summary: its week in the list, its box score on the right."""
+        """Show one game's week in the list, marked, and open its summary."""
         g = next((x for x in S.all_games(league) if x["id"] == gid), None)
         if g is None:
             return
@@ -407,12 +396,11 @@ def build_schedule_tab():
         view["game"] = gid
         mode_toggle.value = "League week"
         refresh()
+        popups.open_game(gid)
 
     refresh.show_game = show_game
 
-    # Draw the list and the box panel now that everything they use exists.
+    # Draw the list now that everything it uses exists.
     with list_column:
         games_list()
-    with box_column:
-        box_panel()
     return refresh

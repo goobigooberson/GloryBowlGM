@@ -5,7 +5,7 @@
 # ---- Colors --------------------------------------------------------------
 TURF = "#1F4A35"      # deep field green: header band
 TURF_DARK = "#163626"
-CHALK = "#F4F6F3"     # page background
+CHALK = "#ECEFEA"     # page background (a shade darker Oct 22, so panels stand out like windows)
 PAPER = "#FFFFFF"     # tables and panels
 INK = "#18222B"       # main text
 INK_SOFT = "#5B6670"  # secondary text
@@ -368,3 +368,75 @@ HEAD_HTML = f"""
   :focus-visible {{ outline: 3px solid var(--flag) !important; outline-offset: 1px; }}
 </style>
 """
+
+
+# ---- Desktop feel (Oct 22; Blake: "still feels a little clunky and too much like
+# a google form"). Applied on top of everything above: pages switch instantly,
+# pop-ups open fast, no web-style ripples, button groups look like one control,
+# tables have shaded headers, striped and highlighted rows, panels sit like
+# windows with a green top edge. "body " in front wins over each page's own
+# styles. To undo any of it, delete its lines here.
+DESKTOP_CSS = f"""
+<style>
+  /* Instant page switches; quick pop-ups (a desktop program doesn't slide) */
+  body [class*="q-transition--slide"], body [class*="q-transition--jump"] {{
+    transition: none !important; animation: none !important; }}
+  body .q-dialog__inner[class*="q-transition--"], body .q-dialog__backdrop[class*="q-transition--"] {{
+    transition-duration: .09s !important; }}
+  body .q-ripple {{ display: none !important; }}
+
+  /* Buttons: squarer, firmer */
+  body .q-btn {{ border-radius: 3px; font-weight: 600; letter-spacing: 0; }}
+  body .q-btn--outline:before {{ border-width: 1px; }}
+
+  /* Button groups (Roster / Practice squad / ...) look like one segmented control */
+  body .q-btn-toggle {{ border: 1px solid #C7D0C4; border-radius: 3px; overflow: hidden; box-shadow: none; }}
+  body .q-btn-toggle .q-btn {{ border-radius: 0; min-height: 34px; padding: 0 14px; font-weight: 500; }}
+  body .q-btn-toggle .q-btn.bg-white {{ background: #F3F6F1 !important; color: #3C4852 !important; }}
+  body .q-btn-toggle .q-btn.bg-white:hover {{ background: #E4EBE1 !important; }}
+  body .q-btn-toggle .q-btn + .q-btn {{ border-left: 1px solid #C7D0C4; }}
+  body .q-btn-toggle .q-btn:not(.bg-white) {{ font-weight: 600; }}
+
+  /* Drop-downs and text boxes: compact and square, not form fields */
+  body .q-field--outlined .q-field__control {{ border-radius: 3px; background: #FFFFFF; }}
+  body .q-field--outlined .q-field__control:before {{ border-color: #C7D0C4; }}
+  body .q-field--outlined.q-field--dense .q-field__control {{ min-height: 36px; }}
+  body .q-field--dense .q-field__native, body .q-field--dense .q-field__input {{ min-height: 34px; padding: 0; }}
+  body .q-field--dense .q-field__marginal {{ height: 36px; }}
+  body .q-menu {{ border-radius: 3px; box-shadow: 0 6px 18px rgba(0,0,0,.18); }}
+  body .q-menu .q-item {{ min-height: 30px; padding: 4px 12px; }}
+
+  /* Panels sit like windows: green top edge, squarer corners, a faint shadow */
+  body .report, body .hcard, body .roster-table, body .box-panels {{
+    border-radius: 3px; border-top: 3px solid var(--turf); box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
+  body .menu-panel {{ border-radius: 3px; box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
+
+  /* Tables: shaded header, striped rows, row highlight under the mouse */
+  body .roster-table thead th {{ background: #E6ECE3; color: #2F3B34; border-bottom: 1px solid #C7D0C4; }}
+  body .roster-table tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
+  body .roster-table tbody tr:hover td {{ background: #EAF2E6; }}
+  body .roster-table tbody tr.is-selected td {{ background: #FFF6CF; }}
+  body .box-table th {{ background: #EEF2EC; color: #2F3B34; }}
+  body .box-table tbody tr:hover td {{ background: #F1F6EE; }}
+  body .standings {{ border-radius: 3px; border-top: 3px solid var(--turf); box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
+  body .standings th {{ background: #E6ECE3; color: #2F3B34; border-bottom: 1px solid #C7D0C4; }}
+  body .standings tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
+  body .standings tbody tr:hover td {{ background: #EAF2E6; }}
+  body .standings tr.mine td {{ background: #FFF6CF; }}
+  body .standings caption {{ padding: 2px 0 6px; }}
+  body .sched-row:hover, body .team-sched.played:hover {{ background: #EAF2E6; }}
+  body .sched-row.is-selected, body .team-sched.is-selected {{ background: #FFF6CF; }}
+
+  /* Links to players and teams: plain text until you point at them */
+  body .pname {{ color: inherit; font-weight: 600; text-decoration: none; }}
+  body .pname:hover {{ color: var(--turf); text-decoration: underline; }}
+
+  /* Thin desktop scrollbars */
+  ::-webkit-scrollbar {{ width: 11px; height: 11px; }}
+  ::-webkit-scrollbar-track {{ background: transparent; }}
+  ::-webkit-scrollbar-thumb {{ background: #BAC4B6; border-radius: 6px; border: 3px solid transparent;
+                               background-clip: content-box; }}
+  ::-webkit-scrollbar-thumb:hover {{ background: #8E9B89; border: 3px solid transparent; background-clip: content-box; }}
+</style>
+"""
+HEAD_HTML += DESKTOP_CSS

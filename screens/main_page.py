@@ -64,6 +64,8 @@ def build_page():
     startup = draft_day.in_startup(league)
     pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Draft", "Depth chart", "Position counts",
                                         "Schedule", "Standings", "Stats", "Playoffs", "Bitter", "Awards", "Game"]
+    if not startup and not season.in_offseason(league):
+        pages.remove("Draft")    # Blake: the Draft section shows only in the offseason (scouting is offseason-only)
     phase = season.offseason_phase(league)
     if startup:
         first_page = "Draft"
@@ -73,10 +75,26 @@ def build_page():
         first_page = nav.tab_name(getattr(state, "main_tab", None)) or "Home"
     if first_page not in pages:
         first_page = pages[0]
+    # The draft room is a window over the other pages (Blake, Oct 22: "the draft should be
+    # one", FOF8-style); only a new league's startup draft, with no other pages yet, is a page.
+    # It opens by itself while a draft is under way.
+    draft_window = not startup
+    open_draft_now = draft_window and (first_page == "Draft" or bool(phase and phase[0] == "drafting"))
+    if draft_window and first_page == "Draft":
+        first_page = "Home"
     showing = {"page": first_page}
 
     def go(page):
+        if page == "Draft" and draft_window:
+            show_draft()
+            return
         tabs.set_value(page)
+
+    def show_draft():
+        if draft_window:
+            draft_win.open()
+        else:
+            tabs.set_value(draft_tab)
 
     # ---- The slim green bar ------------------------------------------------
     # Your team (click to look at another team), the sections, the week and
@@ -232,7 +250,7 @@ def build_page():
                             + ("you're on the clock" if yours else f"{league.team(slot['team']).name} on the clock"))
                 two_lines(f"{league.season} startup draft", line,
                           "Every team drafts its 53-man roster. Training camp opens when it's over.")
-                ui.button("Go to the draft room", on_click=lambda: tabs.set_value(draft_tab)).props(BTN)
+                ui.button("Go to the draft room", on_click=lambda: show_draft()).props(BTN)
                 return
             rec = season.records(league)
             total = season.n_weeks(league)
@@ -257,7 +275,7 @@ def build_page():
                         .tooltip("Retirements, free agency, the draft and undrafted signings so far")
                 if key in ("draft", "drafting") or draft_day.scouting_open(league):
                     ui.button("Go to the draft room" if key == "drafting" else "Scout the draft class",
-                              on_click=lambda: tabs.set_value(draft_tab)) \
+                              on_click=lambda: show_draft()) \
                         .props(BTN_OUT) \
                         .tooltip("The Draft page" + (": make your picks" if key == "drafting" else
                                                      ": scout this year's class before the draft"))
@@ -424,10 +442,16 @@ def build_page():
             with ui.tab_panel(contracts_tab).classes("p-0"):
                 refresh_contracts = build_contracts_tab(
                     on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster()))
-        with ui.tab_panel(draft_tab).classes("p-0"):
-            refresh_draft = build_draft_tab(
+        def draft_room():
+            return build_draft_tab(
                 on_change=lambda: (season_bar.refresh(), team_banner.refresh()),
                 on_next=lambda: next_phase(), on_startup_done=lambda: startup_done())
+        with ui.tab_panel(draft_tab).classes("p-0"):
+            if not draft_window:
+                refresh_draft = draft_room()
+        if draft_window:
+            draft_win = popups.KeptWindow("Draft room", draft_room)
+            refresh_draft = draft_win.content
         if not startup:
             with ui.tab_panel(depth_tab).classes("p-0"):
                 refresh_depth = build_depth_tab(
@@ -575,8 +599,8 @@ def build_page():
             ui.navigate.reload()
             return
         if phase == "drafting":
-            # The draft is waiting for your pick (the Draft tab).
-            tabs.set_value(draft_tab)
+            # The draft is waiting for your pick (the draft room).
+            show_draft()
             ui.notify("You're on the clock.", type="positive", position="top")
         elif key == "drafting":
             ui.notify(f"The {league.season} draft is complete. Rookies are signed; free agency goes on.",
@@ -703,3 +727,9 @@ def build_page():
         refresh_counts()
         refresh_schedule()
         refresh_news()
+
+    if open_draft_now:
+        show_draft()
+
+    # A team window's "Show on the team pages" (popups.py): that team's roster behind it.
+    popups.set_view_team(lambda tid: (change_team(tid), go("Roster") if "Roster" in pages else None))

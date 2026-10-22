@@ -228,7 +228,9 @@ def box_score_html(game, idx):
         # A link: click it for his card (a pop-up on the game screen, popups.py).
         return _Html(f'<a class="plink" href="/player/{p.id}">{escape(T.short_name(p))}</a> ({p.position})')
 
-    out = [f'<div class="box-team">{escape(team.name)}</div>']
+    tid = getattr(team, "id", None)
+    out = [f'<div class="box-team">' + (f'<a class="tlink" href="/team/{tid}">{escape(team.name)}</a>'
+                                         if tid is not None else escape(team.name)) + '</div>']
     passing = sorted([(p, l) for p, l in lines if l.get("pass_att", 0) - l.get("spikes", 0) > 0 or l.get("sacked")],
                      key=lambda x: -x[1].get("pass_att", 0))
     out.append(_table("Passing", ["Player", "C/Att", "Yds", "TD", "Int", "Sacked", "Long", "Rating"],

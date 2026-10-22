@@ -42,6 +42,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8103", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\f3047749-5221-429f-bc26-fe5da6fd4733\\scratchpad\\layoutsaves"],
       "port": 8103
+    },
+    {
+      "name": "draft-board-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8105", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\e151205b-9506-4fd9-bd09-d1dc168de603\\scratchpad\\draftsaves"],
+      "port": 8105
     }
   ]
 }

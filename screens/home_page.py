@@ -120,9 +120,9 @@ def build_home_tab(go, watch, open_summary, on_change):
                             tag = f" ({season.record_text(rec[opp.id])})"
                         if g["played"]:
                             _k, txt = result_text(g, team.id)
-                            ui.html(f'{where} {escape(opp.name)}: {txt}', sanitize=False).classes("home-big")
+                            ui.html(f'{where} {popups.team_link(opp)}: {txt}', sanitize=False).classes("home-big")
                         else:
-                            ui.html(f'{where} {escape(opp.name)}<span class="home-big-soft">{tag}</span>',
+                            ui.html(f'{where} {popups.team_link(opp)}<span class="home-big-soft">{tag}</span>',
                                     sanitize=False).classes("home-big")
                         kind = ("Hall of Fame Game" if g.get("kind") == "hof" else "Preseason game" if pre
                                 else "Playoff game" if post else "Home game" if home else "Road game")
@@ -160,7 +160,7 @@ def build_home_tab(go, watch, open_summary, on_change):
                      and set(s.get("teams") or []) == {last["home"], last["away"]}), None)
         with ui.element("div").classes("home-last"):
             ui.label("Last game").classes("hkind")
-            ui.html(f'<b>{_wl([k])} {txt.split(" ", 1)[1]} {where} {escape(opp.name)}</b>', sanitize=False)
+            ui.html(f'<b>{_wl([k])} {txt.split(" ", 1)[1]} {where} {popups.team_link(opp)}</b>', sanitize=False)
             if head:
                 ui.label(head).classes("legend").style("font-style:italic")
             link_button("Game summary", lambda gid=last["id"]: open_summary(gid))
@@ -249,7 +249,7 @@ def build_home_tab(go, watch, open_summary, on_change):
                 '<span class="num">PF</span><span class="num">PA</span><span class="num">Last 5</span></div>']
         for t in ids:
             r = rec[t]
-            rows.append(f'<div class="div-row{" mine" if t == team.id else ""}"><span>{escape(league.team(t).name)}'
+            rows.append(f'<div class="div-row{" mine" if t == team.id else ""}"><span>{popups.team_link(league.team(t))}'
                         f'</span><span class="num">{season.record_text(r)}</span><span class="num">{r["pf"]}</span>'
                         f'<span class="num">{r["pa"]}</span><span class="num">{_wl(r["results"][-5:])}</span></div>')
         with ui.element("section").classes("hcard").props('aria-label="Division"'):

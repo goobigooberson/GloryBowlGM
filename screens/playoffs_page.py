@@ -11,6 +11,7 @@ from nicegui import ui
 from engine import awards as A
 from engine import playoffs as po
 from engine import season as S
+from .popups import team_link
 from .state import state
 
 
@@ -43,7 +44,7 @@ def build_playoffs_tab(on_open_summary=None):
                             how = "division winner" if i <= 4 else "wild card"
                             mine = ' class="mine"' if tid == league.user_team_id else ""
                             out = any(g["played"] and po.loser(g) == tid for g in league.playoffs)
-                            name = f"<s>{escape(t.name)}</s>" if out else escape(t.name)
+                            name = f"<s>{team_link(t)}</s>" if out else team_link(t)
                             seeds_html.append(f'<tr{mine}><td>{i}</td><td style="text-align:left">{name}</td>'
                                               f'<td>{S.record_text(rec[tid])}</td><td style="text-align:left">{how}</td></tr>')
                         ui.html('<table class="standings"><caption>Seeds</caption><thead><tr><th>#</th>'

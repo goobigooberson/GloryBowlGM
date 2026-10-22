@@ -9,6 +9,7 @@ from nicegui import ui
 
 from engine import playoffs as po
 from engine import season as S
+from .popups import team_link
 from .state import state
 
 
@@ -37,7 +38,7 @@ def division_table(league, name, team_ids, rec):
         if seeded:
             s = po.seed_of(league, tid)
             seed = f"<td>{s if s else '-'}</td>"
-        rows.append(f"<tr{mine}><td>{escape(team.name)}</td><td>{r['w']}</td><td>{r['l']}</td><td>{r['t']}</td>"
+        rows.append(f"<tr{mine}><td>{team_link(team)}</td><td>{r['w']}</td><td>{r['l']}</td><td>{r['t']}</td>"
                     f"<td>{_pct(r)}</td><td>{r['pf']}</td><td>{r['pa']}</td><td>{net:+d}</td>"
                     f"<td>{_rec(r['home'])}</td><td>{_rec(r['away'])}</td><td>{_rec(r['div'])}</td>"
                     f"<td>{_rec(r['conf'])}</td><td>{r['streak']}</td>{seed}</tr>")

@@ -208,6 +208,9 @@ def build_contracts_tab(on_change=None):
             .classes("roster-table").style("flex: 1 1 0; min-width: 0; height: calc(100vh - 330px)")
         table.add_slot("body-cell-pos", r"""
             <q-td :props="props"><span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span></q-td>""")
+        # The name opens his card (popups.py); the rest of the row opens the contract panel.
+        table.add_slot("body-cell-name", r"""
+            <q-td :props="props"><a class="plink pname" :href="'/player/' + props.row.id">{{ props.row.name }}</a></q-td>""")
         for key, txt in MONEY_SLOTS.items():
             table.add_slot(f"body-cell-{key}", f"""
                 <q-td :props="props" class="num">{{{{ props.row.{txt} }}}}</q-td>""")

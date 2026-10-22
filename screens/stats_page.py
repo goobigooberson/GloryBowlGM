@@ -129,7 +129,8 @@ def team_summary_html(league, team_id, phase):
                      f'{g["pf"]}-{g["pa"]}{" OT" if g["ot"] else ""}')
         else:
             score = '<span class="legend">-</span>'
-        log.append(f'<tr><td class="l">{escape(_game_label(league, g))}</td><td class="l">{where} {opp}</td>'
+        log.append(f'<tr><td class="l">{escape(_game_label(league, g))}</td><td class="l">{where} '
+                   f'{popups.team_link(league.team(g["opp"]), opp)}</td>'
                    f'<td class="l">{score}</td></tr>')
     left = (f'<div class="box-title" style="margin-top:0">{escape(team.name)}</div>'
             f'<table class="box-table"><tbody>{facts}</tbody></table>'
@@ -255,7 +256,7 @@ def build_stats_tab():
                         cls = ' style="background:#FFF6CF;font-weight:600"' if tid == mine else ""
                         lines.append(f'<tr{cls}><td>{i}</td><td class="l"><span class="pos-tag" '
                                      f'style="{theme.position_style(p.position)}">{p.position}</span> '
-                                     f'{escape(p.name)}</td><td class="l">{team.abbrev}</td>'
+                                     f'{popups.player_link(p)}</td><td class="l">{popups.team_link(team, team.abbrev)}</td>'
                                      f'<td><b>{ST.fmt_value(v, how)}</b></td></tr>')
                     if not lines:
                         lines.append('<tr><td colspan="4" class="l legend">Nobody qualifies yet</td></tr>')
@@ -294,7 +295,8 @@ def build_stats_tab():
             .style("height: calc(100vh - 340px)")
         table.add_slot("body-cell-name", r"""
             <q-td :props="props" :style="props.row.mine ? 'background:#FFF6CF;font-weight:600' : ''">
-              <span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span> {{ props.row.name }}
+              <span class="pos-tag" :style="props.row.pos_style">{{ props.row.pos }}</span>
+              <a class="plink pname" :href="'/player/' + props.row.id">{{ props.row.name }}</a>
             </q-td>""")
         table.on("rowClick", lambda e: popups.show_player(e.args[1]["id"]))
         ui.label(f"{len(rows)} players. Your team's players are highlighted. Click a player for his card.") \
@@ -334,8 +336,9 @@ def build_stats_tab():
             .props("flat dense hide-bottom").classes("roster-table w-full")
         table.add_slot("body-cell-team", r"""
             <q-td :props="props" :style="props.row.mine ? 'background:#FFF6CF;font-weight:600' : ''">
-              {{ props.row.team }}</q-td>""")
-        ui.label("Per game. Yards are net (sack yardage taken off passing).").classes("legend")
+              <a class="tlink pname" :href="'/team/' + props.row.id">{{ props.row.team }}</a></q-td>""")
+        table.on("rowClick", lambda e: popups.open_team(e.args[1]["id"]))
+        ui.label("Per game. Click a team for its window. Yards are net (sack yardage taken off passing).").classes("legend")
 
     def set_view(**kw):
         view.update(kw)

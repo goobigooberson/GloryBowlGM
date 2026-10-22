@@ -14,6 +14,7 @@ from engine import formatting as fmt
 from engine.scale import shown
 from . import theme
 from .formations import formation_svg, UNIT_PACKAGES
+from .popups import player_link
 from .state import state, FREE_AGENTS, is_user_team, mark_changed, injury_tag
 
 RANK_NAMES = ["Starter", "2nd", "3rd", "4th"]
@@ -116,7 +117,7 @@ def build_depth_tab(on_change):
                         if p is None:
                             cells.append('<span class="legend">-</span>')
                         else:
-                            cells.append(f'<span>{marks(p)}{escape(p.name)} <span class="legend">{p.position}</span> '
+                            cells.append(f'<span>{marks(p)}{player_link(p)} <span class="legend">{p.position}</span> '
                                          f'{chip(depth.rating_at(p, slot), depth.SLOTS[slot][1])}{injury_tag(p.id)}</span>')
                     selected = " is-selected" if slot == state.depth_slot else ""
                     row = ui.html(f'<div class="depth-row{selected}">{pos_tag(slot)}'
@@ -148,7 +149,7 @@ def build_depth_tab(on_change):
                 ui.label(unit).classes("legend").style("width:62px")
                 if p:
                     ui.html(f'<span class="captain-star">★</span> {pos_tag(p.position)} '
-                            f'{escape(p.name)} <span class="legend">leadership '
+                            f'{player_link(p)} <span class="legend">leadership '
                             f'{fmt.trait(p.leadership)}</span>', sanitize=False)
                 else:
                     ui.label("None").classes("legend")
@@ -221,7 +222,7 @@ def build_depth_tab(on_change):
                    if shown(fit["ceiling"], spot_pos) > shown(fit["now"], spot_pos) else "")
         notes = f'<div class="fit-note">{escape("; ".join(fit["notes"]))}</div>' if fit["notes"] else ""
         size = f' <span class="size-note">{escape(fit["size"])}</span>' if fit["size"] else ""
-        return (f'{pos_tag(p.position)} {escape(p.name)}{side_txt} {chip(fit["now"], spot_pos)}{ceiling}{size}'
+        return (f'{pos_tag(p.position)} {player_link(p)}{side_txt} {chip(fit["now"], spot_pos)}{ceiling}{size}'
                 f'{injury_tag(p.id)}{notes}')
 
     # ---- Actions --------------------------------------------------------
