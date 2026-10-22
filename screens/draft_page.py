@@ -781,7 +781,7 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             avail = [p for p in avail if p.position == view["pos"]]
         if view["need_only"]:
             avail = [p for p in avail if r_need.get(p.position, {}).get("have", 0) < r_need.get(p.position, {}).get("spots", 0)]
-        score = {p.id: room.score(uid, p) for p in avail} if room else {}
+        score = room.scores(uid, avail) if room else {}
         avail.sort(key=lambda p: score[p.id], reverse=True)
         rows = []
         for i, p in enumerate(avail[:300]):

@@ -680,13 +680,22 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None):
         hits = sorted((C.cap_hit(league, league.contracts[x], S) for x in team_ids), reverse=True)
         line = hits[C.TOP_51 - 1] if t51 and len(hits) >= C.TOP_51 else 0
         nxt = hits[C.TOP_51] if t51 and len(hits) > C.TOP_51 else 0
+        on53 = sum(1 for t in league.rosters.values() if t == tid)
+        practice = getattr(league, "practice", {})
         for pid in team_ids:
+            if pid in practice:
+                continue        # a practice squad spot is refilled at the same pay: cutting saves nothing
             c = league.contracts[pid]
             use_june, prev = C.best_release(league, pid)
             hit = C.cap_hit(league, c, S)
             saved = prev["savings"]
             if t51:
                 saved = (hit - nxt if hit >= line else 0) - prev["dead"].get(S, 0)
+            if pid in league.rosters and on53 <= ROSTER_SIZE:
+                # The spot has to be refilled, at about the minimum: only what's saved beyond that
+                # helps. (Before Oct 23, getting under the cap at week 1 cut and refilled minimum
+                # players round after round: a team over by $38M went down to 11 players.)
+                saved -= C.min_salary(league, 1)
             if saved <= 0.001 * cap:
                 continue
             value = table[pid]["price"] * cap

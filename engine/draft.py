@@ -931,10 +931,30 @@ def draft_capital(p, overall_pick=None):
 # ---------------------------------------------------------------------------
 STARTUP_SNAKE = True          # the order reverses every round (fairest for 53 rounds)
 STARTUP_NOW_WEIGHT = 0.6      # veterans are graded more on what they are now than on their ceiling
-STARTUP_PAST_PRIME = 0.15     # grade off per season he's past his prime (fewer good years left)
+STARTUP_PAST_PRIME = 0.15     # spreads of his position off per season past his prime (fewer good years left)
 STARTUP_MISS = 0.60           # each team's error on a veteran (he has pro tape)...
 STARTUP_MISS_YOUNG = 0.90     # ...and on a player with 0-1 seasons
-STARTUP_BACKUP_DROP = 1.1     # grade off for the first backup at a position (2x for the second...)
+# How a team values a pick (Oct 23; the first version graded each player only against
+# his own position, so a team saw a good guard and a good QB alike and waited on QB:
+# in 6 test leagues 112 of 192 teams took their first QB after round 5, some in round
+# 25, and 8 started a QB rated under 45). Now, like real team-building: what he adds over
+# the starter the team would be stuck with if it waited (the worst starter-level player
+# still left at his position, counting every team's open starting spots), times how much
+# the position matters (the depth chart's spot importance: QB 3.0, LT 1.3, most 1.0).
+# Results (6 leagues): every team has its QB by round 4 (STARTUP_QB_BY; before: as late
+# as round 25), starters under 45 shown ~3-5 of 192 (8), the 10th-percentile starter
+# 52, about the pool's 32nd best QB; the low ones are teams whose scouting misjudged.
+STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.0, "FB": 0.4, "WR": 1.1, "TE": 1.0, "T": 1.2, "G": 1.0, "C": 1.1,
+                      "DE": 1.2, "DT": 1.0, "OLB": 0.95, "ILB": 1.1, "CB": 1.03, "S": 1.03,
+                      "K": 0.3, "P": 0.25, "LS": 0.1}
+# (Specialists: the depth chart gives them 1.0, but their ratings spread wider and a rating
+# point there moves games far less; at 1.0 kickers, punters and snappers went in rounds 1-2.
+# With these, each team's first K goes around round 22, P 23, LS 38; none in rounds 1-3.)
+STARTUP_WAIT_DEPTH = 8        # a team never counts on getting better than the 8th best player left at a
+                              # position by waiting (others take players too)
+STARTUP_QB_BY = 4             # a team still without a QB in this round takes the best one on its board
+STARTUP_BACKUP_SHARE = 0.25   # a backup is worth this share of a starter (insurance), measured against
+                              # the worst player who'll make a roster there, and half again for each more
 
 
 class StartupRoom:
@@ -962,6 +982,9 @@ class StartupRoom:
         self.humans = set(humans)
         self.order = list(order or [t.id for t in league.teams])
         stats = starter_stats_from(pool)
+        # Each team's view of each player, in rating points: what he is now and a bit of
+        # his ceiling, less for seasons past his prime, plus its own scouting error
+        # (smaller for better front offices).
         self.views = {}
         for t in league.teams:
             skill = team_skill(league, t.id)
@@ -969,15 +992,14 @@ class StartupRoom:
             r = random.Random(f"startup-{league.settings.get('salt', '')}-{t.id}")
             v = {}
             for p in pool:
-                m, sd = stats.get(p.position, (65.0, 8.0))
-                g = (STARTUP_NOW_WEIGHT * (p.overall() - m)
-                     + (1 - STARTUP_NOW_WEIGHT) * (p.overall("potential") - m)) / sd
+                _m, sd = stats.get(p.position, (65.0, 8.0))
+                g = (STARTUP_NOW_WEIGHT * p.overall() + (1 - STARTUP_NOW_WEIGHT) * p.overall("potential"))
                 _start, end = peak_seasons(p)
-                g -= STARTUP_PAST_PRIME * max(0, season_number(p) - end)
+                g -= STARTUP_PAST_PRIME * sd * max(0, season_number(p) - end)
                 miss = STARTUP_MISS_YOUNG if p.experience <= 1 else STARTUP_MISS
-                v[p.id] = board_grade(p, g + keep * r.gauss(0, miss))
+                v[p.id] = g + keep * sd * r.gauss(0, miss)
             self.views[t.id] = v
-        # Each team's best remaining player at each position, by its own board.
+        # Each team's best remaining player at each position, by its own view.
         by_pos = defaultdict(list)
         for p in pool:
             by_pos[p.position].append(p)
@@ -986,6 +1008,32 @@ class StartupRoom:
         self.taken = set()
         self.have = {t.id: defaultdict(int) for t in league.teams}
         self.picks = []
+        n = len(league.teams)
+        # Open spots league-wide: starting spots, and all roster spots, by position.
+        self.open_start = {pos_: n * STARTERS_FOR_NEED.get(pos_, 1) for pos_ in ROSTER_TEMPLATE}
+        self.open_all = {pos_: n * k for pos_, k in ROSTER_TEMPLATE.items()}
+
+    def _filled(self, tid, position):
+        """Bookkeeping when a team adds a player at a position."""
+        have = self.have[tid][position]
+        if have < STARTERS_FOR_NEED.get(position, 1):
+            self.open_start[position] -= 1
+        if have < ROSTER_TEMPLATE.get(position, 0):
+            self.open_all[position] -= 1
+        self.have[tid][position] = have + 1
+
+    def _kth(self, tid, position, k):
+        """This team's view of the k-th best player still left at a position
+        (the worst of them if fewer are left)."""
+        last = None
+        for p in self.lists[tid][position]:
+            if p.id in self.taken:
+                continue
+            last = self.views[tid][p.id]
+            k -= 1
+            if k <= 0:
+                break
+        return last
 
     def on_clock(self):
         """{"pick", "round", "team"} that's up next, or None when it's over."""
@@ -1002,14 +1050,42 @@ class StartupRoom:
         return {pos_: ROSTER_TEMPLATE[pos_] - self.have[tid][pos_] for pos_ in ROSTER_TEMPLATE
                 if self.have[tid][pos_] < ROSTER_TEMPLATE[pos_]}
 
-    def score(self, tid, p):
-        """How much this team wants him now: its board, less for a backup."""
-        backups = max(0, self.have[tid][p.position] - STARTERS_FOR_NEED.get(p.position, 1) + 1)
-        return self.views[tid][p.id] - STARTUP_BACKUP_DROP * backups
+    def score(self, tid, p, _repl=None):
+        """How much this team wants him now: what he adds over the player it would
+        be stuck with at his position if it waited, times how much the position
+        matters (STARTUP_POS_WEIGHT); a backup much less (STARTUP_BACKUP_SHARE)."""
+        position = p.position
+        backups = self.have[tid][position] - STARTERS_FOR_NEED.get(position, 1)
+        if backups < 0:            # a starting spot: against the worst starter-level player left
+            k, share = max(STARTUP_WAIT_DEPTH, self.open_start[position]), 1.0
+        else:                      # a backup: against the worst player left who'll make a roster
+            k, share = max(1, self.open_all[position]), STARTUP_BACKUP_SHARE * 0.5 ** backups
+        repl = _repl if _repl is not None else self._kth(tid, position, k)
+        return share * STARTUP_POS_WEIGHT.get(position, 1.0) * (self.views[tid][p.id] - repl)
+
+    def scores(self, tid, players):
+        """{pid: score(tid, p)} for many players at once (the screens' board)."""
+        repl = {}
+        out = {}
+        for p in players:
+            key = (p.position, self.have[tid][p.position] >= STARTERS_FOR_NEED.get(p.position, 1))
+            if key not in repl:
+                backups = self.have[tid][p.position] - STARTERS_FOR_NEED.get(p.position, 1)
+                k = (max(STARTUP_WAIT_DEPTH, self.open_start[p.position]) if backups < 0
+                     else max(1, self.open_all[p.position]))
+                repl[key] = self._kth(tid, p.position, k)
+            out[p.id] = self.score(tid, p, repl[key])
+        return out
 
     def best(self, tid):
         """The player this team takes now: the best on its board for a spot it
-        still has open (starters first)."""
+        still has open (starters first). No real front office waits past the
+        first few rounds for its quarterback (STARTUP_QB_BY)."""
+        slot = self.on_clock()
+        if (slot and slot["team"] == tid and slot["round"] >= STARTUP_QB_BY and self.have[tid]["QB"] == 0):
+            qb = self._nth_left(tid, "QB", 1)
+            if qb is not None:
+                return qb
         best = None
         for pos_, lst in self.lists[tid].items():
             if self.have[tid][pos_] >= ROSTER_TEMPLATE.get(pos_, 0):
@@ -1018,10 +1094,30 @@ class StartupRoom:
                 lst.pop(0)
             if not lst:
                 continue
-            score = self.score(tid, lst[0])
+            cand = lst[0]
+            if self.have[tid][pos_] >= STARTERS_FOR_NEED.get(pos_, 1):
+                # A backup: not one good enough to start for a team that still needs a
+                # starter here (no team hoards a second starting QB while others have none).
+                cand = self._nth_left(tid, pos_, self.open_start[pos_] + 1)
+                if cand is None:
+                    continue
+            score = self.score(tid, cand)
             if best is None or score > best[0]:
-                best = (score, lst[0])
+                best = (score, cand)
         return best[1]
+
+    def _nth_left(self, tid, position, n):
+        """The n-th best player left at a position by this team's view (or the
+        last one left), or None."""
+        last = None
+        for p in self.lists[tid][position]:
+            if p.id in self.taken:
+                continue
+            last = p
+            n -= 1
+            if n <= 0:
+                break
+        return last
 
     def available(self):
         return [p for p in self.pool if p.id not in self.taken]
@@ -1035,7 +1131,7 @@ class StartupRoom:
         if self.have[tid][p.position] >= ROSTER_TEMPLATE.get(p.position, 0):
             raise ValueError(f"The roster is already full at {p.position}.")
         self.taken.add(pid)
-        self.have[tid][p.position] += 1
+        self._filled(tid, p.position)
         self.league.rosters[pid] = tid
         self.picks.append({"round": slot["round"], "pick": slot["pick"], "team": tid, "pid": pid})
         return self.picks[-1]
@@ -1070,7 +1166,7 @@ class StartupRoom:
         room = cls(league, humans=d["humans"], order=d["order"], pool_ids=d["pool"])
         for pk in d["picks"]:
             room.taken.add(pk["pid"])
-            room.have[pk["team"]][league.player(pk["pid"]).position] += 1
+            room._filled(pk["team"], league.player(pk["pid"]).position)
             room.picks.append(dict(pk))
         return room
 

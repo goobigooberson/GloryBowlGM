@@ -160,6 +160,9 @@ FUMBLE_SACK = 0.115          # strip-sack share of sacks (real ~12%)
 FUMBLE_LOST_BY_KIND = {"sack": 0.51, "qb": 0.30, "run": 0.60, "catch": 0.53}  # defense recovers (real)
 FUMBLE_SKILL_K = 0.55        # per z of the hidden fumble-avoidance rating
 TACKLE_SKILL_K = 0.20        # better tacklers get in on more stops
+                             # (Oct 23, tried 0.26 with the middle linebacker's weight 7% lower: 12+ tackle games
+                             # ~7 fewer a season, but 80+ tackle players 113 -> 121 (real 102) and 80+ tackle DBs
+                             # 57 -> 64 (real 46): it piles stops on starters. Kept 0.20.)
 TACKLE_ASSIST = {"short": 0.42, "mid": 0.32, "long": 0.17, "break": 0.10}  # share of tackles made by two players
                              # (Oct 23, tried 0.35/0.27/0.14/0.08: assists run 30.4 a team game vs real 25.4 and
                              # 12+ tackle games 1.8x real, but fewer assists pushed the season leaders below real

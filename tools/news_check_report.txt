@@ -1,695 +1,708 @@
-Built 4947 stories and 6062 posts in 1.8s.
-Stories by type: Injuries 1710, Roster moves 1617, Game stories 460, Big performances 339, Storylines 240, Awards and honors 159, Retirements 149, Milestones and records 114, Rankings and previews 44, Playoff race 44, Draft 38, Season and team news 33
-League view (importance 25+): 1654 stories
-Game headlines: 460, 309 different shapes; most used: 'X improves to #-# with #-# win over X' x10; 'X carries X past X' x9; 'X X leads X past X, #-#' x9; 'X rides X past X, #-#' x8
-Automatic checks: all passed
+Built 4820 stories and 5973 posts in 4.8s.
+Stories by type: Injuries 1662, Roster moves 1513, Game stories 460, Big performances 346, Storylines 215, Retirements 200, Awards and honors 160, Milestones and records 105, Rankings and previews 44, Playoff race 44, Draft 38, Season and team news 33
+League view (importance 25+): 1623 stories
+Game headlines: 460, 289 different shapes; most used: 'X rides X past X, #-#' x12; 'X leads X past X, #-#' x10; 'X powers X to #-# win over X' x9; 'X improves to #-# with #-# win over X' x7
+Automatic checks: 1 problems
+  PROBLEM: headline used 2 times in one week: Joel Hamilton retires
 
 ==== LEAGUE VIEW (newest first) ====
 [2027 Week 4] (Injuries, importance 34)
   Key players out for Week 4
-    BOS QB Hayden Wade (concussion): concussion protocol
-    MIN ILB Ricky Bradley (ribs): out
-    IND S Jesse Adams (quad): out
-    TAM WR Victor Kelly (ribs): out
-    CLE OLB Trent Malone (back): out
-    BUF OLB Xavier Freeman (hip): out
-    PIT RB Quentin Russell (shoulder): out
-    NSH WR Jerome Green (hamstring): out
-    SAN RB Mason Mitchell (concussion): concussion protocol
-    PHI ILB David Riley (hamstring): out
-    DET WR Anthony White (hamstring): out
-    DET WR Brett Brown (hamstring): out
+    DAL QB Nathan Sims (ankle): out
+    CLE ILB Wade Parker (concussion): concussion protocol
+    MIN RB Connor Reynolds (knee): out
+    PIT DE Owen Moore (hamstring): out
+    ATL QB John Reese (hamstring): out
+    HOU WR Cameron Rogers (concussion): concussion protocol
+    WAS WR Justin Lawson (ankle): out
+    BOS TE Stephen Rogers (hamstring): out
+    ATL DT Jared Anderson (hamstring): out
+    HOU WR Walter Barnes (shoulder): out
+    BUF ILB Drew Jackson (concussion): concussion protocol
+    CIN CB Quentin Graves (elbow): out
 [2027 Week 3] (Rankings and previews, importance 42)
-  Games to watch in Week 4
-    Minneapolis (3-0) at Boston (3-0). Minneapolis has won three straight. Boston has won three straight.
-    San Diego (3-0) at Houston (2-1). San Diego has won three straight. Hayden Stanley brings three straight games with a touchdown.
-    Tampa (1-2) at Charlotte (3-0). Charlotte has won three straight. Quentin Burns brings three straight games with a sack.
+  Circle these Week 4 games
+    St. Louis (2-1) at Minneapolis (3-0). Minneapolis won the first meeting 24-10 in Week 2. Minneapolis has won three straight.
+    Chicago (2-1) at Philadelphia (3-0). Philadelphia has won three straight. Connor Malone brings three straight games with a touchdown.
+    Boston (3-0) at Buffalo (0-3). Boston has won three straight. Buffalo has lost three straight.
 [2027 Week 3] (Rankings and previews, importance 50)
-  Week 3 power rankings: San Diego holds No. 1
+  Power rankings: Boston is No. 1 after Week 3
     Our ranking of all 32 teams, by record, point differential and recent form.
-    1. San Diego (3-0, up 2): Still unbeaten. Beat Baltimore 37-16. Stanley: three straight games with a touchdown.
-    2. Dallas (3-0, up 3): Beat Las Vegas 27-0. Still unbeaten.
-    3. Washington (3-0, up 5): Still unbeaten. Beat Los Angeles 36-17.
-    4. Minneapolis (3-0, no change): Still unbeaten. Beat Kansas City 24-20.
-    5. Portland (3-0, up 1): Beat Tampa 38-31. Still unbeaten.
-    6. Charlotte (3-0, up 1): Beat Seattle 19-10. Still unbeaten. Burns: three straight games with a sack.
-    7. Boston (3-0, up 2): Still unbeaten. Beat Nashville 35-13.
-    8. Kansas City (2-1, down 7): Lost to Minneapolis 24-20.
-    9. Houston (2-1, up 8): Watkins: three straight games with a sack. Beat Phoenix 37-3.
-    10. Baltimore (2-1, down 8): Lost to San Diego 37-16. Ross: three straight games with a sack.
-    11. Miami (2-1, up 9): Beat Detroit 37-13.
-    12. Buffalo (2-1, up 3): Beat Pittsburgh 20-16. Roberts: three straight games with a sack.
-    13. Cleveland (2-1, up 3): Beat Philadelphia 17-12. Ford: three straight games with a touchdown.
-    14. Atlanta (2-1, up 5): Beat Cincinnati 37-32. Franklin: three straight games with a touchdown.
-    15. Chicago (2-1, up 6): Beat New Orleans 26-23. Malone: three straight games with a touchdown.
-    16. St. Louis (2-1, up 6): Beat Denver 17-16.
-    17. Cincinnati (1-2, down 6): Lost to Atlanta 37-32. Newton: three straight games with a touchdown.
-    18. New Orleans (1-2, down 5): Lost to Chicago 26-23.
-    19. San Antonio (1-2, up 7): Beat San Francisco 21-6.
-    20. Seattle (1-2, down 6): Lost to Charlotte 19-10.
-    21. Tampa (1-2, down 3): Lost to Portland 38-31.
-    22. Detroit (1-2, down 12): Lost to Miami 37-13.
-    23. Nashville (1-2, down 11): Lost to Boston 35-13. Allen: three straight games with a sack.
-    24. New York (1-2, up 4): Beat Indianapolis 29-26.
-    25. Las Vegas (1-2, down 2): Reynolds: three straight games with a sack. Lost to Dallas 27-0.
-    26. Denver (0-3, down 1): Lost to St. Louis 17-16. Still looking for a first win.
-    27. Pittsburgh (0-3, down 3): Still looking for a first win. Lost to Buffalo 20-16.
-    28. Philadelphia (0-3, down 1): Still looking for a first win. Lost to Cleveland 17-12.
-    29. Indianapolis (0-3, up 1): Still looking for a first win. Lost to New York 29-26.
-    30. Los Angeles (0-3, down 1): Lost to Washington 36-17. Still looking for a first win.
-    31. San Francisco (0-3, up 1): Still looking for a first win. Lost to San Antonio 21-6.
-    32. Phoenix (0-3, down 1): Still looking for a first win. Lost to Houston 37-3.
+    1. Boston (3-0, no change): Still unbeaten. Beat Charlotte 27-9. Sims: three straight 100-yard receiving games.
+    2. Houston (3-0, up 2): Beat Phoenix 34-21. Still unbeaten.
+    3. Minneapolis (3-0, down 1): Still unbeaten. Beat New York 35-32.
+    4. Philadelphia (3-0, down 1): Still unbeaten. Beat Indianapolis 29-20.
+    5. Chicago (2-1, up 4): Beat Buffalo 25-6. Malone: three straight games with a touchdown.
+    6. St. Louis (2-1, up 4): Beat San Francisco 31-10.
+    7. Miami (2-1, down 1): Lost to San Antonio 28-27.
+    8. Cincinnati (2-1, down 3): Lost to Tampa 33-26.
+    9. Dallas (2-1, up 3): Beat Las Vegas 20-9.
+    10. Seattle (2-1, up 8): Beat Nashville 30-14. Ross: three straight games with a sack.
+    11. Washington (2-1, up 6): Beat Pittsburgh 29-19.
+    12. Tampa (2-1, up 2): Beat Cincinnati 33-26. Dawson: three straight 300-yard passing games.
+    13. Nashville (2-1, down 6): Lewis: three straight games with at least two touchdown passes. Lost to Seattle 30-14.
+    14. San Antonio (2-1, up 2): Beat Miami 28-27. Mitchell: three straight games with a touchdown.
+    15. Phoenix (2-1, down 7): Lyons: three straight games with a sack. Lost to Houston 34-21.
+    16. Detroit (2-1, up 8): Beat Cleveland 31-28.
+    17. Baltimore (1-2, up 8): Beat Los Angeles 38-11. Payne: three straight games with a touchdown.
+    18. Atlanta (1-2, up 9): Beat Portland 33-9.
+    19. Charlotte (1-2, down 8): Lost to Boston 27-9. Burns: three straight games with a sack.
+    20. Denver (1-2, up 9): Beat Kansas City 23-3.
+    21. Las Vegas (1-2, down 2): Lost to Dallas 20-9.
+    22. San Diego (1-2, down 1): Lost to New Orleans 30-27. McCoy: three straight games with a touchdown.
+    23. Portland (1-2, down 8): Lost to Atlanta 33-9.
+    24. Los Angeles (1-2, down 11): Lost to Baltimore 38-11.
+    25. San Francisco (1-2, down 5): Lost to St. Louis 31-10. Grant: three straight games with a sack.
+    26. New Orleans (1-2, up 5): Beat San Diego 30-27. Dawson: three straight games with a touchdown.
+    27. Pittsburgh (1-2, down 4): Lost to Washington 29-19.
+    28. Kansas City (1-2, down 6): Lost to Denver 23-3. Sims: three straight games with a sack.
+    29. New York (0-3, down 3): Lost to Minneapolis 35-32. Still looking for a first win.
+    30. Cleveland (0-3, down 2): Still looking for a first win. Lost to Detroit 31-28.
+    31. Indianapolis (0-3, down 1): Lost to Philadelphia 29-20. Still looking for a first win.
+    32. Buffalo (0-3, no change): Still looking for a first win. Lost to Chicago 25-6.
 [2027 Week 3] (Awards and honors, importance 40)
-  September Players of the Month: Alex Martin, Mitchell, Tyler Riley, and Spencer
+  September Players of the Month: Sims, Green, Tyler Riley, and Frank Malone
     The league's Players of the Month for September.
-    Eastern offense: RB Alex Martin (WAS) ran for 171 yards and three touchdowns as the Sentinels went 3-0.
-    Eastern defense: CB Spencer Mitchell (CHI) had two interceptions and one defensive touchdown as the Express went 2-1.
-    Eastern special teams: P Brandon Morgan (CHA) averaged 50.7 yards on 14 punts, with eight inside the 20 as the Monarchs went 3-0.
-    Western offense: WR Tyler Riley (DAL) caught 20 passes for 307 yards and five touchdowns as the Stampede went 3-0.
-    Western defense: CB Brandon Spencer (POR) had one interception and one defensive touchdown as the Lumberjacks went 3-0.
-    Western special teams: P Noah Dunn (DEN) averaged 54.2 yards on 14 punts, with 11 inside the 20 as the Peaks went 0-3.
-    Offensive Rookie of the Month: WR Tristan Banks (BOS) caught 24 passes for 306 yards and one touchdown as the Harbormen went 3-0.
-    Defensive Rookie of the Month: CB Brandon Spencer (POR) had one interception and one defensive touchdown as the Lumberjacks went 3-0.
+    Eastern offense: WR Dominic Sims (BOS) caught 30 passes for 324 yards and four touchdowns as the Harbormen went 3-0.
+    Eastern defense: S Adrian Green (WAS) had a sack and three interceptions as the Sentinels went 2-1.
+    Eastern special teams: P Marquise Wade (NYK) averaged 48.6 yards on 20 punts, with 11 inside the 20 as the Knights went 0-3.
+    Western offense: WR Tyler Riley (DAL) caught 18 passes for 315 yards and four touchdowns as the Stampede went 2-1.
+    Western defense: CB Frank Malone (KCY) had three interceptions and one defensive touchdown as the Blues went 1-2.
+    Western special teams: P Donovan Palmer (POR) averaged 54.1 yards on 14 punts, with eight inside the 20 as the Lumberjacks went 1-2.
+    Offensive Rookie of the Month: RB Eric Perry (HOU) ran for 233 yards and three touchdowns as the Wildcatters went 3-0.
+    Defensive Rookie of the Month: DT Jack Perkins (BOS) had two sacks as the Harbormen went 3-0.
 [2027 Week 3] (Storylines, importance 48)
-  Knight in a slump
-    Over his last three starts, Houston quarterback Victor Knight has completed 60 percent of his passes with one touchdown pass and five interceptions. Houston is 2-1 in those games.
+  Turner in a slump
+    Brett Turner has struggled for three straight weeks: a 60.0 passer rating, four touchdown passes, seven interceptions. Pittsburgh is 1-2 in those games.
 [2027 Week 3] (Storylines, importance 48)
-  Alex Fields searching for answers
-    Alex Fields has struggled for three straight weeks: a 49.0 passer rating, one touchdown pass, five interceptions. The Fog went 0-3 in that stretch.
+  What's wrong with Gordon?
+    Devin Gordon has a passer rating of 57.3 over his last three games, with five interceptions and two touchdown passes. The Blizzard went 0-3 in that stretch.
+[2027 Week 3] (Storylines, importance 48)
+  Rough stretch for Portland QB Davis
+    Over his last three starts, Portland quarterback Corey Davis has completed 64 percent of his passes with two touchdown passes and seven interceptions. Portland is 1-2 in those games.
+[2027 Week 3] (Storylines, importance 42)
+  Jordan can't be stopped: third straight 300-yard passing game
+    Philadelphia quarterback Thomas Jordan put together his third straight 300-yard passing game in a 29-20 win over the Indianapolis Speed in Week 3. He has 1,173 passing yards through three games this season.
+[2027 Week 3] (Storylines, importance 42)
+  Three straight 100-yard receiving games for Boston's Sims
+    Dominic Sims of the Boston Harbormen has had three straight 100-yard receiving games, the latest in a 27-9 win over the Charlotte Monarchs in Week 3. For the season he has 324 receiving yards in three games.
+[2027 Week 3] (Storylines, importance 42)
+  Streak watch: John Dawson keeps it going
+    John Dawson keeps producing. In a 33-26 win over the Cincinnati Rivermen in Week 3, he passed for 319 yards with three touchdowns and one interception, and carried eight times for 63 yards, his third straight 300-yard passing game. He has 954 passing yards through three games this season.
 [2027 Week 3] (Awards and honors, importance 36)
-  Reese, Bell, and Gibson named Eastern Conference Players of the Week
+  Evans, Green, and Bradley named Eastern Conference Players of the Week
     The league's Eastern Conference Players of the Week for Week 3.
-    Offensive: QB John Reese (ATL) went 23-for-34 for 299 yards and two touchdowns, and ran for a score in a 37-32 win over the Cincinnati Rivermen.
-    Defensive: DE Sam Bell (MIA) recorded three sacks and forced two fumbles in a 37-13 win over the Detroit Mechanics.
-    Special teams: K Tyler Gibson (BOS) made 4 of 4 field goals, the longest from 51 yards in a 35-13 win over the Nashville Outlaws.
+    Offensive: WR Nick Evans (CLE) had 10 catches for 197 yards and two touchdowns in a 31-28 loss to the Detroit Mechanics.
+    Defensive: S Adrian Green (WAS) picked off three passes in a 29-19 win over the Pittsburgh Ironmen.
+    Special teams: WR Jackson Bradley (BAL) returned a kickoff for a touchdown in a 38-11 win over the Los Angeles Stars.
 [2027 Week 3] (Awards and honors, importance 36)
-  Western Conference Players of the Week: Tyler Riley, Seth Simpson, and Demarcus Wheeler
+  Aaron Robinson, Robinson, and Riley Knight named Western Conference Players of the Week
     The league's Western Conference Players of the Week for Week 3.
-    Offensive: WR Tyler Riley (DAL) caught nine passes for 194 yards and a touchdown in a 27-0 win over the Las Vegas High Rollers.
-    Defensive: DE Seth Simpson (STL) recorded three sacks in a 17-16 win over the Denver Peaks.
-    Special teams: WR Demarcus Wheeler (HOU) returned a punt for a touchdown in a 37-3 win over the Phoenix Scorpions.
+    Offensive: QB Aaron Robinson (STL) threw for 378 yards with a touchdown and one interception, and carried six times for 41 yards and two touchdowns in a 31-10 win over the San Francisco Fog.
+    Defensive: DE Roderick Robinson (DAL) recorded two sacks and forced a fumble in a 20-9 win over the Las Vegas High Rollers.
+    Special teams: K Riley Knight (MIN) made 5 of 5 field goals, the longest from 57 yards in a 35-32 win over the New York Knights.
+[2027 Week 3] (Injuries, importance 57)
+  Buffalo loses OT James for the season
+    Buffalo Blizzard tackle Tyrone James suffered a torn ACL in Week 3 against the Chicago Express and will miss the rest of the season.
 [2027 Week 3] (Injuries, importance 45)
-  Season over for Atlanta's Kelly
-    Atlanta Firebirds linebacker Kaleb Kelly suffered a torn ACL in Week 3 against the Cincinnati Rivermen and is out for the season.
-[2027 Week 3] (Injuries, importance 45)
-  Detroit loses WR Jackson for the season
-    Detroit Mechanics wide receiver Cody Jackson suffered a torn labrum in Week 3 against the Miami Barracudas and is out for the season.
-[2027 Week 3] (Injuries, importance 45)
-  Detroit's Johnson out for season with torn ACL
-    Detroit Mechanics center Levi Johnson suffered a torn ACL in Week 3 against the Miami Barracudas and will miss the rest of the season.
-[2027 Week 3] (Injuries, importance 45)
-  Las Vegas' Gibson out for season with torn labrum
-    Las Vegas High Rollers defensive tackle Sean Gibson suffered a torn labrum in Week 3 against the Dallas Stampede and will miss the rest of the season.
-[2027 Week 3] (Injuries, importance 45)
-  Chicago loses ILB Harris for the season
-    Chicago Express linebacker Lance Harris suffered a neck injury in Week 3 against the New Orleans Krewe and will miss the rest of the season.
+  Season over for Miami's Anthony Campbell
+    Miami Barracudas safety Anthony Campbell suffered a fractured ankle in Week 3 against the San Antonio Vaqueros and is out for the season.
 [2027 Week 3] (Injuries, importance 42)
-  San Francisco's Oliver expected to miss about four weeks
-    San Francisco Fog safety Kevin Oliver suffered an MCL sprain in Week 3 against the San Antonio Vaqueros and is expected to miss about four weeks.
+  Charlotte's Walker sidelined by knee injury
+    Charlotte Monarchs linebacker Donovan Walker suffered an MCL sprain in Week 3 against the Boston Harbormen and is expected to miss about six weeks.
+[2027 Week 3] (Injuries, importance 42)
+  Portland WR Owen Washington hurt, out about five weeks
+    Portland Lumberjacks wide receiver Owen Washington suffered an MCL sprain in Week 3 against the Atlanta Firebirds and is expected to miss about five weeks.
+[2027 Week 3] (Injuries, importance 42)
+  Minneapolis' Shawn Adams expected to miss about seven weeks
+    Minneapolis Freeze linebacker Shawn Adams suffered a severe hamstring strain in Week 3 against the New York Knights and is expected to miss about seven weeks.
 [2027 Week 3] (Injuries, importance 32)
-  Indianapolis' Adams sidelined by quad injury
-    Indianapolis Speed safety Jesse Adams suffered a quad strain in Week 3 against the New York Knights and is expected to miss about two weeks.
+  Washington's Justin Lawson sidelined by ankle injury
+    Washington Sentinels wide receiver Justin Lawson suffered an ankle sprain in Week 3 against the Pittsburgh Ironmen and is expected to miss about three weeks.
 [2027 Week 3] (Injuries, importance 32)
-  Cleveland's Malone expected to miss about one week
-    Cleveland Forge linebacker Trent Malone suffered a back strain in Week 3 against the Philadelphia Liberty and is expected to miss about one week.
+  Another injury for Pittsburgh's Owen Moore
+    Pittsburgh Ironmen defensive end Owen Moore suffered a hamstring strain in Week 3 against the Washington Sentinels and is expected to miss about three weeks.
 [2027 Week 3] (Injuries, importance 32)
-  Pittsburgh's Russell sidelined by shoulder injury
-    Pittsburgh Ironmen running back Quentin Russell suffered a shoulder sprain in Week 3 against the Buffalo Blizzard and is expected to miss about two weeks.
+  Atlanta QB Reese hurt, out about three weeks
+    Atlanta Firebirds quarterback John Reese suffered a hamstring strain in Week 3 against the Portland Lumberjacks and is expected to miss about three weeks.
 [2027 Week 3] (Injuries, importance 32)
-  Buffalo OLB Freeman hurt, out about two weeks
-    Buffalo Blizzard linebacker Xavier Freeman suffered a hip injury in Week 3 against the Pittsburgh Ironmen and is expected to miss about two weeks.
+  Houston WR Rogers suffers concussion
+    Houston Wildcatters wide receiver Cameron Rogers suffered a concussion in Week 3 against the Phoenix Scorpions and is in the league's concussion protocol.
 [2027 Week 3] (Injuries, importance 32)
-  Seattle QB Marcus Hardy hurt, out about two weeks
-    Seattle Sound quarterback Marcus Hardy suffered an elbow injury in Week 3 against the Charlotte Monarchs and is expected to miss about two weeks.
-[2027 Week 3] (Injuries, importance 32)
-  Tampa's Victor Kelly sidelined by ribs injury
-    Tampa Storm wide receiver Victor Kelly suffered a rib injury in Week 3 against the Portland Lumberjacks and is expected to miss about one week.
-[2027 Week 3] (Injuries, importance 32)
-  St. Louis' Davis sidelined by hamstring injury
-    St. Louis Archers quarterback Mitchell Davis suffered a hamstring strain in Week 3 against the Denver Peaks and is expected to miss about one week.
-[2027 Week 3] (Injuries, importance 32)
-  Nashville QB Antonio Lewis hurt, out about three weeks
-    Nashville Outlaws quarterback Antonio Lewis suffered a knee sprain in Week 3 against the Boston Harbormen and is expected to miss about three weeks.
+  Dallas' Nathan Sims expected to miss about three weeks
+    Dallas Stampede quarterback Nathan Sims suffered an ankle sprain in Week 3 against the Las Vegas High Rollers and is expected to miss about three weeks.
 [2027 Week 3] (Injuries, importance 30)
-  Pittsburgh's Garrett Hunt sidelined by foot injury
-    Pittsburgh Ironmen tackle Garrett Hunt suffered a broken foot in Week 3 against the Buffalo Blizzard and is expected to miss about seven weeks.
+  Los Angeles DE Andre Burke hurt, out about seven weeks
+    Los Angeles Stars defensive end Andre Burke suffered a high ankle sprain in Week 3 against the Baltimore Clippers and is expected to miss about seven weeks.
 [2027 Week 3] (Injuries, importance 30)
-  Cincinnati's Fuller expected to miss about seven weeks
-    Cincinnati Rivermen guard Marquise Fuller suffered a broken hand in Week 3 against the Atlanta Firebirds and is expected to miss about seven weeks.
+  Chicago's Harris expected to miss about seven weeks
+    Chicago Express linebacker Lance Harris suffered a broken foot in Week 3 against the Buffalo Blizzard and is expected to miss about seven weeks.
 [2027 Week 3] (Injuries, importance 30)
-  Cincinnati WR Micah Reed suffers concussion
-    Cincinnati Rivermen wide receiver Micah Reed suffered a concussion in Week 3 against the Atlanta Firebirds and is in the league's concussion protocol.
+  Seattle OT Shawn Oliver hurt, out about 11 weeks
+    Seattle Sound tackle Shawn Oliver suffered a severe high ankle sprain in Week 3 against the Nashville Outlaws and is expected to miss about 11 weeks.
 
 ==== TEAM VIEW: Boston Harbormen ====
 [2027 Week 4] (Injuries, importance 34)
   Key players out for Week 4
-    BOS QB Hayden Wade (concussion): concussion protocol
-    MIN ILB Ricky Bradley (ribs): out
-    IND S Jesse Adams (quad): out
-    TAM WR Victor Kelly (ribs): out
-    CLE OLB Trent Malone (back): out
-    BUF OLB Xavier Freeman (hip): out
-    PIT RB Quentin Russell (shoulder): out
-    NSH WR Jerome Green (hamstring): out
-    SAN RB Mason Mitchell (concussion): concussion protocol
-    PHI ILB David Riley (hamstring): out
-    DET WR Anthony White (hamstring): out
-    DET WR Brett Brown (hamstring): out
+    DAL QB Nathan Sims (ankle): out
+    CLE ILB Wade Parker (concussion): concussion protocol
+    MIN RB Connor Reynolds (knee): out
+    PIT DE Owen Moore (hamstring): out
+    ATL QB John Reese (hamstring): out
+    HOU WR Cameron Rogers (concussion): concussion protocol
+    WAS WR Justin Lawson (ankle): out
+    BOS TE Stephen Rogers (hamstring): out
+    ATL DT Jared Anderson (hamstring): out
+    HOU WR Walter Barnes (shoulder): out
+    BUF ILB Drew Jackson (concussion): concussion protocol
+    CIN CB Quentin Graves (elbow): out
 [2027 Week 4] (Injuries, importance 18)
-  Boston Harbormen injury report: Week 4 vs Minneapolis
-    Out: RB Lawrence Douglas (knee).
-    Concussion protocol: QB Hayden Wade (concussion).
-    Doubtful: ILB Ricky Riley (knee).
-    Questionable: DT Ian Fletcher (calf), ILB Paul Turner (shoulder), S Gabe Simmons (knee), OLB Roderick Cooper (ankle).
+  Boston Harbormen injury report: Week 4 vs Buffalo
+    Out: TE Stephen Rogers (hamstring), DE Casey Walker (knee), S Mark Jones (hamstring).
 [2027 Week 3] (Rankings and previews, importance 42)
-  Games to watch in Week 4
-    Minneapolis (3-0) at Boston (3-0). Minneapolis has won three straight. Boston has won three straight.
-    San Diego (3-0) at Houston (2-1). San Diego has won three straight. Hayden Stanley brings three straight games with a touchdown.
-    Tampa (1-2) at Charlotte (3-0). Charlotte has won three straight. Quentin Burns brings three straight games with a sack.
+  Circle these Week 4 games
+    St. Louis (2-1) at Minneapolis (3-0). Minneapolis won the first meeting 24-10 in Week 2. Minneapolis has won three straight.
+    Chicago (2-1) at Philadelphia (3-0). Philadelphia has won three straight. Connor Malone brings three straight games with a touchdown.
+    Boston (3-0) at Buffalo (0-3). Boston has won three straight. Buffalo has lost three straight.
 [2027 Week 3] (Rankings and previews, importance 50)
-  Week 3 power rankings: San Diego holds No. 1
+  Power rankings: Boston is No. 1 after Week 3
     Our ranking of all 32 teams, by record, point differential and recent form.
-    1. San Diego (3-0, up 2): Still unbeaten. Beat Baltimore 37-16. Stanley: three straight games with a touchdown.
-    2. Dallas (3-0, up 3): Beat Las Vegas 27-0. Still unbeaten.
-    3. Washington (3-0, up 5): Still unbeaten. Beat Los Angeles 36-17.
-    4. Minneapolis (3-0, no change): Still unbeaten. Beat Kansas City 24-20.
-    5. Portland (3-0, up 1): Beat Tampa 38-31. Still unbeaten.
-    6. Charlotte (3-0, up 1): Beat Seattle 19-10. Still unbeaten. Burns: three straight games with a sack.
-    7. Boston (3-0, up 2): Still unbeaten. Beat Nashville 35-13.
-    8. Kansas City (2-1, down 7): Lost to Minneapolis 24-20.
-    9. Houston (2-1, up 8): Watkins: three straight games with a sack. Beat Phoenix 37-3.
-    10. Baltimore (2-1, down 8): Lost to San Diego 37-16. Ross: three straight games with a sack.
-    11. Miami (2-1, up 9): Beat Detroit 37-13.
-    12. Buffalo (2-1, up 3): Beat Pittsburgh 20-16. Roberts: three straight games with a sack.
-    13. Cleveland (2-1, up 3): Beat Philadelphia 17-12. Ford: three straight games with a touchdown.
-    14. Atlanta (2-1, up 5): Beat Cincinnati 37-32. Franklin: three straight games with a touchdown.
-    15. Chicago (2-1, up 6): Beat New Orleans 26-23. Malone: three straight games with a touchdown.
-    16. St. Louis (2-1, up 6): Beat Denver 17-16.
-    17. Cincinnati (1-2, down 6): Lost to Atlanta 37-32. Newton: three straight games with a touchdown.
-    18. New Orleans (1-2, down 5): Lost to Chicago 26-23.
-    19. San Antonio (1-2, up 7): Beat San Francisco 21-6.
-    20. Seattle (1-2, down 6): Lost to Charlotte 19-10.
-    21. Tampa (1-2, down 3): Lost to Portland 38-31.
-    22. Detroit (1-2, down 12): Lost to Miami 37-13.
-    23. Nashville (1-2, down 11): Lost to Boston 35-13. Allen: three straight games with a sack.
-    24. New York (1-2, up 4): Beat Indianapolis 29-26.
-    25. Las Vegas (1-2, down 2): Reynolds: three straight games with a sack. Lost to Dallas 27-0.
-    26. Denver (0-3, down 1): Lost to St. Louis 17-16. Still looking for a first win.
-    27. Pittsburgh (0-3, down 3): Still looking for a first win. Lost to Buffalo 20-16.
-    28. Philadelphia (0-3, down 1): Still looking for a first win. Lost to Cleveland 17-12.
-    29. Indianapolis (0-3, up 1): Still looking for a first win. Lost to New York 29-26.
-    30. Los Angeles (0-3, down 1): Lost to Washington 36-17. Still looking for a first win.
-    31. San Francisco (0-3, up 1): Still looking for a first win. Lost to San Antonio 21-6.
-    32. Phoenix (0-3, down 1): Still looking for a first win. Lost to Houston 37-3.
+    1. Boston (3-0, no change): Still unbeaten. Beat Charlotte 27-9. Sims: three straight 100-yard receiving games.
+    2. Houston (3-0, up 2): Beat Phoenix 34-21. Still unbeaten.
+    3. Minneapolis (3-0, down 1): Still unbeaten. Beat New York 35-32.
+    4. Philadelphia (3-0, down 1): Still unbeaten. Beat Indianapolis 29-20.
+    5. Chicago (2-1, up 4): Beat Buffalo 25-6. Malone: three straight games with a touchdown.
+    6. St. Louis (2-1, up 4): Beat San Francisco 31-10.
+    7. Miami (2-1, down 1): Lost to San Antonio 28-27.
+    8. Cincinnati (2-1, down 3): Lost to Tampa 33-26.
+    9. Dallas (2-1, up 3): Beat Las Vegas 20-9.
+    10. Seattle (2-1, up 8): Beat Nashville 30-14. Ross: three straight games with a sack.
+    11. Washington (2-1, up 6): Beat Pittsburgh 29-19.
+    12. Tampa (2-1, up 2): Beat Cincinnati 33-26. Dawson: three straight 300-yard passing games.
+    13. Nashville (2-1, down 6): Lewis: three straight games with at least two touchdown passes. Lost to Seattle 30-14.
+    14. San Antonio (2-1, up 2): Beat Miami 28-27. Mitchell: three straight games with a touchdown.
+    15. Phoenix (2-1, down 7): Lyons: three straight games with a sack. Lost to Houston 34-21.
+    16. Detroit (2-1, up 8): Beat Cleveland 31-28.
+    17. Baltimore (1-2, up 8): Beat Los Angeles 38-11. Payne: three straight games with a touchdown.
+    18. Atlanta (1-2, up 9): Beat Portland 33-9.
+    19. Charlotte (1-2, down 8): Lost to Boston 27-9. Burns: three straight games with a sack.
+    20. Denver (1-2, up 9): Beat Kansas City 23-3.
+    21. Las Vegas (1-2, down 2): Lost to Dallas 20-9.
+    22. San Diego (1-2, down 1): Lost to New Orleans 30-27. McCoy: three straight games with a touchdown.
+    23. Portland (1-2, down 8): Lost to Atlanta 33-9.
+    24. Los Angeles (1-2, down 11): Lost to Baltimore 38-11.
+    25. San Francisco (1-2, down 5): Lost to St. Louis 31-10. Grant: three straight games with a sack.
+    26. New Orleans (1-2, up 5): Beat San Diego 30-27. Dawson: three straight games with a touchdown.
+    27. Pittsburgh (1-2, down 4): Lost to Washington 29-19.
+    28. Kansas City (1-2, down 6): Lost to Denver 23-3. Sims: three straight games with a sack.
+    29. New York (0-3, down 3): Lost to Minneapolis 35-32. Still looking for a first win.
+    30. Cleveland (0-3, down 2): Still looking for a first win. Lost to Detroit 31-28.
+    31. Indianapolis (0-3, down 1): Lost to Philadelphia 29-20. Still looking for a first win.
+    32. Buffalo (0-3, no change): Still looking for a first win. Lost to Chicago 25-6.
 [2027 Week 3] (Awards and honors, importance 40)
-  September Players of the Month: Alex Martin, Mitchell, Tyler Riley, and Spencer
+  September Players of the Month: Sims, Green, Tyler Riley, and Frank Malone
     The league's Players of the Month for September.
-    Eastern offense: RB Alex Martin (WAS) ran for 171 yards and three touchdowns as the Sentinels went 3-0.
-    Eastern defense: CB Spencer Mitchell (CHI) had two interceptions and one defensive touchdown as the Express went 2-1.
-    Eastern special teams: P Brandon Morgan (CHA) averaged 50.7 yards on 14 punts, with eight inside the 20 as the Monarchs went 3-0.
-    Western offense: WR Tyler Riley (DAL) caught 20 passes for 307 yards and five touchdowns as the Stampede went 3-0.
-    Western defense: CB Brandon Spencer (POR) had one interception and one defensive touchdown as the Lumberjacks went 3-0.
-    Western special teams: P Noah Dunn (DEN) averaged 54.2 yards on 14 punts, with 11 inside the 20 as the Peaks went 0-3.
-    Offensive Rookie of the Month: WR Tristan Banks (BOS) caught 24 passes for 306 yards and one touchdown as the Harbormen went 3-0.
-    Defensive Rookie of the Month: CB Brandon Spencer (POR) had one interception and one defensive touchdown as the Lumberjacks went 3-0.
-[2027 Week 3] (Awards and honors, importance 36)
-  Reese, Bell, and Gibson named Eastern Conference Players of the Week
-    The league's Eastern Conference Players of the Week for Week 3.
-    Offensive: QB John Reese (ATL) went 23-for-34 for 299 yards and two touchdowns, and ran for a score in a 37-32 win over the Cincinnati Rivermen.
-    Defensive: DE Sam Bell (MIA) recorded three sacks and forced two fumbles in a 37-13 win over the Detroit Mechanics.
-    Special teams: K Tyler Gibson (BOS) made 4 of 4 field goals, the longest from 51 yards in a 35-13 win over the Nashville Outlaws.
+    Eastern offense: WR Dominic Sims (BOS) caught 30 passes for 324 yards and four touchdowns as the Harbormen went 3-0.
+    Eastern defense: S Adrian Green (WAS) had a sack and three interceptions as the Sentinels went 2-1.
+    Eastern special teams: P Marquise Wade (NYK) averaged 48.6 yards on 20 punts, with 11 inside the 20 as the Knights went 0-3.
+    Western offense: WR Tyler Riley (DAL) caught 18 passes for 315 yards and four touchdowns as the Stampede went 2-1.
+    Western defense: CB Frank Malone (KCY) had three interceptions and one defensive touchdown as the Blues went 1-2.
+    Western special teams: P Donovan Palmer (POR) averaged 54.1 yards on 14 punts, with eight inside the 20 as the Lumberjacks went 1-2.
+    Offensive Rookie of the Month: RB Eric Perry (HOU) ran for 233 yards and three touchdowns as the Wildcatters went 3-0.
+    Defensive Rookie of the Month: DT Jack Perkins (BOS) had two sacks as the Harbormen went 3-0.
+[2027 Week 3] (Storylines, importance 42)
+  Three straight 100-yard receiving games for Boston's Sims
+    Dominic Sims of the Boston Harbormen has had three straight 100-yard receiving games, the latest in a 27-9 win over the Charlotte Monarchs in Week 3. For the season he has 324 receiving yards in three games.
 [2027 Week 3] (Roster moves, importance 16)
-  Boston promotes WR Hill to the 53
-    The Boston Harbormen promoted wide receiver Thomas Hill from the practice squad to the 53-man roster.
-[2027 Week 3] (Roster moves, importance 16)
-  Boston promotes RB Butler to the 53
-    The Boston Harbormen promoted running back Paul Butler from the practice squad to the 53-man roster.
+  Smith earns a roster spot in Boston
+    The Boston Harbormen promoted tight end Elijah Smith from the practice squad to the 53-man roster.
 [2027 Week 3] (Roster moves, importance 12)
   Boston Harbormen transactions: Week 3
-    Released QB Frank Hardy from the practice squad. Signed WR Jeremiah Griffin to the practice squad. Released DT Kevin Patterson from the practice squad. Signed CB Xavier Murray to the practice squad. Placed RB Reggie Morgan on injured reserve (torn Achilles). Promoted WR Thomas Hill from the practice squad. Waived OT Brandon Graham (roster spot needed). Promoted RB Paul Butler from the practice squad. Signed QB Quentin Franklin to the practice squad. Signed RB Malcolm Shaw to the practice squad.
-[2027 Week 3] (Injuries, importance 22)
-  Boston loses RB Morgan for the season
-    Boston Harbormen running back Reggie Morgan suffered a torn Achilles in Week 3 against the Nashville Outlaws and is out for the season.
+    Released QB Seth Norris from the practice squad. Signed DE Kaleb Jones to the practice squad. Released DE Marcus Griffin (roster spot needed). Promoted TE Elijah Smith from the practice squad. Released OLB Walter West (replaced). Signed OLB Micah Harris. Signed QB Leon Watson to the practice squad.
+[2027 Week 3] (Injuries, importance 20)
+  Boston TE Rogers hurt, out about two weeks
+    Boston Harbormen tight end Stephen Rogers suffered a hamstring strain in Week 3 against the Charlotte Monarchs and is expected to miss about two weeks.
+[2027 Week 3] (Injuries, importance 20)
+  Boston's Mark Jones expected to miss about three weeks
+    Boston Harbormen safety Mark Jones suffered a hamstring strain in Week 3 against the Charlotte Monarchs and is expected to miss about three weeks.
 [2027 Week 3] (Injuries, importance 12)
-  Boston's Cooper sidelined by ankle injury
-    Boston Harbormen linebacker Roderick Cooper suffered an ankle sprain in Week 3 against the Nashville Outlaws and is expected to miss about two weeks.
-[2027 Week 3] (Injuries, importance 12)
-  Boston's Riley expected to miss about three weeks
-    Boston Harbormen linebacker Ricky Riley suffered a knee sprain in Week 3 against the Nashville Outlaws and is expected to miss about three weeks.
-[2027 Week 3] (Big performances, importance 50)
-  Tristan Banks torches Outlaws for 150 yards
-    Boston got 150 receiving yards and a touchdown from wide receiver Tristan Banks in a 35-13 win over the Nashville Outlaws in Week 3. That gives him 306 receiving yards on the season, second in the league.
+  Boston's Walker sidelined by knee injury
+    Boston Harbormen defensive end Casey Walker suffered a knee sprain in Week 3 against the Charlotte Monarchs and is expected to miss about one week.
 [2027 Week 3] (Big performances, importance 46)
-  Travis Davis scores on defense in win over Nashville
-    Travis Davis of the Boston Harbormen returned an interception for a touchdown in a 35-13 win over the Nashville Outlaws in Week 3.
-[2027 Week 3] (Game stories, importance 30)
-  Tristan Banks leads Boston past Nashville, 35-13
-    It was never close: the Boston Harbormen beat the Nashville Outlaws 35-13 in Week 3. Tristan Banks caught nine passes for 150 yards and a touchdown. Boston was up 17-13 by halftime. Dylan Peters was sacked six times. Nashville leaned on Adrian Williams, who forced a fumble and made 17 tackles. That's three wins in a row for Boston, now 3-0.
+  Fisher scores on defense in win over Charlotte
+    Patrick Fisher returned an interception for a touchdown in Boston's 27-9 win over Charlotte in Week 3.
+[2027 Week 3] (Game stories, importance 33)
+  Sims stays hot as Boston handles Charlotte
+    The Boston Harbormen handed the Charlotte Monarchs a 27-9 loss in Week 3. The Monarchs couldn't contain Dominic Sims, who had 10 catches for 104 yards and a touchdown. By halftime it was 20-0 Boston. Boston had 327 yards of offense; Charlotte managed 187. Sims keeps rolling: that's three straight 100-yard receiving games. Luke Washington's 57 receiving yards and a touchdown wasn't enough for Charlotte. Boston has won three straight and sits at 3-0.
+[2027 Week 2] (Rankings and previews, importance 42)
+  Games to watch in Week 3
+    Phoenix (2-0) at Houston (2-0).
+    Charlotte (1-1) at Boston (2-0).
+    Cincinnati (2-0) at Tampa (1-1).
 [2027 Week 2] (Rankings and previews, importance 50)
-  Power rankings, Week 2: St. Louis makes the biggest jump
+  Week 2 power rankings: Boston holds No. 1
     How we rank the league after Week 2: record, point differential, recent form.
-    1. Kansas City (2-0, up 1): Beat Buffalo 24-10.
-    2. Baltimore (2-0, down 1): Beat Cincinnati 20-17.
-    3. San Diego (2-0, up 6): Beat Los Angeles 34-14.
-    4. Minneapolis (2-0, no change): Beat Denver 17-3.
-    5. Dallas (2-0, up 7): Beat Indianapolis 23-9.
-    6. Portland (2-0, down 3): Beat Nashville 20-17.
-    7. Charlotte (2-0, up 4): Beat Miami 28-18.
-    8. Washington (2-0, down 3): Beat Pittsburgh 25-24.
-    9. Boston (2-0, up 6): Beat New York 24-21.
-    10. Detroit (1-1, down 3): Lost to Cleveland 10-6.
-    11. Cincinnati (1-1, down 1): Lost to Baltimore 20-17.
-    12. Nashville (1-1, up 1): Lost to Portland 20-17.
-    13. New Orleans (1-1, up 6): Beat Phoenix 30-16.
-    14. Seattle (1-1, down 6): Lost to Tampa 28-17.
-    15. Buffalo (1-1, down 9): Lost to Kansas City 24-10.
-    16. Cleveland (1-1, up 2): Beat Detroit 10-6.
-    17. Houston (1-1, down 3): Lost to Chicago 20-13.
-    18. Tampa (1-1, up 4): Beat Seattle 28-17.
-    19. Atlanta (1-1, up 5): Beat San Francisco 28-16.
-    20. Miami (1-1, down 4): Lost to Charlotte 28-18.
-    21. Chicago (1-1, up 5): Beat Houston 20-13.
-    22. St. Louis (1-1, up 9): Beat Philadelphia 19-13.
-    23. Las Vegas (1-1, up 9): Beat San Antonio 20-19.
-    24. Pittsburgh (0-2, down 3): Lost to Washington 25-24.
-    25. Denver (0-2, down 8): Lost to Minneapolis 17-3.
-    26. San Antonio (0-2, down 1): Lost to Las Vegas 20-19.
-    27. Philadelphia (0-2, down 4): Lost to St. Louis 19-13.
-    28. New York (0-2, up 1): Lost to Boston 24-21.
-    29. Los Angeles (0-2, down 9): Lost to San Diego 34-14.
-    30. Indianapolis (0-2, down 3): Lost to Dallas 23-9.
-    31. Phoenix (0-2, down 3): Lost to New Orleans 30-16.
-    32. San Francisco (0-2, down 2): Lost to Atlanta 28-16.
+    1. Boston (2-0, up 4): Beat Kansas City 34-14.
+    2. Minneapolis (2-0, up 2): Beat St. Louis 24-10.
+    3. Philadelphia (2-0, up 3): Beat Buffalo 41-24.
+    4. Houston (2-0, down 1): Beat Cleveland 24-19.
+    5. Cincinnati (2-0, up 5): Beat San Diego 43-25.
+    6. Miami (2-0, up 2): Beat Indianapolis 27-17.
+    7. Nashville (2-0, no change): Beat New York 23-17.
+    8. Phoenix (2-0, up 8): Beat Baltimore 24-19.
+    9. Chicago (1-1, down 7): Lost to Detroit 16-15.
+    10. St. Louis (1-1, down 9): Lost to Minneapolis 24-10.
+    11. Charlotte (1-1, up 13): Beat Pittsburgh 37-6.
+    12. Dallas (1-1, up 5): Beat New Orleans 37-30.
+    13. Los Angeles (1-1, up 6): Beat Washington 27-20.
+    14. Tampa (1-1, down 5): Lost to San Francisco 30-19.
+    15. Portland (1-1, up 3): Beat Denver 22-17.
+    16. San Antonio (1-1, down 4): Lost to Las Vegas 17-13.
+    17. Washington (1-1, down 6): Lost to Los Angeles 27-20.
+    18. Seattle (1-1, up 3): Beat Atlanta 24-20.
+    19. Las Vegas (1-1, up 3): Beat San Antonio 17-13.
+    20. San Francisco (1-1, up 7): Beat Tampa 30-19.
+    21. San Diego (1-1, down 6): Lost to Cincinnati 43-25.
+    22. Kansas City (1-1, down 8): Lost to Boston 34-14.
+    23. Pittsburgh (1-1, down 10): Lost to Charlotte 37-6.
+    24. Detroit (1-1, up 6): Beat Chicago 16-15.
+    25. Baltimore (0-2, down 5): Lost to Phoenix 24-19.
+    26. New York (0-2, down 3): Lost to Nashville 23-17.
+    27. Atlanta (0-2, down 2): Lost to Seattle 24-20.
+    28. Cleveland (0-2, down 2): Lost to Houston 24-19.
+    29. Denver (0-2, no change): Lost to Portland 22-17.
+    30. Indianapolis (0-2, down 2): Lost to Miami 27-17.
+    31. New Orleans (0-2, no change): Lost to Dallas 37-30.
+    32. Buffalo (0-2, no change): Lost to Philadelphia 41-24.
+[2027 Week 2] (Roster moves, importance 24)
+  Paul Mitchell lands with Boston
+    The Boston Harbormen signed defensive end Paul Mitchell, a 11 years pro.
 [2027 Week 2] (Roster moves, importance 16)
-  Boston promotes QB Wheeler to the 53
-    The Boston Harbormen promoted quarterback Russell Wheeler from the practice squad to the 53-man roster.
-[2027 Week 2] (Roster moves, importance 16)
-  Graves earns a roster spot in Boston
-    The Boston Harbormen promoted running back Aaron Graves from the practice squad to the 53-man roster.
-[2027 Week 2] (Roster moves, importance 16)
-  Travis Davis earns a roster spot in Boston
-    The Boston Harbormen promoted cornerback Travis Davis from the practice squad to the 53-man roster.
+  Boston promotes WR Greg Patterson to the 53
+    The Boston Harbormen promoted wide receiver Greg Patterson from the practice squad to the 53-man roster.
 [2027 Week 2] (Roster moves, importance 12)
   Boston Harbormen transactions: Week 2
-    Elevated WR Thomas Hill from the practice squad for the game. Released DE Brett Jordan (roster spot needed). Promoted QB Russell Wheeler from the practice squad. Waived WR Jeremiah Griffin (roster spot needed). Promoted RB Aaron Graves from the practice squad. Waived CB Xavier Murray (replaced). Promoted CB Travis Davis from the practice squad. Signed QB Frank Hardy to the practice squad. Signed RB Paul Butler to the practice squad. Signed CB Adrian Davis to the practice squad.
-[2027 Week 2] (Injuries, importance 32)
-  Boston's Wade in concussion protocol
-    Boston Harbormen quarterback Hayden Wade suffered a concussion in Week 2 against the New York Knights and is in the league's concussion protocol.
-[2027 Week 2] (Injuries, importance 20)
-  Boston's Kelly in concussion protocol
-    Boston Harbormen linebacker Leon Kelly suffered a concussion in Week 2 against the New York Knights and is in the league's concussion protocol.
-[2027 Week 2] (Injuries, importance 20)
-  Boston RB Lawrence Douglas hurt, out about three weeks
-    Boston Harbormen running back Lawrence Douglas suffered a knee sprain in Week 2 against the New York Knights and is expected to miss about three weeks.
+    Placed OLB Austin Anderson on injured reserve (hamstring strain, severe). Promoted WR Greg Patterson from the practice squad. Waived DE Kaleb Jones (replaced). Signed DE Paul Mitchell. Signed DT Antonio Webb to the practice squad.
+[2027 Week 2] (Injuries, importance 30)
+  Boston OLB Austin Anderson hurt, out about five weeks
+    Boston Harbormen linebacker Austin Anderson suffered a severe hamstring strain in Week 2 against the Kansas City Blues and is expected to miss about five weeks.
+[2027 Week 2] (Big performances, importance 50)
+  Lawrence Douglas gashes Blues for 68 yards on the ground
+    Lawrence Douglas ran for 68 yards and two touchdowns on 17 carries, and had one catch for 4 yards and a touchdown in Boston's 34-14 win over Kansas City in Week 2. He's up to 174 rushing yards for the season.
 [2027 Week 2] (Game stories, importance 30)
-  Boston survives New York 24-21 on the road
-    Julian Taylor had 226 passing yards and one touchdown pass, and 59 rushing yards in Week 2, and the Boston Harbormen survived the New York Knights 24-21 on the road. Boston had 487 yards of offense; New York managed 267. Roman Harper went 15-for-24 for 140 yards and a touchdown, and ran for a score for the Knights. The win put Boston at 2-0. New York dropped to 0-2.
+  Lawrence Douglas powers Boston to 34-14 win over Kansas City
+    The Boston Harbormen handed the Kansas City Blues a 34-14 loss on the road in Week 2. No one was better than Lawrence Douglas, who rushed for 68 yards and two touchdowns, and had one catch for 4 yards and a touchdown. Kansas City led 14-10 at halftime before Boston took over. Mitchell Fisher had four catches for 41 yards and a touchdown in the loss. Records: Boston 2-0, Kansas City 1-1.
+[2027 Week 1] (Rankings and previews, importance 42)
+  Week 2 preview: the matchups that matter
+    Minneapolis (1-0) at St. Louis (1-0).
+    San Diego (1-0) at Cincinnati (1-0).
+    Boston (1-0) at Kansas City (1-0).
 [2027 Week 1] (Awards and honors, importance 36)
-  Eastern Conference Players of the Week: Wade, Holland, and Ward
+  Eastern Conference Players of the Week: Wade, Butler, and Fletcher
     The league's Eastern Conference Players of the Week for Week 1.
-    Offensive: QB Hayden Wade (BOS) threw for 415 yards with two touchdowns and one interception in a 28-25 win over the Cleveland Forge.
-    Defensive: DT Darren Holland (DET) recorded two sacks in a 20-3 win over the Indianapolis Speed.
-    Special teams: K Kevin Ward (BAL) made 4 of 4 field goals, the longest from 64 yards in a 33-0 win over the Las Vegas High Rollers.
+    Offensive: QB Hayden Wade (CHI) threw for 290 yards and four touchdowns, and rushed for 79 yards in a 38-10 win over the New Orleans Krewe.
+    Defensive: S Donovan Butler (TAM) intercepted a pass and scored on defense in a 30-17 win over the Charlotte Monarchs.
+    Special teams: CB James Fletcher (BOS) returned a punt for a touchdown in a 41-16 win over the Indianapolis Speed.
+[2027 Week 1] (Roster moves, importance 16)
+  Carter earns a roster spot in Boston
+    The Boston Harbormen promoted quarterback Darius Carter from the practice squad to the 53-man roster.
+[2027 Week 1] (Roster moves, importance 12)
+  Boston Harbormen transactions: Week 1
+    Released DT Leon Payne from the practice squad. Signed WR Javon Parker to the practice squad. Waived QB Jeremiah Newton (replaced). Promoted QB Darius Carter from the practice squad. Signed QB Seth Norris to the practice squad.
 
 ==== ONE OF EACH TYPE ====
-[2026 Week 5] (Game stories, importance 39)
-  Nashville tops San Diego for fifth straight win
-    The Nashville Outlaws won with defense, beating the San Diego Surf 23-16 in Week 5. Trent Price recorded four sacks and forced a fumble. Nashville got to Isaiah Taylor six times. San Diego is 0-2 since losing Julian Anderson to a back injury that needed surgery in Week 3. San Diego leaned on Jack Butler, who had two sacks. Nashville is still unbeaten at 5-0.
+[2026 Week 5] (Game stories, importance 34)
+  Nathan Sims leads Dallas past San Antonio, 32-27
+    Nathan Sims passed for 346 yards with one interception and ran for a score as the Dallas Stampede defeated the San Antonio Vaqueros 32-27 in Week 5. Terrence White's 3-yard touchdown run with 1:48 left put the Stampede ahead for good. For the Vaqueros, Marcus Hardy completed 25 of 34 passes for 251 yards with three touchdowns and one interception. Dallas has won three straight and sits at 4-1.
 [2026 Week 3] (Game stories, importance 30)
-  Atlanta drops third straight, 45-35 to Charlotte
-    Dalton Armstrong's 306 passing yards and four touchdown passes, and a rushing touchdown carried the Charlotte Monarchs past the Atlanta Firebirds 45-35 in Week 3. On the other side, Chris Franklin rushed for 108 yards and three touchdowns, and caught eight passes for 54 yards. Losers of three straight, Atlanta is 0-3.
+  Nashville earns first win of season, 22-17 over Kansas City
+    On a day when Miles Morris rushed for 74 yards and a touchdown, the Nashville Outlaws defeated the Kansas City Blues 22-17 in Week 3. Spencer Mitchell went 17-for-30 for 154 yards and two touchdowns for the Blues in a losing effort. Nashville (1-1-1) has its first win.
 [2026 Preseason week 4] (Game stories, importance 10)
-  Preseason: Charlotte beats Philadelphia 32-20
-    Sean Richardson ran for 81 yards and a touchdown on 16 carries as the Charlotte Monarchs beat the Philadelphia Liberty 32-20 on the road in a preseason game. Charlotte got to Micah Mitchell six times. On the other side, Isaiah Shaw carried 12 times for 75 yards and a touchdown.
-[2026 Week 2] (Big performances, importance 55)
-  Curtis Mitchell throws four touchdown passes in win over Pittsburgh
-    Curtis Mitchell of the Cincinnati Rivermen completed 29 of 51 passes for 309 yards with four touchdowns and two interceptions in a 32-27 win over the Pittsburgh Ironmen in Week 2. He has seven touchdown passes this season, the most in the league.
-[2026 Week 12] (Big performances, importance 55)
-  Mitchell throws for 304 yards in loss to Tampa
-    Spencer Mitchell completed 24 of 35 passes for 304 yards and three touchdowns in Kansas City's 30-19 loss to Tampa in Week 12. That gives him 2,508 passing yards on the season.
-[2026 Week 18] (Big performances, importance 55)
-  Gordon throws four touchdown passes in loss to Las Vegas
-    Phoenix got 213 passing yards and four touchdown passes from quarterback Cameron Gordon in a 37-34 loss to the Las Vegas High Rollers in Week 18. He's up to nine touchdown passes for the season.
+  Preseason: Richardson shines as Charlotte defeats Philadelphia
+    Sean Richardson ran for 63 yards and two touchdowns on 12 carries in a preseason game, leading the Charlotte Monarchs past the Philadelphia Liberty 23-17. Philadelphia took a 10-6 lead into the locker room before Charlotte rallied. Walter Stone hauled in five passes for 95 yards and a touchdown, but it wasn't enough.
+[2026 Week 3] (Big performances, importance 46)
+  Riley records a sack in loss to Boston
+    Ricky Riley recorded a sack and picked off a pass in Houston's 41-32 loss to Boston in Week 3. He has a sack this season.
+[2026 Week 13] (Big performances, importance 55)
+  Spencer Mitchell tosses four TDs in win over Charlotte
+    Kansas City got 370 passing yards, four touchdown passes and no interceptions from quarterback Spencer Mitchell in a 33-27 win over the Charlotte Monarchs in Week 13. He has 15 touchdown passes this season.
+[2027 Week 1] (Big performances, importance 46)
+  Frank Malone scores on defense in win over Portland
+    Kansas City got two interceptions and a defensive touchdown from cornerback Frank Malone in a 20-17 win over the Portland Lumberjacks in Week 1.
 [2026 Week 15] (Milestones and records, importance 22)
-  10 sacks and counting for Connor Ford
-    Connor Ford (PHI, DE) reached 10 sacks for the season in Week 15 against the New York Knights. He has 10 sacks through 14 games. He's on pace for about 12 over 17 games.
-[2026 Week 16] (Milestones and records, importance 22)
-  Nick Wright reaches 7 interceptions
-    Nick Wright (CLE, S) reached 7 interceptions for the season in Week 16 against the Phoenix Scorpions. He has seven interceptions through 15 games.
+  Robinson reaches 10 sacks
+    Roderick Robinson (DAL, DE) reached 10 sacks for the season in Week 15 against the Baltimore Clippers. He has 10 sacks through 13 games. He's on pace for about 12 over 17 games.
+[2026 Week 15] (Milestones and records, importance 40)
+  Passing the marks: Week 15's milestones
+    Tyler Grant (PIT, WR) reached 15 touchdown catches for the season in Week 15 against the Boston Harbormen.
+    Darius Young (DAL, WR) reached 1,000 receiving yards for the season in Week 15 against the Baltimore Clippers.
+    Roderick Robinson (DAL, DE) reached 10 sacks for the season in Week 15 against the Baltimore Clippers.
+    Dalton Johnson (CIN, WR) reached 1,000 receiving yards for the season in Week 15 against the Washington Sentinels.
+    Dylan Franklin (STL, WR) reached 100 catches for the season in Week 15 against the Miami Barracudas.
+    Xavier Freeman (BUF, OLB) reached 10 sacks for the season in Week 15 against the San Antonio Vaqueros.
+    Mason Mitchell (SAN, RB) reached 1,000 rushing yards for the season in Week 15 against the Buffalo Blizzard.
+    Kevin Ward (NOR, WR) reached 1,000 receiving yards for the season in Week 15 against the Kansas City Blues.
+    Brandon Stone (LAS, RB) reached 1,000 rushing yards for the season in Week 15 against the Denver Peaks.
 [2026 Week 13] (Milestones and records, importance 22)
-  Wilson reaches 1,000 rushing yards
-    Rob Wilson (PHI, RB) reached 1,000 rushing yards for the season in Week 13 against the Boston Harbormen. He has 1,024 rushing yards through 12 games. He's on pace for about 1,450 over 17 games.
+  1,000 receiving yards and counting for Anderson
+    Julian Anderson (SDG, WR) reached 1,000 receiving yards for the season in Week 13 against the Dallas Stampede. He has 1,026 receiving yards through 13 games. He's on pace for about 1,340 over 17 games.
 [2027 Training camp] (Injuries, importance 12)
-  Nashville's Gordon expected to miss about two weeks
-    Nashville Outlaws tight end Shawn Gordon suffered an ankle sprain in practice during training camp and is expected to miss about two weeks.
-[2026 Week 17] (Injuries, importance 12)
-  Another injury for Boston's Dunn
-    Boston Harbormen defensive end Eric Dunn re-injured his back in Week 17 against the New York Knights and is expected to miss about three weeks.
-[2026 Preseason week 2] (Injuries, importance 20)
-  Pittsburgh's Grant sidelined by ankle injury
-    Pittsburgh Ironmen wide receiver Tyler Grant suffered an ankle sprain in Preseason week 2 against the Cleveland Forge and is expected to miss about three weeks.
-[2026 Week 5] (Roster moves, importance 16)
-  St. Louis promotes S Thomas to the 53
-    The St. Louis Archers promoted safety Derek Thomas from the practice squad to the 53-man roster.
-[2026 Week 2] (Roster moves, importance 12)
-  New York Knights transactions: Week 2
-    Placed DT Ray Williams on injured reserve (hamstring strain, severe). Promoted DT Kendrick Cox from the practice squad. Waived DT Ray Oliver (roster spot needed). Signed QB Will Perkins. Signed QB Demarcus Perry to the practice squad.
-[2026 Week 10] (Roster moves, importance 16)
-  Gray earns a roster spot in Washington
-    The Washington Sentinels promoted linebacker Garrett Gray from the practice squad to the 53-man roster.
-[2026 Week 15] (Playoff race, importance 40)
-  Seattle's playoff hopes end
-    At 3-11, the Seattle Sound can no longer reach the playoffs.
-[2026 Week 17] (Playoff race, importance 40)
-  Indianapolis' playoff hopes end
-    At 7-9, the Indianapolis Speed can no longer reach the playoffs.
-[2026 Week 12] (Playoff race, importance 48)
-  Pittsburgh within one game of Cincinnati in the Atlantic
-    Cincinnati is 9-2. Pittsburgh is 8-3-1, one game back. Cincinnati has six games left.
+  Cincinnati's Gordon sidelined by hip injury
+    Cincinnati Rivermen kicker Ray Gordon suffered a hip injury in practice during training camp and is expected to miss about one week.
+[2026 Week 16] (Injuries, importance 12)
+  Buffalo FB Walsh suffers concussion
+    Buffalo Blizzard fullback Grant Walsh suffered a concussion in Week 16 against the Seattle Sound and is in the league's concussion protocol.
+[2026 Preseason week 1] (Injuries, importance 12)
+  Dallas' Lane sidelined by shoulder injury
+    Dallas Stampede quarterback John Lane suffered a shoulder sprain in Preseason week 1 against the Nashville Outlaws and is expected to miss about one week.
+[2026 Week 4] (Roster moves, importance 12)
+  Kansas City Blues transactions: Week 4
+    Elevated DT Stephen Ward from the practice squad for the game. Placed CB Travis Davis on injured reserve (torn ACL). Promoted CB Jamal Hall from the practice squad. Signed QB Jackson Lawson to the practice squad.
+[2026 Final cuts] (Roster moves, importance 12)
+  Seattle Sound transactions: Final cuts
+    60 moves (waived: 37; signed to practice squad: 17; placed on injured reserve: 3; claimed off waivers: 1; signed: 1; promoted from practice squad: 1). Among them: ILB Chase King (placed on injured reserve), OLB Joel Walker (placed on injured reserve), RB Micah Roberts (waived), OLB Miles Dixon (waived), S Matt Oliver (waived), CB Isaiah Norris (claimed off waivers), RB James Simpson (signed to practice squad), ILB Jack Evans (waived).
+[2026 Week 9] (Roster moves, importance 12)
+  Chicago Express transactions: Week 9
+    Elevated OT Mason Dunn from the practice squad for the game.
+[2026 Week 15] (Playoff race, importance 60)
+  Dallas is in: playoff berth secured
+    The Dallas Stampede (10-4) have clinched at least a wild card spot in the Western Conference playoffs.
+[2026 Week 18] (Playoff race, importance 40)
+  San Francisco's playoff hopes end
+    At 7-10, the San Francisco Fog can no longer reach the playoffs.
+[2026 Week 14] (Playoff race, importance 48)
+  Minneapolis within a half-game of Nashville in the Midwest
+    Nashville is 7-5-1. Minneapolis is 7-6, a half-game back. Nashville has four games left.
 [2027 Draft] (Draft, importance 18)
-  Dallas Stampede 2027 draft class
-    Round 1 (No. 30): DT John Mathis, LSU
-    Round 3 (No. 66): WR Jamal Banks, Syracuse
-    Round 3 (No. 94): OG Brandon Bowman, Arkansas
-    Round 5 (No. 132): OLB Jerome Fletcher, TCU
-    Round 5 (No. 158): QB Landon Washington, Pennsylvania
-    Round 6 (No. 162): CB Jacob Kelly, Kentucky
-    Round 6 (No. 190): CB Jalen Stone, Ohio State
-    Round 7 (No. 196): DE Dean Booker, Missouri Western State
-    Round 7 (No. 222): P Connor Reese, Texas Southern
-[2027 Draft] (Draft, importance 18)
-  Washington Sentinels 2027 draft class
-    Round 1 (No. 10): CB Austin Norris, Alabama
-    Round 2 (No. 42): DE Antonio Oliver, Mississippi State
-    Round 3 (No. 74): FB Jackson Fuller, Texas A&M
-    Round 4 (No. 106): DE Landon Carter, Michigan State
-    Round 5 (No. 138): OLB Alex Dunn, Northwestern
-    Round 6 (No. 170): ILB Kevin Ross, West Virginia
-    Round 7 (No. 202): WR Kyle Woods, Cincinnati
+  Portland Lumberjacks 2027 draft class
+    Round 1 (No. 31): C Dalton Taylor, Arizona
+    Round 2 (No. 59): OG Damon Hayes, Florida
+    Round 3 (No. 91): WR Greg Taylor, Houston
+    Round 3 (No. 95): OG Hayden Murray, LSU
+    Round 4 (No. 123): QB Justin Riley, LSU
+    Round 5 (No. 155): DT Kaleb Wright, Miami (FL)
+    Round 6 (No. 187): OLB Marquise Williams, Iowa
+    Round 7 (No. 219): OT Greg Hardy, Wake Forest
 [2027 Draft] (Draft, importance 18)
   Phoenix Scorpions 2027 draft class
-    Round 1 (No. 6): C Thomas Simmons, Penn State
-    Round 2 (No. 38): WR Maurice Stanley, Michigan
-    Round 3 (No. 70): OG Luke Howard, Alabama
-    Round 4 (No. 102): OLB Tyrone Chapman, San Diego State
-    Round 5 (No. 141): OG Stephen Holmes, Cincinnati
-    Round 6 (No. 166): FB Micah Fisher, Fresno State
-    Round 7 (No. 198): S Ray Clark, Middle Tennessee
-    Round 7 (No. 205): DE Travis Ellis, Hawaii
+    Round 1 (No. 10): DT Tristan Sullivan, USC
+    Round 3 (No. 79): DE Leon Hardy, Alabama
+    Round 4 (No. 111): WR Taylor Daniels, Pittsburgh
+    Round 5 (No. 143): S Jay Baker, UCLA
+    Round 6 (No. 175): QB Jacob Webb, Kansas State
+    Round 7 (No. 207): OLB Trevor Spencer, Utah
+[2027 Draft] (Draft, importance 18)
+  Houston Wildcatters 2027 draft class
+    Round 1 (No. 6): RB Eric Perry, Alabama
+    Round 2 (No. 38): WR Cameron Rogers, Michigan
+    Round 3 (No. 70): OG Carlos Adams, Michigan
+    Round 4 (No. 102): S Jacob Simpson, Auburn
+    Round 5 (No. 134): TE Nate Hill, LSU
+    Round 6 (No. 166): OG Ray Riley, Stanford
+    Round 7 (No. 198): OT Tyrone Peters, Penn State
+[2027 Offseason] (Retirements, importance 16)
+  OG Elijah Peters calls it a career
+    Guard Elijah Peters has retired after six pro seasons. He was a free agent. Since 2026 he played for the Denver Peaks.
+[2027 Offseason] (Retirements, importance 32)
+  Tyler Barnes retires after seven seasons
+    Safety Tyler Barnes has retired after seven pro seasons. Since 2026 he played for the Phoenix Scorpions.
 [2027 Offseason] (Retirements, importance 30)
-  Chase Brown retires after six seasons
-    Guard Chase Brown has retired after six pro seasons. Since 2026 he played for the Philadelphia Liberty.
-[2027 Offseason] (Retirements, importance 30)
-  Hunter Morgan retires
-    Defensive tackle Hunter Morgan has retired after 13 pro seasons. Since 2026 he played for the Minneapolis Freeze.
-[2027 Offseason] (Retirements, importance 18)
-  OLB Omar McCoy calls it a career
-    Linebacker Omar McCoy has retired after seven pro seasons. Since 2026 he played for the Cincinnati Rivermen.
+  Ross Fuller retires after 16 seasons
+    Tight end Ross Fuller has retired after 16 pro seasons. Since 2026 he played for the Minneapolis Freeze.
 [2027 Training camp] (Season and team news, importance 14)
-  Philadelphia Liberty captains: Ward and Carter
-    Philadelphia Liberty players voted OG Cameron Ward the offensive captain and DT Nate Carter the defensive captain for 2027.
+  Philadelphia Liberty captains: Watson and Price
+    Philadelphia Liberty players voted OG Roderick Watson the offensive captain and ILB Keenan Price the defensive captain for 2027.
 [2027 Training camp] (Season and team news, importance 14)
-  Seattle Sound captains: Hardy and Hunt
-    Seattle Sound players voted QB Marcus Hardy the offensive captain and S Stephen Hunt the defensive captain for 2027.
+  Seattle Sound captains: Graves and Lewis
+    Seattle Sound players voted QB Darren Graves the offensive captain and CB Sam Lewis the defensive captain for 2027.
 [2027 Training camp] (Season and team news, importance 14)
-  Pittsburgh Ironmen captains: Graves and West
-    Pittsburgh Ironmen players voted QB Vince Graves the offensive captain and CB Brett West the defensive captain for 2027.
+  Pittsburgh Ironmen captains: West and West
+    Pittsburgh Ironmen players voted WR Marquise West the offensive captain and CB Brett West the defensive captain for 2027.
 [2027 Week 3] (Awards and honors, importance 36)
-  Reese, Bell, and Gibson named Eastern Conference Players of the Week
+  Evans, Green, and Bradley named Eastern Conference Players of the Week
     The league's Eastern Conference Players of the Week for Week 3.
-    Offensive: QB John Reese (ATL) went 23-for-34 for 299 yards and two touchdowns, and ran for a score in a 37-32 win over the Cincinnati Rivermen.
-    Defensive: DE Sam Bell (MIA) recorded three sacks and forced two fumbles in a 37-13 win over the Detroit Mechanics.
-    Special teams: K Tyler Gibson (BOS) made 4 of 4 field goals, the longest from 51 yards in a 35-13 win over the Nashville Outlaws.
-[2026 Week 1] (Awards and honors, importance 36)
-  Week 1 honors in the Eastern: Curtis Mitchell, Alexander, and Dixon
-    The league's Eastern Conference Players of the Week for Week 1.
-    Offensive: QB Curtis Mitchell (CIN) completed 28 of 38 passes for 359 yards and three touchdowns in a 23-21 win over the Buffalo Blizzard.
-    Defensive: DE Lamar Alexander (ATL) recorded two sacks and forced a fumble in a 31-19 loss to the St. Louis Archers.
-    Special teams: K Eric Dixon (NYK) made 5 of 5 field goals, the longest from 50 yards in a 29-24 win over the New Orleans Krewe.
+    Offensive: WR Nick Evans (CLE) had 10 catches for 197 yards and two touchdowns in a 31-28 loss to the Detroit Mechanics.
+    Defensive: S Adrian Green (WAS) picked off three passes in a 29-19 win over the Pittsburgh Ironmen.
+    Special teams: WR Jackson Bradley (BAL) returned a kickoff for a touchdown in a 38-11 win over the Los Angeles Stars.
+[2026 Week 2] (Awards and honors, importance 36)
+  Western Conference Players of the Week: Mitchell, McCoy, and Griffin
+    The league's Western Conference Players of the Week for Week 2.
+    Offensive: RB Mason Mitchell (SAN) rushed for 145 yards and two touchdowns, and hauled in six passes for 75 yards in a 33-21 win over the Minneapolis Freeze.
+    Defensive: DE Sean McCoy (NOR) recorded two sacks in a 44-26 win over the Washington Sentinels.
+    Special teams: K Wade Griffin (KCY) made 6 of 6 field goals, the longest from 43 yards in a 25-0 win over the Las Vegas High Rollers.
 [2026 Glory Bowl I] (Awards and honors, importance 70)
-  Curtis Mitchell wins Offensive Player of the Year
-    Cincinnati quarterback Curtis Mitchell is the 2026 Offensive Player of the Year. He threw for 4,638 yards, 42 touchdowns and seven interceptions as the Rivermen went 13-4 and made the playoffs. He received 20 of 50 first-place votes and 288 points from the league's 50-member media panel. Next: WR Darius Young (DAL, 243 points, 17 first-place votes), and RB Miles Morris (NSH, 172 points, six first-place votes).
-[2026 Week 10] (Storylines, importance 20)
-  St. Louis struggling since losing Zane Franklin
-    Since Zane Franklin went down with a calf strain in Week 6, St. Louis has gone 1-2.
-[2026 Week 6] (Storylines, importance 36)
-  Kennedy stays hot: five straight games with a sack
-    Derrick Kennedy keeps producing. In a 20-13 win over the Houston Wildcatters in Week 6, he, his fifth straight game with a sack. He has seven sacks through six games this season.
-[2026 Week 10] (Storylines, importance 20)
-  Portland is 1-1-1 without Carson Bell
-    Portland was 3-4 when Carson Bell was hurt in Week 7. It has gone 1-1-1 since.
+  Graves wins Offensive Player of the Year
+    Pittsburgh quarterback Vince Graves is the 2026 Offensive Player of the Year. He threw for 5,144 yards, 43 touchdowns and seven interceptions, and ran for 1,083 yards and 10 scores as the Ironmen went 13-4 and made the playoffs. He received 32 of 50 first-place votes and 391 points from the league's 50-member media panel. Next: WR Tyler Grant (PIT, 284 points, 13 first-place votes), and RB Scott Johnson (POR, 145 points, three first-place votes).
+[2026 Week 9] (Storylines, importance 35)
+  New Orleans' Malone back from knee injury
+    New Orleans got wide receiver Jesse Malone back in a 41-16 win over the San Francisco Fog in Week 9 after five games out with an MCL sprain. He had four catches for 71 yards and a touchdown.
+[2026 Week 9] (Storylines, importance 35)
+  Wells is back
+    After five games out with an MCL sprain, Jackson Wells was back on the field in a 29-24 win over the San Diego Surf in Week 9.
+[2026 Week 14] (Storylines, importance 42)
+  Five straight 100-yard rushing games for Phoenix's Sims
+    Tim Sims keeps producing. In a 31-22 win over the Chicago Express in Week 14, he rushed for 121 yards and a touchdown, his fifth straight 100-yard rushing game. For the season he has 1,241 rushing yards in 12 games.
 [2026 Week 14] (Rankings and previews, importance 50)
-  Power rankings after Week 14: Tampa on top
+  Power rankings, Week 14: Washington makes the biggest jump
     Our ranking of all 32 teams, by record, point differential and recent form.
-    1. Tampa (12-1, no change): Beat Buffalo 38-17. Won 12 straight.
-    2. Dallas (12-1, no change): Beat New Orleans 38-15. Won three straight.
-    3. Cincinnati (11-2, no change): Won seven straight. Beat San Antonio 20-6.
-    4. Philadelphia (10-3, no change): Won five straight. Beat Charlotte 20-17. 3-0 since losing OLB Cooper.
-    5. Pittsburgh (9-3-1, no change): Beat New York 41-16. Won five straight.
-    6. Nashville (10-3, up 1): 2-0 since losing DE Allen. Beat Detroit 38-31.
-    7. Los Angeles (9-4, up 1): Won four straight. Beat Indianapolis 20-10.
-    8. Charlotte (9-4, down 2): 4-3 since losing OT Wells. Lost to Philadelphia 20-17.
-    9. Las Vegas (8-5, up 1): Beat Minneapolis 22-21. Hunt: four straight 100-yard rushing games.
-    10. Atlanta (8-5, up 1): Beat Kansas City 27-19.
-    11. Miami (7-6, up 1): Beat Cleveland 19-16.
-    12. Portland (6-6-1, down 3): 2-1 since losing DT Barnes. Lost to Denver 16-6.
-    13. Denver (7-6, up 5): Beat Portland 16-6. 3-2 since losing WR Simpson.
-    14. Baltimore (6-7, up 5): Beat Washington 34-17. 1-1 since losing S Thompson.
-    15. Indianapolis (6-7, down 1): Lost to Los Angeles 20-10.
-    16. Buffalo (6-7, down 1): 1-2 since losing OLB Freeman. Lost to Tampa 38-17.
-    17. Minneapolis (6-7, down 4): 5-4 since losing OG Marshall. Lost to Las Vegas 22-21.
-    18. San Francisco (6-7, up 4): Beat St. Louis 34-6.
-    19. Cleveland (6-7, down 3): Lost to Miami 19-16. Lost three straight.
-    20. San Antonio (6-7, down 3): Lost to Cincinnati 20-6.
-    21. Chicago (5-8, no change): Beat Phoenix 23-10.
-    22. Houston (5-8, up 2): 2-0 since losing S Watson. Beat Seattle 8-6.
-    23. Washington (5-8, down 3): Lost to Baltimore 34-17. Lost six straight.
-    24. Boston (5-8, down 1): 1-2 since losing S Thompson. Had a bye in Week 14.
-    25. Kansas City (4-9, up 1): Lost four straight. Lost to Atlanta 27-19.
-    26. New Orleans (4-9, down 1): Lost to Dallas 38-15.
-    27. Detroit (4-9, up 1): Lost to Nashville 38-31.
-    28. Phoenix (4-9, down 1): Lost to Chicago 23-10. Lost four straight.
-    29. St. Louis (4-9, no change): Lost to San Francisco 34-6. 0-2 since losing DE Simpson.
-    30. San Diego (3-10, no change): Lost four straight. Had a bye in Week 14.
-    31. Seattle (2-11, up 1): Lost six straight. Lost to Houston 8-6.
-    32. New York (2-11, down 1): Lost to Pittsburgh 41-16. Lost three straight. 1-3 since losing DE Graham.
+    1. Philadelphia (12-1, no change): Beat Charlotte 20-14. Won 10 straight. 4-0 since losing TE Stone.
+    2. Pittsburgh (10-3, up 1): Won five straight. Beat New York 37-16.
+    3. Portland (10-3, down 1): 3-1 since losing CB Russell. Lost to Denver 34-17.
+    4. Tampa (9-4, no change): Won five straight. Beat Buffalo 21-19. 3-0 since losing WR Kelly.
+    5. Miami (9-4, no change): Beat Cleveland 10-9. Won five straight.
+    6. Dallas (9-4, up 4): Beat New Orleans 30-19. 4-3 since losing S Crawford.
+    7. Atlanta (9-4, no change): Beat Kansas City 13-3.
+    8. Los Angeles (9-4, up 1): 2-0 since losing S Green. Beat Indianapolis 27-12.
+    9. New York (8-5, down 3): 3-4 since losing OT Knight. Lost to Pittsburgh 37-16.
+    10. Cincinnati (8-5, down 2): 2-2 since losing S Mitchell. Lost to San Antonio 31-25.
+    11. Nashville (7-5-1, up 1): 1-1 since losing DT Tucker. Lost to Detroit 27-16.
+    12. Chicago (8-5, down 1): Lost to Phoenix 31-22.
+    13. Minneapolis (7-6, up 2): Beat Las Vegas 30-27. Won five straight.
+    14. Charlotte (7-6, down 1): Lost to Philadelphia 20-14.
+    15. Detroit (6-7, up 1): Beat Nashville 27-16. Won three straight. 4-4 since losing WR White.
+    16. New Orleans (6-7, down 2): 4-4 since losing S Coleman. Lost to Dallas 30-19.
+    17. Denver (6-7, up 3): Beat Portland 34-17.
+    18. St. Louis (5-8, up 4): Won three straight. Beat San Francisco 29-17. 3-0 since losing QB Robinson.
+    19. Washington (5-8, up 8): Beat Baltimore 10-7.
+    20. San Antonio (5-8, up 8): Beat Cincinnati 31-25.
+    21. San Francisco (5-8, down 4): Lost to St. Louis 29-17.
+    22. Houston (5-8, up 2): 2-4 since losing OT Thompson. Beat Seattle 27-20.
+    23. Buffalo (5-8, down 5): Lost to Tampa 21-19. 2-3 since losing OT James.
+    24. San Diego (5-8, down 3): 3-3 since losing ILB Lane. Had a bye in Week 14.
+    25. Indianapolis (5-8, down 6): Lost four straight. Lost to Los Angeles 27-12.
+    26. Phoenix (4-8-1, up 4): Beat Chicago 31-22. Johnson: five straight games with a touchdown.
+    27. Seattle (5-8, down 4): Lost to Houston 27-20. Lost three straight.
+    28. Las Vegas (4-9, down 2): 3-8 since losing QB Chapman. Lost to Minneapolis 30-27.
+    29. Baltimore (4-9, down 4): Lost three straight. Lost to Washington 10-7.
+    30. Cleveland (4-9, down 1): Lost to Miami 10-9. Lost five straight.
+    31. Boston (3-10, no change): Had a bye in Week 14. 0-2 since losing QB Franklin.
+    32. Kansas City (3-10, no change): Lost to Atlanta 13-3. 1-7 since losing OLB Bryant.
 [2026 Week 12] (Rankings and previews, importance 50)
-  Power rankings: Tampa is No. 1 after Week 12
+  Power rankings: Philadelphia is No. 1 after Week 12
     Our ranking of all 32 teams, by record, point differential and recent form.
-    1. Tampa (11-1, no change): Beat Kansas City 30-19. Won 11 straight.
-    2. Dallas (10-1, no change): 6-1 since losing OT Marshall. Beat Buffalo 24-19.
-    3. Cincinnati (9-2, no change): Beat San Francisco 23-3. Won five straight.
-    4. Philadelphia (8-3, up 2): Won three straight. Beat Houston 41-14. 3-0 since losing TE Stone.
-    5. Pittsburgh (8-3-1, no change): Beat Washington 46-33. Won four straight. 3-0 since losing S Banks.
-    6. Nashville (8-3, down 2): Lost to Atlanta 25-10. 1-3 since losing DT Tucker.
-    7. Charlotte (8-3, no change): 3-2 since losing OT Wells. Beat Cleveland 22-17.
-    8. Las Vegas (7-4, no change): Won three straight. Had a bye in Week 12.
-    9. Los Angeles (7-4, up 1): Beat Minneapolis 24-21.
-    10. Portland (6-5-1, up 3): Beat Boston 37-9. Won three straight. 2-0 since losing DT Barnes.
-    11. Atlanta (7-5, up 1): Beat Nashville 25-10.
-    12. Cleveland (6-5, down 3): Lost to Charlotte 22-17.
-    13. Miami (6-5, down 2): Had a bye in Week 12.
-    14. Baltimore (5-6, up 8): Beat New York 26-3.
-    15. San Antonio (6-6, up 6): Beat New Orleans 9-6.
-    16. Minneapolis (5-6, down 1): Lost to Los Angeles 24-21. 4-3 since losing OG Marshall.
-    17. Buffalo (5-6, down 3): 0-2 since losing WR Daniels. Lost to Dallas 24-19.
-    18. Indianapolis (5-6, up 6): Beat Chicago 31-24.
-    19. Denver (5-6, up 1): 1-2 since losing WR Simpson. Had a bye in Week 12.
-    20. San Francisco (5-6, down 4): Lost to Cincinnati 23-3.
-    21. Washington (5-7, down 2): Lost to Pittsburgh 46-33. Lost five straight.
-    22. Kansas City (4-7, down 4): 2-3 since losing OT Bennett. Lost to Tampa 30-19.
-    23. Boston (5-7, down 6): Lost to Portland 37-9. 1-1 since losing S Thompson.
-    24. Phoenix (4-7, down 1): Sims: three straight games with a touchdown. Lost to St. Louis 33-31.
-    25. Detroit (4-7, up 5): Beat San Diego 31-0. 1-3 since losing OT Perkins.
-    26. St. Louis (4-7, up 3): Beat Phoenix 33-31.
-    27. Chicago (3-8, down 1): Lost to Indianapolis 31-24.
-    28. Houston (3-8, down 3): Lost to Philadelphia 41-14.
-    29. New Orleans (3-8, down 2): Lost to San Antonio 9-6.
-    30. San Diego (3-9, down 2): Lost to Detroit 31-0. Lost three straight. 0-2 since losing QB Taylor.
-    31. New York (2-9, no change): 1-1 since losing DE Graham. Lost to Baltimore 26-3.
-    32. Seattle (2-9, no change): Had a bye in Week 12. Lost four straight. 0-2 since losing S Hunt.
+    1. Philadelphia (10-1, no change): Beat Houston 45-31. Won eight straight.
+    2. Portland (10-2, no change): Beat Boston 26-12. Won nine straight.
+    3. Pittsburgh (9-3, no change): Beat Washington 24-13. Won four straight. 4-0 since losing OG Ramsey.
+    4. Dallas (8-3, up 1): Beat Buffalo 16-6. 3-2 since losing QB Sims.
+    5. New York (8-3, up 1): Beat Baltimore 34-19. 3-2 since losing OT Knight.
+    6. Tampa (8-4, up 2): Won four straight. Beat Kansas City 36-12.
+    7. Chicago (8-3, up 3): Beat Indianapolis 18-17.
+    8. Miami (7-4, up 1): Had a bye in Week 12. Won three straight.
+    9. Atlanta (8-4, up 3): Beat Nashville 30-13.
+    10. Cincinnati (7-4, down 3): Lost to San Francisco 26-17. 1-1 since losing S Mitchell.
+    11. Los Angeles (7-4, down 7): Lost to Minneapolis 23-7. 3-1 since losing QB Banks.
+    12. Charlotte (7-4, up 1): Beat Cleveland 13-3.
+    13. Nashville (6-4-1, down 2): Lost three straight. Lost to Atlanta 30-13.
+    14. Minneapolis (5-6, up 7): Won three straight. Beat Los Angeles 23-7.
+    15. Indianapolis (5-6, down 1): Lost to Chicago 18-17.
+    16. New Orleans (5-6, up 4): 3-3 since losing S Coleman. Beat San Antonio 20-12.
+    17. Denver (5-6, down 2): Had a bye in Week 12.
+    18. Seattle (5-6, down 1): Had a bye in Week 12. 3-6 since losing S Hunt.
+    19. Houston (4-7, down 1): 1-3 since losing OT Thompson. Lost to Philadelphia 45-31.
+    20. Buffalo (4-7, down 4): Lost to Dallas 16-6. 1-2 since losing OT James.
+    21. Baltimore (4-7, down 2): Lost to New York 34-19.
+    22. Las Vegas (4-7, up 3): Had a bye in Week 12. 3-6 since losing QB Chapman.
+    23. Detroit (4-7, up 7): Beat San Diego 30-3. 2-4 since losing WR White.
+    24. San Francisco (4-7, up 5): Beat Cincinnati 26-17.
+    25. Phoenix (3-7-1, down 2): Lost to St. Louis 38-28.
+    26. Washington (4-8, no change): 1-3 since losing C Ferguson. Lost to Pittsburgh 24-13.
+    27. Cleveland (4-7, down 5): Lost to Charlotte 13-3. Lost three straight.
+    28. San Diego (4-8, down 4): Lost to Detroit 30-3. 3-4 since losing DE Butler.
+    29. San Antonio (4-8, down 2): Lost four straight. Lost to New Orleans 20-12.
+    30. St. Louis (3-8, up 1): Beat Phoenix 38-28.
+    31. Boston (3-9, down 3): Lost to Portland 26-12.
+    32. Kansas City (2-9, no change): Lost to Tampa 36-12. Lost seven straight. 0-3 since losing ILB Adams.
 [2026 Week 3] (Rankings and previews, importance 42)
-  Week 4 preview: Nashville at St. Louis
-    Nashville (3-0) at St. Louis (2-1). Nashville has won three straight.
-    San Francisco (2-1) at Dallas (3-0). Dallas has won three straight.
-    Charlotte (2-1) at Miami (2-1). Miami won the first meeting 19-16 in Week 1.
+  Week 4 preview: Cincinnati at Pittsburgh
+    Cincinnati (3-0) at Pittsburgh (1-2). Cincinnati won the first meeting 41-39 in Week 2. Cincinnati has won three straight.
+    San Francisco (3-0) at Dallas (2-1). San Francisco has won three straight.
+    Charlotte (2-1) at Miami (2-1). Charlotte won the first meeting 13-3 in Week 1.
 
-==== PLAYER VIEW: Miles Morris (49 stories) ====
+==== PLAYER VIEW: Vince Graves (65 stories) ====
+[2027 Offseason] (Retirements, importance 42)
+  QB Vince Graves calls it a career
+    Quarterback Vince Graves has retired after eight pro seasons. Since 2026 he played for the Pittsburgh Ironmen. In his final season he had 5,144 passing yards and 43 touchdown passes.
+[2026 Glory Bowl I] (Awards and honors, importance 85)
+  Graves named MVP
+    Pittsburgh quarterback Vince Graves is the league's Most Valuable Player for 2026. He threw for 5,144 yards, 43 touchdowns and seven interceptions, and ran for 1,083 yards and 10 scores as the Ironmen went 13-4 and made the playoffs. He received 45 of 50 first-place votes and 475 points from the league's 50-member media panel. Next: RB Scott Johnson (POR, 254 points, five first-place votes), and QB Matt Clark (MIA, 99 points).
 [2026 Glory Bowl I] (Awards and honors, importance 72)
   The 2026 award winners
     The league handed out its 2026 awards, voted by a 50-member media panel on the regular season, the week of Glory Bowl I.
-    Most Valuable Player: QB John Dawson (TAM)
-    Offensive Player of the Year: QB Curtis Mitchell (CIN)
-    Defensive Player of the Year: CB Cameron Johnson (LAS)
-    Offensive Rookie of the Year: RB Miles Morris (NSH)
-    Defensive Rookie of the Year: DE Josh Hall (PIT)
+    Most Valuable Player: QB Vince Graves (PIT)
+    Offensive Player of the Year: QB Vince Graves (PIT)
+    Defensive Player of the Year: DE Dylan King (NOR)
+    Offensive Rookie of the Year: WR Tyler Grant (PIT)
+    Defensive Rookie of the Year: CB Quentin Graves (CIN)
     No Comeback Player of the Year: it needs a season on record to come back from (the league's first season has none).
 [2026 Glory Bowl I] (Awards and honors, importance 70)
-  Curtis Mitchell wins Offensive Player of the Year
-    Cincinnati quarterback Curtis Mitchell is the 2026 Offensive Player of the Year. He threw for 4,638 yards, 42 touchdowns and seven interceptions as the Rivermen went 13-4 and made the playoffs. He received 20 of 50 first-place votes and 288 points from the league's 50-member media panel. Next: WR Darius Young (DAL, 243 points, 17 first-place votes), and RB Miles Morris (NSH, 172 points, six first-place votes).
-[2026 Glory Bowl I] (Awards and honors, importance 60)
-  Morris named Offensive Rookie of the Year
-    Nashville running back Miles Morris, a round 3 pick, is the 2026 Offensive Rookie of the Year, the best rookie on offense. He ran for 1,626 yards and 20 touchdowns, and caught 48 passes for 357 yards as the Outlaws went 12-5 and made the playoffs. He was the unanimous choice, first on all 50 ballots of the league's media panel. Next: RB Ian Gordon (DEN, 196 points), and QB Nick Oliver (MIN, 144 points).
+  Graves wins Offensive Player of the Year
+    Pittsburgh quarterback Vince Graves is the 2026 Offensive Player of the Year. He threw for 5,144 yards, 43 touchdowns and seven interceptions, and ran for 1,083 yards and 10 scores as the Ironmen went 13-4 and made the playoffs. He received 32 of 50 first-place votes and 391 points from the league's 50-member media panel. Next: WR Tyler Grant (PIT, 284 points, 13 first-place votes), and RB Scott Johnson (POR, 145 points, three first-place votes).
 [2026 Conference championships] (Awards and honors, importance 30)
-  Western Conference Pro Bowl changes
-    The Western Conference's Pro Bowl roster changes now that the Glory Bowl I teams are set:
-    CB Jackson Russell (POR) replaces Sam Lewis (SEA), who is injured.
-    DE Calvin Porter (SEA) replaces Roderick Robinson (DAL), who is injured.
-    DE Michael Brooks (PHX) replaces Jacob Chapman (DEN), who will play in Glory Bowl I.
-    DT Carson Palmer (SAN) replaces Paul Dawson (NOR), who is injured.
-    OLB Chris King (MIN) replaces Trent Price (NSH), who is injured.
-    P Donovan Palmer (SAN) replaces Noah Dunn (DEN), who will play in Glory Bowl I.
-    QB Marshall Robinson (NOR) replaces Ryan Banks (LAS), who is injured.
-    RB Spencer Adams (KCY) replaces Miles Morris (NSH), who is injured.
-    S Kyle Murray (SDG) replaces Hunter Reese (MIN), who will not play.
-    OT James Simpson (NSH) replaces Jack Thompson (HOU), who will not play.
-    WR Kevin Ward (NOR) replaces Owen Washington (POR), who is injured.
-    WR Marquise West (MIN) replaces Darius Young (DAL), who is injured.
+  Eastern Conference Pro Bowl changes
+    The Eastern Conference's Pro Bowl roster changes now that the Glory Bowl I teams are set:
+    DE Jack Wood (CHA) replaces Lamar Alexander (ATL), who will play in Glory Bowl I.
+    DE Roman Simmons (CLE) replaces Scott Pierce (CIN), who will not play.
+    DT Julian Freeman (CHI) replaces Jared Anderson (ATL), who will play in Glory Bowl I.
+    DT Cameron Henderson (BUF) replaces Roman Butler (ATL), who will play in Glory Bowl I.
+    K Kevin Ward (BAL) replaces Zane Fletcher (PIT), who will not play.
+    OLB Lance Freeman (DET) replaces Shane Black (CIN), who will not play.
+    QB Garrett Bennett (DET) replaces Vince Graves (PIT), who will not play.
+    RB Quentin Butler (PIT) replaces Ian Coleman (ATL), who will play in Glory Bowl I.
+    S Riley Bradley (CHA) replaces Nick Wright (CLE), who will not play.
+    OLB Collin Douglas (IND) replaces Jeremiah Taylor (BUF), who is injured.
+    OT Ethan Sanders (IND) replaces David Watkins (ATL), who will play in Glory Bowl I.
+    OT Jamal Holmes (TAM) replaces Logan Green (NYK), who will not play.
+    TE Stephen Rogers (BOS) replaces Isaiah Peters (MIA), who will not play.
+    WR Dominic Sims (BOS) replaces Tyler Grant (PIT), who will not play.
+    WR Spencer Fuller (TAM) replaces Zach Payne (PHI), who is injured.
 [2026 Wild Card round] (Awards and honors, importance 60)
-  2026 All-Pro team: Ford and Price lead the first team
-    The league's 50-member media panel picked its All-Pro teams for the 2026 regular season. Anthony Ford, Trent Price, Nick Wright, Bryce Perry, and Michael Adams were unanimous choices, named on the first team by all 50 voters.
+  2026 All-Pro team: Graves and King lead the first team
+    The league's 50-member media panel picked its All-Pro teams for the 2026 regular season. Vince Graves, Dylan King, and Jared Anderson were unanimous choices, named on the first team by all 50 voters.
     First team:
-    Quarterback: Nathan Sims (DAL)
-    Running back: Connor Reynolds (CHA)
+    Quarterback: Vince Graves (PIT)
+    Running back: Scott Johnson (POR)
     Fullback: Anthony Ford (CLE)
-    Wide receiver: Darnell Owens (LVG), Darius Young (DAL), Dalton Johnson (CIN)
-    Tight end: Stephen Rogers (BOS)
-    All-purpose: Miles Morris (NSH)
-    Left tackle: Jack Thompson (HOU)
+    Wide receiver: Tyler Grant (PIT), Dylan Franklin (STL), Roman Simpson (DEN)
+    Tight end: Seth Sullivan (POR)
+    All-purpose: Nick Hunt (LVG)
+    Left tackle: Xavier Ross (LVG)
     Left guard: Damon Sullivan (SAN)
     Center: Jared Hudson (NOR)
-    Right guard: Chase Brown (PHI)
-    Right tackle: Demarcus Gibson (MIN)
-    Edge rusher: Roderick Robinson (DAL), Lamar Alexander (ATL), Zach Stewart (BUF)
-    Interior lineman: Paul Dawson (NOR), Julian Freeman (CHI)
-    Linebacker: Trent Price (NSH), David Caldwell (STL)
-    Cornerback: Cameron Johnson (LAS), Curtis Jackson (DAL)
-    Slot cornerback: James Fletcher (TAM)
-    Safety: Nick Wright (CLE), Hunter Reese (MIN)
-    Kicker: Kevin Ward (BAL)
-    Punter: Noah Dunn (DEN)
-    Kick returner: Keenan Boyd (SEA)
-    Punt returner: Bryce Perry (DEN)
-    Special teamer: Michael Adams (BUF)
-    Long snapper: Josh Fowler (DAL)
+    Right guard: Riley Lawson (DET)
+    Right tackle: Mitchell Marshall (DAL)
+    Edge rusher: Dylan King (NOR), Lamar Alexander (ATL), Sam Bell (MIA)
+    Interior lineman: Jared Anderson (ATL), Roman Butler (ATL)
+    Linebacker: David Riley (PHI), Xavier Freeman (BUF)
+    Cornerback: Brett West (PIT), Sam Lewis (SEA)
+    Slot cornerback: Carlos Adams (NSH)
+    Safety: Dalton Willis (NSH), Kaleb Chambers (TAM)
+    Kicker: Zane Fletcher (PIT)
+    Punter: Logan Kelly (CHI)
+    Kick returner: Quentin Butler (PIT)
+    Punt returner: Jared Ramsey (MIA)
+    Special teamer: Jeremiah Taylor (BUF)
+    Long snapper: Evan Owens (SFO)
     
     Second team:
-    Quarterback: John Dawson (TAM)
-    Running back: Connor Malone (CHI)
+    Quarterback: Thomas Jordan (PHI)
+    Running back: Connor Reynolds (CHA)
     Fullback: Tyler Hardy (MIA)
-    Wide receiver: Dylan Franklin (STL), Owen Washington (POR), Marquise West (MIN)
-    Tight end: Walter Stone (PHI)
-    All-purpose: Isaiah Nelson (HOU)
-    Left tackle: Xavier Ross (LVG)
+    Wide receiver: Owen Washington (POR), Kevin Ward (NOR), Dalton Johnson (CIN)
+    Tight end: Maurice Roberts (HOU)
+    All-purpose: Connor Malone (CHI)
+    Left tackle: Logan Green (NYK)
     Left guard: Miles Cox (POR)
-    Center: Trent Powell (IND)
-    Right guard: Jack Lane (IND)
-    Right tackle: Kyle Parker (SFO)
-    Edge rusher: Calvin Porter (SEA), Connor Ford (PHI), Andre Burke (LAS)
-    Interior lineman: Russell Cox (STL), Bryce Walsh (WAS)
-    Linebacker: Troy Malone (SAN), Wade Parker (CLE)
-    Cornerback: Miles Ramsey (TAM), John Mason (NOR)
-    Slot cornerback: Will Knight (BUF)
-    Safety: Kaleb Chambers (TAM), Riley Bradley (CHA)
-    Kicker: Quentin Davis (DAL)
-    Punter: Quentin Stanley (STL)
-    Kick returner: Brian Hamilton (SAN)
-    Punt returner: Jared Dixon (LAS)
-    Special teamer: Damon Williams (NOR)
-    Long snapper: Evan Owens (SFO)
+    Center: Dalton Taylor (CHA)
+    Right guard: Cameron Marshall (MIN)
+    Right tackle: Miles Barnes (POR)
+    Edge rusher: Scott Pierce (CIN), Connor Ford (PHI), Jacob Chapman (DEN)
+    Interior lineman: Josh Bradley (CLE), Austin Tucker (NSH)
+    Linebacker: Ricky Bradley (NSH), Chris King (MIN)
+    Cornerback: Curtis Jackson (DAL), Quentin Graves (CIN)
+    Slot cornerback: Javon Stanley (SAN)
+    Safety: Will Alexander (HOU), Connor Kelly (WAS)
+    Kicker: Malcolm Keller (NOR)
+    Punter: Donovan Palmer (SAN)
+    Kick returner: David Malone (BUF)
+    Punt returner: Jackson Brown (NSH)
+    Special teamer: Jason Wells (MIN)
+    Long snapper: Taylor Daniels (MIA)
 [2026 Wild Card round] (Awards and honors, importance 24)
-  Morris named first-team All-Pro
-    Nashville Outlaws running back Miles Morris is a first-team All-Pro (all-purpose) after he ran for 1,626 yards and 20 touchdowns, and caught 48 passes for 357 yards. He was on 27 of the 50 first-team ballots.
+  Graves named first-team All-Pro
+    Pittsburgh Ironmen quarterback Vince Graves is a first-team All-Pro (quarterback) after he threw for 5,144 yards, 43 touchdowns and seven interceptions, and ran for 1,083 yards and 10 scores. He was on 50 of the 50 first-team ballots.
+[2026 Wild Card round] (Game stories, importance 60)
+  Cincinnati's season ends in 29-10 loss to Pittsburgh
+    Vince Graves went 28-for-37 for 299 yards and a touchdown, and ran for 76 yards and a touchdown on 15 carries in the Wild Card round, leading the Pittsburgh Ironmen past the Cincinnati Rivermen 29-10. Pittsburgh built a 23-7 halftime lead. The Ironmen forced three turnovers and gave the ball away once. Calvin Newton rushed for 103 yards and a touchdown, but it wasn't enough. Winds of 38 mph swirled through the stadium.
 [2026 Week 18] (Awards and honors, importance 40)
-  December Players of the Month: Chris Franklin, Nick Wright, Young, and Johnson
+  December Players of the Month: Graves, Chambers, Ward, and King
     The league's Players of the Month for December (and the first week of January).
-    Eastern offense: RB Chris Franklin (ATL) ran for 385 yards and six touchdowns, and caught 24 passes for 261 yards as the Firebirds went 5-0.
-    Eastern defense: S Nick Wright (CLE) had four interceptions as the Forge went 3-3.
-    Eastern special teams: K Kevin Ward (BAL) made 17 of 17 field goals, the longest from 54 yards as the Clippers went 2-4.
-    Western offense: WR Darius Young (DAL) caught 41 passes for 622 yards and five touchdowns as the Stampede went 6-0.
-    Western defense: CB Cameron Johnson (LAS) had six interceptions, 10 passes defensed, and one defensive touchdown as the Stars went 5-1.
-    Western special teams: CB Keenan Boyd (SEA) had a sack as the Sound went 2-4.
-    Offensive Rookie of the Month: RB Miles Morris (NSH) ran for 547 yards and eight touchdowns, and caught 21 passes for 190 yards as the Outlaws went 4-2.
-    Defensive Rookie of the Month: DE Josh Hall (PIT) had five sacks as the Ironmen went 4-1.
-[2026 Week 18] (Roster moves, importance 12)
-  Nashville Outlaws transactions: Week 18
-    Elevated DE Thomas Young from the practice squad for the game. Placed RB Miles Morris on injured reserve (torn ACL). Promoted DE Thomas Young from the practice squad. Signed QB Malcolm Watson to the practice squad.
-[2026 Week 18] (Injuries, importance 22)
-  Nashville's Morris out for season with torn ACL
-    Nashville Outlaws running back Miles Morris suffered a torn ACL in Week 18 against the St. Louis Archers and is out for the season.
-[2026 Week 17] (Awards and honors, importance 55)
-  Sims leads the Western Conference's Pro Bowl picks
-    The Western Conference's 44 Pro Bowl players for 2026, voted by fans, players and coaches (each a third of the vote). Starters are the top vote-getters at each position.
-    Quarterbacks: Nathan Sims (DAL) (starter), Thomas Chapman (LVG), Ryan Banks (LAS).
-    Running backs: Isaiah Nelson (HOU) (starter), Scott Johnson (POR), Miles Morris (NSH).
-    Fullback: Hayden Sullivan (SFO).
-    Wide receivers: Owen Washington (POR) (starter), Darnell Owens (LVG) (starter), Darius Young (DAL), Dylan Franklin (STL).
-    Tight ends: Tyler Lawson (KCY) (starter), Seth Sullivan (POR).
-    Tackles: Xavier Ross (LVG) (starter), Jack Thompson (HOU) (starter), Demarcus Gibson (MIN).
-    Guards: Damon Sullivan (SAN) (starter), Lance Mason (HOU) (starter), Miles Cox (POR).
-    Centers: Jared Hudson (NOR) (starter), Blake Malone (DAL).
-    Defensive ends: Roderick Robinson (DAL) (starter), Jacob Chapman (DEN) (starter), Mark Harper (SFO).
-    Defensive tackles: Paul Dawson (NOR) (starter), Russell Cox (STL) (starter), Austin Tucker (NSH).
-    Outside linebackers: Trent Price (NSH) (starter), Rob Sims (NOR) (starter), Troy Malone (SAN).
-    Inside linebackers: David Caldwell (STL) (starter), Adrian Williams (NSH).
-    Cornerbacks: Cameron Johnson (LAS) (starter), Curtis Jackson (DAL) (starter), Sam Lewis (SEA), John Mason (NOR).
-    Safeties: Hunter Reese (MIN) (starter), Terrell Butler (POR) (starter), Will Black (POR).
-    Kicker: Quentin Davis (DAL).
-    Punter: Noah Dunn (DEN).
-    Long snapper: Evan Owens (SFO).
-    Return specialist: Riley Collins (MIN).
-    Special teamer: Parker Marshall (DAL).
+    Eastern offense: QB Vince Graves (PIT) threw for 1,371 yards, 12 touchdowns and three interceptions, and ran for 224 yards and five scores as the Ironmen went 4-1.
+    Eastern defense: S Kaleb Chambers (TAM) had three interceptions as the Storm went 4-1.
+    Eastern special teams: K Zane Fletcher (PIT) made 11 of 11 field goals, the longest from 61 yards as the Ironmen went 4-1.
+    Western offense: WR Kevin Ward (NOR) caught 49 passes for 665 yards and 10 touchdowns as the Krewe went 4-2.
+    Western defense: OLB Chris King (MIN) had six sacks, 22 tackles, four forced fumbles, and one defensive touchdown as the Freeze went 3-3.
+    Western special teams: K Malcolm Keller (NOR) made 17 of 18 field goals, the longest from 55 yards as the Krewe went 4-2.
+    Offensive Rookie of the Month: WR Tyler Grant (PIT) caught 26 passes for 435 yards and four touchdowns as the Ironmen went 4-1.
+    Defensive Rookie of the Month: CB Quentin Graves (CIN) had two interceptions and one defensive touchdown as the Rivermen went 4-2.
+[2026 Week 18] (Milestones and records, importance 40)
+  Passing the marks: Week 18's milestones
+    Thomas Jordan (PHI, QB) reached 30 touchdown passes for the season in Week 18 against the New York Knights.
+    Scott Pierce (CIN, DE) reached 15 sacks for the season in Week 18 against the Baltimore Clippers.
+    Calvin Newton (CIN, RB) reached 1,000 rushing yards for the season in Week 18 against the Baltimore Clippers.
+    Vince Graves (PIT, QB) reached 5,000 passing yards for the season in Week 18 against the Washington Sentinels.
+    Vince Graves (PIT, QB) reached 40 touchdown passes for the season in Week 18 against the Washington Sentinels.
+    Dean Knight (CLE, WR) reached 1,000 receiving yards for the season in Week 18 against the Chicago Express.
+    Keith Pierce (IND, RB) reached 1,000 rushing yards for the season in Week 18 against the Detroit Mechanics.
+    Matt Clark (MIA, QB) reached 4,000 passing yards for the season in Week 18 against the Atlanta Firebirds.
+    Taylor Phillips (MIA, WR) reached 1,000 receiving yards for the season in Week 18 against the Atlanta Firebirds.
+    Mason Mathis (MIA, WR) reached 1,000 receiving yards for the season in Week 18 against the Atlanta Firebirds.
+    Tyler Lawson (KCY, TE) reached 100 catches for the season in Week 18 against the Minneapolis Freeze.
+    Dylan Franklin (STL, WR) reached 125 catches for the season in Week 18 against the Nashville Outlaws.
+    Kevin Ward (NOR, WR) reached 100 catches for the season in Week 18 against the Houston Wildcatters.
+    Kevin Ward (NOR, WR) reached 12 touchdown catches for the season in Week 18 against the Houston Wildcatters.
+    Kevin Watkins (HOU, DE) reached 10 sacks for the season in Week 18 against the New Orleans Krewe.
+    Victor Knight (HOU, QB) reached 4,000 passing yards for the season in Week 18 against the New Orleans Krewe.
+    Isaiah Nelson (HOU, RB) reached 1,000 rushing yards for the season in Week 18 against the New Orleans Krewe.
+    Chris Dunn (SEA, WR) reached 1,000 receiving yards for the season in Week 18 against the Denver Peaks.
+    Roman Simpson (DEN, WR) reached 1,500 receiving yards for the season in Week 18 against the Seattle Sound.
+    Hayden Sullivan (SFO, FB) reached 1,000 rushing yards for the season in Week 18 against the Portland Lumberjacks.
+    Dean Moore (POR, DE) reached 10 sacks for the season in Week 18 against the San Francisco Fog.
+    John Grant (POR, QB) reached 30 touchdown passes for the season in Week 18 against the San Francisco Fog.
+    Malcolm Bradley (LAS, WR) reached 1,000 receiving yards for the season in Week 18 against the San Diego Surf.
+    Malcolm Bradley (LAS, WR) reached 12 touchdown catches for the season in Week 18 against the San Diego Surf.
+    Tim Sims (PHX, RB) reached 1,500 rushing yards for the season in Week 18 against the Las Vegas High Rollers.
 
 ==== SOCIAL (league view) ====
-[2027 Week 3] Caleb Price @RealCalebPrice (Player): We winning Sunday. Guarantee it.
-[2027 Week 3] Victor Lewis @VLewis12 (Player): Ironmen is gonna have a long day. Mark it down.
-[2027 Week 3] SurfNation @SurfNation (Surf fan): NUMBER ONE. Say it louder.
-[2027 Week 3] Parker Jones @PJones47 (Player): Not everybody is meant to understand.
-[2027 Week 3] Garrett Shaw @GShaw89 (Player): 🤐
-[2027 Week 3] Hayden Payne @HPayne81 (Player): Remember this.
-[2027 Week 3] Connor Smith @CSmith92 (Player): Funny how things work out.
-[2027 Week 3] Travis Spencer @TravisSpencer (Player): Hot dogs are sandwiches. Fight me.
+[2027 Week 3] Caleb Price @RealCalebPrice (Player): Clippers is gonna have a long day. Mark it down.
+[2027 Week 3] Victor Lewis @VLewis12 (Player): We winning Sunday. Guarantee it.
+[2027 Week 3] BostonDiehard @BostonDiehard (Harbormen fan): NUMBER ONE. Say it louder.
+[2027 Week 3] Brett Turner @BTurner58 (Player): Funny how things work out.
+[2027 Week 3] Garrett Shaw @GShaw89 (Player): It is what it is.
+[2027 Week 3] Sam King @SamKing (Player): Hot dogs are sandwiches. Fight me.
+[2027 Week 3] Travis Spencer @TravisSpencer (Player): Learning the accordion. Teammates are not thrilled.
 [2027 Week 3] Jared Bradley @JaredBradley (Player): Patience.
-[2027 Week 3] Andre Shaw @AndreShaw (Player): Who's up for chess? Real question.
-[2027 Week 3] Kevin Oliver @KOliver34 (Player): Quiet.
+[2027 Week 3] Bryce Graves @BryceGraves (Player): Some of y'all are gonna be real quiet soon.
+[2027 Week 3] Kevin Oliver @KOliver34 (Player): Growth.
 [2027 Week 3] Ricky Thomas @Ricky_Thomas (Player): Does anybody actually like airport food or are we all pretending
-[2027 Week 3] Football Receipts @ReceiptsFB (Receipts): Grant Mathis guaranteed a win. Detroit lost 37-13.
-[2027 Week 3] Russell Hayes @Russell_Hayes (Player): Guaranteed it. Delivered it.
-[2027 Week 3] League Stat Desk @StatDesk (Stats): Eastern Players of the Week, Week 3: Offense John Reese; Defense Sam Bell; Special teams Tyler Gibson
-[2027 Week 3] League Stat Desk @StatDesk (Stats): Western Players of the Week, Week 3: Offense Tyler Riley; Defense Seth Simpson; Special teams Demarcus Wheeler
-[2027 Week 3] Marcus Okafor @OkaforScoop (Insider): Atlanta OLB Kaleb Kelly is out for the season. The injury: torn ACL.
-[2027 Week 3] Dana Kessler @KesslerReports (Insider): Hearing Cody Jackson (shoulder) is out for the season.
-[2027 Week 3] Marcus Okafor @OkaforScoop (Insider): Detroit C Levi Johnson (knee) will miss the rest of the season, per sources.
-[2027 Week 3] Marcus Okafor @OkaforScoop (Insider): Bad news in Las Vegas: Sean Gibson will miss the rest of the season.
-[2027 Week 3] Dana Kessler @KesslerReports (Insider): Chicago ILB Lance Harris will miss the rest of the season. The injury: neck injury.
-[2027 Week 3] Tori Vance @ToriVanceNews (Insider): San Francisco S Kevin Oliver (knee) is expected to miss about four weeks, per sources.
-[2027 Week 3] Kaleb Kelly @KKelly78 (Player): This one hurts. Can't wait to get back out there with my brothers.
-[2027 Week 3] Cody Jackson @CJackson6 (Player): I'll be back stronger. Thank you for all the love.
-[2027 Week 3] Sean Gibson @RealSeanGibson (Player): Appreciate all the messages. Rehab starts now.
+[2027 Week 3] Chase Thompson @Chase_Thompson (Player): Remember this.
+[2027 Week 3] Football Receipts @ReceiptsFB (Receipts): Remember this one? San Diego lost 30-27.
+[2027 Week 3] Grant Mathis @GMathis17 (Player): Told y'all.
+[2027 Week 3] League Stat Desk @StatDesk (Stats): Thomas Jordan (PHI): three straight 300-yard passing games.
+[2027 Week 3] League Stat Desk @StatDesk (Stats): Dominic Sims has three consecutive 100-yard receiving games. 324 receiving yards on the year.
+[2027 Week 3] League Stat Desk @StatDesk (Stats): John Dawson (TAM): three straight 300-yard passing games.
+[2027 Week 3] League Stat Desk @StatDesk (Stats): Eastern Players of the Week, Week 3: Offense Nick Evans; Defense Adrian Green; Special teams Jackson Bradley
+[2027 Week 3] League Stat Desk @StatDesk (Stats): Western Players of the Week, Week 3: Offense Aaron Robinson; Defense Roderick Robinson; Special teams Riley Knight
+[2027 Week 3] Dana Kessler @KesslerReports (Insider): Buffalo OT Tyrone James will miss the rest of the season. The injury: torn ACL.
+[2027 Week 3] Tyrone James @TyroneJames (Player): Setback for a comeback.
+[2027 Week 3] Section284Blizzard @Section284Blizzard (Blizzard fan): Can't catch a break. Heal up James.
+[2027 Week 3] Marcus Okafor @OkaforScoop (Insider): Miami S Anthony Campbell is out for the season. The injury: fractured ankle.
+[2027 Week 3] Tori Vance @ToriVanceNews (Insider): Hearing Donovan Walker (knee) is expected to miss about six weeks.
+[2027 Week 3] Dana Kessler @KesslerReports (Insider): Bad news in Portland: Owen Washington is expected to miss about five weeks.
 
 ==== SOCIAL (Boston Harbormen) ====
-[2027 Week 3] League Stat Desk @StatDesk (Stats): Eastern Players of the Week, Week 3: Offense John Reese; Defense Sam Bell; Special teams Tyler Gibson
-[2027 Week 3] Tyler Gibson @TGibson21 (Player): Appreciate it. Credit to everybody in that locker room.
-[2027 Week 3] Paul Butler @PaulButler (Player): 53. Let's go.
-[2027 Week 3] League Stat Desk @StatDesk (Stats): Tristan Banks (BOS) vs NSH: 9 rec, 150 yds, 1 TD
-[2027 Week 3] League Stat Desk @StatDesk (Stats): Travis Davis (BOS) vs NSH: 5 tkl, 1 INT, 1 TD
-[2027 Week 3] Boston Harbormen @Harbormen (Team account): Three straight. #HoistTheSails
-[2027 Week 3] Caleb Owens @OwensOnHarbormen (Harbormen beat writer): Final: Boston 35, Nashville 13. Tristan Banks: 9 rec, 150 yds, 1 TD.
-[2027 Week 3] Devin Owens @OwensOnOutlaws (Outlaws beat writer): Final: Boston 35, Nashville 13. Adrian Williams: 17 tkl, 1 FF.
-[2027 Week 3] BOStilIdie @BOStilIdie (Harbormen fan): BANKS!!!!
-[2027 Week 3] BostonDiehard @BostonDiehard (Harbormen fan): LET'S GOOOO
-[2027 Week 2] Leon Kelly @RealLeonKelly (Player): Told y'all. Nobody in this league can guard me.
-[2027 Week 2] Boston Harbormen @Harbormen (Team account): We'll take that one. 24-21. #HoistTheSails
-[2027 Week 2] Caleb Owens @OwensOnHarbormen (Harbormen beat writer): Final: Boston 24, New York 21. Julian Taylor: 19/24, 226 yds, 1 TD, 1 INT; 7 car, 59 yds.
-[2027 Week 2] John Grant @GrantOnKnights (Knights beat writer): Final: Boston 24, New York 21. Roman Harper: 15/24, 140 yds, 1 TD, 0 INT; 4 car, 28 yds, 1 TD.
-[2027 Week 2] New York Knights @Knights (Team account): Final score. We'll be back next week.
-[2027 Week 2] BostonDiehard @BostonDiehard (Harbormen fan): Never doubted it
-[2027 Week 1] Trent Green @TrentGreen (Player): ...
-[2027 Week 1] League Stat Desk @StatDesk (Stats): Eastern Players of the Week, Week 1: Offense Hayden Wade; Defense Darren Holland; Special teams Kevin Ward
-[2027 Week 1] Boston Harbormen @Harbormen (Team account): Roster move: we've signed S Ian Thompson.
-[2027 Week 1] Boston Harbormen @Harbormen (Team account): Welcome to Boston, Logan Mack! #HoistTheSails
-[2027 Week 1] League Stat Desk @StatDesk (Stats): Hayden Wade (BOS) vs CLE: 35/44, 415 yds, 2 TD, 1 INT; 6 car, 24 yds
-[2027 Week 1] Fantasy Freddie @FantasyFreddie (Fantasy analyst): Wade just won somebody their matchup with 415 passing yards and two touchdown passes.
-[2027 Week 1] Boston Harbormen @Harbormen (Team account): W. #HoistTheSails
-[2027 Week 1] Caleb Owens @OwensOnHarbormen (Harbormen beat writer): Final: Cleveland 25, Boston 28. Reggie Morgan: 7 car, 36 yds, 1 TD; 5 rec, 51 yds, 1 TD.
-[2027 Week 1] Scott Price @PriceOnForge (Forge beat writer): Final: Cleveland 25, Boston 28. Anthony Ford: 12 car, 44 yds, 1 TD; 6 rec, 61 yds.
+[2027 Week 3] BostonDiehard @BostonDiehard (Harbormen fan): NUMBER ONE. Say it louder.
+[2027 Week 3] Chase Thompson @Chase_Thompson (Player): Remember this.
+[2027 Week 3] League Stat Desk @StatDesk (Stats): Dominic Sims has three consecutive 100-yard receiving games. 324 receiving yards on the year.
+[2027 Week 3] League Stat Desk @StatDesk (Stats): Patrick Fisher (BOS) vs CHA: 6 tkl, 1 INT, 1 TD
+[2027 Week 3] Gridiron Memes @GridironMemes (Parody): Nobody:
+Boston: three straight wins.
+[2027 Week 3] Boston Harbormen @Harbormen (Team account): That's a dub. Harbormen 27, Monarchs 9. #HoistTheSails
+[2027 Week 3] Patrick Fisher @Patrick_Fisher (Player): Locked in.
+[2027 Week 3] Caleb Owens @OwensOnHarbormen (Harbormen beat writer): Final: Charlotte 9, Boston 27. Dominic Sims: 10 rec, 104 yds, 1 TD.
+[2027 Week 3] Evan Foster @FosterOnMonarchs (Monarchs beat writer): Final: Charlotte 9, Boston 27. Luke Washington: 6 rec, 57 yds, 1 TD.
+[2027 Week 3] Charlotte Monarchs @Monarchs (Team account): Tough one today. Final: Monarchs 9, Harbormen 27.
+[2027 Week 3] Fantasy Freddie @FantasyFreddie (Fantasy analyst): Benched Sims this week? Delete the app. Go outside.
+[2027 Week 3] BOStilIdie @BOStilIdie (Harbormen fan): Blizzard fans awfully quiet today.
+[2027 Week 3] BostonDiehard @BostonDiehard (Harbormen fan): Love this team
+[2027 Week 2] Rex Harmon @RexTakes (TV host): These power rankings are a joke. Boston hasn't beaten anybody.
+[2027 Week 2] BOStilIdie @BOStilIdie (Harbormen fan): #1 in the power rankings. As it should be.
+[2027 Week 2] Boston Harbormen @Harbormen (Team account): Welcome to Boston, Paul Mitchell! #HoistTheSails
+[2027 Week 2] League Stat Desk @StatDesk (Stats): Lawrence Douglas (BOS) vs KCY: 17 car, 68 yds, 2 TD; 1 rec, 4 yds, 1 TD
+[2027 Week 2] Boston Harbormen @Harbormen (Team account): W. #HoistTheSails
+[2027 Week 2] Caleb Owens @OwensOnHarbormen (Harbormen beat writer): Final: Boston 34, Kansas City 14. Lawrence Douglas: 17 car, 68 yds, 2 TD; 1 rec, 4 yds, 1 TD.
+[2027 Week 2] Frank Daniels @DanielsOnBlues (Blues beat writer): Final: Boston 34, Kansas City 14. Mitchell Fisher: 4 rec, 41 yds, 1 TD.
+[2027 Week 2] Dominic Sims @RealDominicSims (Player): Locked in.
+[2027 Week 2] BOStilIdie @BOStilIdie (Harbormen fan): Pay Douglas. Pay the man.
+[2027 Week 2] BostonDiehard @BostonDiehard (Harbormen fan): Norris was unreal today
+[2027 Week 2] BOSFaithful @BOSFaithful (Harbormen fan): HOLLAND!!!!
+[2027 Week 2] BostonDiehard @BostonDiehard (Harbormen fan): Douglas deserves a raise

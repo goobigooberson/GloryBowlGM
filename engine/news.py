@@ -2101,7 +2101,7 @@ def _retirements(ctx, season):
         imp = (14 + min(16, 2 * max(0, p.experience - 5)) + (14 if cal_now >= NOTABLE else 0) + 8 * len(titles)
                + (8 if nums else 0))
         heads = [f"{p.name} retires after {num(p.experience)} seasons", f"{pos_abbr(p)} {p.name} calls it a career",
-                 f"{p.name} retires"]
+                 f"{pos_abbr(p)} {p.name} retires"]     # (with the position: two players can share a name)
         ctx.add(season, -3, "retirement", ctx.pick(("ret", season), rng, heads), body,
                 teams=[last_team] if last_team else [], players=[p.id], importance=imp, key=f"retire-{p.id}")
         if imp >= 40 and last_team in ctx.teams and not unsigned:
