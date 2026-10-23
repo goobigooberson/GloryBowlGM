@@ -108,11 +108,11 @@ def team_of(league, pid):
 
 
 def practice_players(league, tid):
-    return [p for p in league.players if league.practice.get(p.id) == tid]
+    return league.in_order(pid for pid, t in league.practice.items() if t == tid)
 
 
 def reserve_players(league, tid):
-    return [p for p in league.players if p.id in league.reserve and league.reserve[p.id]["team"] == tid]
+    return league.in_order(pid for pid, r in league.reserve.items() if r["team"] == tid)
 
 
 def ps_eligible(p, squad):
@@ -329,7 +329,9 @@ def free_agent_pool(league, injuries, position=None, ps_only=False, tid=None):
     if position:
         fas = [p for p in fas if p.position == position]
     if tid is not None and getattr(league, "contracts", None):
-        fas = [p for p in fas if can_afford(league, tid, p.id)]
+        from .free_agency import AffordCheck
+        money = AffordCheck(league)          # = can_afford, the team's cap worked out once
+        fas = [p for p in fas if money.ok(tid, p.id)]
     return fas
 
 
@@ -991,22 +993,29 @@ def ai_week(league, injuries, recovering, tid, cal, label, rng, preseason=False)
 
 
 def _upgrade(league, injuries, recovering, tid, cal, label):
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = league.team_players(tid)
     chart = league.depth_charts.get(tid, {})
     starters = depth.starter_ids(chart) if chart else set()
     fresh = _just_added(league, tid)
     best_gain, move = 0.0, None
+    # Nothing changes until the move is made, so the healthy players, the free agents
+    # he can afford and his practice squad are worked out once (Oct 22, for speed).
+    healthy = _healthy(league, injuries, roster)
+    outside = free_agent_pool(league, injuries, tid=tid)
+    squad = [p for p in practice_players(league, tid) if injured_weeks(league, injuries, p.id) == 0]
+    if squad and getattr(league, "contracts", None):
+        from .free_agency import AffordCheck
+        money = AffordCheck(league)
+        squad = [p for p in squad if money.ok(tid, p.id)]
     for position in ROSTER_TEMPLATE:
-        mine = [p for p in _healthy(league, injuries, roster) if p.position == position and p.id not in starters
+        mine = [p for p in healthy if p.position == position and p.id not in starters
                 and p.id not in fresh
                 and not (p.draft_year == league.season and 1 <= p.draft_round <= 3)]
         if not mine:
             continue
         worst = min(mine, key=lambda q: value(q, league, tid))
-        cands = [(value(p, league, tid), p, "fa") for p in free_agent_pool(league, injuries, position, tid=tid)]
-        cands += [(value(p, league, tid) + OWN_PS_BONUS, p, "ps") for p in practice_players(league, tid)
-                  if p.position == position and injured_weeks(league, injuries, p.id) == 0
-                  and can_afford(league, tid, p.id)]
+        cands = [(value(p, league, tid), p, "fa") for p in outside if p.position == position]
+        cands += [(value(p, league, tid) + OWN_PS_BONUS, p, "ps") for p in squad if p.position == position]
         if not cands:
             continue
         v, best, src = max(cands, key=lambda c: c[0])

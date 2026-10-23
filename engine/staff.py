@@ -143,6 +143,14 @@ BUDGET_RANGE = (0.72, 1.40)
 FIRE_HC = {"new": (0.35, 0.17, 0.05, 0.04, 0.01),   # his 1st or 2nd season
            "settled": (0.71, 0.45, 0.21, 0.12, 0.045)}
 FIRE_PLAYOFF_MULT = 0.5       # reached the playoffs
+# The hiring market steadies the number of changes from year to year (Blake, Oct 24: match
+# the real spread, not just the average). Real 1999-2025: 6.6 head coach changes a year,
+# spread 1.8, never under 3 or over 10, steadier than 32 independent coin flips would be
+# (about 2.3): owners look at how many jobs are already open (the best candidates go fast
+# in a busy year; in a quiet one a struggling coach looks easier to replace). Each AI team,
+# in random order, has its odds x e^(-MARKET_K x (jobs opened so far - expected so far)).
+MARKET_K = 0.8
+MARKET_LIFT = 1.18            # odds multiplier that keeps the average at the real 6.6 (the brake trims it)
 # A new head coach (AI team) keeps each of these with this chance (otherwise he brings
 # his own; real: much of the coordinator turnover is new head coaches' staffs).
 KEEP_UNDER_NEW_HC = {"OC": 0.20, "DC": 0.25, "AHC": 0.35, "SC": 0.50, "CS": 0.85, "PP": 0.85, "AT": 0.85}
@@ -629,7 +637,7 @@ def _age_year(league, rng):
         for k in c["true"]:
             c["true"][k] = round(_clip(c["true"][k] + rng.gauss(avg, GROWTH_SD)), 2)
             c["err"][k] = round(REP_KEEP * c["err"].get(k, 0.0) + rng.gauss(0, REP_NOISE), 2)
-        p_retire = 1 / (1 + math.exp(-(a - RETIRE_AGE) / RETIRE_SPREAD))
+        p_retire = _retire_chance(league, c)
         if c["team"] is None:
             p_retire = min(1.0, p_retire * 2)
             if c["out_since"] is not None and league.season - c["out_since"] > OUT_OF_WORK_LIMIT:
@@ -648,6 +656,11 @@ def _age_year(league, rng):
                 if c["retired"] is not None and league.season - c["retired"] > 15 and int(k) not in keep_ids
                 and not c["record"]]:
         del league.staff["coaches"][key]
+
+
+def _retire_chance(league, c):
+    """His chance to retire this offseason, by age (in a job)."""
+    return 1 / (1 + math.exp(-(age(league, c) - RETIRE_AGE) / RETIRE_SPREAD))
 
 
 def _log(league, tid, c, job, move, note=""):
@@ -721,23 +734,44 @@ def carousel_start(league, lines, rng=None):
     ensure(league)
     rng = rng or _rng(league, "carousel")
     record_season(league, lines)
+    # How many AI head coaches would retire in a typical year like this one (the hiring
+    # market below counts retirements against this, so a cluster of them calms firings).
+    user = league.user_team_id
+    retire_expected = sum(_retire_chance(league, c) for t in league.teams if t.id != user
+                          for c in (staff_of(league, t.id)["HC"],) if c and not c.get("interim"))
     _age_year(league, rng)
     by_team = {r["team"]: r for r in lines}
     # Unit ranks for coordinators (points scored / allowed) when the season was played.
     pf_rank = _rank(lines, "pf", reverse=True)
     pa_rank = _rank(lines, "pa", reverse=False)
-    user = league.user_team_id
     expiring_user = []
+    # Head coaches first, team by team in random order, with the hiring market's brake.
+    # Jobs already open (retirements) and interim coaches count as openings both made
+    # and expected, so only the true decisions are steadied.
+    ai = [t.id for t in league.teams if t.id != user]
+    rng.shuffle(ai)
+    opened, expected = 0.0, retire_expected
+    for tid in ai:
+        hc = staff_of(league, tid)["HC"]
+        if not hc or hc.get("interim"):
+            if hc:                            # an interim: his team was always going to choose
+                fire(league, tid, "HC")
+                expected += 1
+            opened += 1                       # (a retirement is counted against retire_expected)
+            continue
+        r = by_team.get(tid, {})
+        p = min(0.95, fire_chance(_wins17(r), _tenure(league, hc), bool(r.get("seed"))) * MARKET_LIFT)
+        p_now = min(0.95, p * math.exp(-MARKET_K * (opened - expected)))
+        expected += p
+        if rng.random() < p_now:
+            fire(league, tid, "HC")
+            opened += 1
     for t in league.teams:
         s = staff_of(league, t.id)
         r = by_team.get(t.id, {})
         if t.id == user:
             expiring_user = [job for job, c in s.items() if c and (c["through"] or 0) < league.season]
             continue
-        hc = s["HC"]
-        if hc and (hc.get("interim") or rng.random() < fire_chance(_wins17(r), _tenure(league, hc),
-                                                                  bool(r.get("seed")))):
-            fire(league, t.id, "HC")
         for job in ("OC", "DC"):
             c = s[job]
             if not c or c["team"] is None:

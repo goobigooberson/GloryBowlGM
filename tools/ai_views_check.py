@@ -26,10 +26,13 @@
 #   python tools/ai_views_check.py --tape-sd 6,4,2.5 --own-sd 1.5 --shared 0.4   (try knobs:
 #                                  evaluation.OTHER_SD_BY_TAPE's spreads, least tape to most)
 #   python tools/ai_views_check.py --truth                (AI teams see true ratings: the old way)
+#   python tools/ai_views_check.py --leagues 109,110 --save a.pkl, then --load a.pkl,b.pkl   (pool runs:
+#                                  bins have few deals, and one 8-league run moves by several points)
 # Writes tools/ai_views_report.txt. Nothing is saved; your saves are never touched.
 
 import argparse
 import math
+import pickle
 import random
 import statistics as st
 import sys
@@ -194,8 +197,16 @@ def main():
     ap.add_argument("--tape-sd", help="spreads at evaluation.OTHER_SD_BY_TAPE's points, e.g. 6,4,2.5")
     ap.add_argument("--shared", type=float)
     ap.add_argument("--truth", action="store_true", help="AI teams see true ratings (the old way)")
+    ap.add_argument("--save", help="also keep the measured deals in this file (pickle), to pool runs")
+    ap.add_argument("--load", help="report on deals saved earlier with --save (comma-separated files; no new run)")
     args = ap.parse_args()
     t0 = time.time()
+    if args.load:
+        rows = []
+        for f in args.load.split(","):
+            rows.extend(pickle.load(open(f, "rb")))
+        report(rows, f"pooled: {args.load}")
+        return
     if args.own_sd is not None:
         E.OWN_SD = args.own_sd
     if args.tape_sd:
@@ -211,6 +222,8 @@ def main():
     rows = []
     for seed in [int(x) for x in args.leagues.split(",")]:
         run_league(seed, args.seasons, rows)
+    if args.save:
+        pickle.dump(rows, open(args.save, "wb"))
     report(rows, label)
     say(f"\n({time.time() - t0:.0f} s)")
     (ROOT / "tools" / "ai_views_report.txt").write_text("\n".join(out_lines), encoding="utf-8")

@@ -175,7 +175,7 @@ class GameTeam:
             if natural in ("KR", "PR"):
                 v = 0.0
             else:
-                fit = depth.spot_fit(p, slot)["now"]
+                fit = depth.rating_at(p, slot)          # = spot_fit(...)["now"], faster
                 if natural == p.position:
                     base = p.overall()
                 else:

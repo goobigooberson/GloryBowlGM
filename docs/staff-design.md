@@ -274,7 +274,7 @@ level, Blake's 88-90% moving 0-3 points a year, stars 80+/90+), plus sample care
 
 - **When:** the first offseason phase, "Coaching changes", right after the Glory Bowl
   (real: Black Monday into February), before re-signing and free agency.
-- **Firings:** AI teams change head coaches by the real table in section 1 (wins, his
+- **Firings:** (Oct 24: a hiring-market brake keeps the yearly count at the real spread, 1.8, see the build log) AI teams change head coaches by the real table in section 1 (wins, his
   tenure, playoffs; about 6.6 a year, plus about 1.5 in-season). New head coaches usually
   replace the coordinators; coordinators also leave when promoted, when their unit is bad,
   or retire (target: about a third of coordinators change a year). You decide yours (and

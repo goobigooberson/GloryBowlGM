@@ -163,7 +163,11 @@ def _skill_value(p, skill, which, position=None):
     if skill in p.skills:
         return p.skills[skill][which]
     _label, trait_weights = pos.SKILLS[skill]
-    r = related(p.position, position) if position else 0.0
+    # Only a NEW position's craft carries over. At his own position an untrained skill (a
+    # linebacker's ball skills, a safety's pass rush) stays untrained: related(own, own) is 1.0,
+    # which briefly gave every linebacker in coverage his overall level as ball skills (Oct 24 bug:
+    # league interceptions +8%).
+    r = related(p.position, position) if position and position != p.position else 0.0
     own_now = [cur for cur, _pot in p.skills.values()]
     technique = UNTRAINED_TECHNIQUE + r * max(0.0, sum(own_now) / len(own_now) - UNTRAINED_TECHNIQUE)
     if which == 1:
@@ -238,8 +242,48 @@ def spot_fit(p, slot):
 
 
 def rating_at(p, slot):
-    """How well player p would play this spot right now, 1-99."""
-    return spot_fit(p, slot)["now"]
+    """How well player p would play this spot right now, 1-99: spot_fit's "now",
+    worked out on its own (Oct 22, for speed: AI depth charts ask this ~1,900
+    times a team, and the ceiling half and the notes were thrown away). Same
+    arithmetic in the same order as spot_fit, so the result is identical."""
+    position = SLOTS[slot][1]
+    if position in ("KR", "PR"):
+        skill = "kick_return" if position == "KR" else "punt_return"
+        return p.skills[skill][0] if skill in p.skills else 15
+    if position == p.position and slot not in SPOT_SKILLS:
+        now = p.overall()
+    else:
+        weights = SPOT_SKILLS.get(slot) or pos.POSITIONS[position][1]
+        r = related(p.position, position) if position != p.position else 0.0
+        own_now = [cur for cur, _pot in p.skills.values()]
+        technique = UNTRAINED_TECHNIQUE + r * max(0.0, sum(own_now) / len(own_now) - UNTRAINED_TECHNIQUE)
+        total = 0.0
+        weight_sum = 0
+        for skill, w in weights:
+            if w > 0:
+                if skill in p.skills:
+                    value = p.skills[skill][0]
+                else:                                   # as _skill_value(p, skill, 0, position)
+                    _label, trait_weights = pos.SKILLS[skill]
+                    value = (1 - sum(trait_weights.values())) * technique
+                    for trait, tw in trait_weights.items():
+                        value += tw * p.athletic.get(trait, 50)
+                total += value * w
+                weight_sum += w
+        now = total / weight_sum
+    close = related(p.position, position)
+    if position != p.position:
+        learned = p.learned.get(position, 0) / 100
+        now -= NEW_POSITION_NOW * (1 - learned)
+    spot_side = SLOT_SIDE.get(slot)
+    if spot_side and p.side in ("L", "R") and p.side != spot_side:
+        learned = p.learned.get("side", 0) / 100
+        now -= SIDE_SWITCH_NOW * (1 - learned)
+    _h, _hs, avg_w, w_spread = pos.BODY[position]
+    off_size = abs(p.weight - avg_w) / w_spread
+    if position != p.position and off_size > 1.5:
+        now -= (off_size - 1.5) * 6 * (1 - close)
+    return max(1, min(99, round(now)))
 
 
 # ---------------------------------------------------------------------------

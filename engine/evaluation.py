@@ -133,7 +133,15 @@ def _pool(league):
     d = league.draft if isinstance(league.draft, dict) else None
     if not d or d.get("kind") == "startup":
         return set()
-    return set(d.get("pool", ()))
+    ids = d.get("pool", ())
+    # Remembered while it's the same list at the same length (Oct 22, for speed: free
+    # agency asks this ~2 million times an offseason). The list itself is kept here so
+    # it can't be freed and another list take its place.
+    memo = league.__dict__.get("_eval_pool")
+    if memo is None or memo[0] is not ids or memo[1] != len(ids):
+        memo = (ids, len(ids), set(ids))
+        league.__dict__["_eval_pool"] = memo
+    return memo[2]
 
 
 def _known_since(league, tid, pid):
@@ -232,12 +240,17 @@ def _eval_z(league, tid, kind, position=None):
 
 def _evaluators(league, tid, p, rel):
     from . import staff as S
-    s = S.staff_of(league, tid)
+    # The jobs it needs, looked up straight (= staff.staff_of(league, tid)[job]; Oct 22,
+    # for speed: building the whole staff for each look was a big part of free agency).
+    jobs = league.staff["jobs"].get(str(tid), {})
+    hc = S.coach(league, jobs.get("HC"))
     if rel == "own":
         group = S.POSITION_GROUP.get(p.position, "ST")
-        spec = [c["id"] for job in ("HC", "OC", "DC", "AHC") for c in (s[job],) if c and c.get("bg") == group]
-        return ("own", tuple(sorted(spec)), s["HC"]["id"] if s["HC"] else 0)
-    return ("pro", s["PP"]["id"] if s["PP"] else 0, s["HC"]["id"] if s["HC"] else 0)
+        spec = [c["id"] for job in ("HC", "OC", "DC", "AHC") for c in (S.coach(league, jobs.get(job)),)
+                if c and c.get("bg") == group]
+        return ("own", tuple(sorted(spec)), hc["id"] if hc else 0)
+    pp = S.coach(league, jobs.get("PP"))
+    return ("pro", pp["id"] if pp else 0, hc["id"] if hc else 0)
 
 
 def _draws(seed, skills):
@@ -246,6 +259,20 @@ def _draws(seed, skills):
     out = {}
     for k in sorted(skills):
         out[k] = (g_now, r.gauss(0, 1), g_pot, r.gauss(0, 1))
+    return out
+
+
+def _shared_draws(league, seed, skills):
+    """_draws for the league-wide part of a mistake: the same for every team that looks
+    at him, so worked out once (Oct 22, for speed: 32 teams x 7 free agency waves asked
+    for the same dice). Never change what it returns."""
+    memo = league.__dict__.setdefault("_eval_shared", {})
+    key = (seed, tuple(sorted(skills)))
+    out = memo.get(key)
+    if out is None:
+        if len(memo) > 8000:
+            memo.clear()
+        out = memo[key] = _draws(seed, skills)
     return out
 
 
@@ -361,6 +388,11 @@ def seen_skills(league, tid, p):
     st = getattr(league, "staff", None)
     if tid is None or not st:
         return dict(p.skills)
+    return _seen(league, tid, p)[0]
+
+
+def _seen(league, tid, p):
+    """seen_skills() and its cache key (misjudgment() needs both)."""
     cache = league.__dict__.setdefault("_eval_cache", {})
     now = _clock(league)
     pool = p.id in _pool(league)
@@ -370,11 +402,11 @@ def seen_skills(league, tid, p):
     key = (tid, p.id, now, ev, since, id(p.skills), p.position)
     hit = cache.get(key)
     if hit is not None:
-        return hit
+        return hit, key
     if pool:
         out = _prospect_view(league, tid, p)
         cache[key] = out
-        return out
+        return out, key
     from . import staff as S
     base = _true_view(league, p, rel)
     rookie = p.experience == 0
@@ -391,7 +423,7 @@ def seen_skills(league, tid, p):
     else:
         sd = sd_other
         team = _draws(f"eval-{salt}-{tid}-{p.id}-{ev}", base)
-        shared = _draws(f"eval-shared-{salt}-{p.id}-{league.season}", base)
+        shared = _shared_draws(league, f"eval-shared-{salt}-{p.id}-{league.season}", base)
     a = math.sqrt(SHARED)
     b = math.sqrt(1 - SHARED)
     pp = PLAYER_PART
@@ -422,7 +454,7 @@ def seen_skills(league, tid, p):
         league.__dict__.get("_eval_quiet", {}).clear()
     cache[key] = out
     league.__dict__.setdefault("_eval_quiet", {})[key] = quiet
-    return out
+    return out, key
 
 
 def _overall_of(skills, position, which="current"):
@@ -444,10 +476,7 @@ def misjudgment(league, tid, p, which="current"):
     toward average) against the league's view of them."""
     if tid is None or not getattr(league, "staff", None) or p.id in _pool(league):
         return 0.0
-    skills = seen_skills(league, tid, p)
-    rel = "own" if team_of(league, p.id) == tid else "other"
-    since = _known_since(league, tid, p.id) if rel == "own" else None
-    key = (tid, p.id, _clock(league), _evaluators(league, tid, p, rel), since, id(p.skills), p.position)
+    skills, key = _seen(league, tid, p)
     quiet = league.__dict__.get("_eval_quiet", {}).get(key)
     if quiet is None:
         return 0.0

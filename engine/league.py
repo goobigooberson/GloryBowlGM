@@ -131,7 +131,19 @@ class League:
 
     def team_players(self, team_id):
         """The team's 53-man roster (the players who can play)."""
-        return [p for p in self.players if self.rosters.get(p.id) == team_id]
+        return self.in_order(pid for pid, t in self.rosters.items() if t == team_id)
+
+    def in_order(self, pids):
+        """These players, in the order of self.players (what a scan of the whole
+        list would give; Oct 22, for speed: rosters are a small part of a league's
+        players once retired players pile up). Players are only ever added to the
+        list, so each one's place is remembered until it grows."""
+        order = self.__dict__.get("_order")
+        if order is None or len(order) != len(self.players):
+            order = {p.id: i for i, p in enumerate(self.players)}
+            self.__dict__["_order"] = order
+        players = self.players
+        return [players[i] for i in sorted(order[pid] for pid in pids if pid in order)]
 
     def free_agents(self):
         """Unsigned players who are still playing (retired players aren't free
