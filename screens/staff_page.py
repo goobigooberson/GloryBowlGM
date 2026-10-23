@@ -13,6 +13,7 @@ from html import escape
 from nicegui import ui
 
 from engine import formatting as fmt
+from engine import gm as G
 from engine import season
 from engine import staff as S
 from engine.contracts import fmt_money
@@ -155,6 +156,98 @@ def coach_html(league, c, job):
     return "".join(parts)
 
 
+def _wl(rec):
+    w, l_, t_ = rec
+    return f"{w}-{l_}" + (f"-{t_}" if t_ else "")
+
+
+def gm_html(league, tid, compact=False):
+    """A team's general manager (gm.py): you for your team; for an AI team his
+    reputation (what the league believes; his eye for coaches is hidden), his
+    record, where he came from and what he's known for."""
+    teams = {t.id: t for t in league.teams}
+    if tid == league.user_team_id:
+        return ('<div class="panel-heading" style="margin-top:0">General manager</div>'
+                '<div><b>You.</b> You run the front office: the draft, free agency, contracts and hiring the '
+                'coaching staff.</div>')
+    p = G.gm_of(league, tid)
+    if not p:
+        return ('<div class="panel-heading" style="margin-top:0">General manager</div>'
+                '<div class="legend">The job is open.</div>')
+    v = G.view(league, p)
+    rep, col = _rating(v["reputation"])
+    here = [r for r in v["history"] if r["team"] == tid]
+    parts = ['<div class="panel-heading" style="margin-top:0">General manager</div>',
+             f'<div class="condensed text-2xl">{escape(v["name"])}</div>',
+             f'<div class="legend">Age {v["age"]} · GM here since {v["since"]}'
+             + (f' · came from: {escape(v["from"])}' if v["from"] and not compact else "") + '</div>',
+             f'<div>Reputation: <span style="color:{col};font-weight:600">{escape(rep)}</span> '
+             "<span class=\"legend\">(what the league thinks of him as a team builder; it follows his teams' "
+             'results)</span></div>']
+    line = []
+    if here:
+        trips = sum(1 for r in here if r.get("seed"))
+        line.append(f"here {_wl(v['here'])} in {len(here)} season{'s' if len(here) != 1 else ''}"
+                    + (f", {trips} playoff trip{'s' if trips != 1 else ''}" if trips else ", no playoff trips"))
+    others = sorted({teams[r["team"]].abbrev for r in v["history"] if r["team"] != tid and r["team"] in teams})
+    if others:
+        line.append(f"before: GM of {', '.join(others)}")
+    if v["titles"]:
+        line.append(f"{v['titles']} title{'s' if v['titles'] != 1 else ''}")
+    if not v["history"]:
+        line.append("first season as a GM")
+    parts.append("<div>Record: " + escape("; ".join(line)) + "</div>")
+    if v["styles"]:
+        parts.append('<div>Known for: <b>' + escape("; ".join(w for _a, w in v["styles"])) + '</b></div>')
+    else:
+        parts.append('<div class="legend">No strong habits on draft day, in free agency or with the cap.</div>')
+    if not compact and v["history"]:
+        body = "".join(
+            f'<tr><td>{r["season"]}</td><td>{escape(teams[r["team"]].abbrev if r["team"] in teams else "")}</td>'
+            f'<td>{r["w"]}-{r["l"]}{"-" + str(r["t"]) if r["t"] else ""}</td><td>{escape(r.get("result") or "")}</td></tr>'
+            for r in reversed(v["history"][-10:]))
+        parts.append('<table class="staff-mini"><tr><th>Season</th><th>Team</th><th>W-L</th><th>Result</th></tr>'
+                     + body + "</table>")
+    return "".join(parts)
+
+
+def open_league_gms():
+    """Every team's general manager and head coach, in a pop-up."""
+    league = state.league
+    rows = []
+    for t in sorted(league.teams, key=lambda t: t.name):
+        hc = S.staff_of(league, t.id)["HC"]
+        p = G.gm_of(league, t.id)
+        v = G.view(league, p) if p else None
+        rep, col = _rating(v["reputation"]) if v else ("-", "inherit")
+        rows.append({"id": t.id, "team": t.name,
+                     "gm": "You" if t.id == league.user_team_id else (v["name"] if v else "(open)"),
+                     "age": v["age"] if v else "", "rep": rep, "rep_c": col, "since": v["since"] if v else "",
+                     "here": _wl(v["here"]) if v and v["seasons"] else "-",
+                     "known": "; ".join(w for _a, w in v["styles"]) if v else "",
+                     "hc": (hc["name"] + (" (interim)" if hc.get("interim") else "")) if hc else "(open)",
+                     "hc_since": hc["since"] if hc else ""})
+    cols = [{"name": "team", "label": "Team", "field": "team", "align": "left", "sortable": True},
+            {"name": "gm", "label": "General manager", "field": "gm", "align": "left"},
+            {"name": "age", "label": "Age", "field": "age", "align": "right"},
+            {"name": "rep", "label": "Reputation", "field": "rep", "align": "left"},
+            {"name": "since", "label": "GM since", "field": "since", "align": "right", "sortable": True},
+            {"name": "here", "label": "Record there", "field": "here", "align": "right"},
+            {"name": "known", "label": "Known for", "field": "known", "align": "left"},
+            {"name": "hc", "label": "Head coach", "field": "hc", "align": "left"},
+            {"name": "hc_since", "label": "Coach since", "field": "hc_since", "align": "right", "sortable": True}]
+
+    def body():
+        ui.label("Reputations are what the league believes (they follow a GM's results); how well a GM judges "
+                 "coaches is hidden. Click a team for its window.").classes("legend")
+        t = ui.table(rows=rows, columns=cols, row_key="id", pagination={"rowsPerPage": 0}) \
+            .props("flat dense hide-bottom").classes("roster-table w-full")
+        t.add_slot("body-cell-rep", '<q-td :props="props"><span :style="{color: props.row.rep_c, fontWeight: 600}">'
+                                    '{{ props.value }}</span></q-td>')
+        t.on("rowClick", lambda e: popups.open_team(e.args[1]["id"]))
+    popups.open_window("General managers and head coaches", 1320, body)
+
+
 CSS = f"""
 <style>
   .staff-mini {{ border-collapse: collapse; margin: 4px 0 6px; font-size: 14px; }}
@@ -204,8 +297,13 @@ def build_staff_tab(on_change=None):
                 if dead:
                     ui.html(f'<span class="legend">Still owed to fired coaches: {fmt_money(dead)} this season '
                             f'(paid by the owner, not from your staff budget)</span>', sanitize=False)
+                ui.button("General managers", icon="groups", on_click=open_league_gms) \
+                    .props("no-caps flat dense color=green-10") \
+                    .tooltip("Every team's general manager and head coach")
             if not mine():
                 ui.label("Another team's staff: view only.").classes("legend")
+                with ui.element("div").classes("report px-5 py-3").style("margin-top:6px; max-width:900px"):
+                    ui.html(gm_html(league, tid, compact=True), sanitize=False)
                 return
             car = league.staff.get("carousel")
             if car:
@@ -279,6 +377,9 @@ def build_staff_tab(on_change=None):
                                          f"Hired {r['name']} as {S.JOB_NAMES[r['job']].lower()}")
                 moves = [e for e in league.staff["log"] if e["season"] == league.season
                          and e["move"] in ("hired", "fired", "retired", "interim")]
+                # General managers first: owners change them before the coaches (gm.py, Oct 22).
+                moves = [{**e, "job": "GM"} for e in G.log(league, league.season)
+                         if e["move"] in ("hired", "fired", "retired") and not e.get("quiet")] + moves
                 if moves:
                     teams = {t.id: t for t in league.teams}
                     with ui.element("div").classes("report px-5 py-4 w-full"):
@@ -287,7 +388,8 @@ def build_staff_tab(on_change=None):
                         verbs = {"hired": "hired", "fired": "fired", "retired": "retired", "interim": "named interim"}
                         lines = "".join(
                             f'<tr><td>{escape(teams[e["team"]].abbrev) if e["team"] in teams else ""}</td>'
-                            f'<td>{escape(verbs[e["move"]])}</td><td>{escape(S.JOB_SHORT.get(e["job"], ""))}</td>'
+                            f'<td>{escape(verbs[e["move"]])}</td>'
+                            f'<td>{escape("General manager" if e["job"] == "GM" else S.JOB_SHORT.get(e["job"], ""))}</td>'
                             f'<td>{escape(e["name"])}</td><td class="legend">{escape(e.get("note") or "")}</td></tr>'
                             for e in reversed(moves[-60:]))
                         ui.html('<table class="staff-mini"><tr><th>Team</th><th>Move</th><th>Job</th><th>Coach</th>'

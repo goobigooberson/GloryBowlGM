@@ -1,55 +1,29 @@
 # names.py
-# Lists used to make fictional players feel real. Add as many as you like:
-# more names means fewer repeats across a 2,500-player league.
+# Lists used to make fictional players feel real.
 
-FIRST_NAMES = [
-    "Aaron", "Adrian", "Alex", "Andre", "Anthony", "Antonio", "Austin", "Bennett",
-    "Blake", "Brandon", "Brett", "Brian", "Bryce", "Caleb", "Calvin", "Cameron",
-    "Carlos", "Carson", "Casey", "Chase", "Chris", "Clay", "Cody", "Colby", "Cole",
-    "Collin", "Connor", "Corey", "Curtis", "Dakota", "Dalton", "Damon", "Daniel",
-    "Darius", "Darnell", "Darren", "David", "Dean", "DeAndre", "Demarcus", "Derek",
-    "Derrick", "Devin", "Devon", "Dominic", "Donovan", "Drew", "Dylan", "Eli",
-    "Elijah", "Eric", "Ethan", "Evan", "Frank", "Gabe", "Garrett", "Grant",
-    "Greg", "Hayden", "Hunter", "Ian", "Isaiah", "Jack", "Jackson", "Jacob",
-    "Jalen", "Jamal", "James", "Jamie", "Jared", "Jason", "Javon", "Jay", "Jeff",
-    "Jeremiah", "Jerome", "Jesse", "Joel", "John", "Jordan", "Joseph", "Josh",
-    "Julian", "Justin", "Kaleb", "Keenan", "Keith", "Kendall", "Kendrick", "Kevin",
-    "Kyle", "Lamar", "Lance", "Landon", "Lawrence", "Leon", "Levi", "Logan",
-    "Lucas", "Luke", "Malcolm", "Marcus", "Mario", "Mark", "Marquise", "Marshall",
-    "Mason", "Matt", "Maurice", "Micah", "Michael", "Miles", "Mitchell", "Nate",
-    "Nathan", "Nick", "Noah", "Omar", "Owen", "Parker", "Patrick", "Paul",
-    "Quentin", "Quincy", "Ray", "Reggie", "Ricky", "Riley", "Rob", "Roderick",
-    "Roman", "Ross", "Russell", "Ryan", "Sam", "Scott", "Sean", "Seth", "Shane",
-    "Shawn", "Spencer", "Stephen", "Taylor", "Terrell", "Terrence", "Thomas",
-    "Tim", "Travis", "Trent", "Trevor", "Tristan", "Troy", "Tyler", "Tyrone",
-    "Victor", "Vince", "Wade", "Walter", "Wes", "Will", "Xavier", "Zach", "Zane",
-]
+from .name_data import ELDER_FIRST_COUNTS, FIRST_COUNTS, LAST_COUNTS
 
-LAST_NAMES = [
-    "Adams", "Alexander", "Allen", "Anderson", "Armstrong", "Bailey", "Baker",
-    "Banks", "Barnes", "Bell", "Bennett", "Black", "Booker", "Bowman", "Boyd",
-    "Bradley", "Brooks", "Brown", "Bryant", "Burke", "Burns", "Butler", "Caldwell",
-    "Campbell", "Carter", "Chambers", "Chapman", "Clark", "Coleman", "Collins",
-    "Cooper", "Cox", "Crawford", "Cunningham", "Daniels", "Davis", "Dawson",
-    "Dixon", "Douglas", "Dunn", "Edwards", "Ellis", "Evans", "Ferguson", "Fields",
-    "Fisher", "Fletcher", "Ford", "Foster", "Fowler", "Franklin", "Freeman",
-    "Fuller", "Gibson", "Gilbert", "Gordon", "Graham", "Grant", "Graves", "Gray",
-    "Green", "Griffin", "Hall", "Hamilton", "Hardy", "Harper", "Harris", "Hart",
-    "Hayes", "Henderson", "Hicks", "Hill", "Holland", "Holmes", "Howard", "Hudson",
-    "Hughes", "Hunt", "Jackson", "James", "Jenkins", "Johnson", "Jones", "Jordan",
-    "Keller", "Kelly", "Kennedy", "King", "Knight", "Lane", "Lawson", "Lewis",
-    "Lindsey", "Lyons", "Mack", "Malone", "Marshall", "Martin", "Mason", "Mathis",
-    "McCoy", "McDaniel", "Miller", "Mitchell", "Moore", "Morgan", "Morris",
-    "Murphy", "Murray", "Nelson", "Newton", "Norris", "Oliver", "Owens", "Palmer",
-    "Parker", "Patterson", "Payne", "Perkins", "Perry", "Peters", "Phillips",
-    "Pierce", "Porter", "Powell", "Price", "Ramsey", "Reed", "Reese", "Reynolds",
-    "Richardson", "Riley", "Roberts", "Robinson", "Rogers", "Ross", "Russell",
-    "Sanders", "Shaw", "Simmons", "Simpson", "Sims", "Smith", "Spencer", "Stanley",
-    "Stephens", "Stewart", "Stone", "Sullivan", "Taylor", "Thomas", "Thompson",
-    "Tucker", "Turner", "Wade", "Walker", "Wallace", "Walsh", "Ward", "Warren",
-    "Washington", "Watkins", "Watson", "Webb", "Wells", "West", "Wheeler", "White",
-    "Williams", "Willis", "Wilson", "Wood", "Woods", "Wright", "Young",
-]
+# The name pool comes from real NFL rosters 1999-2025 (name_data.py, made by
+# tools/make_names.py; Blake, Oct 22: "massively expand the name pool to be very large and
+# varied"): about 4,000 first names and 6,800 last names, each listed as many times as real
+# players had it, so random.choice() draws them as often as a real locker room has them
+# (Chris and Michael common, Ja'Marr rare). Before: 163 first and 175 last names.
+FIRST_NAMES = [name for name, n in FIRST_COUNTS.items() for _ in range(n)]
+LAST_NAMES = [name for name, n in LAST_COUNTS.items() for _ in range(n)]
+# Coaches, GMs and other grown-ups: first names of players who entered before 2008.
+ELDER_FIRST_NAMES = [name for name, n in ELDER_FIRST_COUNTS.items() for _ in range(n)]
+
+
+def person(rng):
+    """(first, last) for a made-up player, drawn like the real pool (now and then that's a
+    real player's full name, as with real people: Blake, Oct 22)."""
+    return rng.choice(FIRST_NAMES), rng.choice(LAST_NAMES)
+
+
+def elder(rng):
+    """(first, last) for a coach, GM or other grown-up (an older generation's first names)."""
+    return rng.choice(ELDER_FIRST_NAMES), rng.choice(LAST_NAMES)
+
 
 # Colleges now live in colleges.py, built from real draft history.
 

@@ -316,3 +316,133 @@ after.
 4. The Staff page and carousel screens; in-season firing; tested in the app.
 5. Coordinator styles in the sim; realism check.
 6. Strength coach and trainer effects on injuries (centered); realism check.
+
+## 10. General managers for the AI teams (Oct 22; GM side session)
+
+Blake (Oct 22), after the draft session found trade habits fading too fast with head coaches
+(0.44 vs real 0.60): "wouldnt a gm affect alot more than just the draft trade habits?" He chose
+**all four jobs** for AI GMs and **visible GMs**. You are your own team's GM; every AI team has
+one (`engine/gm.py`, saved inside `league.staff["gm"]`; older saves get GMs on load, seeded by
+the save's salt).
+
+### What a GM does
+1. **Draft day** (`draft.trade_style`): trades up for his man, or down for more picks (D14 done).
+2. **Free agency** (`free_agency.py`): a big free-agent spender bids more and on more players;
+   a GM who builds through the draft bids like anyone but sets himself a yearly ceiling for
+   other teams' players that grows with the room he has (`GM_FA_BUDGET`, `GM_FA_BUDGET_ROOM`;
+   spenders' ceilings rarely bind). Tried and dropped: draft builders bidding low (they lost
+   every bidding war and sat on huge room) and holding room back (the roomiest teams far
+   roomier than real).
+3. **His own players**: pays his stars early (extensions) or lets them walk (`GM_RESIGN_*`).
+   Real data says teams don't differ lastingly in how much they pay their own (0.08), so this
+   is kept mild; the lasting difference real teams show in *share* comes from outside spending.
+4. **The cap**: pushes money into later years (back-loaded deals, bigger signing bonuses,
+   restructures to keep or sign starters, more dead money accepted in cuts) or keeps the books
+   clean (flatter deals, more room kept). Guard rails (from the cap checks): a pushing GM stops
+   pushing once next season's bonus money and dead money pass 28% of the cap (`GM_CAP_HELL`: the
+   bill comes due), pushes no harder than a GM 1.5 spreads out, and restructures at most 15% of
+   the cap in a league year (without these the most extreme ones restructured their way into a
+   corner no move could get them out of, and ended over the cap).
+5. **Hiring coaches** (`staff._ai_value`): he picks the staff, and GMs differ in how much of a
+   coach's reputation error they see through (hidden; average ~30%, best ~70%, worst ~0).
+
+Each habit is mostly the GM's and partly the organization's (owner, culture): `gm.ORG_SHARE`
+(trade 0.20, free agency 0.35, own players 0.20, cap 0.20; trade was 0.30 until the 22-season
+draft check showed the habit lasting 0.68 vs real 0.60). A GM takes his habits to his next
+team. A frugal owner's teams also leave more cap room unspent (`free_agency.OWNER_KEEP_K`,
+from the owner's staff budget factor): real cap room left at season's end is the most lasting
+team trait of all and outlasts GM changes.
+
+### Hiring and firing
+After each season, before the new league year (the new GM makes its decisions) and before the
+coaching carousel (he picks the head coach): owners fire GMs by the real odds (record x his
+tenure, `gm.FIRE_GM`), old GMs retire, and each open job is filled at once by the owner's
+choice among GMs out of work, other teams' directors of college scouting / pro personnel (a
+promotion their team can't block; the director's job opens for the carousel's round 3) and a
+few outside candidates (assistant GMs). A new GM brings in his own head coach more often than
+not (`NEW_GM_OWN_COACH`), and a coach he inherited is on thinner ice afterwards
+(`INHERITED_MULT`). `staff.MARKET_LIFT` was lowered (1.18 -> 0.8) so the head coach total stays
+real with the new GM-driven changes. No in-season GM firings yet (the game has no AI in-season
+head coach firings either; `staff.ai_in_season` isn't hooked into the season).
+
+### What you see
+Reputation (word + number, like coaches): what the league believes of him as a team builder;
+it follows his teams' results. His eye for coaches is hidden. Shown: name, age, where he came
+from, record (here and elsewhere, playoff trips, titles), and what he's known for (only clear
+habits, at most two; PROVISIONAL that styles are shown at all: real GMs' habits are public
+knowledge). Screens: the team window's **Front office** tab, the Staff page's **General
+managers** list and a GM panel when viewing another team, GM moves in the carousel's moves
+list. News: a new "Coaches and front offices" story kind (`engine/news_front_office.py`):
+GMs and head coaches fired (together when an owner cleans house), retiring, hired; Bitter gets
+insiders' scoops, team welcomes and fans' reactions.
+
+### Real data (docs/research/gm_research.py -> real_gm.json)
+Who ran each team's draft 2002-2026 from Wikipedia's GM lists (fetched Oct 22, 2026); head
+coaches and records from nflverse games; trades from nflverse; contracts from OverTheCap via
+nflverse (2011-21); dead money and cap left from Spotrac's team cap tables (2013-25);
+restructure frequency from OverTheCap (June 2021).
+- GM changes 4.54 a year (spread 1.84, 1-8); head coach changes 6.9 (2003-26).
+- Both in the same offseason 2.6 a year: 57% of GM changes come with a new head coach; 37% of
+  head coach changes come with a new GM. A new GM who keeps the coach replaces him within two
+  seasons 55% of the time (n 44).
+- GM tenure mean 4.7, median 4 (head coaches 4.1 / 3); 11% last one season; 14% of new GMs had
+  been a GM before.
+- Firing odds by wins and tenure: after his 1st season 11% overall; later 0-4 wins ~50%;
+  playoff teams 4%, others 20%.
+- Habits, three ways (team odd vs even years | same GM odd vs even | same team, GM before vs
+  after a change): draft-day trades 0.60 | 0.52 | 0.20; outside free-agent money 0.53 | 0.49 |
+  0.30; own players' share of the money 0.49 | 0.43 | 0.10; own players' money as such 0.08;
+  dead money 0.45 | 0.48 | 0.20; cap room left at season's end 0.88 | 0.62 | 0.57. GMs who ran
+  two teams (only 2-4: Dorsey, Gettleman, Mayhew, Baalke): trade habit 0.33, dead money 0.64.
+- Restructures (OTC 2013-20): 55% of teams restructure at all in a year, 37% more than $6.5M
+  (3.6% of the cap), 20% $15M+ (8.2%); 60% of 8+ win teams vs 40% of 0-5 win teams.
+
+### Blake's answers (Oct 22, after the first report)
+- **"Known for" on screens: keep it** ("known for is a great idea").
+- **Build multi-year cap planning to close the money gap** (yes): each AI team's spending level
+  (mostly the owner's, partly the GM's) sets how full it runs its cap every year and how much of
+  next season's cap it will commit now (`free_agency.spend_level`, `plan_keep`, `plan_next`).
+- **Unspent room**: "i think chris ballard used to get roasted for holding too much cap money and
+  not spending" (a GM). Real data says the habit mostly outlasts GM changes (0.57 of 0.62), so the
+  plan is mostly the owner's (`PLAN_OWNER_SHARE`) with the GM's free agency and cap styles in it.
+- **You getting fired**: off by default, with a setting to turn it on (FOF8's option; Blake always
+  had it off). AI GMs are still hired and fired around the league. You can't be fired yet, so the
+  "on" side is a piece still to build.
+
+### PROVISIONAL (for Blake)
+- The style sizes (knobs marked Oct 22 in `free_agency.py`, `gm.py`), the coach-judging spread,
+  the cap guard rails (28% / 1.5 / 15%), the owner's link to unspent room, showing styles on
+  screens.
+- Where new GMs come from (scouting directors vs outside assistants): no real breakdown measured.
+- Optional draft lean (best player vs need): not built; real teams show no lasting position
+  preference (draft session's check), so there's nothing to size it to.
+
+### Multi-year cap plans (Oct 23; Blake: "build multi year cap planning to close the money gap")
+Each AI team has a spending level (`free_agency.spend_level`, about -2..+2): 70% its owner's
+(staff.py's budget factor: a frugal owner is frugal with the cap too) and 30% its GM's free agency
+and cap styles. It sets, every year:
+- **How full the team runs its cap** (`plan_keep`, `PLAN_SPEND_K`): frugal teams leave up to 8% of
+  the cap unspent (the Ballard Colts); free spenders keep less for in-season moves, never less
+  than an all-in team does.
+- **How much of next season it commits now** (`plan_next`): a multi-year deal for another team's
+  player must leave next season's commitments under 85% of next year's cap (+/-10% per spread);
+  past that the team offers him one year instead (real room-holders sign one-year deals).
+- **The draft builders' ceiling** for other teams' players got firmer (`GM_FA_BUDGET` k 0.45 -> 0.9);
+  it grows with the room the team has.
+- **A spending floor** (`PLAN_ROOM_MAX` 25%): every plan spends down to this much room (the real
+  league makes teams pay out about 89% of the cap in cash over four years; without it a frugal
+  draft builder in a startup-draft league sat on 70-90% of its cap).
+Results (12 leagues x 16 seasons; before the plan -> after [real]): outside free-agent money's
+habit 0.20 -> 0.33 [0.53], the same GM's 0.11 -> 0.28 [0.49]; own players' share 0.11 -> 0.29
+[0.49]; unspent room at season's end 0.73 -> 0.89 [0.88], average 5.1% -> 5.8% [4.8%]; dead money
+0.27 -> 0.20 [0.45] (run-to-run noise is about +/-0.1); cap legality 0 in 192 league-seasons and 0
+in both free agency checks. Room after free agency's first wave: most 31-33%, 5th 20.5%, median
+10-11%, 24th 6-6.5% [2022-25 average 26.4 / 16.3 / 8.0 / 3.7; 2025 36.1 / 21.8 / 11.6 / 5.9].
+
+### Results and the open gap
+See the build log (Oct 22, "AI general managers"; Oct 23, "multi-year cap plans"): turnover,
+coach-and-GM changes together, tenure, retreads and the draft-day habit match the real numbers.
+With the cap plan the money habits last much longer (0.29-0.33 vs 0.11-0.20 before; real
+0.49-0.53); still short: those, dead money's habit (0.20 vs 0.45; it may need void years, which
+the game doesn't have), and teams end seasons a little roomier than real (5.8% vs 4.8% unspent;
+room after free agency's first wave about like 2025's, roomier than the 2022-25 average).

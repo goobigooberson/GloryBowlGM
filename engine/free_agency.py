@@ -76,6 +76,54 @@ REBUILD_KEEP = 0.0              # rebuilding: keep this share of the cap unspent
 REBUILD_AGE = 29                # ...pay players this old or older less
 REBUILD_OLD_PAY = 0.9           # (Oct 22: 0.8 -> 0.9)
 REBUILD_CUT_CHANCE = 0.85       # ...and cut overpaid veterans more readily (CUT_CHANCE otherwise)
+# ---- Knobs: each AI team's general manager (gm.py, Oct 22; Blake chose free agency /
+# re-signing style and cap style as the GM's). Styles are spreads (about -2..+2, mostly the
+# GM's, partly the organization's); sized so teams' habits last like real ones
+# (tools/gm_check.py vs docs/research/real_gm.json). PROVISIONAL sizes.
+GM_FA_PAY_K = 0.18              # a big spender's bids for other teams' players x e^(k x free-agency style)...
+GM_FA_OFFERS_K = 0.8            # ...and his offers a wave x e^(k x style) (he chases more players); a GM who
+                                # builds through the draft bids like anyone, up to his ceiling below...
+GM_FA_HOLD = 0.0                # ...a GM who builds through the draft could keep this share of the cap per point
+                                # out of the bidding (0: at 0.015-0.03 the roomiest teams sat on far more than real)...
+GM_FA_BUDGET = (0.10, 0.90)     # ...and spends at most (this share of the cap + GM_FA_BUDGET_ROOM x the room it had
+GM_FA_BUDGET_ROOM = 0.5         # when free agency opened) x e^(k x style) a league year on other teams' players in
+                                # market deals (real: 12.3% of the cap a team a year, teams' own levels spread ~2.8%;
+                                # a ceiling that mostly binds the draft builders; a flat ceiling left draft builders
+                                # with lots of room spending nothing, and the roomiest teams far roomier than real;
+                                # k 0.45 -> 0.9 with the cap plan below: outside money's habit 0.20 -> ~0.4-0.45, real 0.53)
+GM_RESIGN_EXT_K = 1.0           # extending a core starter early: odds x e^(k x own-players style)
+GM_RESIGN_PAY_K = 0.06          # his top figure for his own players x e^(k x style)
+GM_CAP_RISE_K = 0.06            # cap style: base salaries climb this much more a year per point (back-loading)...
+GM_CAP_BONUS_K = 0.50           # ...the signing bonus (spread over the years) x e^(k x style)...
+GM_CAP_RESTRUCTURE = 0.08       # ...a team that isn't all in restructures up to this share of the cap per point
+                                # (all in: ALLIN_RESTRUCTURE x e^(GM_CAP_ALLIN_K x style))...
+GM_CAP_ALLIN_K = 0.3
+GM_CAP_RESTRUCTURE_MAX = 0.15    # ...never more than this share of the cap a league year
+GM_CAP_NEXT_K = 0.06            # ...next season's commitments may run this much further past the cap per point...
+GM_CAP_HELL = 0.28              # ...until the bill comes due: once bonus money already owed next season passes this
+                                # share of the cap, a pushing GM stops pushing (without it the most extreme ones
+                                # restructured year after year until no move could get them under the cap)
+GM_CAP_HELL_NOW = 0.30          # (or this season's bonus money and dead money pass this share)
+GM_CAP_PUSH_MAX = 1.5           # (and pushes no harder than a GM 1.5 spreads out)
+GM_CAP_CUT_K = 0.3              # ...and a cap cut may leave dead money up to CUT_DEAD_MAX x e^(k x style) of his hit
+# ---- Knobs: each AI team's multi-year cap plan (Blake, Oct 22: "build multi year cap planning to
+# close the money gap"; on holding room: "chris ballard used to get roasted for holding too much
+# cap money and not spending"). A team's spending level (spend_level: about -2..+2) is mostly its
+# owner's (real: cap room left at the season's end is the most lasting team habit, 0.88 odd vs even
+# years, and it outlasts GM changes, 0.57 vs 0.62) and partly its GM's (free agency and cap
+# styles). It sets how full the team runs its cap every year and how much of next season's cap it
+# will commit now. PROVISIONAL sizes, tuned with tools/gm_check.py and free_agency_check.py.
+PLAN_OWNER_SHARE = 0.7          # share of the spending level that is the owner's
+PLAN_KEEP = 0.03                # a frugal team leaves this share of the cap unspent per spread below 0...
+PLAN_KEEP_MAX = 0.08            # ...at most this much
+PLAN_SPEND_K = 1.0              # a free-spending team keeps less for in-season moves: x e^(-k x level), never
+                                # less than an all-in team does (ALLIN_RESERVE)
+PLAN_ROOM_MAX = 0.25            # but every plan spends down to this much room (the real league's spending floor: teams
+                                # must pay out about 89% of the cap in cash over four years; without it a frugal draft
+                                # builder in a startup-draft league sat on 70-90% of its cap)
+PLAN_NEXT = 0.85                # a multi-year deal for another team's player must leave next season's commitments
+PLAN_NEXT_K = 0.10              # under (this + this x level) of next season's cap, within PLAN_NEXT_RANGE; past it
+PLAN_NEXT_RANGE = (0.70, 1.05)  # the team offers him one year instead (real teams that hold room sign 1-year deals)
 # ---- Knobs: the market ---------------------------------------------------------------
 # A free agent's ask, as a share of his price, by wave: high early (the first days,
 # when the best players sign), falling as the market cools; market-level players
@@ -171,6 +219,78 @@ def team_style(league, tid):
     return _style(_salt(league), tid)
 
 
+def gm_style(league, tid, key):
+    """The team's general manager's habit (gm.style; 0 for your team)."""
+    if tid is None or tid == league.user_team_id or not getattr(league, "staff", None):
+        return 0.0
+    from . import gm as G
+    return G.style(league, tid, key)
+
+
+def cap_push(league, tid):
+    """The GM's cap style as it acts this league year: a GM who pushes money into later
+    years stops once next season's bonus money passes GM_CAP_HELL of the cap (the bill
+    has come due; gm.py, Oct 22). Clean-books GMs are always themselves."""
+    z = gm_style(league, tid, "cap")
+    if z <= 0:
+        return z
+    z = min(z, GM_CAP_PUSH_MAX)
+    S = league.season
+    key = (S, len(league.contract_log))        # (worked out again after each signing)
+    memo = league.__dict__.setdefault("_cap_push", {})
+    if memo.get(tid, (None,))[0] == key:
+        return memo[tid][1]
+    owed = 0
+    for pid in C.players_with_team(league, tid):
+        c = league.contracts.get(pid)
+        y = C._year(c, S + 1) if c else None
+        if y:
+            owed += y["bonus"]
+    owed += C.charges(league, tid, S + 1)
+    now = C.charges(league, tid, S)
+    for pid in C.players_with_team(league, tid):
+        c = league.contracts.get(pid)
+        y = C._year(c, S) if c else None
+        if y:
+            now += y["bonus"]
+    cap = C.cap_for(league, S)
+    v = 0.0 if owed > GM_CAP_HELL * cap or now > GM_CAP_HELL_NOW * cap else z
+    memo[tid] = (key, v)
+    return v
+
+
+def spend_level(league, tid):
+    """A team's spending level (about -2..+2, average 0; below 0 frugal, above 0 free
+    spending): mostly the owner's (staff.py's budget factor), partly its GM's free
+    agency and cap styles. 0 for your team and for a league without staffs."""
+    if tid is None or tid == league.user_team_id or not getattr(league, "staff", None):
+        return 0.0
+    from . import staff as SF
+    owner = (league.staff.get("owner", {}).get(str(tid), 1.0) - 1.0) / SF.BUDGET_SD
+    gm = (gm_style(league, tid, "fa") + gm_style(league, tid, "cap")) / math.sqrt(2)
+    v = math.sqrt(PLAN_OWNER_SHARE) * owner + math.sqrt(1 - PLAN_OWNER_SHARE) * gm
+    return max(-2.5, min(2.5, v))
+
+
+def plan_keep(league, tid):
+    """Extra cap room (share of the cap) a frugal team plans to leave unspent all year."""
+    return min(PLAN_KEEP_MAX, PLAN_KEEP * max(0.0, -spend_level(league, tid)))
+
+
+def plan_next(league, tid):
+    """The most of next season's cap a team will commit now to another team's player."""
+    v = PLAN_NEXT + PLAN_NEXT_K * spend_level(league, tid)
+    return max(PLAN_NEXT_RANGE[0], min(PLAN_NEXT_RANGE[1], v))
+
+
+def _odds_shift(p, k):
+    """A chance with its odds multiplied by e^k."""
+    if p <= 0 or p >= 1:
+        return p
+    o = p / (1 - p) * math.exp(k)
+    return o / (1 + o)
+
+
 # Since Oct 24 (Blake: AI teams judge players through their own staff's eyes) a team's
 # judgment comes from its staff (evaluation.py): how far its staff misjudges him
 # (evaluation.misjudgment: its luck, without the pull toward average every unsure estimate
@@ -247,16 +367,30 @@ def set_approaches(league, table):
                              for i, tid in enumerate(order)}
 
 
+def restructure_budget(league, tid):
+    """Share of the cap an AI team will restructure this league year to sign or keep
+    players it wants: all-in teams, and teams whose GM pushes money into later years
+    (gm.py, Oct 22); a clean-books GM restructures less even when all in. (Getting
+    under the cap, _comply, restructures whatever the style: every team must.)"""
+    if tid == league.user_team_id:
+        return 0.0
+    z = cap_push(league, tid)
+    if approach(league, tid) == "all_in":
+        return min(GM_CAP_RESTRUCTURE_MAX, ALLIN_RESTRUCTURE * math.exp(GM_CAP_ALLIN_K * z))
+    return min(GM_CAP_RESTRUCTURE_MAX, GM_CAP_RESTRUCTURE * max(0.0, z))
+
+
 def _make_room(league, tid, need_k, rng):
-    """All in: restructure to open `need_k` more cap room, within the league year's
-    ALLIN_RESTRUCTURE. True if the room is there now."""
+    """All in (or a GM who pushes money): restructure to open `need_k` more cap room,
+    within the league year's restructure_budget. True if the room is there now."""
     cap = C.cap_for(league, league.season)
     if C.cap_room(league, tid) >= need_k:
         return True
-    if approach(league, tid) != "all_in":
+    budget = restructure_budget(league, tid)
+    if budget <= 0:
         return False
     used = league.fa.setdefault("allin_used", {})
-    left = ALLIN_RESTRUCTURE * cap - used.get(tid, 0)
+    left = budget * cap - used.get(tid, 0)
     short = need_k - C.cap_room(league, tid)
     if short > left:
         return False
@@ -267,11 +401,12 @@ def _make_room(league, tid, need_k, rng):
 
 
 def _restructure_left(league, tid):
-    """Cap room an all-in team could still open by restructuring this league year."""
-    if approach(league, tid) != "all_in":
+    """Cap room an all-in team (or a money-pushing GM's) could still open by restructuring this league year."""
+    budget = restructure_budget(league, tid)
+    if budget <= 0:
         return 0
     cap = C.cap_for(league, league.season)
-    left = ALLIN_RESTRUCTURE * cap - league.fa.get("allin_used", {}).get(tid, 0)
+    left = budget * cap - league.fa.get("allin_used", {}).get(tid, 0)
     S = league.season
     possible = 0
     for pid in C.players_with_team(league, tid):
@@ -380,6 +515,11 @@ def willingness(league, tid, p, info, depth, quality=None, score=None):
         w *= ALLIN_PAY
     elif way == "rebuild" and _age(league, p) >= REBUILD_AGE:
         w *= REBUILD_OLD_PAY
+    # The GM: how freely he pays other teams' players, and his own (gm.py, Oct 22).
+    if tid != league.user_team_id:
+        own = league.rosters.get(p.id) == tid or league.fa.get("former", {}).get(p.id) == tid
+        w *= math.exp((GM_RESIGN_PAY_K * gm_style(league, tid, "resign")) if own
+                      else (GM_FA_PAY_K * max(0.0, gm_style(league, tid, "fa"))))
     return max(info["minimum"], w * team_style(league, tid) * _eval(league, tid, p.id)), role
 
 
@@ -411,7 +551,15 @@ def make_deal(league, p, tid, apy_share, rng, kind=None, years=None, gtd_share=N
         return c
     gtd = (gtd_share if gtd_share is not None else M.guarantee_share(share, years, p.position, rng)) * apy_k * years
     rise = ALLIN_RISE if tid != league.user_team_id and approach(league, tid) == "all_in" else 0.06
-    c = C.build(league, p.id, tid, kind or _kind_for(share), league.season, years, apy_k, guaranteed=gtd, rise=rise)
+    bonus = None
+    if tid != league.user_team_id and years > 1:
+        # The GM's cap style (gm.py, Oct 22): back-loaded deals with more bonus spread into
+        # later years, or flatter ones with less.
+        z = cap_push(league, tid)
+        rise = max(0.0, min(0.25, rise + GM_CAP_RISE_K * z))
+        bonus = int(round(min(gtd, gtd * 0.55 * math.exp(GM_CAP_BONUS_K * z))))
+    c = C.build(league, p.id, tid, kind or _kind_for(share), league.season, years, apy_k, guaranteed=gtd, rise=rise,
+                signing_bonus=bonus)
     c["week"] = week
     return c
 
@@ -437,7 +585,14 @@ def _reserve_share(league, tid, before_draft):
     its picks. All-in teams keep less for in-season moves; rebuilding teams keep
     extra room through the offseason."""
     way = approach(league, tid)
-    r = IN_SEASON_BUFFER * (ALLIN_RESERVE if way == "all_in" else 1.0)
+    f = ALLIN_RESERVE if way == "all_in" else 1.0
+    if tid != league.user_team_id:
+        # The team's cap plan (Oct 22): free spenders keep less for in-season moves (never less
+        # than an all-in team), frugal teams leave room unspent all year.
+        level = spend_level(league, tid)
+        if level > 0:
+            f = max(ALLIN_RESERVE, f * math.exp(-PLAN_SPEND_K * level))
+    r = IN_SEASON_BUFFER * f + plan_keep(league, tid)
     top51 = C.top51_in_force(league)
     if top51:
         r += WEEK1_EXTRA
@@ -651,7 +806,9 @@ def league_year_start(league, rng=None, draft_order=None):
         lst = [x for x in depth[c["team"]][p.position] if x != s]
         if sum(1 for x in lst if x > s) >= STARTER_COUNT.get(p.position, 1):
             continue
-        if rng.random() < (ALLIN_EXTEND if approach(league, c["team"]) == "all_in" else EXTEND_CHANCE):
+        chance = ALLIN_EXTEND if approach(league, c["team"]) == "all_in" else EXTEND_CHANCE
+        chance = _odds_shift(chance, GM_RESIGN_EXT_K * gm_style(league, c["team"], "resign"))
+        if rng.random() < chance:
             apy = info["price"] * (1 + RESIGN_PREMIUM * (1.5 - p.loyalty / 100)) * team_style(league, c["team"])
             ext, new = _extension_contract(league, p, c, apy, rng)
             if _extension_fits(league, c, ext):
@@ -785,6 +942,7 @@ def _extension_fits(league, c, ext):
     nxt = (C.commitments(league, tid, S + 1) - C.cap_hit(league, c, S + 1, full=True)
            + C.cap_hit(league, ext, S + 1, full=True))
     limit = ALLIN_NEXT_MAX if approach(league, tid) == "all_in" else EXTEND_NEXT_MAX
+    limit = max(0.95, limit + GM_CAP_NEXT_K * cap_push(league, tid))
     return nxt <= limit * C.cap_for(league, S + 1)
 
 
@@ -823,8 +981,9 @@ def _cap_cuts(league, tid, table, depth, rng):
         savings = prev["savings"]
         over = hit - worth
         dead_total = sum(prev["dead"].values())
+        dead_max = CUT_DEAD_MAX * math.exp(GM_CAP_CUT_K * cap_push(league, tid))   # the GM (gm.py)
         if (over >= max(CUT_OVERPAY_MIN * cap, CUT_OVERPAY_SHARE * hit) and savings >= CUT_SAVINGS_MIN * cap
-                and dead_total <= CUT_DEAD_MAX * hit):
+                and dead_total <= dead_max * hit):
             if rng.random() < (REBUILD_CUT_CHANCE if approach(league, tid) == "rebuild" else CUT_CHANCE):
                 C.release(league, pid, june1=use_june)
                 p = league.player(pid)
@@ -1076,6 +1235,12 @@ def market(league, waves, rng=None, before_draft=None):
         bids = defaultdict(list)
         for tid in sorted(ai_teams(league), key=lambda _t: rng.random()):
             room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap + _restructure_left(league, tid)
+            z_fa = gm_style(league, tid, "fa")
+            room -= GM_FA_HOLD * max(0.0, -z_fa) * cap      # builds through the draft
+            open_room = league.fa.setdefault("open_room", {}).setdefault(tid, max(0.0, C.cap_room(league, tid) / cap))
+            ceiling = max((GM_FA_BUDGET[0] + GM_FA_BUDGET_ROOM * open_room) * math.exp(GM_FA_BUDGET[1] * z_fa),
+                          open_room - PLAN_ROOM_MAX)
+            outside_left = (ceiling - league.fa.get("outside_spent", {}).get(tid, 0.0)) * cap
             if room <= 0:
                 continue
             spots = OFFSEASON_ROSTER_MAX - roster_count(league, tid)
@@ -1095,14 +1260,20 @@ def market(league, waves, rng=None, before_draft=None):
             used_pos = set()
             spent = 0
             made = 0
+            limit = max(1, round(OFFERS_PER_WAVE.get(wave, 10) * math.exp(GM_FA_OFFERS_K * max(0.0, z_fa))))
             for _r, _g, p, w, role in cands:
-                if made >= OFFERS_PER_WAVE.get(wave, 10) or spots - made <= 0:
+                if made >= limit or spots - made <= 0:
                     break
                 if p.position in used_pos:
                     continue
                 est = ask_share(table[p.id], wave) * cap * 0.9
                 if spent + est > room:
                     continue
+                outside = league.fa["former"].get(p.id) != tid and table[p.id]["price"] >= M.MARKET_LINE
+                if outside and tid != league.user_team_id and est > outside_left:
+                    continue                 # his GM's ceiling for other teams' players this year
+                if outside:
+                    outside_left -= est
                 used_pos.add(p.position)
                 spent += est
                 made += 1
@@ -1149,7 +1320,8 @@ def market(league, waves, rng=None, before_draft=None):
                 else:
                     c = make_deal(league, p, tid, amount, rng)
                 if tid != league.user_team_id:
-                    keep = _reserve_share(league, tid, pre) * cap * 0.5
+                    pk = plan_keep(league, tid)
+                    keep = ((_reserve_share(league, tid, pre) - pk) * 0.5 + pk) * cap
                     if C.top51_in_force(league):
                         # never less than what starts counting at week 1 (an all-in team keeps less
                         # for in-season moves, and could otherwise be over the cap at week 1)
@@ -1159,7 +1331,18 @@ def market(league, waves, rng=None, before_draft=None):
                         continue
                     if roster_count(league, tid) >= OFFSEASON_ROSTER_MAX:
                         continue
+                    # The multi-year plan: another team's player on a long deal can't push next
+                    # season's commitments past what this team will commit now; it offers one year.
+                    if (league.fa["former"].get(pid) != tid and len(c["years"]) > 1
+                            and C.commitments(league, tid, S + 1) + C.cap_hit(league, c, S + 1, full=True)
+                            > plan_next(league, tid) * C.cap_for(league, S + 1)):
+                        c = make_deal(league, p, tid, amount, rng, years=1)
+                        if C.room_after(league, tid, _first_hit(league, c)) < keep:
+                            continue
                 former = league.fa["former"].get(pid)
+                if former != tid and c["apy"] / cap >= M.MARKET_LINE:
+                    spent_out = league.fa.setdefault("outside_spent", {})
+                    spent_out[tid] = spent_out.get(tid, 0.0) + c["apy"] / cap
                 _sign(league, p, c, WAVES.get(wave, "Free agency"), "free agency", f"FA wave {wave}",
                       new_team=(former is not None and former != tid) if former is not None else True)
                 signings.append({"wave": wave, "pid": pid, "team": tid, "apy": c["apy"], "years": len(c["years"]),

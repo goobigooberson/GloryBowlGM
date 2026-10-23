@@ -409,13 +409,17 @@ def report(results, out):
             ma, mb = st.mean(a), st.mean(b)
             cov = sum((x - ma) * (y - mb) for x, y in zip(a, b))
             corr_vals.append(cov / math.sqrt(sum((x - ma) ** 2 for x in a) * sum((y - mb) ** 2 for y in b)))
-            spread += [all_[t][0] / all_[t][1] for t in ts]
+            # One league at a time, like the real one (32 teams): the best and worst of
+            # 192 teams pooled from 6 leagues sit further out just by having more teams.
+            vals = sorted(all_[t][0] / all_[t][1] for t in ts)
+            spread.append((vals[-1], vals[0], vals[len(vals) // 4], vals[(3 * len(vals)) // 4]))
     ts = real_ai["team_drafting_skill"]
     if corr_vals:
-        spread.sort()
+        best, worst, p25, p75 = (st.mean(s[i] for s in spread) for i in range(4))
         w(f"   odd vs even correlation: {st.mean(corr_vals):.2f} | {ts['odd_vs_even_year_correlation']}"
-          f"   best team {spread[-1]:.2f} | {ts['team_av_vs_slot_best']}, worst {spread[0]:.2f} | {ts['worst']},"
-          f" middle half {spread[len(spread) // 4]:.2f}-{spread[(3 * len(spread)) // 4]:.2f} | {ts['p25']}-{ts['p75']}")
+          f"   each league's best team {best:.2f} | {ts['team_av_vs_slot_best']}, worst {worst:.2f} | {ts['worst']},"
+          f" middle half {p25:.2f}-{p75:.2f} | {ts['p25']}-{ts['p75']}  (average of the leagues; the sim's teams"
+          f" are judged on ~11 classes each, the real ones on 19)")
     w("")
 
     # 11. Combine

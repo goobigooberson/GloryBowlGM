@@ -1,65 +1,160 @@
-﻿{
+{
   "version": "0.0.1",
   "configurations": [
     {
       "name": "game-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\testsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\testsaves"
+      ],
       "port": 8085
     },
     {
       "name": "awards-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8091", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\87ad8cce-55ac-4b81-8fa1-adcd52c9752c\\scratchpad\\awardsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8091",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\87ad8cce-55ac-4b81-8fa1-adcd52c9752c\\scratchpad\\awardsaves"
+      ],
       "port": 8091
     },
     {
       "name": "contracts-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8094", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\6b06e712-122b-4d53-860c-5b60c73a7131\\scratchpad\\testsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8094",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\6b06e712-122b-4d53-860c-5b60c73a7131\\scratchpad\\testsaves"
+      ],
       "port": 8094
     },
     {
       "name": "draft-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8097", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\fcbed005-e4df-4835-8fda-b5e3c362ff30\\scratchpad\\testsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8097",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\fcbed005-e4df-4835-8fda-b5e3c362ff30\\scratchpad\\testsaves"
+      ],
       "port": 8097
     },
     {
       "name": "popups-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8099", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\43180dc5-475d-4bb6-a2ae-025d82948fa1\\scratchpad\\popsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8099",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\43180dc5-475d-4bb6-a2ae-025d82948fa1\\scratchpad\\popsaves"
+      ],
       "port": 8099
     },
     {
       "name": "game-blake-copy",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\blakecopy"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\blakecopy"
+      ],
       "port": 8085
     },
     {
       "name": "layout-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8103", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\f3047749-5221-429f-bc26-fe5da6fd4733\\scratchpad\\layoutsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8103",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\f3047749-5221-429f-bc26-fe5da6fd4733\\scratchpad\\layoutsaves"
+      ],
       "port": 8103
     },
     {
       "name": "draft-board-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8105", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\e151205b-9506-4fd9-bd09-d1dc168de603\\scratchpad\\draftsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8105",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\e151205b-9506-4fd9-bd09-d1dc168de603\\scratchpad\\draftsaves"
+      ],
       "port": 8105
     },
     {
       "name": "staff-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8111", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\67e89c54-e0f2-4497-87ec-1a89214023c3\\scratchpad\\staffsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8111",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\67e89c54-e0f2-4497-87ec-1a89214023c3\\scratchpad\\staffsaves"
+      ],
       "port": 8111
     },
     {
       "name": "bitter-test",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8117", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\db75c05e-e934-4f85-9935-fcae87925633\\scratchpad\\bittersaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8117",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\db75c05e-e934-4f85-9935-fcae87925633\\scratchpad\\bittersaves"
+      ],
       "port": 8117
+    },
+    {
+      "name": "gm-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8123",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\0f168a37-4e6e-426c-b0a5-870cd538f680\\scratchpad\\gmsaves"
+      ],
+      "port": 8123
+    },
+    {
+      "name": "live-draft-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8131",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\61d38afc-68a2-4671-9b0d-8a3275c276e5\\scratchpad\\livesaves"
+      ],
+      "port": 8131
+    },
+    {
+      "name": "timing-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\app_timed.py",
+        "C:\\Users\\bshec\\OneDrive\\Documents\\Blakes New Front Office Football Project",
+        "--browser",
+        "--no-show",
+        "--port=8121",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\71060941-acee-4377-b2f1-a9038fb6a071\\scratchpad\\testsaves"
+      ],
+      "port": 8121
     }
   ]
 }

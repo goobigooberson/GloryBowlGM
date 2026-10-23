@@ -44,6 +44,8 @@ def _reset_view():
 
 
 def _opened(league, path):
+    from . import windows
+    windows.close_all()                   # pop-out windows belong to the league that was open
     state.league = league
     state.save_path = path
     state.dirty = False
@@ -96,9 +98,11 @@ def generate_league(year, settings):
 def start_new_game(league, name, user_team_id):
     """New game, step 2: you picked your team. Saves it as a new save slot
     right away (even with manual saving, so it shows up in Load game). A
-    startup draft starts now: the AI picks until you're on the clock."""
+    startup draft starts now, at pick 1 (you watch it in the draft room)."""
     league.name = name
     league.user_team_id = user_team_id
+    from engine import gm
+    gm.ensure(league)                    # you are your team's GM (its AI GM steps aside)
     from engine import draft_day
     if draft_day.in_startup(league):
         draft_day.startup_begin(league)
@@ -109,6 +113,8 @@ def start_new_game(league, name, user_team_id):
 
 
 def close_game():
+    from . import windows
+    windows.close_all()
     state.league = None
     state.save_path = None
     state.dirty = False
@@ -121,6 +127,8 @@ def mark_changed():
     state.dirty = True
     if state.on_save_status:
         state.on_save_status()
+    from . import windows
+    windows.refresh_all()                 # open pop-out windows show the change too
 
 
 def save_now():

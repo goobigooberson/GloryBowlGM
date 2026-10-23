@@ -150,6 +150,9 @@ def close_all():
 def _popup(width, height=None):
     """Opens an empty pop-up; returns (dialog, header, body) to draw into.
     height: a fixed height (CSS, e.g. '92vh') for windows with their own scrolling."""
+    page = getattr(context.client, "fof_window", None)
+    if page is not None:           # drawing a pop-out window's own page (windows.py)
+        return page.dialog, page.head, page.body
     host = _host()
     depth = len(host.open)
     shift = CASCADE * depth
@@ -179,8 +182,9 @@ def _popup(width, height=None):
 def _title_row(dialog, title):
     with ui.row().classes("w-full items-center justify-between no-wrap"):
         ui.label(title).classes("condensed text-lg opacity-90")
-        ui.button(icon="close", on_click=dialog.close).props("flat round dense color=white") \
-            .tooltip("Close (Esc)")
+        if not getattr(dialog, "fof_window", False):    # a pop-out window closes with its own X
+            ui.button(icon="close", on_click=dialog.close).props("flat round dense color=white") \
+                .tooltip("Close (Esc)")
 
 
 def _px(width):
@@ -188,6 +192,9 @@ def _px(width):
 
 
 def open_player(pid):
+    from . import windows
+    if windows.pop_out("player", pid):     # its own window, in the game window (windows.py)
+        return
     from . import player_card_page as PC
     league = state.league
     p = next((x for x in league.players if x.id == pid), None)
@@ -203,6 +210,9 @@ def open_player(pid):
 
 
 def open_game(gid):
+    from . import windows
+    if windows.pop_out("game", gid):
+        return
     from engine import season as S
     from . import schedule_page as SP
     league = state.league
@@ -219,6 +229,9 @@ def open_game(gid):
 
 def open_team(tid):
     """Any team, FOF8's team window: its season and stats, and its roster."""
+    from . import windows
+    if windows.pop_out("team", tid):
+        return
     from datetime import date
     from engine import season as S
     from engine import stats as ST
@@ -259,6 +272,7 @@ def open_team(tid):
                 .classes("fof-tabs w-full") as tabs:
             t_sum = ui.tab("Team summary")
             t_roster = ui.tab("Roster")
+            t_front = ui.tab("Front office") if getattr(league, "staff", None) else None
         with ui.tab_panels(tabs, value=t_sum, animated=False).classes("w-full") \
                 .style("background:transparent"):
             with ui.tab_panel(t_sum).classes("px-6 py-4"):
@@ -279,6 +293,33 @@ def open_team(tid):
                     .props("flat dense hide-bottom").classes("roster-table w-full")
                 RP.add_table_slots(table)
                 table.on("rowClick", lambda e: open_player(e.args[1]["id"]))
+            if t_front is not None:
+                with ui.tab_panel(t_front).classes("px-6 py-4"):
+                    _front_office(league, tid)
+
+
+def _front_office(league, tid):
+    """The team window's Front office tab: its general manager (gm.py) and its
+    coaching staff's reputations (staff.py; true ratings stay hidden)."""
+    from engine import staff as S
+    from . import staff_page as SP
+    with ui.row().classes("w-full gap-6 no-wrap items-start"):
+        with ui.element("div").classes("report px-5 py-4").style("flex: 0 0 520px"):
+            ui.html(SP.gm_html(league, tid), sanitize=False)
+        with ui.element("div").classes("report px-5 py-4").style("flex: 1 1 0; min-width:0"):
+            rows = "".join(
+                f'<tr><td>{S.JOB_SHORT[job]}</td><td>{SP.escape(c["name"]) if c else "(open)"}'
+                f'{" (interim)" if c and c.get("interim") else ""}</td>'
+                f'<td>{S.age(league, c) if c else ""}</td>'
+                f'<td>{SP.escape(S.GROUP_NAMES.get(c.get("bg"), "")) if c and c["track"] == "coach" else ""}</td>'
+                f'<td>{SP.escape(SP._rating(round(S.reputation_score(c, job)))[0]) if c else ""}</td>'
+                f'<td>{c["since"] if c else ""}</td></tr>'
+                for job, c in S.staff_of(league, tid).items())
+            ui.html('<div class="panel-heading" style="margin-top:0">Coaching staff and front office</div>'
+                    '<div class="legend">Reputation for the job (what the league believes; true ability is '
+                    'hidden).</div><table class="staff-mini"><tr><th>Job</th><th>Name</th><th>Age</th>'
+                    '<th>Background</th><th>Reputation</th><th>Since</th></tr>' + rows + '</table>',
+                    sanitize=False)
 
 
 class KeptWindow:

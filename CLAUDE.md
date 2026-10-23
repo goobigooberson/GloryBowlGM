@@ -61,6 +61,10 @@ priorities" section overrides everything else in that document.
   Oct 21-22; reverses the old "no floating pop-ups" rule). Use `screens/popups.py`
   for new ones; any `<a href="/player/ID">`, `/team/ID` or `/game/ID` link on the
   game screen opens its pop-up by itself (`popups.player_link`, `team_link`).
+  In the game window, player cards, team windows and game summaries open as real
+  Windows windows (drag anywhere, any monitor, several at once, kept in front of the
+  game, redrawn on `state.mark_changed`): `screens/windows.py` (Blake, Oct 22;
+  Settings can switch it off; browser mode keeps the in-window pop-ups).
   The look's "desktop feel" layer is `theme.DESKTOP_CSS`.
 - Design AI teams to resist the FOF8 exploits: TEs falling late in the draft,
   easy trades for certain positions, underpriced free agents, and drafting a QB
@@ -148,6 +152,10 @@ Decided items waiting to be built:
   `engine/news_money.py` its news. AI teams' yearly approach (all in / normal / rebuild) is in
   `free_agency.set_approaches`; `tools/free_agency_check.py` compares cap room at free agency's
   opening with the real NFL's.
+- `engine/gm.py` the AI teams' general managers (Blake, Oct 22: draft-day, free agency, own-player and cap
+  habits, hiring coaches; hired and fired like real GMs; `docs/staff-design.md` section 10);
+  `engine/news_front_office.py` GM and head coach news; `tools/gm_check.py` vs real GM data
+  (`docs/research/gm_research.py`, `real_gm.json`).
 - `engine/sim/` game sim; `engine/player.py` player generation (incl.
   durability/RB endurance via `fill_new_ratings`); `engine/depth.py` depth
   charts; `engine/database.py` save/load (older saves get new fields filled on

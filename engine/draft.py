@@ -112,7 +112,7 @@ TEAM_MISS_DEPTH = 0.25       # ...plus up to this much more lower in the class (
                              # below; big reaches already ran a bit above real, 10 a draft vs ~8)
 TEAM_INSIGHT = 0.35          # better front offices see through part of the shared mistake:
                              # a team with skill +1 keeps 65% of it (skill ~ N(0, 1))...
-TEAM_INSIGHT_BAD = 0.15      # ...and a weak one adds to it more gently (skill -1: 115%). Real: the
+TEAM_INSIGHT_BAD = 0.10      # ...and a weak one adds to it more gently (skill -1: 115%). Real: the
                              # worst drafting team 2000-18 got 0.74 of its slots' value; with the same
                              # slope both ways the sim's worst got 0.51 (Oct 22)
 INSIGHT_RANGE = (0.25, 1.75)
@@ -130,7 +130,10 @@ CRUSH_UP = 0.65              # share that are a team falling for a player (the r
 # everywhere (WR +0.20, DE +0.12, LB +0.27). Grade per spread faster than his position's
 # class, on every board (the combine is public)...
 SPEED_PRICE = {"WR": 0.45, "DE": 0.30, "OLB": 0.18, "ILB": 0.18, "CB": 0.15, "S": 0.15, "QB": 0.10}
-SPEED_SHARP = {"RB": 0.08, "TE": 0.08}   # ...and at RB/TE only sharp front offices see it (per point of skill)
+# At RB and TE average teams lean the other way (real: lighter, faster backs beat their slot,
+# correlation of weight -0.21), so a fast one goes later than he should...
+SPEED_PRICE.update({"RB": -0.35, "TE": -0.10})
+SPEED_SHARP = {"RB": 0.08, "TE": 0.05}   # ...unless the front office is sharp (per point of skill)
 # Age: an older prospect has less growing left and a shorter career, worth about
 # AGE_VALUE grade per year older than the average. Real teams only see part of it
 # (real 24+ year-olds return 0.88 of their slot, 21-22 year-olds 1.22-1.25), the
@@ -188,17 +191,20 @@ TRADE_URGE = (0.40, 0.18, 0.25)           # grade a team must gain (its man now 
 TRADE_DOWN_COST = 0.45       # most grade the team on the clock will give up to move down
 # Of the deals that make sense, the share that actually get made, by pick (real per draft:
 # picks 1-10 0.8 trades, 11-32 2.7, 33-64 5.6, 65-128 6.2, 129+ 5.8).
-TRADE_CHANCE = [(10, 0.45), (32, 0.36), (64, 0.38), (128, 0.42), (999, 0.36)]   # (lowered with the habits below, Oct 22)
+TRADE_CHANCE = [(10, 0.48), (32, 0.38), (64, 0.45), (128, 0.42), (999, 0.38)]   # (lowered with the habits below, Oct 22)
 # Front-office trade habits: some teams trade down nearly every year, others up (real
 # 2010-26, net trade-downs per draft in odd vs even years correlate 0.60; Minnesota +1.4 a
 # draft, New Orleans -1.3). The habit has nothing to do with drafting well (correlation
 # with value vs slot 0.01), so it's its own trait: a team's head coach brings it (style ~
-# N(0, 1); + trades up, - trades down; without a staff, fixed per team).
-TRADE_STYLE_K = 0.5          # e^(k x style): how much the habit moves a team's bar for dealing
+# N(0, 1); + trades up, - trades down; without a staff, fixed per team). Part of it is the
+# organization's own (it outlasts head coaches: real habits last 0.60 across 17 years of
+# coaching changes; with the head coach alone the sim's lasted 0.44).
+STYLE_ORG_SHARE = 0.5        # share of the habit's spread that belongs to the organization
+TRADE_STYLE_K = 0.4          # e^(k x style): how much the habit moves a team's bar for dealing
 # QBs: a team that needs one trades up for him (real: QBs are 33% of trade-ups into the
 # top 10 but 21% of those picks; 13% into 11-32 vs 4.5%).
-QB_TRADE_UP = 3.0            # urge to trade up multiplied by this when its man is a QB it needs...
-QB_TRADE_CHANCE = 2.5        # ...and such a deal this many times likelier to get done
+QB_TRADE_UP = 4.0            # urge to trade up multiplied by this when its man is a QB it needs...
+QB_TRADE_CHANCE = 4.0        # ...and such a deal this many times likelier to get done
 TRADE_PREMIUM = (-0.05, 0.03)  # between AI teams the price is chart value x (1 + this), as close as the
                                # picks allow (real median 0.98-1.01). Deals with you: never below the chart.
 
@@ -275,17 +281,27 @@ def team_skill(league, team_id):
 
 def trade_style(league, team_id):
     """A front office's draft-day habit (about -2 .. +2, average 0): above 0 it
-    trades up more readily, below 0 it trades down. It comes with the head coach
-    (so it changes when he does); a league without staffs keeps one per team."""
-    key = None
+    trades up more readily, below 0 it trades down. Half of it is the
+    organization's own, half the head coach brings (so it shifts when he
+    changes); a league without staffs keeps one per team. Since Oct 22 an AI
+    team's general manager has it (gm.py, draft-design D14: real habits last
+    0.52 under the same GM and 0.20 across a GM change), so the head coach's
+    share below is only for a league without GMs."""
+    from . import gm as G
+    if G.gm_of(league, team_id) is not None:
+        return round(G.style(league, team_id, "trade"), 3)
+    salt = league.settings.get("salt", "")
+    org = random.Random(f"trade-style-{salt}-team-{team_id}").gauss(0, 1)
+    coach = None
     if getattr(league, "staff", None):
         from . import staff as S
         hc = (S.staff_of(league, team_id) or {}).get("HC")
         if hc:
-            key = f"hc-{hc['id']}"
-    key = key or f"team-{team_id}"
-    r = random.Random(f"trade-style-{league.settings.get('salt', '')}-{key}")
-    return round(max(-2.5, min(2.5, r.gauss(0, 1))), 3)
+            coach = random.Random(f"trade-style-{salt}-hc-{hc['id']}").gauss(0, 1)
+    if coach is None:
+        return round(max(-2.5, min(2.5, org)), 3)
+    style = STYLE_ORG_SHARE ** 0.5 * org + (1 - STYLE_ORG_SHARE) ** 0.5 * coach
+    return round(max(-2.5, min(2.5, style)), 3)
 
 
 def insight_keep(skill):
@@ -1064,10 +1080,17 @@ STARTUP_MISS_YOUNG = 0.90     # ...and on a player with 0-1 seasons
 # 25, and 8 started a QB rated under 45). Now, like real team-building: what he adds over
 # the starter the team would be stuck with if it waited (the worst starter-level player
 # still left at his position, counting every team's open starting spots), times how much
-# the position matters (the depth chart's spot importance: QB 3.0, LT 1.3, most 1.0).
-# Results: see docs/build-log.md, "Startup draft QB fix".
-STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.0, "FB": 0.4, "WR": 1.1, "TE": 1.0, "T": 1.2, "G": 1.0, "C": 1.1,
-                      "DE": 1.2, "DT": 1.0, "OLB": 0.95, "ILB": 1.1, "CB": 1.03, "S": 1.03,
+# the position matters. Results: see docs/build-log.md, "Startup draft QB fix".
+# Re-fit Oct 22 (Blake: "re-tune the startup draft's position values to the real contract
+# rankings") to how real teams rank established players: veteran contracts in force
+# 2015-2022 ranked by cap share (docs/research/startup_value.py), the pick at which the
+# 1st, 3rd, 5th, 10th and 20th player at each position goes against his real rank. Fitted
+# on 10 test leagues and checked on 10 others: error (rms log ratio) 0.47 -> 0.23. Was
+# QB 3.0, RB 1.0, WR 1.1, TE 1.0, T 1.2, G 1.0, C 1.1, DE 1.2, DT 1.0, OLB 0.95, ILB 1.1,
+# CB 1.03, S 1.03 (DTs, RBs, edge rushers and top receivers went too late, corners and
+# safeties too early).
+STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.46, "FB": 0.4, "WR": 1.32, "TE": 1.12, "T": 1.18, "G": 1.11,
+                      "C": 1.07, "DE": 1.46, "DT": 1.26, "OLB": 1.09, "ILB": 1.26, "CB": 1.09, "S": 1.10,
                       "K": 0.3, "P": 0.25, "LS": 0.1}
 # (Specialists: the depth chart gives them 1.0, but their ratings spread wider and a rating
 # point there moves games far less; at 1.0 kickers, punters and snappers went in rounds 1-2.
@@ -1078,6 +1101,10 @@ STARTUP_QB_EAGER = 0.05       # a team still without a QB gets this much keener 
 STARTUP_QB_EAGER_FROM = 3     # this one, but only for a QB better than what it would find later (Blake,
                               # Oct 22: no reaching for the best of a bad bunch; a round-12 QB is fine
                               # when that's what makes sense. Replaced a hard 'QB by round 4' rule.)
+# The last starting spot at a three-starter position (the slot receiver, the nickel corner)
+# is worth less than the first two: real teams pay their third receiver and third corner far
+# less than their outside starters (docs/research/startup_value.py). Share of a full starter.
+STARTUP_STARTER_SHARE = {"WR": (1.0, 1.0, 0.65), "CB": (1.0, 1.0, 0.9)}   # fitted with the weights above
 STARTUP_BACKUP_SHARE = 0.25   # a backup is worth this share of a starter (insurance), measured against
                               # the worst player who'll make a roster there, and half again for each more
 
@@ -1182,7 +1209,9 @@ class StartupRoom:
         position = p.position
         backups = self.have[tid][position] - STARTERS_FOR_NEED.get(position, 1)
         if backups < 0:            # a starting spot: against the worst starter-level player left
-            k, share = max(STARTUP_WAIT_DEPTH, self.open_start[position]), 1.0
+            k = max(STARTUP_WAIT_DEPTH, self.open_start[position])
+            shares = STARTUP_STARTER_SHARE.get(position)
+            share = shares[self.have[tid][position]] if shares else 1.0
         else:                      # a backup: against the worst player left who'll make a roster
             k, share = max(1, self.open_all[position]), STARTUP_BACKUP_SHARE * 0.5 ** backups
         repl = _repl if _repl is not None else self._kth(tid, position, k)

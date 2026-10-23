@@ -22,7 +22,12 @@ from fastapi.responses import RedirectResponse
 from nicegui import app, native, ui
 
 from screens import main_page, menu_page, new_game_page, offseason_page, player_card_page
+from screens import windows   # pop-out windows: their pages (/w/...) and the window command
 from screens.state import state
+
+# This file also runs in the process that draws the game window (pywebview): there it
+# gives the game window the command that opens pop-out windows (screens/windows.py).
+windows.install_in_window_process()
 
 from engine import saves
 
@@ -133,7 +138,13 @@ if __name__ in {"__main__", "__mp_main__"}:
                     webbrowser.open(f"http://127.0.0.1:{port}")
 
             threading.Thread(target=browser_if_no_window, daemon=True).start()
-        ui.run(title="Glory Bowl GM", native=True, window_size=(1600, 950),
+        # Opens maximized, filling the screen it's on (Oct 22: at Windows scaling of 150% a
+        # 1600x950 window was taller than a 1440p screen's room above the taskbar). Maximized
+        # once it's shown: pywebview's maximized=True at creation scales the size twice under
+        # Windows scaling (a 3862x2110 window on a 2560x1440 screen). The size below is what
+        # "restore down" goes back to.
+        app.native.on("shown", lambda: app.native.main_window and app.native.main_window.maximize())
+        ui.run(title="Glory Bowl GM", native=True, window_size=(1400, 820),
                reload=False, port=port)
     else:
         print("Opening in your browser.")

@@ -1,0 +1,37 @@
+GM check: 12 leagues x 16 seasons (with GMs)  (sim | real)
+
+1. TURNOVER
+   GM changes a year 4.27 | 4.54, spread 1.94 | 1.84, fewest-most 0-10 | 1-8
+   head coach changes a year 6.86 | 6.92 (1999-2025: 6.6), spread 1.70 | 2.04
+   both in the same offseason a year 2.35 | 2.58; GM changes that come with a new head coach 55% | 57%; head coach changes that come with a new GM 34% | 37%
+   a new GM who kept the head coach replaced him within 2 seasons 44% (n 309) | 55% (n 44)
+   GM tenure (completed, in seasons) mean 4.6 | 4.66, median 4 | 4; 1 season 14% | 11%, 5+ 43% | 42% (the run's length cuts off the longest)
+   new GMs who were a GM before (another team): 11% | 14%
+   chance of a GM change by last season's wins (per 17): 0-4 44% | 35%  5-6 19% | 19%  7-8 15% | 16%  9-10 8% | 11%  11+ 3% | 4%  playoffs 5% | 4%  no playoffs 20% | 20%
+
+2. HABITS: STAY WITH THE TEAM, OR GO WITH THE GM? (correlations; 'same GM' = his own odd vs even years,
+   'next GM' = the same team's GM before vs after a change, 'next year' = one season to the next)
+   draft-day trades (net trade-downs per draft)
+     team odd/even +0.64 | +0.60   same GM +0.53 | +0.52   next GM +0.20 | +0.20   next year same GM +0.28 | +0.20, new GM +0.11 | -0.03   his next team +0.48 (n 77) | +0.33 (n 4)
+   free agency: other teams' players (market deals, share of the cap)
+     team odd/even +0.33 | +0.53   same GM +0.28 | +0.49   next GM +0.13 | +0.30   next year same GM +0.09 | +0.32, new GM +0.01 | +0.15   his next team +0.08 (n 77) |   -   (n 2)
+     average 10.4% | 12.3% of the cap a team a year, spread team-year 8.9% | 8.5%, teams' averages 3.2% | 3.5%
+   own players' market money (re-signs, extensions, share of the cap)
+     team odd/even -0.26 | +0.08   same GM -0.19 | +0.05   next GM -0.09 | -0.06   next year same GM -0.20 | +0.05, new GM -0.17 | +0.09   his next team +0.16 (n 77) |   -   (n 2)
+   own players' share of the market money (re-signs, extensions)
+     team odd/even +0.29 | +0.49   same GM +0.23 | +0.43   next GM +0.10 | +0.10   next year same GM +0.09 | +0.28, new GM +0.03 | +0.04   his next team +0.21 (n 77) |   -   (n 2)
+     average 0.68 | 0.578, teams' averages spread 0.089 | 0.111
+   dead money (share of the cap)
+     team odd/even +0.20 | +0.45   same GM +0.18 | +0.48   next GM +0.06 | +0.20   next year same GM +0.09 | +0.39, new GM +0.07 | +0.31   his next team -0.20 (n 77) | +0.64 (n 4)
+     average 11.0% | 13.2% (real 2013-25 incl. void years; 2016-20 ~8%), spread team-year 6.2% | 7.8%, teams' averages 1.8% | 2.7%
+   cap room left at the season's end
+     team odd/even +0.89 | +0.88   same GM +0.82 | +0.62   next GM +0.33 | +0.57   next year same GM +0.58 | +0.52, new GM +0.36 | +0.69   his next team +0.18 (n 77) | -0.33 (n 4)
+     average 5.8% | 4.8%
+   restructures (cap room made, share of the cap)
+     team odd/even +0.67 |   -     same GM +0.60 |   -     next GM +0.11 |   -     next year same GM +0.42 |   -  , new GM +0.28 |   -     his next team -0.11 (n 77) |   -   (n 0)
+     teams restructuring at all in a year 38% | 55% (2013-20; ~73% 2020-21), more than 3.6% of the cap 29% | 37%, more than 8.2% 19% | 20%
+   draft-day trades a draft 22.2 | 21.1 (pick-for-pick)
+   cap legality: teams over the cap (everyone counting) after the cut to 53: 0 in 192 league-seasons (must be 0)
+   GMs' eye for coaches: new head coaches' true quality minus reputation vs the hiring GM's hidden skill, correlation +0.21 (n 1318; no real measure: PROVISIONAL)
+
+(1 s)

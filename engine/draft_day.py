@@ -8,10 +8,11 @@
 #      the real combine. The prospects are in league.players but aren't free
 #      agents (league.draft["pool"]); you scout them during free agency waves 1-4
 #      (scouting.py).
-#   2. The draft phase's Next starts the draft (start): scouting ends, the AI
-#      picks until your team is on the clock, and the draft waits for you. You
-#      pick, let your staff pick, take a trade offer or make one, step one pick
-#      at a time, sim to your next pick, or let your staff finish the draft.
+#   2. The draft phase's Next starts the draft (start): scouting ends and pick 1
+#      is on the clock. The draft room runs it pick by pick (step) at the speed
+#      you choose and stops when you're on the clock. You pick, let your staff
+#      pick, take a trade offer or make one, step one pick at a time, sim to your
+#      next pick, or let your staff finish the draft.
 #   3. When the last pick is in (finish): rookie deals, undrafted signings (by
 #      each team's own scouting), the draft history and the offseason report.
 # The startup draft (a new league's teams draft every player) works the same way:
@@ -179,9 +180,13 @@ def _save(league):
 
 
 def start(league, order, rng):
-    """The draft phase begins: scouting ends, and the AI picks until your
-    team is on the clock. Returns True if the draft is already over (no team
-    of yours, or your staff picks for you all the way: then call finish)."""
+    """The draft phase begins: scouting ends and pick 1 is on the clock. Nothing
+    is picked yet: you watch the draft pick by pick in the draft room (Blake,
+    Oct 22: "it should start at 1st overall", at a draft speed you choose).
+    Without a team of yours, or with no picks of yours in this draft, the AI
+    makes every pick now. Returns True if the draft is already over (then call
+    finish). Stepping (step) gives exactly the picks a straight run would: each
+    step is one pass of DraftRoom.run's loop, with the same dice."""
     if not has_class(league):
         new_class(league, rng)            # (a save from before the class came out at the league year's start)
     pros = prospects(league)
@@ -201,7 +206,9 @@ def start(league, order, rng):
     c = _cache(league)
     c["room"] = r
     c["stats"] = st
-    r.run()
+    if uid is None or not any(s["team"] == uid for s in r.slots):
+        while r.run() is not None:        # (nobody to watch for: tools, or no picks of yours)
+            r.staff_pick()
     _save(league)
     return r.on_clock() is None
 
@@ -241,6 +248,22 @@ def sim_to_user(league):
     slot = r.run()
     _save(league)
     return slot
+
+
+def sim_until(league, stop=None, most=None):
+    """AI picks one at a time (step) until you're on the clock, the draft ends,
+    stop(made) says so after a pick (the draft room: a player you marked is
+    gone), or `most` picks are made. The same picks sim_to_user would make.
+    Returns the picks made."""
+    made = []
+    while (most is None or len(made) < most) and not user_on_clock(league) and on_clock(league) is not None:
+        pk = step(league)
+        if pk is None:
+            break
+        made.append(pk)
+        if stop is not None and stop(pk):
+            break
+    return made
 
 
 def pick(league, pid):
@@ -534,13 +557,15 @@ def _startup_save(league):
 
 def startup_begin(league):
     """You've picked your team: every rostered and practice squad player goes in
-    the pool, and the AI picks until you're on the clock. (Depth charts and
-    captains are set when it's over.)"""
+    the pool, and pick 1 is on the clock (you watch it from there, like the
+    yearly draft; without a team of yours the AI picks until it's over). (Depth
+    charts and captains are set when it's over.)"""
     uid = league.user_team_id
     r = D.StartupRoom(league, humans={uid} if uid is not None else (), order=_d(league)["order"])
     league.draft.update({"status": "drafting", "pool": [p.id for p in r.pool]})
     _cache(league)["room"] = r
-    r.run()
+    if uid is None:
+        r.run()
     _startup_save(league)
     return r.on_clock()
 
@@ -591,6 +616,20 @@ def startup_sim_to_user(league):
     slot = r.run()
     _startup_save(league)
     return slot
+
+
+def startup_sim_until(league, stop=None, most=None):
+    """startup_step until you're on the clock, it's over, stop(made) after a
+    pick, or `most` picks. Returns the picks made."""
+    made = []
+    while most is None or len(made) < most:
+        pk = startup_step(league)
+        if pk is None:
+            break
+        made.append(pk)
+        if stop is not None and stop(pk):
+            break
+    return made
 
 
 def startup_sim_rest(league):

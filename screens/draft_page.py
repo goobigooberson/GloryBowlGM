@@ -6,10 +6,11 @@
 #                grade of each prospect as a range that narrows as you scout, and the
 #                scouting itself (film study, cross-checks, top-30 visits, interviews),
 #                until the draft starts
-#   Draft room   the draft, pick by pick: who's on the clock, your staff's board, your
-#                needs, trade offers and your own offers; draft a player, let your staff
-#                pick, run the draft at a chosen speed (pause any time), step one pick,
-#                sim to your next pick, or let your staff finish
+#   Draft room   the draft, pick by pick from pick 1: who's on the clock, your staff's
+#                board, your needs, trade offers and your own offers; the draft runs itself
+#                at the speed you choose (Pause / Slow / Normal / Fast / To my pick) and
+#                waits when you're on the clock; draft a player, let your staff pick,
+#                step one pick, or let your staff finish
 #   Results      every pick of this draft (or an earlier one) and the draft-day trades
 # A new league's startup draft (every team drafts its 53-man roster) gets its own room
 # here too. Screens read the engine only (draft_day.py, scouting.py).
@@ -24,13 +25,16 @@
 # right-click (or click the star) to mark him for later.
 
 import asyncio
+import time
+import traceback
 from html import escape
 
-from nicegui import run, ui
+from nicegui import ui
 
 from engine import draft_day as DD
 from engine import formatting as fmt
 from engine import positions as pos
+from engine import saves
 from engine import scouting as S
 from engine import season as SEASON
 from engine.draft import ROSTER_SIZE, STARTUP_SNAKE
@@ -73,8 +77,21 @@ COMBINE_COLS = [
     ("drill", "Drill", "Position drill, out of 100"),
 ]
 
-# Draft speed: seconds between picks when you run the draft (None = straight to your pick).
-SPEEDS = {"Slow": 1.2, "Normal": 0.45, "Fast": 0.1, "Instant": None}
+# Draft speed (Blake, Oct 22: "it shouldnt just be skip pick/teleports to your pick. It
+# should start at 1st overall and then you should be able to select a draft speed... you
+# watch pick by pick until its your turn"): seconds between picks while the draft runs
+# itself. "To my pick" makes the picks all at once; every speed waits when you're on the
+# clock. The speed you last ran it at is remembered (saves/settings.json).
+SPEEDS = {"Pause": None, "Slow": 4.0, "Normal": 2.0, "Fast": 0.5, "To my pick": 0.0}
+SPEED_HELP = {
+    "Pause": "Stop the draft after the pick being made",
+    "Slow": "A pick about every 4 seconds",
+    "Normal": "A pick about every 2 seconds",
+    "Fast": "A pick about every half second",
+    "To my pick": "Every pick until you're on the clock, at once",
+}
+TICK = 0.1          # how often the draft room's timer checks whether the next pick is due (seconds)
+BURST = 8           # "To my pick": picks made between screen updates
 
 
 def _plural(position):
@@ -635,7 +652,15 @@ CSS = f"""
   .rail-card {{ background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:9px 11px; }}
   .rail-card .rc-name {{ font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:21px; line-height:1.1; }}
   .rail-card .q-btn.sb {{ font-size:13px; min-height:30px; border-radius:4px; padding:0 6px; }}
-  .rail .dspeed {{ margin-top:2px; }}
+  .spd-lab {{ font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em;
+             margin:2px 0 -3px; }}
+  .spd {{ display:grid; grid-template-columns:repeat(4, 1fr); gap:3px; }}
+  .spd .q-btn {{ border-radius:4px; min-height:32px; padding:0 2px; font-family:'Barlow Condensed',sans-serif;
+                font-size:15.5px; font-weight:600; background:#E9EEE6; color:var(--ink); }}
+  .spd .q-btn.wide {{ grid-column:1 / -1; }}
+  .spd .q-btn.on {{ background:var(--turf); color:white; }}
+  .spd .q-btn.on.pz {{ background:#5B6670; }}
+  .rail .q-checkbox {{ font-size:13px; }}
 
   .clock {{ display:flex; align-items:stretch; background:#18222B; color:white; border-radius:6px;
            overflow:hidden; margin:10px 16px 0; min-height:62px; }}
@@ -656,6 +681,14 @@ CSS = f"""
                   text-align:center; min-width:46px; line-height:1.2; }}
   .clock .up .u b {{ display:block; font-family:'Barlow Condensed',sans-serif; font-size:16px; }}
   .clock .up .u.me {{ background:{theme.FLAG}; color:var(--ink); }}
+  .clock .live {{ display:flex; flex-direction:column; justify-content:center; align-items:center; padding:4px 12px;
+                 border-left:1px solid rgba(255,255,255,.14); font-family:'Barlow Condensed',sans-serif;
+                 font-size:14px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; min-width:84px; }}
+  .clock .live .dot {{ display:inline-block; width:9px; height:9px; border-radius:50%; background:#E53935;
+                      margin-right:5px; animation:dlive 1.4s ease-in-out infinite; }}
+  .clock .live.paused {{ opacity:.65; }}
+  .clock .live.paused .dot {{ background:#9AA39A; animation:none; }}
+  @keyframes dlive {{ 50% {{ opacity:.25; }} }}
 
   .dbottom {{ display:flex; gap:10px; margin-top:6px; }}
   .dlog {{ background:var(--paper); border:1px solid var(--line); border-radius:4px; height:138px; overflow-y:auto;
@@ -665,6 +698,10 @@ CSS = f"""
   .dlog .ln {{ padding:1px 0; border-bottom:1px solid #F0F2EE; white-space:nowrap; overflow:hidden;
               text-overflow:ellipsis; }}
   .dlog .ln.me {{ background:#FFF6CF; }}
+  .dlog .ln.fresh {{ animation:dfresh 1.6s ease-out; }}
+  @keyframes dfresh {{ from {{ background:#FFE98A; }} }}
+  .dlog .star {{ color:#D99A00; }}
+  .dlog .lc {{ color:#3F4A52; }}        /* the player's college, right after his name */
   .dlog .lp {{ display:inline-block; min-width:62px; color:var(--ink-soft); font-variant-numeric:tabular-nums; }}
   .dlog .lt {{ display:inline-block; min-width:38px; font-weight:600; }}
   .dlog .pos-tag {{ min-width:30px; font-size:12.5px; padding:0 4px; }}
@@ -760,9 +797,17 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
     league = state.league
     ui.add_head_html(CSS)
     ui.add_head_html(BAR_JS)
+    remembered = saves.load_app_settings()
+    speed = remembered.get("draft_speed")
     view = {"v": None, "pid": None, "pos": "All positions", "need_only": False, "marked_only": False,
-            "busy": False, "season": None, "round": "All rounds", "team": "All teams", "speed": "Normal"}
-    auto = {"on": False}                # the draft is running at Draft speed (Pause stops it)
+            "season": None, "round": "All rounds", "team": "All teams",
+            # the speed the draft last ran at (the room always opens paused)
+            "speed": speed if speed in SPEEDS and speed != "Pause" else "Normal",
+            "pause_marked": bool(remembered.get("draft_pause_marked", True))}
+    # The draft running itself: "mode" is the speed you chose ("Pause" = stopped; it waits
+    # anyway while you're on the clock), "last" when the last pick went in, "busy" while
+    # the timer is making picks (nothing else moves the draft then).
+    live = {"mode": "Pause", "last": 0.0, "busy": False, "fresh": None}
     ctx = {"table": None, "dialog": None}
 
     def views():
@@ -931,13 +976,14 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             on_change()
         rail.refresh()
 
-    def drop_row(pid):
-        """A player was just drafted: off the board."""
+    def drop_rows(pids):
+        """Players just drafted: off the board."""
+        gone = set(pids)
         t = ctx.get("table")
         if t is not None:
-            t.rows = [r for r in t.rows if r["id"] != pid]
+            t.rows = [r for r in t.rows if r["id"] not in gone]
             t.update()
-        if view["pid"] == pid:
+        if view["pid"] in gone:
             view["pid"] = None
             rail.refresh()
 
@@ -1088,8 +1134,8 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
         if DD.scouting_open(league):
             if key == "draft":
                 rb("Begin draft", lambda: begin_draft(), "go",
-                   "Scouting ends and the draft starts; it stops when you're on the clock. Same as Next in the "
-                   "bar above.")
+                   "Scouting ends and the draft starts at pick 1: you watch it pick by pick at the speed you "
+                   "choose. Same as Next in the bar above.")
             else:
                 rb("Begin draft", None, "go", enabled=False)
                 ui.label("The draft starts after free agency wave 4: keep scouting until then (Next in the bar "
@@ -1148,17 +1194,32 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                 + ('<span class="oc">YOU ARE ON THE CLOCK</span>' if yours else '<span style="opacity:.7;font-size:17px">'
                    ' on the clock</span>')
                 + f'</div><div class="s">{escape(via)}{" · " if via and staff else ""}{staff}</div></div>'
-                + upcoming_html(upcoming, uid) + '</div>', sanitize=False)
+                + upcoming_html(upcoming, uid) + live_html(yours) + '</div>', sanitize=False)
+
+    def live_html(yours):
+        """The clock strip's corner: is the draft running, and at what speed."""
+        mode = live["mode"]
+        if yours:
+            return ""
+        if mode == "Pause":
+            return '<div class="live paused"><span><span class="dot"></span>Paused</span></div>'
+        return (f'<div class="live"><span><span class="dot"></span>Live</span>'
+                f'<span style="font-weight:500;opacity:.8">{escape(mode)}</span></div>')
 
     @ui.refreshable
     def draft_log():
         uid = league.user_team_id
         made = DD.made_picks(league)
+        marks = _marks(league)
         lines = "".join(
-            f'<div class="ln{" me" if pk["team"] == uid else ""}"><span class="lp">Rd {pk["round"]} #{pk["pick"]}'
+            f'<div class="ln{" me" if pk["team"] == uid else ""}{" fresh" if pk["pick"] == live["fresh"] else ""}">'
+            f'<span class="lp">Rd {pk["round"]} #{pk["pick"]}'
             f'</span><span class="lt">{escape(_team_abbrev(league, pk["team"]))}</span>'
-            f'{_pos_tag(league.player(pk["pid"]).position)} <b>{escape(league.player(pk["pid"]).name)}</b> '
-            f'<span class="legend">{escape(league.player(pk["pid"]).college)} · media #{pk.get("board_rank") or "-"}'
+            f'{_pos_tag(league.player(pk["pid"]).position)} '
+            + ('<span class="star" title="You marked him">★</span> ' if pk["pid"] in marks else "")
+            + f'<b>{escape(league.player(pk["pid"]).name)}</b> '
+            f'<span class="lc">{escape(league.player(pk["pid"]).college)}</span> '
+            f'<span class="legend">· media #{pk.get("board_rank") or "-"}'
             f'</span></div>' for pk in reversed(made[-80:])) or '<div class="legend">No picks yet.</div>'
         trades = DD.trades(league)
         tlines = "".join(_trade_line(league, t) for t in trades[::-1]) or '<div class="legend">None yet.</div>'
@@ -1174,9 +1235,8 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
         uid = league.user_team_id
         yours = slot is not None and slot["team"] == uid
         avail = {p.id for p in DD.available(league)}
-        if auto["on"]:
-            rb("Pause draft", lambda: pause(), "go", "Stop after this pick")
-        elif slot is None:
+        busy_now = running()
+        if slot is None:
             ui.label("The draft is over.").classes("legend")
         elif yours:
             pid = view["pid"]
@@ -1189,18 +1249,14 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             rb(f"Trade offers ({n})", lambda: open_trades(), "alt",
                "Teams behind you that want to move up into this pick" if n else
                "Nobody behind you wants to move up badly enough. You can still make your own offer here.")
+            speed_control(yours)
         else:
-            rb("Continue draft", lambda: run_auto(), "go",
-               "Teams pick one after another at the Draft speed below, until you're on the clock. Pause any time "
-               "(for example to offer a trade for the pick on the clock).")
+            go_button()
+            speed_control(yours)
             rb("Next pick", lambda: next_pick(), "main",
-               "The team on the clock makes its pick (it may trade first). Stop here to offer that team a trade "
-               "for this pick.")
-            if DD.your_slots(league):
-                rb("Sim to my pick", lambda: sim_to_mine(), "main", "Every pick until you're on the clock again, "
-                                                                    "at once")
+               "The team on the clock makes its pick (it may trade first). Pause first to offer that team a "
+               "trade for this pick.", enabled=not busy_now)
         ui.element("div").classes("rsep")
-        busy_now = auto["on"]
         if slot is not None:
             rb("Have staff finish draft", lambda: finish_it(), "quiet",
                "Your staff makes the rest of your picks (no trades) and the draft finishes. Same as Next in the "
@@ -1210,64 +1266,189 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             rb("Offer trade", lambda: open_trades(), "quiet", "Offer picks for another team's picks",
                enabled=not busy_now)
         rb("Team needs", lambda: open_needs(), "quiet", "Where your roster is thin, as your staff sees it")
-        ui.select(list(SPEEDS), value=view["speed"], label="Draft speed",
-                  on_change=lambda e: view.update(speed=e.value)) \
-            .props("dense outlined options-dense").classes("w-full dspeed") \
-            .tooltip("How fast Continue draft goes: Slow, Normal or Fast pick by pick; Instant straight to your "
-                     "pick")
 
-    async def busy(fn, *args):
-        if view["busy"]:
-            return None
-        view["busy"] = True
+    def go_button():
+        """The big yellow button: start or carry on at your speed, or pause."""
+        if running():
+            rb("Pause draft", lambda: pause(), "go", "Stop the draft after the pick being made")
+        else:
+            room = DD.startup_room(league) if DD.in_startup(league) else None
+            started = bool(room.picks if room is not None else DD.made_picks(league))
+            sp = view["speed"]
+            rb(f"{'Continue' if started else 'Start'} draft · {sp}", lambda: set_speed(view["speed"]), "go",
+               f"The draft runs itself at {sp} speed ({SPEED_HELP[sp].lower()}) and waits when you're on the "
+               f"clock. Choose another speed below.")
+
+    def speed_control(yours):
+        """Draft speed: Pause, Slow, Normal, Fast, To my pick. While you're on the
+        clock the draft waits for you; the speed is what happens after your pick."""
+        ui.html(f'<div class="spd-lab">{"Draft speed after your pick" if yours else "Draft speed"}</div>',
+                sanitize=False)
+        with ui.element("div").classes("spd"):
+            for m in SPEEDS:
+                cls = ("on " if live["mode"] == m else "") + ("pz " if m == "Pause" else "") \
+                    + ("wide" if m == "To my pick" else "")
+                ui.button(m, on_click=lambda m=m: set_speed(m), color=None) \
+                    .props("no-caps unelevated dense").classes(cls).tooltip(SPEED_HELP[m])
+        ui.checkbox("Pause when a player I marked is taken", value=view["pause_marked"],
+                    on_change=lambda e: remember_pause_marked(e.value)).props("dense") \
+            .tooltip("Mark players by right-clicking their row (or clicking the star)")
+
+    # ---- The draft running itself (the timer; Blake, Oct 22) -----------------------
+    # One timer for the room (made at the bottom of build_draft_tab). Each tick, if
+    # the draft is running and the next pick is due at your speed, the team on the
+    # clock picks (draft_day.step: the same picks as running it straight through).
+    # It waits while you're on the clock and pauses by itself when a player you
+    # marked is taken (if you ticked that box). A tick never waits on anything slow
+    # (an AI pick takes a few milliseconds), so nothing can hang it: an error or a
+    # pick that doesn't go through pauses the draft and says so.
+    def running():
+        return live["mode"] != "Pause"
+
+    def _engine():
+        """The draft this room runs: (who's on the clock, make picks, show picks)."""
+        if DD.in_startup(league):
+            return DD.startup_on_clock, DD.startup_sim_until, startup_picked
+        return DD.on_clock, DD.sim_until, picked
+
+    def set_speed(mode):
+        """A Draft speed button. Any speed but Pause starts the draft (or keeps it
+        going at the new speed); the next pick goes right away."""
+        if mode != "Pause":
+            view["speed"] = mode
+            _remember("draft_speed", mode)
+        live["mode"] = mode
+        live["last"] = 0.0
+        speed_changed()
+        clock, _until, _show = _engine()
+        slot = clock(league)
+        if mode != "Pause" and slot is not None and slot["team"] == league.user_team_id:
+            ui.notify(f"You're on the clock: after your pick the draft goes on at {mode} speed.", position="top")
+
+    def pause():
+        if running():
+            live["mode"] = "Pause"
+            speed_changed()
+
+    def speed_changed():
+        rail.refresh()
+        (startup_bar if DD.in_startup(league) else clock_bar).refresh()
+
+    async def halt():
+        """Pause, and let a pick being made finish (before the offseason's Next
+        finishes the draft, or the room is closed)."""
+        pause()
+        t0 = time.monotonic()
+        while live["busy"] and time.monotonic() - t0 < 5:
+            await asyncio.sleep(0.02)
+
+    def _remember(key, value):
         try:
-            return await run.io_bound(fn, league, *args)
+            saves.set_app_setting(key, value)
+        except OSError:
+            pass                         # (only a convenience; the draft doesn't need it)
+
+    def remember_pause_marked(on):
+        view["pause_marked"] = bool(on)
+        _remember("draft_pause_marked", bool(on))
+
+    async def tick():
+        mode = live["mode"]
+        if mode == "Pause" or live["busy"]:
+            return
+        if time.monotonic() - live["last"] < SPEEDS[mode]:
+            return
+        clock, until, show = _engine()
+        uid = league.user_team_id
+        slot = clock(league)
+        if slot is None or slot["team"] == uid:
+            return                        # waiting for your pick (or it's over)
+        live["busy"] = True
+        made = []
+        try:
+            marks = _marks(league) if view["pause_marked"] else set()
+            stop = (lambda pk: pk["pid"] in marks) if marks else None
+            while True:
+                batch = until(league, stop=stop, most=BURST if mode == "To my pick" else 1)
+                made += batch
+                if batch:
+                    show(batch)
+                if (mode != "To my pick" or not batch or live["mode"] != mode
+                        or (stop is not None and stop(batch[-1]))):
+                    break
+                slot = clock(league)
+                if slot is None or slot["team"] == uid:
+                    break
+                await asyncio.sleep(0)    # let the screen draw between bursts
+            slot = clock(league)
+            if not made and slot is not None and slot["team"] != uid:
+                pause()
+                ui.notify(f"Pick {slot['pick']} didn't go through, so the draft is paused. Try Next pick.",
+                          type="warning", position="top")
+            elif made and stop is not None and stop(made[-1]):
+                pk = made[-1]
+                p = league.player(pk["pid"])
+                pause()
+                ui.notify(f"A player you marked is gone: {league.team(pk['team']).name} take {p.position} {p.name} "
+                          f"with pick {pk['pick']}. The draft is paused.", type="warning", position="top",
+                          multi_line=True)
+        except Exception as e:            # never leave the timer stuck: pause and say so
+            traceback.print_exc()
+            pause()
+            ui.notify(f"The draft paused: something went wrong making a pick ({e}).", type="negative",
+                      position="top", multi_line=True)
         finally:
-            view["busy"] = False
+            live["busy"] = False
+            live["last"] = time.monotonic()
+        slot = clock(league)
+        if slot is None or slot["team"] == uid:
+            reached_stop(slot)
+
+    def reached_stop(slot):
+        """The draft got to your pick, or the last pick is in."""
+        if DD.in_startup(league):
+            if slot is None:
+                pause()
+                later(startup_finish)
+                return
+            ui.notify(f"You're on the clock with pick {slot['pick']:,}.", type="positive", position="top")
+            later(startup_after)
+            return
+        if slot is None:
+            pause()
+            later(after_move)
+            return
+        n = len(DD.offers(league))
+        ui.notify(f"You're on the clock with pick {slot['pick']}."
+                  + (f" {n} team{'s' if n > 1 else ''} called with trade offers (Trade offers)." if n else ""),
+                  type="positive", position="top", multi_line=True)
+        later(after_move)
+
+    def later(fn):
+        """Run fn (async) on its own, outside the timer's tick, so a long step
+        (finishing the draft, opening camp) can never hold the timer up."""
+        ui.timer(0.01, fn, once=True)
 
     async def after_move():
         mark_changed()
         if DD.drafting(league) and DD.on_clock(league) is None and on_next:
+            pause()
             ui.notify("The last pick is in.", type="positive", position="top")
             await _maybe(on_next())
             return
+        live["last"] = time.monotonic()   # (after your pick, the next one waits a beat at your speed)
         if on_change:
             on_change()
         refresh()
 
-    def picked_one(made):
-        """One AI pick while the draft runs: off the board, onto the log."""
+    def picked(made):
+        """AI picks while the draft runs: off the board, onto the log."""
         mark_changed()
-        drop_row(made["pid"])
+        live["fresh"] = made[-1]["pick"]
+        drop_rows([pk["pid"] for pk in made])
         clock_bar.refresh()
         draft_log.refresh()
-
-    async def run_auto():
-        if auto["on"] or view["busy"]:
-            return
-        auto["on"] = True
-        rail.refresh()
-        try:
-            while auto["on"]:
-                slot = DD.on_clock(league)
-                if slot is None or slot["team"] == league.user_team_id:
-                    break
-                delay = SPEEDS.get(view["speed"])
-                if delay is None:
-                    await busy(DD.sim_to_user)
-                    break
-                made = DD.step(league)
-                if made:
-                    picked_one(made)
-                await asyncio.sleep(delay)
-        finally:
-            auto["on"] = False
-        if DD.user_on_clock(league):
-            ui.notify("You're on the clock.", type="positive", position="top")
-        await after_move()
-
-    def pause():
-        auto["on"] = False
+        top_status.refresh()
 
     async def draft_him(pid):
         if pid is None:
@@ -1286,18 +1467,18 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             await after_move()
 
     async def next_pick():
+        if live["busy"]:
+            return
         made = DD.step(league)
         if made:
             p = league.player(made["pid"])
+            live["fresh"] = made["pick"]
             ui.notify(f"Pick {made['pick']}: {league.team(made['team']).name} take {p.position} {p.name}.",
                       position="top")
         await after_move()
 
-    async def sim_to_mine():
-        await busy(DD.sim_to_user)
-        await after_move()
-
     async def finish_it():
+        await halt()
         if on_next:
             await _maybe(on_next())
 
@@ -1333,7 +1514,8 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                               f'?.scrollIntoView({{block: "center"}}), 600)')
 
     def open_trades():
-        pause()
+        if not DD.user_on_clock(league):
+            pause()                       # (an offer for the pick on the clock: it waits for you)
 
         @ui.refreshable
         def draw():
@@ -1623,12 +1805,16 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
         uid = league.user_team_id
         room = DD.startup_room(league)
         picks = room.picks[-80:] if room else []
+        marks = _marks(league)
         lines = "".join(
-            f'<div class="ln{" me" if pk["team"] == uid else ""}"><span class="lp">Rd {pk["round"]} #{pk["pick"]:,}'
+            f'<div class="ln{" me" if pk["team"] == uid else ""}{" fresh" if pk["pick"] == live["fresh"] else ""}">'
+            f'<span class="lp">Rd {pk["round"]} #{pk["pick"]:,}'
             f'</span><span class="lt">{escape(_team_abbrev(league, pk["team"]))}</span>'
             f'{_pos_tag(league.player(pk["pid"]).position)} '
-            f'<a class="pname" style="color:inherit;text-decoration:none" href="/player/{pk["pid"]}">'
+            + ('<span class="star" title="You marked him">★</span> ' if pk["pid"] in marks else "")
+            + f'<a class="pname" style="color:inherit;text-decoration:none" href="/player/{pk["pid"]}">'
             f'{escape(league.player(pk["pid"]).name)}</a> '
+            f'<span class="lc">{escape(league.player(pk["pid"]).college)}</span> '
             f'<span class="legend">({seen(league, league.player(pk["pid"]))})'
             f'</span></div>' for pk in reversed(picks)) or '<div class="legend">No picks yet.</div>'
         ui.html(f'<div class="dlog"><div class="lh">Draft log (latest first; yours highlighted)</div>{lines}</div>',
@@ -1648,11 +1834,10 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
         ui.element("div").classes("rsep")
         slot = DD.startup_on_clock(league)
         uid = league.user_team_id
-        if auto["on"]:
-            rb("Pause draft", lambda: pause(), "go", "Stop after this pick")
-        elif slot is None:
+        yours = slot is not None and slot["team"] == uid
+        if slot is None:
             ui.label("The startup draft is over.").classes("legend")
-        elif slot["team"] == uid:
+        elif yours:
             pid = view["pid"]
             room = DD.startup_room(league)
             ok = pid is not None and room is not None and pid not in room.taken
@@ -1660,21 +1845,16 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                f"Draft {league.player(pid).name}" if ok else "Click a player in the list first", enabled=ok)
             rb("Let my staff pick", lambda: startup_staff(), "main",
                "Your staff takes the best player for your roster")
+            speed_control(yours)
         else:
-            rb("Continue draft", lambda: startup_run_auto(), "go",
-               "Teams pick one after another at the Draft speed below, until you're on the clock. Pause any time.")
-            rb("Next pick", lambda: startup_next(), "main", "The team on the clock makes its pick")
-            rb("Sim to my pick", lambda: startup_to_mine(), "main", "Every pick until you're on the clock again, "
-                                                                    "at once")
+            go_button()
+            speed_control(yours)
+            rb("Next pick", lambda: startup_next(), "main", "The team on the clock makes its pick",
+               enabled=not running())
         ui.element("div").classes("rsep")
         rb("Have staff finish draft", lambda: startup_finish(), "quiet",
-           "Your staff makes the rest of your picks, then training camp opens", enabled=not auto["on"])
+           "Your staff makes the rest of your picks, then training camp opens", enabled=not running())
         rb("My roster", lambda: open_startup_roster(), "quiet", "Who you've drafted so far, by position")
-        ui.select(list(SPEEDS), value=view["speed"], label="Draft speed",
-                  on_change=lambda e: view.update(speed=e.value)) \
-            .props("dense outlined options-dense").classes("w-full dspeed") \
-            .tooltip("How fast Continue draft goes: Slow, Normal or Fast pick by pick; Instant straight to your "
-                     "pick")
 
     def startup_selected():
         pid = view["pid"]
@@ -1730,39 +1910,20 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
 
     def startup_picked(made):
         mark_changed()
-        drop_row(made["pid"])
+        live["fresh"] = made[-1]["pick"]
+        drop_rows([pk["pid"] for pk in made])
         startup_bar.refresh()
         startup_log.refresh()
-
-    async def startup_run_auto():
-        if auto["on"] or view["busy"]:
-            return
-        auto["on"] = True
-        rail.refresh()
-        try:
-            while auto["on"]:
-                slot = DD.startup_on_clock(league)
-                if slot is None or slot["team"] == league.user_team_id:
-                    break
-                delay = SPEEDS.get(view["speed"])
-                if delay is None:
-                    await busy(DD.startup_sim_to_user)
-                    break
-                made = DD.startup_step(league)
-                if made:
-                    startup_picked(made)
-                await asyncio.sleep(delay)
-        finally:
-            auto["on"] = False
-        if (DD.startup_on_clock(league) or {}).get("team") == league.user_team_id:
-            ui.notify("You're on the clock.", type="positive", position="top")
-        await startup_after()
+        top_status.refresh()
+        if on_change:
+            on_change()                   # (the green bar shows the pick on the clock)
 
     async def startup_after():
         mark_changed()
         if DD.startup_on_clock(league) is None:
             await startup_finish()
             return
+        live["last"] = time.monotonic()
         if on_change:
             on_change()
         refresh()
@@ -1784,29 +1945,29 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
             await startup_after()
 
     async def startup_next():
+        if live["busy"]:
+            return
         made = DD.startup_step(league)
         if made:
             p = league.player(made["pid"])
+            live["fresh"] = made["pick"]
             ui.notify(f"Pick {made['pick']}: {league.team(made['team']).name} take {p.position} {p.name}.",
                       position="top")
         await startup_after()
 
-    async def startup_to_mine():
-        await busy(DD.startup_sim_to_user)
-        await startup_after()
-
     async def startup_finish():
-        pause()
+        await halt()
         if on_startup_done:
             await _maybe(on_startup_done())
 
     def refresh():
-        if auto["on"]:
-            return                      # the running draft redraws itself when it stops
         body.refresh()
 
     with ui.column().classes("w-full gap-0"):
         body()
+        ui.timer(TICK, tick)              # the draft running itself (tick, above)
+    refresh.pause = pause                 # main_page: closing the draft room pauses the draft
+    refresh.halt = halt                   # ...and the offseason's Next waits for a pick being made
     return refresh
 
 

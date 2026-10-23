@@ -533,6 +533,9 @@ def load_league(path):
         if not league.staff:
             staff.ensure(league)
             league.filled_on_load = True
+        elif not league.staff.get("gm"):
+            staff.ensure(league)          # saves from before Oct 22: the AI general managers (gm.py)
+            league.filled_on_load = True
         if "transactions" in tables:
             for r in db.execute("SELECT * FROM transactions ORDER BY rowid"):
                 league.transactions.append({"season": r["season"], "when": r["happened"], "team": r["team_id"],

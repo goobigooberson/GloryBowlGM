@@ -150,7 +150,8 @@ FIRE_PLAYOFF_MULT = 0.5       # reached the playoffs
 # in a busy year; in a quiet one a struggling coach looks easier to replace). Each AI team,
 # in random order, has its odds x e^(-MARKET_K x (jobs opened so far - expected so far)).
 MARKET_K = 0.8
-MARKET_LIFT = 1.18            # odds multiplier that keeps the average at the real 6.6 (the brake trims it)
+MARKET_LIFT = 0.8             # odds multiplier that keeps the average at the real 6.6 (the brake trims it;
+                              # 1.18 before the GMs, Oct 22: new GMs now bring in coaches of their own)
 # A new head coach (AI team) keeps each of these with this chance (otherwise he brings
 # his own; real: much of the coordinator turnover is new head coaches' staffs).
 KEEP_UNDER_NEW_HC = {"OC": 0.20, "DC": 0.25, "AHC": 0.35, "SC": 0.50, "CS": 0.85, "PP": 0.85, "AT": 0.85}
@@ -195,6 +196,9 @@ def ensure(league):
     gets the same staff: seeded by its salt). Returns it."""
     st = getattr(league, "staff", None)
     if st and st.get("coaches"):
+        if not st.get("gm"):
+            from . import gm as G
+            G.ensure(league)          # saves from before Oct 22 get their AI general managers
         return st
     rng = random.Random(f"staff-new-{league.settings.get('salt', '')}-{league.settings.get('first_season', league.season)}")
     st = {"coaches": {}, "jobs": {}, "next_id": 1, "owner": {}, "dead": [], "log": [], "carousel": None,
@@ -224,6 +228,8 @@ def ensure(league):
                 c["exp"]["coord"] = rng.randint(2, 8)
             elif level == 2:
                 c["exp"]["coord"] = rng.randint(1, 6)
+    from . import gm as G
+    G.ensure(league)                  # the AI teams' general managers (gm.py, Oct 22)
     return st
 
 
@@ -241,7 +247,7 @@ def _new_person(league, rng, track, job=None, side=None, talent=TALENT_NEW, rep_
     true = {k: _clip(rng.gauss(level, RATING_SD)) for k in RATINGS[track]}
     err = {k: round(rng.gauss(0, rep_sd), 2) for k in true}
     years = max(1, age - 27 - abs(round(rng.gauss(0, 3))))
-    c = {"id": cid, "name": f"{rng.choice(names.FIRST_NAMES)} {rng.choice(names.LAST_NAMES)}",
+    c = {"id": cid, "name": " ".join(names.elder(rng)),
          "born": league.season - age, "track": track, "bg": bg, "true": true, "err": err,
          "style": _style_draw(rng), "team": None, "job": None, "since": None, "through": None, "salary": 0,
          "exp": {"years": years, "HC": 0, "coord": 0}, "record": [], "mentor": None,
@@ -750,6 +756,7 @@ def carousel_start(league, lines, rng=None):
     # and expected, so only the true decisions are steadied.
     ai = [t.id for t in league.teams if t.id != user]
     rng.shuffle(ai)
+    from . import gm as G
     opened, expected = 0.0, retire_expected
     for tid in ai:
         hc = staff_of(league, tid)["HC"]
@@ -761,6 +768,14 @@ def carousel_start(league, lines, rng=None):
             continue
         r = by_team.get(tid, {})
         p = min(0.95, fire_chance(_wins17(r), _tenure(league, hc), bool(r.get("seed"))) * MARKET_LIFT)
+        # The general manager (gm.py, Oct 22): a new one often brings in his own coach; one
+        # who inherited this coach gives him less rope (real: 57% of GM changes come with a
+        # new head coach; a kept coach was gone within 2 seasons 55% of the time).
+        if G.new_this_offseason(league, tid):
+            if G.inherited_coach(league, tid, hc):
+                p = 1 - (1 - p) * (1 - G.NEW_GM_OWN_COACH)
+        elif G.inherited_coach(league, tid, hc):
+            p = min(0.95, p * G.INHERITED_MULT)
         p_now = min(0.95, p * math.exp(-MARKET_K * (opened - expected)))
         expected += p
         if rng.random() < p_now:
@@ -957,6 +972,12 @@ def carousel_next(league, rng=None):
 def _ai_value(league, c, tid, job):
     noise = random.Random(f"view-{tid}-{c['id']}").gauss(0, AI_VIEW_NOISE)
     v = reputation_score(c, job) + noise
+    # The team's general manager hires the staff, and some see through a coach's
+    # reputation better than others (gm.py, Oct 22; hidden, PROVISIONAL).
+    from . import gm as G
+    seen = G.judge_seen(league, tid)
+    if seen:
+        v += seen * (_true_score(c, job) - reputation_score(c, job))
     if job == "HC" and c["exp"].get("HC", 0) > 0:
         v += 2.0
     if _tie(league, c, tid):

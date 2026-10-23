@@ -318,10 +318,11 @@ def generate_player(position=None, experience=None, season_year=2026,
     age = max(21, 22 + experience + random.choice([-1, 0, 0, 1]))
     birth_date = date(season_year - age - 1, 9, 2) + timedelta(days=random.randint(0, 364))
 
+    first_name, last_name = names.person(random)
     player = Player(
         id=_next_id,
-        first_name=random.choice(names.FIRST_NAMES),
-        last_name=random.choice(names.LAST_NAMES),
+        first_name=first_name,
+        last_name=last_name,
         position=position,
         birth_date=birth_date,
         experience=experience,

@@ -54,6 +54,7 @@ TYPES = {
     "storyline": "Storylines",
     "rankings": "Rankings and previews",
     "business": "League business",
+    "front_office": "Coaches and front offices",
 }
 LEAGUE_VIEW_MIN = 25       # the league-wide view shows stories at least this important (0-100)
 POST_LEAGUE_VIEW_MIN = 30  # ...and social posts at least this important
@@ -2965,6 +2966,7 @@ def _season_news(ctx, season, past_games):
     track = SL.SeasonTrack(ctx, season, games)
     from .news_awards import awards_news   # awards and the Pro Bowl (Oct 23)
     from .news_money import money_news     # the cap, TV and labor deals (Oct 24)
+    from .news_front_office import front_office_news   # GMs and head coaches (Oct 22)
     sections = [lambda: [_game_story(ctx, season, phase, g, box, recs, track)
                          for phase, g, box in games if g.get("played") and box],
                 lambda: _performances_and_milestones(ctx, season, games, recs, track),
@@ -2972,6 +2974,7 @@ def _season_news(ctx, season, past_games):
                 lambda: _moves(ctx, season), lambda: _draft(ctx, season), lambda: _retirements(ctx, season),
                 lambda: _playoff_field(ctx, season), lambda: _season_summary(ctx, season, games),
                 lambda: _captains(ctx, season), lambda: awards_news(ctx, season), lambda: money_news(ctx, season),
+                lambda: front_office_news(ctx, season),
                 lambda: ctx.finish_posts(start)]   # Bitter's bits, worded in calendar order (Oct 24)
     for section in sections:
         # Each kind of news keeps its own memory of recent wording, so a story

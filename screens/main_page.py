@@ -288,7 +288,8 @@ def build_page():
                 nxt_btn = bar_btn(nxt, lambda: next_phase(), "go", "skip_next")
                 tip = {"coaching": "Every candidate takes the offer he likes best, yours or another team's. "
                                    "After round 3, any job still open gets your staff's pick.",
-                       "draft": "Scouting ends and the draft starts. It stops when you're on the clock.",
+                       "draft": "Scouting ends and the draft starts at pick 1: watch it pick by pick in the "
+                                "draft room at the speed you choose.",
                        "drafting": "Your staff makes the rest of your picks (no trades) and the draft finishes; "
                                    "then free agency goes on (waves 5-7)."}.get(key)
                 if tip:
@@ -460,6 +461,8 @@ def build_page():
         if draft_window:
             draft_win = popups.KeptWindow("Draft room", draft_room)
             refresh_draft = draft_win.content
+            # Closing the draft room pauses the draft (it runs itself while open: draft_page.py).
+            draft_win.dialog.on_value_change(lambda e: None if e.value else refresh_draft.pause())
         if not startup:
             with ui.tab_panel(depth_tab).classes("p-0"):
                 refresh_depth = build_depth_tab(
@@ -581,6 +584,8 @@ def build_page():
         if show_cap_hold():
             return
         await home_settle()             # Home may still be reading the news; let it finish first
+        if key == "drafting":
+            await refresh_draft.halt()  # the draft room stops running itself (and finishes a pick being made)
         if key == "resign" and not confirmed:
             lost = [r for r in FA.expiring_for_you(league) if r["why"]]
             if lost:
@@ -608,9 +613,13 @@ def build_page():
             ui.navigate.reload()
             return
         if phase == "drafting":
-            # The draft is waiting for your pick (the draft room).
+            # The draft starts at pick 1 in the draft room (you choose the speed there).
             show_draft()
-            ui.notify("You're on the clock.", type="positive", position="top")
+            if draft_day.user_on_clock(league):
+                ui.notify("The draft is on and you're on the clock with pick 1.", type="positive", position="top")
+            else:
+                ui.notify("The draft is on: pick 1 is on the clock. Choose a draft speed to start it.",
+                          type="positive", position="top")
         elif key == "drafting":
             ui.notify(f"The {league.season} draft is complete. Rookies are signed; free agency goes on.",
                       type="positive", position="top")
@@ -724,6 +733,8 @@ def build_page():
             ui.notify("Choose a team first.")
             return
         league.user_team_id = team_id
+        from engine import gm
+        gm.ensure(league)                # you are your team's GM (its AI GM steps aside)
         state.team_id = team_id
         mark_changed()
         ui.navigate.reload()

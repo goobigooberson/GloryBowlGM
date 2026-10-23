@@ -642,9 +642,10 @@ OFFSEASON_PHASES = {
     "fa": ("Free agency", "Make offers to free agents. When you press Next, the wave plays out: every "
                           "player picks the offer he likes best, yours or another team's."),
     "draft": ("The draft is next", "Last chance to scout (Draft tab). Next starts the draft: scouting ends, "
-                                   "and the picks go until your team is on the clock."),
-    "drafting": ("The draft", "Make your picks in the Draft tab. Next lets your staff make the rest of "
-                              "your picks and finishes the draft."),
+                                   "and pick 1 goes on the clock in the draft room."),
+    "drafting": ("The draft", "Watch it pick by pick in the draft room at the speed you choose and make "
+                              "your picks there. Next lets your staff make the rest of your picks and "
+                              "finishes the draft."),
     "camp": ("Free agency is over", "Next opens training camp: every team fills its roster to 90 (your "
                                     "staff adds cheap camp bodies at your thinnest spots), players develop, "
                                     "and the preseason schedule is set."),

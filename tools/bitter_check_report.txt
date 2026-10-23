@@ -1,43 +1,124 @@
-League: Bitter check 2, now 2029 Week 11; seasons with bits: [2026, 2027, 2028, 2029]
-Build time: this season's feed 4.58s; every season with its games 21.30s
-Bits per season: 2026: 6306, 2027: 6655, 2028: 6459, 2029: 3982; regular-season week average: 297 in all, 79 top-level in For you
+League: News check, now 2027 Week 4; seasons with bits: [2026, 2027]
+Build time: this season's feed 0.70s; every season with its games 0.61s
+Bits per season: 2026: 6210, 2027: 2029; regular-season week average: 293 in all, 76 top-level in For you
 
-Word-for-word repeats, every bit: in a week 0, in a season 0, across the save 0 (extra copies among 23402 bits)
+Word-for-word repeats, every bit: in a week 0, in a season 0, across the save 0 (extra copies among 8239 bits)
   Across seasons:
 
-Same shape (names and numbers swapped), the accounts' own bits: in a week 0, in a season 2758, across the save 5264 (extra copies among 9513 bits); shapes used more than 3 times in a season: 0
-  x3 in 2029: Beat a 7-1 team. Believe it.
-       2029 Week 10: OldNewOrleansFan (Krewe fan): Beat a 7-1 team. Believe it.
-       2029 Week 7: OldTampaFan (Storm fan): Beat a 3-3 team. Believe it.
-  x3 in 2029: Calm down. 23-11 doesn't scare anybody.
-       2029 Week 10: SanFranciscoDiehard (Fog fan): Calm down. 23-11 doesn't scare anybody.
-       2029 Week 9: WildcattersNation (Wildcatters fan): Calm down. 30-9 doesn't scare anybody.
-  x3 in 2029: 5-5. Real team.
-       2029 Week 10: BuffaloDiehard (Blizzard fan): 5-5. Real team.
-       2029 Week 5: OldClevelandFan (Forge fan): 4-1. Real team.
+Same shape (names and numbers swapped), the accounts' own bits: in a week 0, in a season 914, across the save 1153 (extra copies among 3335 bits); shapes used more than 3 times in a season: 0
+  x3 in 2027: Write my name down in pen. Archers got the message.
+       2027 Week 3: Colby Hicks (Player): Write my name down in pen. Archers got the message.
+       2027 Week 2: Clay Lawson (Player): Write my name down in pen. Ironmen got the message.
+  x3 in 2027: Told y'all. Nobody in this league can guard me. 26-24.
+       2027 Week 3: Drew Bowman (Player): Told y'all. Nobody in this league can guard me. 26-24.
+       2027 Week 2: Tristan Armstrong (Player): Told y'all. Nobody in this league can guard me. 16-15.
+  x3 in 2027: We'll see the Blues again. Bet on it.
+       2027 Week 3: Victor Lewis (Player): We'll see the Blues again. Bet on it.
+       2027 Week 2: Chase Walsh (Player): We'll see the Storm again. Bet on it.
+  x3 in 2027: That's what happens when you test me, Storm.
+       2027 Week 3: Mario Brown (Player): That's what happens when you test me, Storm.
+       2027 Week 2: Jamal Nelson (Player): That's what happens when you test me, Express.
+  x3 in 2027: Final: Forge 22, Express 29. Next: the Vaqueros.
+       2027 Week 3: Cleveland Forge (Team account): Final: Forge 22, Express 29. Next: the Vaqueros.
+       2027 Week 2: Cleveland Forge (Team account): Final: Forge 15, Krewe 16. Next: the Express.
+  x3 in 2027: Krewe wasn't ready. Nobody is.
+       2027 Week 3: Curtis Jackson (Player): Krewe wasn't ready. Nobody is.
+       2027 Week 2: Mitchell Woods (Player): Mechanics wasn't ready. Nobody is.
+  x3 in 2027: 27-19? Nah. Run it back.
+       2027 Week 3: Elijah Wright (Player): 27-19? Nah. Run it back.
+       2027 Week 2: Curtis Jackson (Player): 41-19? Nah. Run it back.
+  x3 in 2027: Noted. 26-20 doesn't scare anybody.
+       2027 Week 3: PeaksNation (Peaks fan): Noted. 26-20 doesn't scare anybody.
+       2027 Week 2: OldLosAngelesFan (Stars fan): Noted. 40-14 doesn't scare anybody.
+  x3 in 2027: The Blizzard gonna learn.
+       2027 Week 3: Victor Armstrong (Player): The Blizzard gonna learn.
+       2027 Week 2: Ray Clark (Player): The Stars gonna learn.
+  x3 in 2027: Easy work. 37-34.
+       2027 Week 3: Justin Lawson (Player): Easy work. 37-34.
+       2027 Week 2: Nathan Harris (Player): Easy work. 17-13.
+  x3 in 2027: Put some respect on Chicago. 29-22.
+       2027 Week 3: Caleb Price (Player): Put some respect on Chicago. 29-22.
+       2027 Week 2: Logan Green (Player): Put some respect on New York. 34-27.
+  x3 in 2027: 174 rushing yards. 25-10. #HoistTheSails
+       2027 Week 3: Boston Harbormen (Team account): 174 rushing yards. 25-10. #HoistTheSails
+       2027 Week 2: Denver Peaks (Team account): 254 rushing yards. 31-16. #PeakSeason
 
-Same shape, the outlets' article bits (for information): in a week 1986, in a season 5800, across the save 8625 (extra copies among 13889 bits); shapes used more than 3 times in a season: 546
-  x58 in 2026: The San Francisco Fog promoted wide receiver Bryce Perkins from the practice squad to the 53-man roster.
-       2026 Week 18: League Wire (Outlet): The San Francisco Fog promoted wide receiver Bryce Perkins from the practice squad to the 53-man roster.
-       2026 Week 17: League Wire (Outlet): The Boston Harbormen promoted wide receiver Darren Howard from the practice squad to the 53-man roster.
-  x56 in 2026: The Phoenix Scorpions promoted cornerback Marcus Simpson from the practice squad to the 53-man roster.
-       2026 Week 18: League Wire (Outlet): The Phoenix Scorpions promoted cornerback Marcus Simpson from the practice squad to the 53-man roster.
-       2026 Week 16: League Wire (Outlet): The Seattle Sound promoted cornerback Taylor Bradley from the practice squad to the 53-man roster.
-  x50 in 2028: The Cleveland Forge promoted cornerback Jordan Taylor from the practice squad to the 53-man roster.
-       2028 Divisional round: League Wire (Outlet): The Cleveland Forge promoted cornerback Jordan Taylor from the practice squad to the 53-man roster.
-       2028 Week 18: League Wire (Outlet): The St. Louis Archers promoted cornerback Nick Holland from the practice squad to the 53-man roster.
+Same shape, the outlets' article bits (for information): in a week 690, in a season 1881, across the save 2153 (extra copies among 4904 bits); shapes used more than 3 times in a season: 178
+  x48 in 2026: NEWS: Kansas City Blues transactions: Week 18
+       2026 Week 18: League Wire (Outlet): NEWS: Kansas City Blues transactions: Week 18
+       2026 Week 18: League Wire (Outlet): NEWS: New Orleans Krewe transactions: Week 18
+  x45 in 2026: Los Angeles Stars transactions: Week 17
+       2026 Week 17: League Wire (Outlet): Los Angeles Stars transactions: Week 17
+       2026 Week 17: League Wire (Outlet): Minneapolis Freeze transactions: Week 17
+  x37 in 2026: JUST IN: San Diego Surf transactions: Week 18
+       2026 Week 18: League Wire (Outlet): JUST IN: San Diego Surf transactions: Week 18
+       2026 Week 18: League Wire (Outlet): JUST IN: Los Angeles Stars transactions: Week 18
+  x28 in 2026: The Kansas City Blues promoted cornerback Jared Allen from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The Kansas City Blues promoted cornerback Jared Allen from the practice squad to the 53-man roster.
+       2026 Week 16: League Wire (Outlet): The Phoenix Scorpions promoted cornerback Cameron Wright from the practice squad to the 53-man roster.
+  x27 in 2026: The San Francisco Fog promoted wide receiver Jay Palmer from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The San Francisco Fog promoted wide receiver Jay Palmer from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The Phoenix Scorpions promoted wide receiver Marshall Edwards from the practice squad to the 53-man roster.
+  x25 in 2026: The San Antonio Vaqueros promoted defensive end Thomas Young from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The San Antonio Vaqueros promoted defensive end Thomas Young from the practice squad to the 53-man roster.
+       2026 Week 15: League Wire (Outlet): The Washington Sentinels promoted defensive end Dakota Evans from the practice squad to the 53-man roster.
+  x23 in 2026: Dylan Franklin (STL, WR) reached 1,500 receiving yards for the season in Week 18 against the Nashville Outlaws
+       2026 Week 18: Gridiron Daily (Outlet): Dylan Franklin (STL, WR) reached 1,500 receiving yards for the season in Week 18 against the Nashville Outlaws.
+       2026 Week 18: Gridiron Daily (Outlet): Marquise West (MIN, WR) reached 1,000 receiving yards for the season in Week 18 against the Kansas City Blues.
+  x22 in 2027: Las Vegas High Rollers, Training camp: 25 moves (signed: 25) (+1 more)
+       2027 Training camp: League Wire (Outlet): Las Vegas High Rollers, Training camp: 25 moves (signed: 25) (+1 more)
+       2027 Training camp: League Wire (Outlet): Minneapolis Freeze, Training camp: 22 moves (signed: 22) (+1 more)
+  x21 in 2026: The Buffalo Blizzard promoted running back Jared Hamilton from the practice squad to the 53-man roster.
+       2026 Week 16: League Wire (Outlet): The Buffalo Blizzard promoted running back Jared Hamilton from the practice squad to the 53-man roster.
+       2026 Week 16: League Wire (Outlet): The San Diego Surf promoted running back James Chambers from the practice squad to the 53-man roster.
+  x20 in 2026: The Portland Lumberjacks promoted defensive tackle Patrick Evans from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The Portland Lumberjacks promoted defensive tackle Patrick Evans from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The Denver Peaks promoted defensive tackle Wes Riley from the practice squad to the 53-man roster.
+  x19 in 2026: The San Diego Surf promoted safety Marshall Riley from the practice squad to the 53-man roster.
+       2026 Week 18: League Wire (Outlet): The San Diego Surf promoted safety Marshall Riley from the practice squad to the 53-man roster.
+       2026 Week 17: League Wire (Outlet): The Tampa Storm promoted safety Julian Stephens from the practice squad to the 53-man roster.
+  x18 in 2026: NEWS: Hughes earns a roster spot in Detroit
+       2026 Week 18: League Wire (Outlet): NEWS: Hughes earns a roster spot in Detroit
+       2026 Week 17: League Wire (Outlet): NEWS: Kendall Reynolds earns a roster spot in Las Vegas
 
-Same shape in the For you view: in a week 0, in a season 1066, across the save 2612 (extra copies among 6321 bits); shapes used more than 3 times in a season: 13
-  x6 in 2026: Buffalo was 4-6 when Javon Martin was hurt in Week 10.
-       2026 Week 13: Gridiron Daily (Outlet): Buffalo was 4-6 when Javon Martin was hurt in Week 10.
-       2026 Week 12: Gridiron Daily (Outlet): Miami was 2-6 when Landon Wood was hurt in Week 9.
-  x5 in 2028: San Francisco got three sacks and a forced fumble from defensive end Ross Caldwell in a 17-13 win over the Bos
-       2028 Week 16: League Wire (Outlet): San Francisco got three sacks and a forced fumble from defensive end Ross Caldwell in a 17-13 win over the Boston 
-       2028 Week 12: League Wire (Outlet): San Diego got two sacks and a forced fumble from defensive end Roman Thompson in a 31-24 win over the Las Vegas Hi
-  x5 in 2027: Tampa was 6-5 when Micah James was hurt in Week 12.
-       2027 Week 15: Gridiron Daily (Outlet): Tampa was 6-5 when Micah James was hurt in Week 12.
-       2027 Week 11: Gridiron Daily (Outlet): Cleveland was 5-2 when Thomas Sims was hurt in Week 8.
+Same shape in the For you view: in a week 0, in a season 325, across the save 430 (extra copies among 2194 bits); shapes used more than 3 times in a season: 2
+  x4 in 2026: Houston came in at 4-12 and New Orleans at 11-5.
+       2026 Week 18: League Wire (Outlet): Houston came in at 4-12 and New Orleans at 11-5.
+       2026 Week 15: League Wire (Outlet): Miami came in at 4-9 and St. Louis at 8-5.
+  x4 in 2026: Taylor Hudson of the San Antonio Vaqueros had two sacks and forced a fumble in a 19-17 win over the New Orlean
+       2026 Week 12: League Wire (Outlet): Taylor Hudson of the San Antonio Vaqueros had two sacks and forced a fumble in a 19-17 win over the New Orleans Kr
+       2026 Week 7: League Wire (Outlet): Keenan Cooper of the Indianapolis Speed had 2.5 sacks and forced a fumble in a 19-17 win over the New York Knights 
+  x3 in 2027: 27-19? Nah. Run it back.
+       2027 Week 3: Elijah Wright (Player): 27-19? Nah. Run it back.
+       2027 Week 2: Curtis Jackson (Player): 41-19? Nah. Run it back.
+  x3 in 2027: Not how I wanted my season to go. I'll be back, Miami.
+       2027 Week 2: Connor Reynolds (Player): Not how I wanted my season to go. I'll be back, Miami.
+       2027 Week 1: Russell Hayes (Player): Not how I wanted my season to go. I'll be back, San Antonio.
+  x3 in 2027: NEWS: Season over for Houston's Connor Watson
+       2027 Preseason week 3: League Wire (Outlet): NEWS: Season over for Houston's Connor Watson
+       2027 Preseason week 2: League Wire (Outlet): NEWS: Season over for Baltimore's Ford
+  x3 in 2026: Freeman put us on his back. 34-18. #FeelTheSpeed
+       2026 Conference championships: Indianapolis Speed (Team account): Freeman put us on his back. 34-18. #FeelTheSpeed
+       2026 Divisional round: Indianapolis Speed (Team account): Pierce put us on his back. 27-25. #FeelTheSpeed
+  x3 in 2026: Cooking up something special tonight to celebrate. Speed W, 34-18.
+       2026 Conference championships: Rocco Bellini (Celebrity chef · Speed fan): Cooking up something special tonight to celebrate. Speed W, 34-18.
+       2026 Week 16: Rocco Bellini (Celebrity chef · Speed fan): Cooking up something special tonight to celebrate. Speed W, 37-0.
+  x3 in 2026: Speed, please. For my health. 27-25.
+       2026 Divisional round: Rocco Bellini (Celebrity chef · Speed fan): Speed, please. For my health. 27-25.
+       2026 Week 14: Danny Kowalczyk (Comedian · Wildcatters fan): Wildcatters, please. For my health. 16-13.
+  x3 in 2026: The Kansas City Blues knocked off the Minneapolis Freeze 16-9 in Week 18, beating a team that came in 9-7.
+       2026 Week 18: League Wire (Outlet): The Kansas City Blues knocked off the Minneapolis Freeze 16-9 in Week 18, beating a team that came in 9-7.
+       2026 Week 14: League Wire (Outlet): The Buffalo Blizzard knocked off the Tampa Storm 20-15 in Week 14, beating a team that came in 9-3.
+  x3 in 2026: Houston wins it 30-13. Record: 5-12.
+       2026 Week 18: Damon Hall (Wildcatters beat writer): Houston wins it 30-13. Record: 5-12.
+       2026 Week 17: Adrian Smith (Surf beat writer): San Diego wins it 24-17. Record: 10-6.
+  x3 in 2026: At 7-9-1, the Portland Lumberjacks can no longer reach the playoffs.
+       2026 Week 18: League Wire (Outlet): At 7-9-1, the Portland Lumberjacks can no longer reach the playoffs.
+       2026 Week 17: League Wire (Outlet): At 7-8-1, the Baltimore Clippers can no longer reach the playoffs.
+  x3 in 2026: Week 17 I said Chicago's line needed help. Today: one sack allowed in a 25-7 win. Credit where it's due.
+       2026 Week 18: Terrence "Big T" Holloway (Analyst): Week 17 I said Chicago's line needed help. Today: one sack allowed in a 25-7 win. Credit where it's
+       2026 Week 15: Terrence "Big T" Holloway (Analyst): Week 7 I said Dallas's line needed help. Today: one sack allowed in a 31-21 win. Credit where it's 
 
-Same-shape repeats in a season by kind of account: Fans 977, Team accounts 679, Reporters and insiders 447, Players 341, Hot takes and analysis 140, Celebrities 139, Stats 35
+Same-shape repeats in a season by kind of account: Fans 334, Team accounts 214, Players 153, Reporters and insiders 133, Hot takes and analysis 36, Celebrities 33, Stats 11
 
 TARGETS: all met

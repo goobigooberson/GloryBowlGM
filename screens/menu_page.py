@@ -284,3 +284,13 @@ def build_settings_page():
                      "then: go back to the main menu or close the window without saving and they're "
                      "gone, and the save is as you last left it. Use \"Save a copy\" for a backup to "
                      "go back to.").classes("legend")
+        with ui.column().classes("menu-panel p-6 gap-1 w-full"):
+            ui.label("Windows").classes("menu-heading")
+            popouts = ui.switch("Open player cards, teams and game summaries in their own windows",
+                                value=saves.load_app_settings().get("popout_windows", True),
+                                on_change=lambda e: saves.set_app_setting("popout_windows", bool(e.value)))
+            popouts.props("color=green-10")
+            ui.label("Like Front Office Football: each one is a window of its own that you can drag "
+                     "anywhere, even onto another monitor, and keep several open; they update as "
+                     "the season goes on. Off: they open inside the game window instead. (In the "
+                     "web browser they always open inside the page.)").classes("legend")

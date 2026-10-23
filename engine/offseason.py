@@ -352,6 +352,13 @@ def offseason_start(league, season_lines, rng=None):
     # QB starters slipped over 22 seasons).
     from . import draft_day
     draft_day.new_class(league, _phase_rng(league, "class", rng))
+    # AI owners change general managers first (gm.py, Oct 22; real: the GM goes on Black
+    # Monday and the new one is hired in January), so the new GM makes the league year's
+    # decisions and picks the head coach in the carousel. Its own dice.
+    if getattr(league, "staff", None):
+        from . import gm as G
+        G.offseason_start(league, season_lines,
+                          random.Random(f"gm-{league.settings.get('salt', '')}-{league.season}"))
     fa_report = FA.league_year_start(league, r, draft_order=order)
     league.fa["wave"] = None            # the exclusive window: your players ask their re-sign price
     league.offseason = {"phase": "resign", "wave": FA.PRE_DRAFT_WAVES[0], "order": order,
@@ -403,8 +410,8 @@ def offseason_next(league, rng=None):
             st["wave"] = later[0]
             league.fa["wave"] = later[0]
     elif phase == "draft":
-        # The draft starts: it stops when your team is on the clock (the Draft tab;
-        # draft_day.py). With no picks of yours left to make it's over right away.
+        # The draft starts at pick 1: you watch it pick by pick in the draft room
+        # (draft_day.py, screens/draft_page.py). With no picks of yours it's over right away.
         r = _phase_rng(league, "draft", rng)
         if _draft_phase(league, r):
             _draft_done(league, r)
@@ -425,8 +432,8 @@ def offseason_next(league, rng=None):
 
 def _draft_phase(league, rng):
     """The draft starts (Step 8, draft.py / draft_day.py): AI boards with real
-    scouting error, needs, QB rules, draft-day trades. The AI picks until your
-    team is on the clock. Returns True if the draft is already over."""
+    scouting error, needs, QB rules, draft-day trades. Pick 1 is on the clock
+    (the draft room makes the picks). Returns True if the draft is already over."""
     from . import draft_day
     return draft_day.start(league, league.offseason["order"], rng)
 

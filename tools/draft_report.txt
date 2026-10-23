@@ -1,148 +1,148 @@
-Draft realism check (engine/draft.py), 6 leagues x 22 seasons, 378 s
+Draft realism check (engine/draft.py), 6 leagues x 22 seasons, 603 s
 
 Leagues: 101, 102, 104, 105, 106, 107; drafts run: 132; careers followed (classes after year 3, 8+ seasons): 17472
 
 1. WHAT A PICK SLOT GETS YOU (sim | real)
    Picks     n     Starter 3+     Starter 5+       Pro Bowl  Never started
-     1-5   390    95% |   93%    89% |   77%    71% |   62%     2% |    2%
-    6-10   390    91% |   82%    81% |   67%    55% |   50%     3% |    4%
-   11-20   780    84% |   86%    73% |   66%    50% |   48%     6% |    6%
-   21-32   936    75% |   64%    62% |   49%    33% |   33%    13% |   10%
-   33-48  1248    57% |   67%    45% |   46%    17% |   24%    26% |   14%
-   49-64  1248    51% |   49%    39% |   34%    16% |   19%    31% |   26%
-  65-100  2808    34% |   38%    24% |   25%     8% |   11%    50% |   38%
- 101-140  3120    18% |   24%    12% |   15%     3% |    7%    68% |   50%
- 141-180  3120    12% |   19%     7% |   10%     2% |    6%    77% |   65%
- 181-220  3120     8% |   11%     5% |    6%     2% |    3%    83% |   74%
- 221-262   312     9% |    8%     6% |    5%     3% |    2%    84% |   77%
-   Pro Bowlers per class 26.2 | 30.6, selections each 3.1 | 3.0, only once 39% | 38%  (careers followed 8+ seasons, so a bit short of whole careers)
+     1-5   390    96% |   93%    90% |   77%    72% |   62%     2% |    2%
+    6-10   390    90% |   82%    79% |   67%    54% |   50%     4% |    4%
+   11-20   780    83% |   86%    70% |   66%    45% |   48%     7% |    6%
+   21-32   936    73% |   64%    61% |   49%    32% |   33%    15% |   10%
+   33-48  1248    63% |   67%    49% |   46%    21% |   24%    22% |   14%
+   49-64  1248    50% |   49%    36% |   34%    15% |   19%    32% |   26%
+  65-100  2808    33% |   38%    23% |   25%     6% |   11%    51% |   38%
+ 101-140  3120    19% |   24%    13% |   15%     3% |    7%    65% |   50%
+ 141-180  3120    13% |   19%     9% |   10%     2% |    6%    75% |   65%
+ 181-220  3120     8% |   11%     5% |    6%     1% |    3%    82% |   74%
+ 221-262   312     9% |    8%     7% |    5%     2% |    2%    81% |   77%
+   Pro Bowlers per class 25.4 | 30.6, selections each 3.2 | 3.0, only once 38% | 38%  (careers followed 8+ seasons, so a bit short of whole careers)
 
    Starting in each of his first 4 seasons (sim | real, real = 50%+ of snaps)
-     1-5  yr1   78% |   82%  yr2   81% |   80%  yr3   82% |   80%  yr4   83% |   68%
-    6-10  yr1   71% |   72%  yr2   76% |   82%  yr3   82% |   82%  yr4   75% |   68%
-   11-20  yr1   57% |   67%  yr2   67% |   67%  yr3   69% |   68%  yr4   75% |   63%
-   21-32  yr1   49% |   47%  yr2   56% |   60%  yr3   61% |   54%  yr4   65% |   52%
-   33-48  yr1   35% |   46%  yr2   43% |   54%  yr3   48% |   52%  yr4   49% |   53%
-   49-64  yr1   31% |   38%  yr2   39% |   53%  yr3   41% |   48%  yr4   43% |   43%
-  65-100  yr1   18% |   22%  yr2   23% |   34%  yr3   26% |   34%  yr4   28% |   34%
- 101-140  yr1    8% |   10%  yr2   11% |   21%  yr3   13% |   22%  yr4   14% |   24%
- 141-180  yr1    3% |    9%  yr2    5% |   20%  yr3    8% |   18%  yr4    9% |   16%
+     1-5  yr1   80% |   82%  yr2   84% |   80%  yr3   83% |   80%  yr4   84% |   68%
+    6-10  yr1   73% |   72%  yr2   75% |   82%  yr3   80% |   82%  yr4   75% |   68%
+   11-20  yr1   58% |   67%  yr2   66% |   67%  yr3   71% |   68%  yr4   71% |   63%
+   21-32  yr1   44% |   47%  yr2   56% |   60%  yr3   61% |   54%  yr4   64% |   52%
+   33-48  yr1   40% |   46%  yr2   48% |   54%  yr3   52% |   52%  yr4   54% |   53%
+   49-64  yr1   31% |   38%  yr2   39% |   53%  yr3   43% |   48%  yr4   44% |   43%
+  65-100  yr1   18% |   22%  yr2   22% |   34%  yr3   26% |   34%  yr4   28% |   34%
+ 101-140  yr1    9% |   10%  yr2   12% |   21%  yr3   14% |   22%  yr4   16% |   24%
+ 141-180  yr1    4% |    9%  yr2    6% |   20%  yr3    9% |   18%  yr4   10% |   16%
  181-220  yr1    2% |    5%  yr2    3% |    8%  yr3    5% |   10%  yr4    6% |   11%
- 221-262  yr1    2% |    2%  yr2    4% |    7%  yr3    4% |    5%  yr4    4% |    6%
+ 221-262  yr1    1% |    2%  yr2    3% |    7%  yr3    5% |    5%  yr4    7% |    6%
 
 2. BY ROUND (sim | real)
-   R1: starter 3+   83% |   78%   Pro Bowl   48% |   45%   never started    7% |    7%
-   R2: starter 3+   54% |   58%   Pro Bowl   16% |   21%   never started   29% |   20%
-   R3: starter 3+   36% |   38%   Pro Bowl    9% |   11%   never started   48% |   38%
-   R4: starter 3+   20% |   25%   Pro Bowl    3% |    7%   never started   65% |   49%
-   R5: starter 3+   14% |   20%   Pro Bowl    2% |    7%   never started   74% |   62%
-   R6: starter 3+    9% |   12%   Pro Bowl    2% |    4%   never started   80% |   73%
-   R7: starter 3+    8% |    9%   Pro Bowl    2% |    2%   never started   83% |   77%
+   R1: starter 3+   82% |   78%   Pro Bowl   46% |   45%   never started    9% |    7%
+   R2: starter 3+   57% |   58%   Pro Bowl   18% |   21%   never started   27% |   20%
+   R3: starter 3+   34% |   38%   Pro Bowl    6% |   11%   never started   50% |   38%
+   R4: starter 3+   22% |   25%   Pro Bowl    4% |    7%   never started   62% |   49%
+   R5: starter 3+   15% |   20%   Pro Bowl    3% |    7%   never started   72% |   62%
+   R6: starter 3+   10% |   12%   Pro Bowl    2% |    4%   never started   80% |   73%
+   R7: starter 3+    8% |    9%   Pro Bowl    1% |    2%   never started   83% |   77%
 
    By position and round: starter 3+ seasons / Pro Bowl, sim (n) | real
-     QB: R1 69/38(209)|76/51  R2 35/6(112)|35/20  R3 17/3(132)|20/12  R4 9/1(127)|19/12  R5 6/0(114)|0/0  R6 5/1(106)|9/9  R7 4/0(97)|5/3
-     RB: R1 71/59(145)|74/53  R2 44/26(159)|38/26  R3 29/20(157)|18/16  R4 16/10(200)|20/12  R5 10/5(209)|12/11  R6 6/2(225)|6/4  R7 3/2(246)|6/1
-     WR: R1 91/51(368)|71/28  R2 55/13(322)|55/24  R3 36/6(282)|30/14  R4 19/1(250)|15/6  R5 12/0(270)|15/8  R6 7/0(263)|6/6  R7 7/0(245)|6/2
-     TE: R1 87/54(112)|86/64  R2 45/17(124)|55/19  R3 28/2(133)|55/21  R4 14/1(155)|33/8  R5 7/1(158)|33/4  R6 4/0(164)|16/0  R7 3/0(158)|7/4
-     OL: R1 86/48(460)|91/48  R2 64/18(474)|76/23  R3 46/12(462)|58/14  R4 27/4(423)|29/5  R5 18/3(429)|22/6  R6 10/1(399)|21/2  R7 7/1(391)|16/2
-     DE: R1 83/39(283)|71/38  R2 43/11(234)|45/15  R3 33/7(214)|42/11  R4 12/1(234)|40/12  R5 7/0(184)|24/12  R6 2/0(227)|9/2  R7 3/0(225)|10/3
-     DT: R1 88/42(236)|76/36  R2 52/12(247)|63/12  R3 29/6(228)|36/8  R4 19/1(210)|32/6  R5 10/0(200)|32/6  R6 4/0(211)|15/0  R7 3/0(186)|7/0
-     LB: R1 92/58(195)|82/56  R2 71/23(300)|66/25  R3 54/13(325)|40/9  R4 31/4(328)|28/5  R5 24/2(342)|17/3  R6 12/1(334)|12/2  R7 10/1(372)|5/1
-     DB: R1 80/49(488)|77/47  R2 50/16(522)|61/18  R3 27/7(557)|31/5  R4 14/2(554)|21/6  R5 10/1(543)|19/5  R6 6/0(510)|13/4  R7 5/0(497)|9/2
-    K/P: R1 -  R2 100/100(2)|0/0  R3 100/50(6)|25/75  R4 100/33(15)|0/11  R5 98/45(47)|33/24  R6 95/51(57)|4/26  R7 90/41(79)|14/18
+     QB: R1 70/38(215)|76/51  R2 34/4(111)|35/20  R3 18/0(136)|20/12  R4 7/1(125)|19/12  R5 6/1(113)|0/0  R6 8/0(118)|9/9  R7 6/0(94)|5/3
+     RB: R1 70/50(141)|74/53  R2 42/26(161)|38/26  R3 22/14(160)|18/16  R4 15/11(199)|20/12  R5 12/8(218)|12/11  R6 5/3(222)|6/4  R7 9/3(234)|6/1
+     WR: R1 87/48(343)|71/28  R2 65/12(313)|55/24  R3 37/3(281)|30/14  R4 28/3(259)|15/6  R5 13/1(249)|15/8  R6 10/0(259)|6/6  R7 8/0(261)|6/2
+     TE: R1 85/50(96)|86/64  R2 61/24(145)|55/19  R3 27/8(135)|55/21  R4 12/1(146)|33/8  R5 11/3(150)|33/4  R6 5/0(150)|16/0  R7 1/0(144)|7/4
+     OL: R1 85/44(513)|91/48  R2 61/18(503)|76/23  R3 42/8(467)|58/14  R4 27/3(444)|29/5  R5 19/3(417)|22/6  R6 9/0(406)|21/2  R7 7/0(415)|16/2
+     DE: R1 79/38(289)|71/38  R2 52/14(225)|45/15  R3 27/4(225)|42/11  R4 13/2(217)|40/12  R5 7/0(228)|24/12  R6 5/0(218)|9/2  R7 2/0(222)|10/3
+     DT: R1 89/47(254)|76/36  R2 52/11(229)|63/12  R3 32/3(197)|36/8  R4 18/3(228)|32/6  R5 6/0(200)|32/6  R6 5/0(204)|15/0  R7 2/0(193)|7/0
+     LB: R1 92/61(193)|82/56  R2 73/26(285)|66/25  R3 52/12(307)|40/9  R4 33/4(308)|28/5  R5 25/1(319)|17/3  R6 17/2(328)|12/2  R7 10/0(344)|5/1
+     DB: R1 80/44(452)|77/47  R2 50/19(523)|61/18  R3 26/4(577)|31/5  R4 18/3(536)|21/6  R5 11/1(550)|19/5  R6 7/0(532)|13/4  R7 3/0(519)|9/2
+    K/P: R1 -  R2 100/100(1)|0/0  R3 100/36(11)|25/75  R4 100/44(34)|0/11  R5 94/44(52)|33/24  R6 95/42(59)|4/26  R7 89/31(70)|14/18
 
 3. WHO GOES WHERE: picks per draft by position and round (sim | real scaled to 224 picks)
-     QB: R1  2.7| 2.8 R2  1.5| 0.6 R3  1.7| 1.2 R4  1.6| 1.2 R5  1.4| 1.2 R6  1.4| 1.7 R7  1.2| 1.3   total  11.5| 10.1
-     RB: R1  1.9| 1.2 R2  2.0| 1.8 R3  1.9| 2.5 R4  2.5| 3.8 R5  2.7| 2.8 R6  3.0| 3.4 R7  3.2| 3.2   total  17.2| 18.7
-     WR: R1  4.8| 4.0 R2  4.0| 4.2 R3  3.6| 4.2 R4  3.3| 4.0 R5  3.6| 3.5 R6  3.4| 4.8 R7  3.2| 4.0   total  25.8| 28.6
-     TE: R1  1.2| 0.9 R2  1.5| 1.8 R3  1.7| 2.3 R4  2.0| 2.1 R5  1.9| 2.5 R6  2.0| 1.5 R7  2.0| 1.9   total  12.4| 12.9
-     OL: R1  6.2| 5.7 R2  6.4| 4.6 R3  5.9| 6.2 R4  5.4| 5.5 R5  5.3| 4.8 R6  5.2| 6.4 R7  5.0| 5.3   total  39.4| 38.5
-     DE: R1  3.5| 2.6 R2  3.1| 2.6 R3  2.9| 3.2 R4  3.0| 2.3 R5  2.6| 2.6 R6  2.8| 1.9 R7  2.8| 2.8   total  20.8| 18.1
-     DT: R1  3.1| 2.8 R2  3.2| 2.7 R3  2.9| 3.4 R4  2.6| 3.0 R5  2.6| 2.9 R6  2.6| 3.6 R7  2.4| 2.9   total  19.6| 21.4
-     LB: R1  2.5| 3.1 R2  3.7| 2.8 R3  4.2| 4.0 R4  4.2| 3.6 R5  4.4| 4.8 R6  4.3| 3.8 R7  4.7| 3.9   total  28.0| 26.0
-     DB: R1  6.1| 4.7 R2  6.7| 6.6 R3  7.1| 6.2 R4  7.0| 6.8 R5  6.9| 7.2 R6  6.5| 6.8 R7  6.3| 7.0   total  46.6| 45.4
-    K/P: R1  0.0| 0.0 R2  0.0| 0.1 R3  0.1| 0.1 R4  0.2| 0.4 R5  0.6| 0.8 R6  0.7| 1.4 R7  1.1| 1.1   total   2.7|  3.9
-   First pick at each position (median): QB 3|1, RB 12|10, WR 4|5, TE 19|19, OL 6|6, DE 7|3, DT 8|12, LB 13|8, DB 5|6, K/P 149|149
-   TEs per round: 1.2 1.5 1.7 2.0 1.9 2.0 2.0   (real scaled: 0.9 1.8 2.3 2.1 2.5 1.5 1.9)
-   Age at the draft by round: R1 21.8|21.8, R2 22.0|22.1, R3 22.2|22.4, R4 22.3|22.5, R5 22.4|22.5, R6 22.5|22.7, R7 22.5|22.8
+     QB: R1  2.8| 2.8 R2  1.4| 0.6 R3  1.8| 1.2 R4  1.7| 1.2 R5  1.6| 1.2 R6  1.4| 1.7 R7  1.1| 1.3   total  11.8| 10.1
+     RB: R1  1.8| 1.2 R2  2.0| 1.8 R3  2.1| 2.5 R4  2.7| 3.8 R5  2.8| 2.8 R6  2.7| 3.4 R7  3.2| 3.2   total  17.2| 18.7
+     WR: R1  4.6| 4.0 R2  4.0| 4.2 R3  3.6| 4.2 R4  3.4| 4.0 R5  3.2| 3.5 R6  3.5| 4.8 R7  3.2| 4.0   total  25.5| 28.6
+     TE: R1  1.2| 0.9 R2  1.7| 1.8 R3  1.7| 2.3 R4  1.7| 2.1 R5  2.0| 2.5 R6  1.9| 1.5 R7  1.8| 1.9   total  11.9| 12.9
+     OL: R1  6.3| 5.7 R2  6.5| 4.6 R3  5.9| 6.2 R4  5.4| 5.5 R5  5.3| 4.8 R6  5.2| 6.4 R7  5.2| 5.3   total  39.9| 38.5
+     DE: R1  3.5| 2.6 R2  2.9| 2.6 R3  3.0| 3.2 R4  2.8| 2.3 R5  2.9| 2.6 R6  2.8| 1.9 R7  2.9| 2.8   total  20.8| 18.1
+     DT: R1  3.3| 2.8 R2  3.0| 2.7 R3  2.7| 3.4 R4  2.9| 3.0 R5  2.5| 2.9 R6  2.7| 3.6 R7  2.5| 2.9   total  19.7| 21.4
+     LB: R1  2.6| 3.1 R2  3.7| 2.8 R3  4.0| 4.0 R4  4.0| 3.6 R5  4.0| 4.8 R6  4.3| 3.8 R7  4.4| 3.9   total  26.8| 26.0
+     DB: R1  6.0| 4.7 R2  6.8| 6.6 R3  7.1| 6.2 R4  7.0| 6.8 R5  7.2| 7.2 R6  6.8| 6.8 R7  6.8| 7.0   total  47.6| 45.4
+    K/P: R1  0.0| 0.0 R2  0.0| 0.1 R3  0.1| 0.1 R4  0.4| 0.4 R5  0.6| 0.8 R6  0.7| 1.4 R7  0.9| 1.1   total   2.7|  3.9
+   First pick at each position (median): QB 2|1, RB 12|10, WR 4|5, TE 21|19, OL 5|6, DE 7|3, DT 7|12, LB 12|8, DB 6|6, K/P 139|149
+   TEs per round: 1.2 1.7 1.7 1.7 2.0 1.9 1.8   (real scaled: 0.9 1.8 2.3 2.1 2.5 1.5 1.9)
+   Age at the draft by round: R1 21.8|21.8, R2 22.0|22.1, R3 22.2|22.4, R4 22.3|22.5, R5 22.4|22.5, R6 22.4|22.7, R7 22.5|22.8
 
 4. TIGHT ENDS (the FOF8 'TEs fall late' exploit)
-   Share of all good TEs (5+ seasons started or a Pro Bowl) by round, sim | real: R1 51|27% R2 24|16% R3 12|22% R4 8|15% R5 3|9% R6 2|4% R7 1|6%
-   Share of Pro Bowl TEs by round, sim | real: R1 70|39% R2 24|17% R3 2|25% R4 2|8% R5 1|6% R6 0|0% R7 0|6%
-   The class's truly best TE was picked at: median 30, after round 3 in 7% of drafts
+   Share of all good TEs (5+ seasons started or a Pro Bowl) by round, sim | real: R1 38|27% R2 38|16% R3 12|22% R4 5|15% R5 6|9% R6 1|4% R7 0|6%
+   Share of Pro Bowl TEs by round, sim | real: R1 48|39% R2 35|17% R3 11|25% R4 2|8% R5 4|6% R6 0|0% R7 0|6%
+   The class's truly best TE was picked at: median 32, after round 3 in 12% of drafts
 
 5. TEAMS FOLLOW THE CONSENSUS BOARD, WITH REAL SCATTER (board rank vs actual pick)
-   ranked   1-10: typical gap    2 | 3   80% range -2 to +8 | -6 to +6
-   ranked  11-32: typical gap    7 | 5   80% range -9 to +18 | -13 to +18
+   ranked   1-10: typical gap    2 | 3   80% range -3 to +8 | -6 to +6
+   ranked  11-32: typical gap    6 | 5   80% range -8 to +17 | -13 to +18
    ranked  33-64: typical gap   11 | 14   80% range -18 to +27 | -15 to +37
-   ranked 65-100: typical gap   16 | 22   80% range -27 to +37 | -28 to +95
-   rank-pick correlation (log): 0.87 | 0.877
-   top-100 ranked prospects left undrafted per draft: 0.6 | 12 (2023, many of them hurt or off-field)
-   falls of 60+ picks per draft: 2.6; reason: medical 181, character 128, none 39
+   ranked 65-100: typical gap   16 | 22   80% range -27 to +38 | -28 to +95
+   rank-pick correlation (log): 0.88 | 0.877
+   top-100 ranked prospects left undrafted per draft: 0.5 | 12 (2023, many of them hurt or off-field)
+   falls of 60+ picks per draft: 2.6; reason: medical 159, character 122, none 68
 
 6. NEED: chance a team takes the position in rounds 1-2, normally | after a 1st-rounder there in the last 3 drafts (sim | real)
-    QB:   15% |   15%    after a recent R1:    4% (n 869) |    6%
-    RB:   14% |   15%    after a recent R1:    4% (n 642) |    6%
-    WR:   33% |   32%    after a recent R1:   15% (n 1488) |   16%
-    TE:   10% |   10%    after a recent R1:    1% (n 431) |    3%
-    OL:   39% |   36%    after a recent R1:   33% (n 1734) |   29%
-    DE:   21% |   22%    after a recent R1:   18% (n 1061) |   17%
-    DT:   23% |   20%    after a recent R1:   10% (n 1017) |   11%
-    LB:   20% |   24%    after a recent R1:   14% (n 830) |   17%
-    DB:   38% |   37%    after a recent R1:   36% (n 1746) |   34%
+    QB:   15% |   15%    after a recent R1:    4% (n 918) |    6%
+    RB:   13% |   15%    after a recent R1:    4% (n 589) |    6%
+    WR:   31% |   32%    after a recent R1:   16% (n 1425) |   16%
+    TE:   10% |   10%    after a recent R1:    2% (n 419) |    3%
+    OL:   40% |   36%    after a recent R1:   34% (n 1799) |   29%
+    DE:   20% |   22%    after a recent R1:   17% (n 1089) |   17%
+    DT:   22% |   20%    after a recent R1:   13% (n 1079) |   11%
+    LB:   21% |   24%    after a recent R1:   14% (n 834) |   17%
+    DB:   39% |   37%    after a recent R1:   34% (n 1673) |   34%
 
 7. QBs: the team's starting QB before the draft, and how often it took a QB (sim | real)
-   young_good (n  343): QB in R1    0% |    0%   R1-2    0% |    0%
-        young (n  646): QB in R1    4% |    5%   R1-2    5% |    7%
-         good (n 1164): QB in R1    3% |    3%   R1-2    3% |    6%
-        other (n 2071): QB in R1   14% |   17%   R1-2   23% |   21%
+   young_good (n  358): QB in R1    0% |    0%   R1-2    0% |    0%
+        young (n  616): QB in R1    4% |    5%   R1-2    4% |    7%
+         good (n 1166): QB in R1    2% |    3%   R1-2    3% |    6%
+        other (n 2084): QB in R1   15% |   17%   R1-2   23% |   21%
 
 8. DRAFT-DAY TRADES (sim | real 2010-26, same-year pick-for-pick)
-   per draft: 23.8 | 21.1 (real drafts have ~257 picks, this one 224: scaled 18.4)
-   top pick    1-10:  0.9 a draft | 0.8   chart ratio 1.05 | 0.99   picks given 2 | 2   spots moved 5 | 5
-   top pick   11-32:  2.8 a draft | 2.7   chart ratio 1.05 | 1.01   picks given 2 | 2   spots moved 5 | 5
-   top pick   33-64:  5.0 a draft | 5.6   chart ratio 1.04 | 1.0   picks given 2 | 2   spots moved 5 | 7
-   top pick  65-128:  8.5 a draft | 6.2   chart ratio 1.06 | 0.98   picks given 2 | 2   spots moved 8 | 10
-   top pick 129-262:  6.7 a draft | 5.8   chart ratio 1.17 | 1.12   picks given 2 | 2   spots moved 8 | 12
+   per draft: 21.8 | 21.1 (real drafts have ~257 picks, this one 224: scaled 18.4)
+   top pick    1-10:  0.9 a draft | 0.8   chart ratio 1.06 | 0.99   picks given 2 | 2   spots moved 5 | 5
+   top pick   11-32:  2.8 a draft | 2.7   chart ratio 1.06 | 1.01   picks given 2 | 2   spots moved 5 | 5
+   top pick   33-64:  5.7 a draft | 5.6   chart ratio 1.04 | 1.0   picks given 2 | 2   spots moved 5 | 7
+   top pick  65-128:  6.5 a draft | 6.2   chart ratio 1.06 | 0.98   picks given 2 | 2   spots moved 7 | 10
+   top pick 129-262:  5.9 a draft | 5.8   chart ratio 1.17 | 1.12   picks given 2 | 2   spots moved 7 | 12
 
 9. AGE AT THE DRAFT: career value vs his slot (1.00 = as expected; sim | real)
-   21 or younger: 1.03 (n 3102) | 1.22    relative to average: 1.03 | 1.09
-              22: 1.03 (n 8008) | 1.25    relative to average: 1.02 | 1.12
-              23: 0.95 (n 5439) | 1.03    relative to average: 0.95 | 0.92
-             24+: 0.81 (n 923) | 0.88    relative to average: 0.81 | 0.79
+   21 or younger: 1.04 (n 3163) | 1.22    relative to average: 1.03 | 1.09
+              22: 1.03 (n 8075) | 1.25    relative to average: 1.02 | 1.12
+              23: 0.95 (n 5315) | 1.03    relative to average: 0.95 | 0.92
+             24+: 0.77 (n 919) | 0.88    relative to average: 0.77 | 0.79
    (sim ages here = age on draft day + half a year, about PFR's whole-year age; value = seasons as a starter + 1.5 per Pro Bowl + 0.25 per season on a roster)
 
 10. SOME TEAMS REALLY ARE BETTER DRAFTERS (career value vs slot by team, odd vs even drafts)
-   odd vs even correlation: 0.56 | 0.532   best team 1.54 | 1.58, worst 0.63 | 0.74, middle half 0.86-1.13 | 0.96-1.16
+   odd vs even correlation: 0.44 | 0.532   each league's best team 1.48 | 1.58, worst 0.68 | 0.74, middle half 0.88-1.12 | 0.96-1.16  (average of the leagues; the sim's teams are judged on ~11 classes each, the real ones on 19)
 
 11. COMBINE: rounds 1-2 vs rounds 3-7 averages (sim | real)
-    QB: forty 4.70/4.77|4.75/4.83  vertical 33.5/32.3|32.5/31.2  broad 116.1/114.6|114.8/110.5  cone 6.96/7.04|7.02/7.17  bench 16.8/17.0|23.0/21.6  wt 222.6/222.2|224.8/221.4
-    RB: forty 4.44/4.53|4.48/4.57  vertical 37.6/35.8|36.2/34.2  broad 125.0/121.8|122.4/118.2  cone 6.86/6.99|6.96/7.10  bench 22.6/21.9|21.0/20.2  wt 212.4/218.1|218.4/218.3
-    WR: forty 4.38/4.44|4.45/4.49  vertical 38.1/36.7|36.8/35.7  broad 127.1/124.2|124.2/121.7  cone 6.79/6.88|6.93/6.94  bench 17.5/15.8|16.3/14.8  wt 198.7/200.0|203.4/199.7
-    TE: forty 4.60/4.67|4.67/4.74  vertical 36.5/34.8|35.0/33.4  broad 123.1/119.7|120.0/115.8  cone 6.96/7.05|7.09/7.17  bench 23.8/21.5|22.6/20.4  wt 251.1/250.8|253.9/252.7
-    OL: forty 5.10/5.17|5.15/5.24  vertical 30.4/29.1|29.4/28.2  broad 108.4/105.4|105.7/103.1  cone 7.54/7.67|7.72/7.80  bench 29.3/26.9|26.6/25.5  wt 313.9/313.3|315.6/313.0
-    DE: forty 4.62/4.70|4.73/4.80  vertical 36.2/34.7|34.0/33.6  broad 123.0/119.7|118.3/116.2  cone 7.04/7.14|7.21/7.30  bench 28.2/25.8|24.7/23.9  wt 263.9/263.8|267.2/265.4
-    DT: forty 4.95/5.03|5.01/5.07  vertical 31.6/30.1|30.3/29.6  broad 110.9/107.7|108.3/106.5  cone 7.41/7.59|7.59/7.67  bench 32.9/29.5|28.6/27.1  wt 310.5/309.3|305.8/304.1
-    LB: forty 4.59/4.65|4.62/4.68  vertical 37.0/35.2|35.5/34.3  broad 123.6/119.8|120.0/117.8  cone 6.93/7.02|7.08/7.12  bench 26.5/24.2|22.8/22.7  wt 242.3/242.6|242.5/239.3
-    DB: forty 4.42/4.47|4.46/4.51  vertical 38.3/36.9|37.0/36.0  broad 128.0/125.1|124.7/122.0  cone 6.76/6.86|6.90/6.96  bench 18.8/16.9|15.9/15.8  wt 197.7/198.7|199.4/198.5
+    QB: forty 4.70/4.76|4.75/4.83  vertical 33.5/32.3|32.5/31.2  broad 116.6/114.1|114.8/110.5  cone 6.96/7.04|7.02/7.17  bench 17.4/17.7|23.0/21.6  wt 222.2/222.6|224.8/221.4
+    RB: forty 4.47/4.53|4.48/4.57  vertical 37.4/36.0|36.2/34.2  broad 124.9/122.0|122.4/118.2  cone 6.87/6.98|6.96/7.10  bench 22.8/21.8|21.0/20.2  wt 213.2/217.8|218.4/218.3
+    WR: forty 4.38/4.44|4.45/4.49  vertical 38.0/36.7|36.8/35.7  broad 127.0/124.4|124.2/121.7  cone 6.79/6.89|6.93/6.94  bench 17.4/15.7|16.3/14.8  wt 198.2/200.4|203.4/199.7
+    TE: forty 4.61/4.68|4.67/4.74  vertical 36.7/34.9|35.0/33.4  broad 123.1/120.0|120.0/115.8  cone 6.96/7.06|7.09/7.17  bench 23.5/21.3|22.6/20.4  wt 251.3/250.9|253.9/252.7
+    OL: forty 5.09/5.17|5.15/5.24  vertical 30.4/29.0|29.4/28.2  broad 108.5/105.5|105.7/103.1  cone 7.55/7.68|7.72/7.80  bench 29.1/26.8|26.6/25.5  wt 314.0/313.1|315.6/313.0
+    DE: forty 4.61/4.70|4.73/4.80  vertical 36.2/34.7|34.0/33.6  broad 122.6/119.9|118.3/116.2  cone 7.06/7.14|7.21/7.30  bench 27.9/25.5|24.7/23.9  wt 263.3/264.1|267.2/265.4
+    DT: forty 4.95/5.03|5.01/5.07  vertical 31.4/30.0|30.3/29.6  broad 110.7/107.6|108.3/106.5  cone 7.48/7.58|7.59/7.67  bench 32.5/29.7|28.6/27.1  wt 310.7/309.7|305.8/304.1
+    LB: forty 4.59/4.65|4.62/4.68  vertical 36.7/35.2|35.5/34.3  broad 122.9/120.0|120.0/117.8  cone 6.92/7.03|7.08/7.12  bench 26.6/24.1|22.8/22.7  wt 242.1/242.0|242.5/239.3
+    DB: forty 4.42/4.47|4.46/4.51  vertical 38.3/37.0|37.0/36.0  broad 128.1/125.1|124.7/122.0  cone 6.76/6.86|6.90/6.96  bench 18.7/16.7|15.9/15.8  wt 197.9/198.7|199.4/198.5
 
 13. FRONT OFFICES: SMART, BUT HUMAN (sim | real)
-   trade habit lasts (net trade-downs per draft, odd vs even years): 0.44 | 0.6
-   spread of teams' habits (net trade-downs per draft, sd): 0.59 | 0.61   per deal a team makes: 0.40 | 0.31  (real counts deals with future picks too)
-   trade-down habit vs drafting value: -0.05 | +0.01 (a habit, not a sign of skill)
-   QBs among the players teams traded up for (vs QBs among all picks there): picks 1-10: 29% vs 16% (n 114) | 33% vs 21%   picks 11-32: 15% vs 5% (n 367) | 13% vs 4%
-   big reaches (top-100 big-board players taken 20+ picks before their rank) per draft: 9.0 | 7 (2023, of 89 matched); biggest per draft 49 | 33
-   40 time vs beating his draft slot (correlation; real teams price speed in at WR/DB/DE, not at RB/TE): RB +0.12|+0.25  TE +0.17|+0.23  LB +0.17|+0.15  WR -0.02|+0.01  DB -0.02|+0.00  DE +0.05|+0.00  QB +0.11|+0.10
+   trade habit lasts (net trade-downs per draft, odd vs even years): 0.64 | 0.6
+   spread of teams' habits (net trade-downs per draft, sd): 0.71 | 0.61   per deal a team makes: 0.51 | 0.31  (real counts deals with future picks too)
+   trade-down habit vs drafting value: -0.07 | +0.01 (a habit, not a sign of skill)
+   QBs among the players teams traded up for (vs QBs among all picks there): picks 1-10: 19% vs 17% (n 117) | 33% vs 21%   picks 11-32: 14% vs 5% (n 366) | 13% vs 4%
+   big reaches (top-100 big-board players taken 20+ picks before their rank) per draft: 8.8 | 7 (2023, of 89 matched); biggest per draft 47 | 33
+   40 time vs beating his draft slot (correlation; real teams price speed in at WR/DB/DE, not at RB/TE): RB +0.24|+0.25  TE +0.24|+0.23  LB +0.17|+0.15  WR +0.01|+0.01  DB +0.00|+0.00  DE +0.04|+0.00  QB +0.13|+0.10
 
 12. LEAGUE HEALTH OVER THE SEASONS (sim | real)
    drafted rookies among starters (not K/P/LS):    7% |    8% (real: 50%+ snap players)
-   players with 9+ seasons:   13% | 9% (real week-1 rosters 2021-26)
+   players with 9+ seasons:   12% | 9% (real week-1 rosters 2021-26)
    rookies on the 53 (drafted + undrafted):   14% | 12.3% (real week-1 53s)
-   on a 53 again next season, by seasons of experience (sim | real, main session's real_stay.py): 0:69|74 1:79|75 2:78|74 3:63|74 4:72|74 5:72|73 6:72|71 7:71|69 8:69|64 9:66|58 10:65|64 11:61|62 12:56|60
-   league 101: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 19/0/52/68.0  2031: 27/3/57/72.2  2037: 21/4/55/70.0  2043: 23/6/54/68.2  2048: 23/4/54/68.5
-   league 102: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 15/1/51/67.1  2031: 32/2/55/71.3  2037: 21/3/55/69.7  2043: 23/6/55/69.3  2048: 21/6/54/68.8
-   league 104: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 27/8/52/68.5  2031: 37/4/58/71.9  2037: 22/4/56/69.5  2043: 22/4/52/68.1  2048: 18/5/54/69.3
-   league 105: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 27/2/52/68.3  2031: 38/6/57/72.7  2037: 20/4/56/71.2  2043: 29/7/54/69.4  2048: 28/5/54/69.3
-   league 106: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 17/1/52/67.5  2031: 34/4/57/71.2  2037: 22/5/55/70.1  2043: 17/3/54/68.5  2048: 13/2/54/68.6
-   league 107: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 17/3/51/66.7  2031: 35/5/56/71.2  2037: 25/6/55/70.2  2043: 16/3/52/68.7  2048: 15/7/54/69.0
-   starters' average by position, first season -> last 5 seasons (internal): QB 69->71 RB 68->68 FB 74->75 TE 66->70 WR 66->67 T 67->68 G 64->64 C 68->66 DE 71->71 DT 67->68 OLB 65->66 ILB 67->69 CB 66->68 S 66->68 K 75->77 P 76->76 LS 76->76
+   on a 53 again next season, by seasons of experience (sim | real, main session's real_stay.py): 0:69|74 1:79|75 2:78|74 3:64|74 4:72|74 5:72|73 6:72|71 7:71|69 8:68|64 9:66|58 10:63|64 11:59|62 12:55|60
+   league 101: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 22/3/51/68.0  2031: 30/3/56/71.3  2037: 22/5/55/69.8  2043: 20/9/54/68.7  2048: 20/6/54/68.6
+   league 102: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 17/1/51/66.9  2031: 34/7/54/70.4  2037: 29/7/54/69.9  2043: 22/8/55/69.1  2048: 21/6/52/68.2
+   league 104: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 18/1/51/67.7  2031: 33/4/57/72.5  2037: 26/6/56/70.5  2043: 14/4/54/68.7  2048: 15/6/52/68.2
+   league 105: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 19/1/51/67.5  2031: 27/5/56/70.9  2037: 23/3/54/69.5  2043: 22/7/54/68.6  2048: 20/5/54/68.3
+   league 106: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 23/1/51/68.1  2031: 35/3/57/71.9  2037: 23/1/55/69.5  2043: 18/5/52/68.3  2048: 18/4/54/69.0
+   league 107: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 22/1/51/68.0  2031: 32/3/56/71.5  2037: 20/3/55/69.2  2043: 23/0/52/68.3  2048: 19/5/52/68.4
+   starters' average by position, first season -> last 5 seasons (internal): QB 67->70 RB 67->69 FB 74->73 TE 67->68 WR 66->67 T 69->68 G 65->65 C 67->67 DE 71->72 DT 67->68 OLB 65->66 ILB 68->68 CB 65->67 S 65->67 K 74->77 P 76->77 LS 77->76
