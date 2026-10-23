@@ -1,27 +1,27 @@
-== evaluation.py: OWN_SD 1.5, OTHER_SD_BY_TAPE ((0.15, 8.0), (0.45, 5.0), (0.8, 3.0)), SHARED 0.4, EVAL_K 0.45 ==
-Market deals measured: 5743 (own 3325, other 2418); real 2,409 (1,263 / 1,146)
-Mean snap share next season: own 0.60 (real 0.47), other 0.58 (real 0.43)
+== evaluation.py: OWN_SD 1.5, OTHER_SD_BY_TAPE ((0.15, 10.0), (0.45, 6.0), (0.8, 3.5)), SHARED 0.4, EVAL_K 0.45 ==
+Market deals measured: 5737 (own 3356, other 2381); real 2,409 (1,263 / 1,146)
+Mean snap share next season: own 0.59 (real 0.47), other 0.55 (real 0.43)
 
                                        game own  real own   game other  real other
-corr(price, snap share)                   0.35      0.46        0.31       0.33
-paid like a starter, <25% of snaps         8%       12%          7%        17%      (n 1574 / 724)
+corr(price, snap share)                   0.34      0.46        0.33       0.33
+paid like a starter, <25% of snaps         9%       12%         10%        17%      (n 1601 / 688)
 
 By last season's snap share (tape)       corr own/other (real)        bust own/other (real)
-  0%-30%   n  605/ 467             0.41/ 0.28 (0.34/0.25)         14%/ 17% (24%/32%)
-  30%-60%  n  838/ 641             0.26/ 0.31 (0.36/0.19)         10%/  9% (14%/20%)
-  60%+     n 1882/1310             0.19/ 0.20 (0.22/0.27)          6%/  5% (10%/12%)
+  0%-30%   n  574/ 497             0.44/ 0.32 (0.34/0.25)         11%/ 23% (24%/32%)
+  30%-60%  n  881/ 639             0.24/ 0.21 (0.36/0.19)         15%/ 16% (14%/20%)
+  60%+     n 1901/1245             0.15/ 0.22 (0.22/0.27)          7%/  7% (10%/12%)
 
 By position group: corr own / other
-  QB     0.50 (n 182)    0.32 (n 175)
-  RB     0.46 (n 252)    0.34 (n 196)
-  WR     0.43 (n 398)    0.46 (n 224)
-  TE     0.55 (n 185)    0.39 (n 175)
-  OT     0.56 (n 283)    0.41 (n 207)
-  IOL    0.28 (n 410)    0.17 (n 290)
-  EDGE   0.44 (n 360)    0.39 (n 258)
-  IDL    0.37 (n 323)    0.38 (n 235)
-  LB     0.13 (n 287)    0.19 (n 303)
-  CB     0.41 (n 338)    0.27 (n 135)
-  S      0.33 (n 307)    0.20 (n 220)
+  QB     0.47 (n 191)    0.32 (n 165)
+  RB     0.46 (n 256)    0.33 (n 214)
+  WR     0.40 (n 406)    0.44 (n 202)
+  TE     0.56 (n 179)    0.51 (n 190)
+  OT     0.45 (n 282)    0.50 (n 193)
+  IOL    0.30 (n 411)    0.20 (n 311)
+  EDGE   0.53 (n 358)    0.41 (n 249)
+  IDL    0.39 (n 334)    0.39 (n 216)
+  LB     0.18 (n 303)    0.17 (n 288)
+  CB     0.37 (n 334)    0.36 (n 138)
+  S      0.26 (n 302)    0.21 (n 215)
 
-(1803 s)
+(2271 s)

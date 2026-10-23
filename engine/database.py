@@ -196,6 +196,8 @@ def save_league(league: League, path, created=None):
         "awards": json.dumps(getattr(league, "awards", None) or {}, separators=(",", ":")),
         # Coaching staffs and front offices (staff.py, Oct 24).
         "staff": json.dumps(getattr(league, "staff", None) or {}, separators=(",", ":")),
+        # Finished seasons' news, kept as it was (news.freeze_season, Oct 22; compressed text).
+        "news_archive": json.dumps(getattr(league, "news_archive", None) or {}, separators=(",", ":")),
     }
     db = sqlite3.connect(tmp)
     try:
@@ -525,6 +527,8 @@ def load_league(path):
         # Coaching staffs (saves from before Oct 24 have none: every team gets one,
         # seeded by the save's salt so it's the same staff every time it loads).
         league.staff = json.loads(info.get("staff") or "{}") or None
+        # Finished seasons' news (saves from before Oct 22 have none: news writes every season).
+        league.news_archive = json.loads(info.get("news_archive") or "{}") or None
         from . import staff
         if not league.staff:
             staff.ensure(league)

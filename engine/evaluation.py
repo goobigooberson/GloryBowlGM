@@ -51,11 +51,13 @@ OWN_SD = 1.5
 # part-timer misjudge him far more than its full-time starter, and know full-time starters
 # about as well as their own). By his share of his team's snaps over his last two seasons
 # (the average; a season he didn't play counts 0): straight lines between these points, flat
-# past the ends. Sized with tools/ai_views_check.py (8 leagues x 3 offseasons, ~5,700 market
-# deals) to the real gap between new-team signings and re-signings (Oct 22): busts (paid like
-# a starter, under 25% of snaps next season) other minus own +4 points (real +5), little tape
-# +7 (+8), part-time +4 (+6), full-time +2 (+2); price-to-snaps correlation own minus other
-# 0.12 (0.13). 6/4/2.5 gave 0, -7, -1, +1 and 0.06; 4.5/3.5/2.5 gave +1, +1, -1, +1 and 0.12.
+# past the ends. Sized with tools/ai_views_check.py (16 leagues x 3 offseasons pooled, ~11,000
+# market deals; one 8-league run moves by several points) to the real gap between new-team
+# signings and re-signings (Oct 22): busts (paid like a starter, under 25% of snaps next
+# season) other minus own, little tape +10 points (real +8), part-time +3 (+6), full-time -1
+# (+2), all +1 (+5); price-to-snaps correlation own minus other 0.08 (0.13). 6/4/2.5 gave +1,
+# -3, 0, -1 and 0.07; 10/6/3.5 gave +9, +1, 0, +1 and 0.04. Busts run low for own and other
+# alike (signed veterans play more than real ones), which no size of mistake fixes.
 OTHER_SD_BY_TAPE = ((0.15, 8.0), (0.45, 5.0), (0.80, 3.0))
 ROOKIE_OTHER_SD = 4.9      # other teams' rookies (no pro tape; the real deals measured had no rookies:
                            # kept at the size before tape counted, 3.5 x ROOKIE_MULT)

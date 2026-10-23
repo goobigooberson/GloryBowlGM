@@ -108,15 +108,34 @@ CONSENSUS_CAP = 1.8          # but never more than this (grade): scouts can be w
                              # prospect, not so far off that a nobody looks like a top-10 talent (an
                              # uncapped spread put busts with true grades of -1.5 in the top 10)
 TEAM_MISS = 0.40             # each team's own error on top of the shared view...
-TEAM_MISS_DEPTH = 0.50       # ...plus up to this much more lower in the class
+TEAM_MISS_DEPTH = 0.25       # ...plus up to this much more lower in the class (0.50 before the big misreads
+                             # below; big reaches already ran a bit above real, 10 a draft vs ~8)
 TEAM_INSIGHT = 0.35          # better front offices see through part of the shared mistake:
-                             # a team with skill +1 keeps 55% of it, -1 145% (skill ~ N(0, 1))
+                             # a team with skill +1 keeps 65% of it (skill ~ N(0, 1))...
+TEAM_INSIGHT_BAD = 0.15      # ...and a weak one adds to it more gently (skill -1: 115%). Real: the
+                             # worst drafting team 2000-18 got 0.74 of its slots' value; with the same
+                             # slope both ways the sim's worst got 0.51 (Oct 22)
 INSIGHT_RANGE = (0.25, 1.75)
+# Big misreads: now and then any front office, the best included, falls for a prospect
+# (or has a blind spot) far beyond its usual error. Real: in 2023, 7 of 89 top-100 players
+# on ESPN's big board went 20+ picks before their rank (Jack Campbell 51st -> pick 18).
+CRUSH_RATE = 0.008           # share of the class a team misreads this way...
+CRUSH_SKILL = 0.15           # ...a little less often for better staffs (x (1 - this x skill))
+CRUSH_SIZE = (0.5, 1.2)      # grade
+CRUSH_UP = 0.65              # share that are a team falling for a player (the rest: a blind spot)
+# Speed: in the game, as in the real NFL, a prospect's 40 time says something his
+# ratings don't. Real (2000-18): correlation of the 40 with beating his draft slot RB
+# +0.25, TE +0.23, LB +0.15, WR/DB/DE about 0, i.e. real teams price speed in at WR,
+# DB and edge but under-rate it at RB and TE. Before this the sim's boards ignored speed
+# everywhere (WR +0.20, DE +0.12, LB +0.27). Grade per spread faster than his position's
+# class, on every board (the combine is public)...
+SPEED_PRICE = {"WR": 0.45, "DE": 0.30, "OLB": 0.18, "ILB": 0.18, "CB": 0.15, "S": 0.15, "QB": 0.10}
+SPEED_SHARP = {"RB": 0.08, "TE": 0.08}   # ...and at RB/TE only sharp front offices see it (per point of skill)
 # Age: an older prospect has less growing left and a shorter career, worth about
 # AGE_VALUE grade per year older than the average. Real teams only see part of it
 # (real 24+ year-olds return 0.88 of their slot, 21-22 year-olds 1.22-1.25), the
 # best front offices more of it.
-AGE_VALUE = -0.28
+AGE_VALUE = -0.60
 AGE_SEEN = 0.85              # share an average front office allows for...
 AGE_SEEN_SKILL = 0.2         # ...plus this much per point of skill
 RED_FLAG_RATE = 0.05         # share of prospects with a medical or character red flag
@@ -169,7 +188,17 @@ TRADE_URGE = (0.40, 0.18, 0.25)           # grade a team must gain (its man now 
 TRADE_DOWN_COST = 0.45       # most grade the team on the clock will give up to move down
 # Of the deals that make sense, the share that actually get made, by pick (real per draft:
 # picks 1-10 0.8 trades, 11-32 2.7, 33-64 5.6, 65-128 6.2, 129+ 5.8).
-TRADE_CHANCE = [(10, 0.75), (32, 0.55), (64, 0.55), (128, 0.75), (999, 0.6)]
+TRADE_CHANCE = [(10, 0.45), (32, 0.36), (64, 0.38), (128, 0.42), (999, 0.36)]   # (lowered with the habits below, Oct 22)
+# Front-office trade habits: some teams trade down nearly every year, others up (real
+# 2010-26, net trade-downs per draft in odd vs even years correlate 0.60; Minnesota +1.4 a
+# draft, New Orleans -1.3). The habit has nothing to do with drafting well (correlation
+# with value vs slot 0.01), so it's its own trait: a team's head coach brings it (style ~
+# N(0, 1); + trades up, - trades down; without a staff, fixed per team).
+TRADE_STYLE_K = 0.5          # e^(k x style): how much the habit moves a team's bar for dealing
+# QBs: a team that needs one trades up for him (real: QBs are 33% of trade-ups into the
+# top 10 but 21% of those picks; 13% into 11-32 vs 4.5%).
+QB_TRADE_UP = 3.0            # urge to trade up multiplied by this when its man is a QB it needs...
+QB_TRADE_CHANCE = 2.5        # ...and such a deal this many times likelier to get done
 TRADE_PREMIUM = (-0.05, 0.03)  # between AI teams the price is chart value x (1 + this), as close as the
                                # picks allow (real median 0.98-1.01). Deals with you: never below the chart.
 
@@ -244,6 +273,51 @@ def team_skill(league, team_id):
     return skills[key]
 
 
+def trade_style(league, team_id):
+    """A front office's draft-day habit (about -2 .. +2, average 0): above 0 it
+    trades up more readily, below 0 it trades down. It comes with the head coach
+    (so it changes when he does); a league without staffs keeps one per team."""
+    key = None
+    if getattr(league, "staff", None):
+        from . import staff as S
+        hc = (S.staff_of(league, team_id) or {}).get("HC")
+        if hc:
+            key = f"hc-{hc['id']}"
+    key = key or f"team-{team_id}"
+    r = random.Random(f"trade-style-{league.settings.get('salt', '')}-{key}")
+    return round(max(-2.5, min(2.5, r.gauss(0, 1))), 3)
+
+
+def insight_keep(skill):
+    """Share of the league's shared mistake a front office keeps in its own view."""
+    slope = TEAM_INSIGHT if skill >= 0 else TEAM_INSIGHT_BAD
+    return max(INSIGHT_RANGE[0], min(INSIGHT_RANGE[1], 1 - slope * skill))
+
+
+def speed_term(p, skill=0.0):
+    """Grade a board adds for his speed (see SPEED_PRICE / SPEED_SHARP)."""
+    z = p.__dict__.get("_speed", 0.0) or 0.0
+    return z * (SPEED_PRICE.get(p.position, 0.0) + max(0.0, skill) * SPEED_SHARP.get(p.position, 0.0))
+
+
+def _set_speed(prospects):
+    """p._speed: how much faster than his position's class his 40 was (spreads;
+    0 if he didn't run)."""
+    by_pos = defaultdict(list)
+    for p in prospects:
+        if p.combine.get("forty") is not None:
+            by_pos[p.position].append(p.combine["forty"])
+    stat = {}
+    for k, v in by_pos.items():
+        if len(v) >= 3:
+            m = sum(v) / len(v)
+            stat[k] = (m, (sum((x - m) ** 2 for x in v) / (len(v) - 1)) ** 0.5 or 1.0)
+    for p in prospects:
+        t = p.combine.get("forty")
+        m_sd = stat.get(p.position)
+        p._speed = round((m_sd[0] - t) / m_sd[1], 3) if (t is not None and m_sd) else 0.0
+
+
 # ---------------------------------------------------------------------------
 # 1. The class
 # ---------------------------------------------------------------------------
@@ -307,6 +381,7 @@ def make_class(league, rng, early=False):
             prospects.extend(chosen)
     finally:
         random.setstate(state)
+    _set_speed(prospects)
     for p in prospects:
         p.draft_year = league.season
         p.draft_round = 0
@@ -375,9 +450,9 @@ def _grade(p, stats, season, rng):
         p._flag_drop = rng.uniform(*RED_FLAG_DROP)
         if p._flag == "medical":
             p.durability = rng.randint(*MEDICAL_DURABILITY)
-    p._consensus = board_grade(p, true + p._cerr + p._age_bias - p._flag_drop)
+    p._consensus = board_grade(p, true + p._cerr + p._age_bias + speed_term(p) - p._flag_drop)
     # The public big board (media): the same view, but it doesn't know about red flags.
-    p._media = board_grade(p, true + p._cerr + p._age_bias)
+    p._media = board_grade(p, true + p._cerr + p._age_bias + speed_term(p))
 
 
 def regrade(prospects, stats):
@@ -389,8 +464,8 @@ def regrade(prospects, stats):
         m, sd = stats.get(p.position, (65.0, 8.0))
         true = POT_WEIGHT * (p.overall("potential") - m) / sd + (1 - POT_WEIGHT) * (p.overall() - m) / sd
         p._grade = true
-        p._consensus = board_grade(p, true + p._cerr + p._age_bias - p._flag_drop)
-        p._media = board_grade(p, true + p._cerr + p._age_bias)
+        p._consensus = board_grade(p, true + p._cerr + p._age_bias + speed_term(p) - p._flag_drop)
+        p._media = board_grade(p, true + p._cerr + p._age_bias + speed_term(p))
 
 
 def _capped(rng, sd, cap):
@@ -424,15 +499,22 @@ def team_boards(league, prospects, rng, misses=None):
     boards = {}
     for t in league.teams:
         skill = team_skill(league, t.id)
-        keep = max(INSIGHT_RANGE[0], min(INSIGHT_RANGE[1], 1 - TEAM_INSIGHT * skill))
+        keep = insight_keep(skill)
         age_k = AGE_VALUE * max(0.0, min(1.0, AGE_SEEN + AGE_SEEN_SKILL * skill))
+        crush_rate = CRUSH_RATE * max(0.3, 1 - CRUSH_SKILL * skill)
         r = random.Random(f"board-{league.settings.get('salt', '')}-{league.season}-{t.id}")
+        rc = random.Random(f"crush-{league.settings.get('salt', '')}-{league.season}-{t.id}")
         board = {}
         miss = {}
         for p in prospects:
             noise = r.gauss(0, TEAM_MISS + TEAM_MISS_DEPTH * p._depth)
             flag = p._flag_drop * r.uniform(*RED_FLAG_TEAM)
-            view = p._grade + keep * p._cerr + age_k * p._age_gap - flag + noise
+            if rc.random() < crush_rate:
+                # A big misread, for better or worse (its own dice, so the usual
+                # errors come out the same with or without it).
+                size = rc.uniform(*CRUSH_SIZE)
+                noise += size if rc.random() < CRUSH_UP else -size
+            view = p._grade + keep * p._cerr + age_k * p._age_gap + speed_term(p, skill) - flag + noise
             board[p.id] = board_grade(p, view)
             miss[p.id] = keep * p._cerr + noise - flag
         boards[t.id] = board
@@ -573,6 +655,10 @@ class DraftRoom:
         self.notes = {}
         self.qb_before = {t.id: qb_situation(self.league, t.id, self.stats)[0] for t in self.league.teams}
         self.soon = {pid: soon(p) for pid, p in self.prospects.items()}
+        # Each front office's scouting skill and trade habit (the boards already
+        # carry the skill; kept here for the trades and the checks).
+        self.team_info = {t.id: {"skill": team_skill(self.league, t.id), "style": trade_style(self.league, t.id)}
+                          for t in self.league.teams}
         ranked = sorted(self.prospects.values(), key=lambda p: getattr(p, "_media", 0.0), reverse=True)
         self.board_rank = {p.id: i + 1 for i, p in enumerate(ranked)}
 
@@ -591,8 +677,11 @@ class DraftRoom:
         for pk in self.picks:
             if pk["team"] == tid:
                 taken[self.prospects[pk["pid"]].position] += 1
+        # Whether he'd beat the team's weakest starter is judged by its own view of
+        # him (it used to use his true ratings: a small peek at the truth for every staff).
+        miss = self.misses.get(tid, {})
         out = [(pick_score(self.prospects[pid], board[pid], need, qb, rnd, self.stats, self.season,
-                           self.soon[pid])
+                           self.soon[pid] + miss.get(pid, 0.0) * self.stats[self.prospects[pid].position][1])
                 - SAME_DRAFT * taken[self.prospects[pid].position] / STARTERS_FOR_NEED[self.prospects[pid].position],
                 pid)
                for pid in self.available]
@@ -659,6 +748,18 @@ class DraftRoom:
                 return best[1]
         return None
 
+    def _style(self, tid):
+        info = getattr(self, "team_info", {}).get(tid)
+        return info["style"] if info else trade_style(self.league, tid)
+
+    def _urge(self, buyer, theirs, gap):
+        """How much the buyer gains by taking its man now instead of at its own
+        pick; more when he's a QB it needs."""
+        urge = theirs[0][0] - theirs[gap][0]
+        if self.prospects[theirs[0][1]].position == "QB" and self._need(buyer)[1][0] in ("other", "young"):
+            urge *= QB_TRADE_UP
+        return urge
+
     def try_trade_up(self):
         """Before the team on the clock picks: does someone a few spots back
         want a player here badly enough to trade up, and will the team on the
@@ -684,19 +785,27 @@ class DraftRoom:
             gap = j - i                     # players likely gone before the buyer's own pick
             if len(theirs) <= gap:
                 continue
-            urge = theirs[0][0] - theirs[gap][0]
-            if urge < TRADE_URGE[min(rnd, 3) - 1]:
+            urge = self._urge(buyer, theirs, gap)
+            if urge < TRADE_URGE[min(rnd, 3) - 1] * math.exp(-TRADE_STYLE_K * self._style(buyer)):
                 continue
-            # The team on the clock: what it loses by picking at j instead.
+            # The team on the clock: what it loses by picking at j instead (a team
+            # that likes to trade down accepts a bigger drop).
             cost = mine[0][0] - mine[min(gap, len(mine) - 1)][0]
-            if cost > TRADE_DOWN_COST:
+            if cost > TRADE_DOWN_COST * math.exp(-TRADE_STYLE_K * self._style(owner)):
                 continue
-            offers.append((urge, j, buyer))
-        if not offers or self.rng.random() > next(ch for top, ch in TRADE_CHANCE if slot["pick"] <= top):
+            offers.append((urge * math.exp(TRADE_STYLE_K * self._style(buyer)), j, buyer))
+        if not offers:
             return None
         # The team on the clock takes calls from everyone interested; the
-        # keenest are likelier to get the deal done.
+        # keenest are likelier to get the deal done (a team after a QB it
+        # needs most of all).
         _urge, j, buyer = self.rng.choices(offers, weights=[u * (j - i) ** 2 for u, j, _b in offers])[0]
+        chance = next(ch for top, ch in TRADE_CHANCE if slot["pick"] <= top)
+        target = self.prospects[self.scores(buyer, self.slots[j]["round"])[0][1]]
+        if target.position == "QB" and self._need(buyer)[1][0] in ("other", "young"):
+            chance = min(1.0, chance * QB_TRADE_CHANCE)
+        if self.rng.random() > chance:
+            return None
         price = jj_value(slot["pick"]) * (1 + self.rng.uniform(*TRADE_PREMIUM))
         give = self._package(buyer, j, price)
         if give is None:
@@ -732,13 +841,16 @@ class DraftRoom:
             seen.add(buyer)
             theirs = self.scores(buyer, self.slots[j]["round"])
             gap = j - i
-            if len(theirs) <= gap or theirs[0][0] - theirs[gap][0] < TRADE_URGE[min(rnd, 3) - 1]:
+            if len(theirs) <= gap:
+                continue
+            urge = self._urge(buyer, theirs, gap)
+            if urge < TRADE_URGE[min(rnd, 3) - 1] * math.exp(-TRADE_STYLE_K * self._style(buyer)):
                 continue
             give = self._package(buyer, j, jj_value(slot["pick"]))
             if give:
                 out.append({"team": buyer, "gives": [self.slots[k]["pick"] for k in give],
                             "chart_points": round(sum(jj_value(self.slots[k]["pick"]) for k in give)),
-                            "for_pick": slot["pick"], "urge": theirs[0][0] - theirs[gap][0]})
+                            "for_pick": slot["pick"], "urge": urge})
         out.sort(key=lambda o: o["urge"], reverse=True)
         return out[:most]
 
@@ -885,7 +997,8 @@ def sign_undrafted(league, undrafted, rng):
     return signed, pool
 
 
-_NOTE_KEYS = ("_grade", "_consensus", "_media", "_flag", "_cerr", "_depth", "_age_bias", "_age_gap", "_flag_drop")
+_NOTE_KEYS = ("_grade", "_consensus", "_media", "_flag", "_cerr", "_depth", "_age_bias", "_age_gap", "_flag_drop",
+              "_speed")
 
 
 def save_notes(prospects):

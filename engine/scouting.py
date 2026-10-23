@@ -41,7 +41,7 @@ from datetime import date
 from . import positions as pos
 from . import scale
 from . import scouting_words as W
-from .draft import (team_skill, starter_stats, TEAM_INSIGHT, INSIGHT_RANGE, POT_WEIGHT, AGE_VALUE, AGE_SEEN,
+from .draft import (team_skill, starter_stats, insight_keep, speed_term, POT_WEIGHT, AGE_VALUE, AGE_SEEN,
                     AGE_SEEN_SKILL, AGE_MEAN, CONSENSUS_MISS, CONSENSUS_MISS_DEPTH, board_grade, load_notes)
 
 # ---- Knobs (budget: Blake; what each step clears: PROVISIONAL) ----------------
@@ -160,8 +160,7 @@ def _draws(league, team_id, p):
 
 def _skill_scale(league, team_id):
     """Better front offices start with smaller mistakes (draft.py's team skill)."""
-    skill = team_skill(league, team_id)
-    return max(INSIGHT_RANGE[0], min(INSIGHT_RANGE[1], 1 - TEAM_INSIGHT * skill))
+    return insight_keep(team_skill(league, team_id))
 
 
 def _ensure_notes(league, p):
@@ -307,7 +306,8 @@ def staff_grade(league, team_id, p, stats=None):
     drop = p.__dict__.get("_flag_drop", 0.0) if known else 0.0
     skill = team_skill(league, team_id)
     age_k = AGE_VALUE * max(0.0, min(1.0, AGE_SEEN + AGE_SEEN_SKILL * skill))
-    return _true_grade(p, stats) + miss + age_k * p.__dict__.get("_age_gap", 0.0) - drop
+    return (_true_grade(p, stats) + miss + age_k * p.__dict__.get("_age_gap", 0.0) + speed_term(p, skill)
+            - drop)
 
 
 def staff_board(league, team_id, prospects):

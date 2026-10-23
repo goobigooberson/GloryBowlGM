@@ -1,0 +1,133 @@
+{
+ "note": "draft-time trades 2010-26: April/May trades moving a pick in that year's draft (future picks and players may be included); 'up' = the team that got the best current-year pick in the deal",
+ "trades_per_draft": 31.2,
+ "trade_up_targets": {
+  "1-10": {
+   "n": 24,
+   "qb_share_of_trade_ups": 0.333,
+   "qb_share_of_all_picks": 0.212,
+   "wr_share_of_trade_ups": 0.25,
+   "wr_share_of_all_picks": 0.135
+  },
+  "11-32": {
+   "n": 69,
+   "qb_share_of_trade_ups": 0.13,
+   "qb_share_of_all_picks": 0.045,
+   "wr_share_of_trade_ups": 0.174,
+   "wr_share_of_all_picks": 0.128
+  },
+  "33-64": {
+   "n": 109,
+   "qb_share_of_trade_ups": 0.028,
+   "qb_share_of_all_picks": 0.026,
+   "wr_share_of_trade_ups": 0.193,
+   "wr_share_of_all_picks": 0.143
+  },
+  "65-262": {
+   "n": 329,
+   "qb_share_of_trade_ups": 0.058,
+   "qb_share_of_all_picks": 0.04,
+   "wr_share_of_trade_ups": 0.131,
+   "wr_share_of_all_picks": 0.122
+  }
+ },
+ "habit": {
+  "net_trade_downs_odd_vs_even_corr": 0.6,
+  "team_net_per_draft_sd": 0.61,
+  "most_trade_downs": [
+   [
+    1.41,
+    "MIN"
+   ],
+   [
+    1.12,
+    "NE"
+   ],
+   [
+    0.94,
+    "WAS"
+   ],
+   [
+    0.71,
+    "SEA"
+   ],
+   [
+    0.71,
+    "PHI"
+   ]
+  ],
+  "most_trade_ups": [
+   [
+    -1.29,
+    "NO"
+   ],
+   [
+    -0.88,
+    "KC"
+   ],
+   [
+    -0.88,
+    "TB"
+   ],
+   [
+    -0.76,
+    "HOU"
+   ],
+   [
+    -0.65,
+    "ATL"
+   ]
+  ],
+  "deals_per_team_draft": 1.95,
+  "trade_down_habit_vs_drafting_value_corr": 0.01
+ },
+ "reaches_2023": {
+  "note": "top-100 ranked players picked 20+ spots before their rank, of 89 matched (one draft)",
+  "count": 7,
+  "biggest": 33,
+  "list": [
+   [
+    51,
+    18,
+    "LB",
+    "Jack Campbell"
+   ],
+   [
+    68,
+    37,
+    "DE",
+    "Derick Hall"
+   ],
+   [
+    66,
+    38,
+    "OL",
+    "Matthew Bergeron"
+   ],
+   [
+    78,
+    50,
+    "WR",
+    "Jayden Reed"
+   ],
+   [
+    85,
+    63,
+    "WR",
+    "Marvin Mims"
+   ],
+   [
+    55,
+    34,
+    "TE",
+    "Sam LaPorta"
+   ],
+   [
+    60,
+    40,
+    "DT",
+    "Isaiah Foskey"
+   ]
+  ]
+ }
+}

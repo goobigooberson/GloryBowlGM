@@ -224,7 +224,8 @@ def run(seed, seasons, draft_module=None, quiet=False):
             room = league.__dict__.pop("_lab_room", None)
             if room is not None:
                 drafts.append({"season": room.season, "notes": room.notes, "trades": room.trades,
-                               "picks": room.picks, "stats": room.stats})
+                               "picks": room.picks, "stats": room.stats,
+                               "teams": getattr(room, "team_info", {}), "media": dict(room.board_rank)})
             if not quiet:
                 print(f"  league {seed}: season {league.season} done ({time.time() - t0:.0f}s)", flush=True)
     finally:

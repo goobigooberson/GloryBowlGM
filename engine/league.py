@@ -128,6 +128,7 @@ class League:
                                                        # injuries this season (next season's carryover)
     draft: dict = None                               # this year's draft class and draft in progress, or a
                                                      # startup draft (draft_day.py); None when there's none
+    news_archive: dict = None                        # finished seasons' news, kept as it was (news.py)
 
     def team_players(self, team_id):
         """The team's 53-man roster (the players who can play)."""

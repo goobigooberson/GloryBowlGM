@@ -2856,10 +2856,153 @@ _cache = {}
 def _cache_key(league, past_games):
     played = sum(1 for g in S.all_games(league) if g.get("played"))
     aw = getattr(league, "awards", None) or {}
+    frozen = (getattr(league, "news_archive", None) or {}).get("last")
     return (id(league), league.season, league.stage, S.calendar(league), played, len(league.transactions),
             len(league.injury_history), len(league.draft_history), len(league.career),
             len(past_games or ()), tuple(sorted({r["season"] for r in past_games or ()})), len(league.boxes),
-            league.user_team_id, tuple(len(v) for v in aw.values()))
+            league.user_team_id, tuple(len(v) for v in aw.values()), frozen)
+
+
+# ---------------------------------------------------------------------------
+# Finished seasons are kept as they were (Blake, Oct 22: "remember finished seasons' news so
+# it stays fast. Old stories should stop changing once a season is over"). When a season ends
+# (season.begin_offseason, just before the new league year, while its games are still loaded),
+# freeze_season() writes it one last time and keeps its stories and bits in the save
+# (league.news_archive), with what the writing carries into later seasons (wording already
+# used, takes to come back to, ...). From then on build() starts from there and writes only
+# the seasons after it. Before this, every season was rewritten after every week: slower each
+# season, and an old story's wording could shift as players' ratings changed.
+# league.news_archive: {"last": season, "seasons": {"2026": packed, ...}, "state": packed}.
+# ---------------------------------------------------------------------------
+
+# Worked out again from the league each build (not carried from season to season).
+_NOT_CARRIED = {"league", "salt", "first", "n_weeks", "teams", "items", "posts", "writer", "starters",
+                "_lastnames", "_places", "_celebs", "_career_by_pid"}
+
+
+def _enc(o):
+    """Plain JSON for the news data, keeping tuples, sets and defaultdicts (all it holds)."""
+    if isinstance(o, defaultdict):
+        return {"$dd": o.default_factory.__name__, "kv": [[_enc(k), _enc(v)] for k, v in o.items()]}
+    if isinstance(o, dict):
+        if all(type(k) is str and not k.startswith("$") for k in o):
+            return {k: _enc(v) for k, v in o.items()}
+        return {"$kv": [[_enc(k), _enc(v)] for k, v in o.items()]}
+    if isinstance(o, tuple):
+        return {"$t": [_enc(v) for v in o]}
+    if isinstance(o, (set, frozenset)):
+        return {"$s": [_enc(v) for v in o]}
+    if isinstance(o, list):
+        return [_enc(v) for v in o]
+    if o is None or isinstance(o, (str, int, float, bool)):
+        return o
+    raise TypeError(f"the news archive can't keep a {type(o).__name__}")
+
+
+_FACTORIES = {"set": set, "int": int, "list": list, "dict": dict, "float": float}
+
+
+def _dec(d):
+    if len(d) == 1:
+        if "$t" in d:
+            return tuple(d["$t"])
+        if "$s" in d:
+            return set(d["$s"])
+        if "$kv" in d:
+            return {k: v for k, v in d["$kv"]}
+    if len(d) == 2 and "$dd" in d:
+        out = defaultdict(_FACTORIES[d["$dd"]])
+        out.update((k, v) for k, v in d["kv"])
+        return out
+    return d
+
+
+def _pack(obj):
+    import base64, json, zlib
+    raw = json.dumps(_enc(obj), separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return base64.b64encode(zlib.compress(raw, 6)).decode("ascii")
+
+
+def _unpack(text):
+    import base64, json, zlib
+    return json.loads(zlib.decompress(base64.b64decode(text)).decode("utf-8"), object_hook=_dec)
+
+
+def _unpacked(league, key, text):
+    """An archive entry, unpacked once per league (never change what it returns)."""
+    memo = league.__dict__.setdefault("_news_unpacked", {})
+    hit = memo.get(key)
+    if hit is None or hit[0] is not text:
+        hit = memo[key] = (text, _unpack(text))
+    return hit[1]
+
+
+def _restore(ctx, league):
+    """Start ctx where the last kept season left off: its stories and bits, and what
+    the writing carries on. Returns that season (None: nothing kept yet)."""
+    arch = getattr(league, "news_archive", None) or {}
+    last = arch.get("last")
+    if last is None:
+        return None
+    for season in sorted(arch["seasons"], key=int):
+        part = _unpacked(league, season, arch["seasons"][season])
+        ctx.items.extend(part["items"])
+        ctx.posts.extend(part["posts"])
+        ctx.writer.errors.extend(part.get("errors", ()))
+    import copy
+    state = copy.deepcopy(_unpacked(league, "state", arch["state"]))
+    ctx.writer.texts = state.pop("_writer_texts")
+    ctx.__dict__.update(state)
+    return last
+
+
+def _season_news(ctx, season, past_games):
+    """Write one season's stories and bits into ctx."""
+    ctx.writer.new_season(season)
+    start = len(ctx.posts)
+    games = _season_games(ctx, season, past_games)
+    recs = _records_by_week(ctx, games)
+    track = SL.SeasonTrack(ctx, season, games)
+    from .news_awards import awards_news   # awards and the Pro Bowl (Oct 23)
+    from .news_money import money_news     # the cap, TV and labor deals (Oct 24)
+    sections = [lambda: [_game_story(ctx, season, phase, g, box, recs, track)
+                         for phase, g, box in games if g.get("played") and box],
+                lambda: _performances_and_milestones(ctx, season, games, recs, track),
+                lambda: _features(ctx, season, track), lambda: _injuries(ctx, season, games),
+                lambda: _moves(ctx, season), lambda: _draft(ctx, season), lambda: _retirements(ctx, season),
+                lambda: _playoff_field(ctx, season), lambda: _season_summary(ctx, season, games),
+                lambda: _captains(ctx, season), lambda: awards_news(ctx, season), lambda: money_news(ctx, season),
+                lambda: ctx.finish_posts(start)]   # Bitter's bits, worded in calendar order (Oct 24)
+    for section in sections:
+        # Each kind of news keeps its own memory of recent wording, so a story
+        # written for Week 3 reads the same after Week 9 is played.
+        ctx.writer.recent.clear()
+        section()
+
+
+def _seasons(ctx, league, past_games):
+    return sorted({ctx.first, league.season} | {h["season"] for h in league.team_history}
+                  | {d["season"] for d in league.draft_history} | {r["season"] for r in (past_games or ())})
+
+
+def freeze_season(league):
+    """The season is over (season.begin_offseason, before the new league year starts):
+    write it, and any earlier season not kept yet, one last time and keep them as they are."""
+    ctx = _Ctx(league)
+    last = _restore(ctx, league)
+    arch = getattr(league, "news_archive", None) or {}
+    kept = dict(arch.get("seasons") or {})
+    for season in _seasons(ctx, league, None):
+        if last is not None and season <= last:
+            continue
+        i0, p0, e0 = len(ctx.items), len(ctx.posts), len(ctx.writer.errors)
+        _season_news(ctx, season, None)
+        kept[str(season)] = _pack({"items": ctx.items[i0:], "posts": ctx.posts[p0:],
+                                   "errors": ctx.writer.errors[e0:]})
+    state = {k: v for k, v in ctx.__dict__.items() if k not in _NOT_CARRIED}
+    state["_writer_texts"] = ctx.writer.texts
+    league.news_archive = {"last": league.season, "seasons": kept, "state": _pack(state)}
+    _cache.clear()
 
 
 def build(league, past_games=None):
@@ -2868,34 +3011,16 @@ def build(league, past_games=None):
     important first). past_games: earlier seasons' games from the save's
     history file (database.read_history), for their game stories; without
     them, earlier seasons still get their draft, retirements, injuries,
-    moves, playoff field and season review."""
+    moves, playoff field and season review. Seasons already over and kept
+    (freeze_season) come from the save as they were."""
     key = _cache_key(league, past_games)
     if key in _cache:
         return _cache[key]
     ctx = _Ctx(league)
-    seasons = sorted({ctx.first, league.season} | {h["season"] for h in league.team_history}
-                     | {d["season"] for d in league.draft_history} | {r["season"] for r in (past_games or ())})
-    for season in seasons:
-        ctx.writer.new_season(season)
-        start = len(ctx.posts)
-        games = _season_games(ctx, season, past_games)
-        recs = _records_by_week(ctx, games)
-        track = SL.SeasonTrack(ctx, season, games)
-        from .news_awards import awards_news   # awards and the Pro Bowl (Oct 23)
-        from .news_money import money_news     # the cap, TV and labor deals (Oct 24)
-        sections = [lambda: [_game_story(ctx, season, phase, g, box, recs, track)
-                             for phase, g, box in games if g.get("played") and box],
-                    lambda: _performances_and_milestones(ctx, season, games, recs, track),
-                    lambda: _features(ctx, season, track), lambda: _injuries(ctx, season, games),
-                    lambda: _moves(ctx, season), lambda: _draft(ctx, season), lambda: _retirements(ctx, season),
-                    lambda: _playoff_field(ctx, season), lambda: _season_summary(ctx, season, games),
-                    lambda: _captains(ctx, season), lambda: awards_news(ctx, season), lambda: money_news(ctx, season),
-                    lambda: ctx.finish_posts(start)]   # Bitter's bits, worded in calendar order (Oct 24)
-        for section in sections:
-            # Each kind of news keeps its own memory of recent wording, so a story
-            # written for Week 3 reads the same after Week 9 is played.
-            ctx.writer.recent.clear()
-            section()
+    last = _restore(ctx, league)
+    for season in _seasons(ctx, league, past_games):
+        if last is None or season > last:
+            _season_news(ctx, season, past_games)
     _injury_reports(ctx)
     _playoff_picture(ctx)
     order = lambda x: (-x["season"], -x["cal"], -x["importance"])

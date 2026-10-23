@@ -375,10 +375,18 @@ def report(results, out):
             vs[key][0] += value(c)
             vs[key][1] += slot_at[c["pick"]]
             vs[key][2] += 1
+    # The real ratios average about 1.11 (PFR's slot expectation runs a bit low), so each
+    # group is also shown relative to its own data's average.
+    ra = real_ai["age_effect"]
+    real_mean = sum(ra[k]["career_av_vs_slot"] * ra[k]["n"] for k in ra if k != "note") / sum(
+        ra[k]["n"] for k in ra if k != "note")
+    sim_mean = sum(v for v, e, n in vs.values()) / max(1e-9, sum(e for v, e, n in vs.values()))
     for key in ("21 or younger", "22", "23", "24+"):
         v, e, n = vs[key]
         if n:
-            w(f"   {key:>13}: {v / e:.2f} (n {n}) | {real_ai['age_effect'][key]['career_av_vs_slot']}")
+            rv = ra[key]["career_av_vs_slot"]
+            w(f"   {key:>13}: {v / e:.2f} (n {n}) | {rv}    relative to average: {v / e / sim_mean:.2f} | "
+              f"{rv / real_mean:.2f}")
     w("   (sim ages here = age on draft day + half a year, about PFR's whole-year age; value = seasons as a"
       " starter + 1.5 per Pro Bowl + 0.25 per season on a roster)")
     w("")
@@ -438,8 +446,118 @@ def report(results, out):
         w(f"   {g:>3}: " + "  ".join(cells))
     w("")
 
+    front_offices(results, runs, w)
     league_health(results, runs, w)
     return out
+
+
+def _corr(a, b):
+    ma, mb = st.mean(a), st.mean(b)
+    den = math.sqrt(sum((x - ma) ** 2 for x in a) * sum((y - mb) ** 2 for y in b))
+    return sum((x - ma) * (y - mb) for x, y in zip(a, b)) / den if den else 0.0
+
+
+def front_offices(results, runs, w):
+    """How smart and how human the AI front offices are (docs/research/real_draft_habits.json)."""
+    hab = json.load(open(RESEARCH / "real_draft_habits.json"))
+    w("13. FRONT OFFICES: SMART, BUT HUMAN (sim | real)")
+    # Trade habits
+    corrs, sds, per_deal, vs_value = [], [], [], []
+    qb_up = defaultdict(lambda: [0, 0])
+    qb_all = defaultdict(lambda: [0, 0])
+    bands = [("1-10", 1, 10), ("11-32", 11, 32), ("33-64", 33, 64), ("65-262", 65, 262)]
+    for r, run in zip(results, runs):
+        net = defaultdict(lambda: defaultdict(int))
+        deals = 0
+        for d in r["drafts"]:
+            pos_at = {pk["pick"]: d["notes"][pk["pid"]]["pos"] for pk in d["picks"]}
+            for t in d["trades"]:
+                net[t["up"]][d["season"]] -= 1
+                net[t["down"]][d["season"]] += 1
+                deals += 1
+                top = min(t["got"])
+                for name, a, b in bands:
+                    if a <= top <= b:
+                        qb_up[name][0] += pos_at.get(top) == "QB"
+                        qb_up[name][1] += 1
+            for pk in d["picks"]:
+                for name, a, b in bands:
+                    if a <= pk["pick"] <= b:
+                        qb_all[name][0] += pos_at[pk["pick"]] == "QB"
+                        qb_all[name][1] += 1
+        seasons_ = sorted(d["season"] for d in r["drafts"])
+        teams = sorted({t for d in r["drafts"] for t in d.get("teams", {})} or {pk["team"] for pk in r["picks"]})
+        if not seasons_ or not teams:
+            continue
+        odd = [st.mean(net[t][s] for s in seasons_ if s % 2) for t in teams]
+        even = [st.mean(net[t][s] for s in seasons_ if not s % 2) for t in teams]
+        corrs.append(_corr(odd, even))
+        means = [sum(net[t][s] for s in seasons_) / len(seasons_) for t in teams]
+        sds.append(st.pstdev(means))
+        per_deal.append(st.pstdev(means) / max(1e-9, 2 * deals / len(seasons_) / len(teams)))
+        # trade habit vs drafting value
+        cs = DO.careers([run], min_seasons=MIN_SEASONS, skip_first=SKIP_FIRST)
+        by_pick = defaultdict(list)
+        for c in cs:
+            by_pick[c["pick"]].append(sum(c["starts"]) + 1.5 * c["pro_bowls"] + 0.25 * c["seasons_on_roster"])
+        exp = {k: st.mean(v) for k in range(1, 263)
+               if (v := [x for j in range(max(1, k - 8), k + 9) for x in by_pick.get(j, [])])}
+        val = defaultdict(lambda: [0.0, 0.0])
+        for c in cs:
+            val[c["team"]][0] += sum(c["starts"]) + 1.5 * c["pro_bowls"] + 0.25 * c["seasons_on_roster"]
+            val[c["team"]][1] += exp[c["pick"]]
+        common = [t for t in teams if val[t][1]]
+        if len(common) > 3:
+            vs_value.append(_corr([means[teams.index(t)] for t in common], [val[t][0] / val[t][1] for t in common]))
+    h = hab["habit"]
+    if corrs:
+        w(f"   trade habit lasts (net trade-downs per draft, odd vs even years): {st.mean(corrs):.2f} | "
+          f"{h['net_trade_downs_odd_vs_even_corr']}")
+        w(f"   spread of teams' habits (net trade-downs per draft, sd): {st.mean(sds):.2f} | {h['team_net_per_draft_sd']}"
+          f"   per deal a team makes: {st.mean(per_deal):.2f} | {h['team_net_per_draft_sd'] / h['deals_per_team_draft']:.2f}"
+          f"  (real counts deals with future picks too)")
+        if vs_value:
+            w(f"   trade-down habit vs drafting value: {st.mean(vs_value):+.2f} | {h['trade_down_habit_vs_drafting_value_corr']:+.2f}"
+              f" (a habit, not a sign of skill)")
+    tu = hab["trade_up_targets"]
+    w("   QBs among the players teams traded up for (vs QBs among all picks there): " + "   ".join(
+        f"picks {name}: {100 * qb_up[name][0] / max(1, qb_up[name][1]):.0f}% vs {100 * qb_all[name][0] / max(1, qb_all[name][1]):.0f}%"
+        f" (n {qb_up[name][1]}) | {100 * tu[name]['qb_share_of_trade_ups']:.0f}% vs {100 * tu[name]['qb_share_of_all_picks']:.0f}%"
+        for name, a, b in bands[:2]))
+    # Big reaches
+    reach_n, reach_max, n_d = 0, 0, 0
+    for r in results:
+        for d in r["drafts"]:
+            n_d += 1
+            biggest = 0
+            for pk in d["picks"]:
+                br = pk.get("board_rank")
+                if br and br <= 100 and br - pk["pick"] >= 20:
+                    reach_n += 1
+                    biggest = max(biggest, br - pk["pick"])
+            reach_max += biggest
+    rr = hab["reaches_2023"]
+    w(f"   big reaches (top-100 big-board players taken 20+ picks before their rank) per draft: "
+      f"{reach_n / max(1, n_d):.1f} | {rr['count']} (2023, of 89 matched); biggest per draft {reach_max / max(1, n_d):.0f} | {rr['biggest']}")
+    # Speed: does a prospect's 40 still predict beating his slot?
+    real_speed = {"RB": 0.25, "TE": 0.23, "LB": 0.15, "WR": 0.01, "DB": 0.0, "DE": 0.0, "QB": 0.10}
+    pts = defaultdict(list)
+    for r, run in zip(results, runs):
+        cs = DO.careers([run], min_seasons=MIN_SEASONS, skip_first=SKIP_FIRST)
+        by_pick = defaultdict(list)
+        for c in cs:
+            by_pick[c["pick"]].append(sum(c["starts"]) + 1.5 * c["pro_bowls"] + 0.25 * c["seasons_on_roster"])
+        exp = {k: st.mean(v) for k in range(1, 263)
+               if (v := [x for j in range(max(1, k - 8), k + 9) for x in by_pick.get(j, [])])}
+        for c in cs:
+            inf = r["info"].get(c["pid"])
+            if inf and inf["combine"].get("forty") is not None:
+                g = DO.GROUP[inf["pos"]]
+                pts[g].append((-inf["combine"]["forty"],
+                               sum(c["starts"]) + 1.5 * c["pro_bowls"] + 0.25 * c["seasons_on_roster"] - exp[c["pick"]]))
+    w("   40 time vs beating his draft slot (correlation; real teams price speed in at WR/DB/DE, not at RB/TE): " +
+      "  ".join(f"{g} {_corr(*zip(*pts[g])):+.2f}|{real_speed[g]:+.2f}" for g in real_speed if len(pts[g]) > 30))
+    w("")
 
 
 def league_health(results, runs, w):

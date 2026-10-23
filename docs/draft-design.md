@@ -106,6 +106,33 @@ league with a startup draft where you make your own picks.
   depth chart, never in games and never on your chart.
 - **Undrafted signings** use each team's scouting opinion, not the player's true ratings.
   The placeholder let teams see through every undrafted rookie.
+- **Smart, but human (Oct 22; Blake: "making them very smart and real feeling (at least
+  the really good coaches/staffs (not always though there can be unexpected misses))").**
+  Each front office is now smart in several real ways, and fallible in real ways:
+  - *Scouting skill* comes from the team's director of college scouting. A good one sees
+    through part of the league's shared mistakes. A weak one adds to them, but more gently
+    than before: the worst drafting team now gets about 0.63 of its slots' value (real
+    worst 0.74; it was 0.51).
+  - *Speed, read like real teams read it.* Real teams already price a fast 40 in for WRs,
+    DBs and edge rushers, so a fast one doesn't beat his draft slot. At RB and TE real
+    teams under-rate speed, so fast ones do beat their slot (correlation +0.25 / +0.23).
+    The AI now does the same. Fast backs and tight ends stay a small edge a sharp staff
+    can find (the best AI staffs see a little of it too).
+  - *Age.* Every staff now discounts older prospects about as much as their careers
+    deserve. Prospects 24 and older return 0.81 of their slot's value (real 0.79; it was
+    0.67).
+  - *No peeking.* When a team asks "would he beat my weakest starter?", it now uses its
+    own view of the prospect. It used to use his true ratings.
+  - *Big misreads.* About 1 prospect in 125 on any team's board is badly misjudged:
+    usually a player the team has fallen for, sometimes a blind spot. The best staffs do
+    it a little less often, but every staff does it. This makes the real-looking reaches: about 9 a
+    draft of a top-100 player taken 20+ picks early (real 2023: 7 of 89).
+  - *Trade habits.* Each head coach brings a lasting draft-day habit: some teams trade
+    down nearly every year, others trade up (real: Minnesota +1.4 net trade-downs a draft,
+    New Orleans -1.3). The habit has nothing to do with how well a team drafts (real
+    correlation 0.01, sim -0.05). It changes when the head coach does.
+  - *QB trade-ups.* A team that needs a QB trades up for one: QBs are 29% of the players
+    teams trade into the top 10 for (16% of those picks; real 33% and 21%).
 
 ## 4. Test results vs the real NFL
 
@@ -180,6 +207,16 @@ seasons.
   real-game check is a good follow-up once everything is wired in.
 - The real NFL has about 257 picks a year (with compensatory picks); this draft has 224
   (7 x 32). See decision D6.
+
+**Smart, but human (Oct 22, section 13 of the report; sim | real):** drafting skill
+lasts 0.56 | 0.53 (odd vs even years); the best team gets 1.54 | 1.58 of its slots' value,
+the worst 0.63 | 0.74; trade habits last 0.44 | 0.60, spread 0.59 | 0.61 net trade-downs a
+draft; habit vs drafting value -0.05 | +0.01; QBs among top-10 trade-up targets 29% | 33%
+(vs QBs among those picks 16% | 21%), picks 11-32 15% | 13% (5% | 4%); big reaches 9.0 a
+draft | 7 (2023, of 89 matched), biggest 49 | 33 (one real draft); 40 time vs beating the
+slot: WR -0.02 | +0.01, DB -0.02 | 0, DE +0.05 | 0, LB +0.17 | +0.15, QB +0.11 | +0.10,
+RB +0.12 | +0.25, TE +0.17 | +0.23; age 24+ 0.81 | 0.79 of the average; draft-day trades
+23.8 a draft | 21.1 (pick-for-pick; 18.4 scaled to 224 picks).
 
 ## 5. FOF8 exploits and how the AI resists them
 
@@ -289,6 +326,8 @@ Decisions:
 | D11 | Startup draft: how much scouting skill matters | Keep 1.3-1.6x spread, check with real games |
 | D12 | Rookie readiness ~88% of ceiling (top picks start right away) | Keep; it matches real starting rates |
 | D13 | The shown development % for rookies is the staff's estimate (your Oct 21 decision) | Built in scouting ranges |
+| D14 | Trade habits come with the head coach (the game has no GM) | Keep until a GM exists, then move them to him |
+| D15 | How often a staff badly misreads a prospect (now ~1 in 125, the best staffs a little less) | Keep: it matches real reaches |
 
 ## 10. What the AI does each pick, in one paragraph
 

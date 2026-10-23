@@ -704,6 +704,10 @@ def begin_offseason(league, rng=None):
     # 2. A new year. Reserve lists clear and practice squads sign "future"
     #    deals: everyone is on the offseason roster until the cuts.
     transactions.end_of_season(league)
+    # The season's news is written one last time and kept as it is (news.freeze_season;
+    # Blake, Oct 22: old stories stop changing once a season is over).
+    from . import news
+    news.freeze_season(league)
     for p in league.players:
         if p.id in league.rosters:
             p.experience += 1

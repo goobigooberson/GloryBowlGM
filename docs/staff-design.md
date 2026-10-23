@@ -227,7 +227,7 @@ level, Blake's 88-90% moving 0-3 points a year, stars 80+/90+), plus sample care
   - **Other teams' players and free agents:** by how much tape there is (his share of his
     team's snaps over his last two seasons): about 8 for a player who barely played, 5 for a
     part-timer (45%), 3 for a full-time starter (80%+); other teams' rookies 4.9 (Oct 22,
-    sized to real data; was a flat 3.5). Better or worse pro personnel directors scale it
+    sized to real data, PROVISIONAL; was a flat 3.5). Better or worse pro personnel directors scale it
     (best about half, worst about 1.6 times). Part of it is shared across the league
     (everyone overrates the same player a little).
   - **Draft prospects:** the draft's existing model (`scouting.py`), with the college
