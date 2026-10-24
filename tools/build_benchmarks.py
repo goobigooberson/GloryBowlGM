@@ -48,7 +48,7 @@ def load_year(year):
             solo = num(r, "def_tackles_solo")
             p = {"id": r["player_id"], "grp": grp, "pos": r["position"], "team": r["recent_team"],
                  "games": num(r, "games"),
-                 "pass_att": num(r, "attempts"), "pass_yds": num(r, "passing_yards"),
+                 "pass_att": num(r, "attempts"), "pass_cmp": num(r, "completions"), "pass_yds": num(r, "passing_yards"),
                  "pass_td": num(r, "passing_tds"), "pass_int": num(r, "passing_interceptions"),
                  "rush_att": num(r, "carries"), "rush_yds": num(r, "rushing_yards"), "rush_td": num(r, "rushing_tds"),
                  "rec": num(r, "receptions"), "targets": num(r, "targets"),

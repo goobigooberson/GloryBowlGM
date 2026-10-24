@@ -65,6 +65,44 @@ def value(p, key):
     return p.get(key, 0) or 0
 
 
+# Passing efficiency leaderboards (Oct 23; Blake saw a top 5 of 113+ passer ratings): among
+# qualifying QBs (14 attempts per team game, the NFL's rule; 17-game seasons: 238), the best
+# passer rating, completion %, yards per attempt, TD % and the lowest interception %. The
+# counting leaderboards above can't catch a top end that's too accurate or too safe.
+QUALIFY_ATT = 14 * 17
+RATE_SPECS = [("pass_rating", [1, 3, 5, 10, 20]), ("cmp_pct", [1, 3, 5, 10]), ("ypa_q", [1, 3, 5, 10]),
+              ("td_pct", [1, 3, 5, 10]), ("int_pct_low", [1, 3, 5, 10])]
+
+
+def passer_rating(p):
+    a = value(p, "pass_att")
+    if not a:
+        return 0.0
+    f = lambda x: max(0.0, min(2.375, x))
+    return (f((value(p, "pass_cmp") / a - 0.3) * 5) + f((value(p, "pass_yds") / a - 3) * 0.25)
+            + f(value(p, "pass_td") / a * 20) + f(2.375 - value(p, "pass_int") / a * 25)) / 6 * 100
+
+
+def rate_measures(players):
+    qb = [p for p in players if p.get("grp") == "QB" and value(p, "pass_att") >= QUALIFY_ATT]
+    out = {}
+    if not qb or not any(value(p, "pass_cmp") for p in qb):
+        return out                   # (lines without completions: these measures are skipped)
+    lists = {
+        "pass_rating": sorted((passer_rating(p) for p in qb), reverse=True),
+        "cmp_pct": sorted((100 * value(p, "pass_cmp") / value(p, "pass_att") for p in qb), reverse=True),
+        "ypa_q": sorted((value(p, "pass_yds") / value(p, "pass_att") for p in qb), reverse=True),
+        "td_pct": sorted((100 * value(p, "pass_td") / value(p, "pass_att") for p in qb), reverse=True),
+        "int_pct_low": sorted(100 * value(p, "pass_int") / value(p, "pass_att") for p in qb),
+    }
+    for name, ranks in RATE_SPECS:
+        vals = lists[name]
+        for r in ranks:
+            if len(vals) >= r:
+                out[f"{name}#{r}"] = float(vals[r - 1])
+    return out
+
+
 def measure(players):
     """{measure name: value} for one season's player-seasons."""
     out = {}
@@ -75,6 +113,7 @@ def measure(players):
             out[f"{name}#{r}"] = float(vals[r - 1]) if len(vals) >= r else 0.0
         for t in thresholds:
             out[f"{name}>={t}"] = float(sum(1 for v in vals if v >= t))
+    out.update(rate_measures(players))
     return out
 
 

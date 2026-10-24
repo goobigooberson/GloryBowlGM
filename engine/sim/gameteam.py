@@ -54,6 +54,32 @@ class _StyleDice:
         return mu + sigma * next(self.z)
 
 
+_HIDDEN = {}
+SEASON_KEY = None    # the test tools' replays set this (simlab.play_season): each replay its own season form
+
+
+def hidden_form(p, salt, season):
+    """Rating points a player plays above (or below) his ratings, never shown: his career-long
+    knack (fixed for his career) plus this season's form (tuning.KNACK_SD, SEASON_FORM_SD).
+    Drawn from his own dice (league salt and player id), not the game's, so it's the same
+    every game and changes nothing else."""
+    k = T.KNACK_SD.get(p.position, T.KNACK_SD_OTHER)
+    s = T.SEASON_FORM_SD
+    if not (k or s):
+        return 0.0
+    if SEASON_KEY is not None:
+        season = SEASON_KEY
+    key = (salt, p.id, season)
+    v = _HIDDEN.get(key)
+    if v is None:
+        if len(_HIDDEN) > 50000:
+            _HIDDEN.clear()
+        knack = random.Random(f"knack-{salt}-{p.id}").gauss(0, 1)
+        year = random.Random(f"season-form-{salt}-{p.id}-{season}").gauss(0, 1)
+        v = _HIDDEN[key] = (knack, year)
+    return k * v[0] + s * v[1]
+
+
 class GameTeam:
     def __init__(self, league, team_id, norms, rng, is_home, unavailable=(), neutral=False,
                  preseason_game=None, hurt=(), extra=()):
@@ -128,10 +154,11 @@ class GameTeam:
         self.fatigue = defaultdict(float)
         self.carries = defaultdict(int)   # this game, for the backfield workload
         self.form = {}
+        salt = league.settings.get("salt", "")
         for p in self.roster:
             consistency = getattr(p, "consistency", 50)
             sd = T.FORM_SD * (1.35 - consistency / 100 * 0.7)
-            self.form[p.id] = rng.gauss(0, sd)
+            self.form[p.id] = rng.gauss(0, sd) + hidden_form(p, salt, league.season)
         # Playing hurt: {player id: rating points off} (by injury; engine/injuries.py RECOVERY).
         for pid, pts in (hurt.items() if isinstance(hurt, dict) else ((p, T.PLAYING_HURT) for p in hurt)):
             if pid in self.form:

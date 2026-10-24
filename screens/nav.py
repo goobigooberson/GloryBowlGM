@@ -50,24 +50,31 @@ def section_buttons(available, current, go):
             if not pages:
                 continue
             target = last.get(name) if last.get(name) in pages else pages[0]
-            ui.element("button").classes("hub-btn" + (" on" if name == here else "")) \
+            ui.element("button").classes("hub-btn nav-hub-btn" + (" on is-active" if name == here else "")) \
                 .on("click", lambda _e, t=target: go(t)) \
                 .props(f'type="button"{" aria-current=page" if name == here else ""}') \
                 ._text = name
     _last_pages()[here] = current
 
 
-def page_buttons(available, current, go):
-    """The row of page buttons under the bar, for a section with more than one page."""
+def page_buttons(available, current, go, badges=None):
+    """The docked white strip of page buttons under the bar (Gemini's Step 1, Oct 24:
+    always there, even for a one-page section, so pages never jump). `badges`:
+    {page: count}, shown as a small orange number (offers waiting, options due)."""
     here = section_of(current)
     pages = [p for p in dict(SECTIONS)[here] if p in available]
-    if len(pages) < 2:
-        return
-    with ui.element("div").classes("sub-row w-full").props('role="navigation" aria-label="Pages"'):
+    badges = badges or {}
+    with ui.element("div").classes("subnav-strip").props('role="navigation" aria-label="Pages"'):
         for p in pages:
-            b = ui.element("button").classes("sub-btn" + (" on" if p == current else "")) \
-                .on("click", lambda _e, t=p: go(t)).props('type="button"')
-            b._text = PAGE_LABELS.get(p, p)
+            b = ui.element("button").classes("sub-btn subnav-btn" + (" on is-active" if p == current else "")) \
+                .on("click", lambda _e, t=p: go(t)).props('type="button"') \
+                .style("display:inline-flex; align-items:center")
+            n = badges.get(p)
+            if n:
+                with b:
+                    ui.html(f'{PAGE_LABELS.get(p, p)}<span class="subnav-badge">{n}</span>', sanitize=False)
+            else:
+                b._text = PAGE_LABELS.get(p, p)
 
 
 def _last_pages():
@@ -78,14 +85,10 @@ def _last_pages():
     return state.section_pages
 
 
+# (The bar's colors, the section tabs and the page strip are theme.TOPBAR_CSS since
+# Oct 24: the bar takes the viewed team's colors. These are the remaining pieces.)
 CSS = f"""
 <style>
-  .top-band {{
-    background-color: {theme.TURF};
-    background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 64px);
-    color: white;
-  }}
-  .top-band.other {{ background-color: #3B4650; }}
   .team-btn {{ display: flex; align-items: center; gap: 10px; background: transparent; color: white;
               border: 1px solid rgba(255,255,255,.28); border-radius: 4px; padding: 2px 10px 2px 8px;
               min-height: 44px; cursor: pointer; font: inherit; text-align: left; }}
@@ -96,11 +99,6 @@ CSS = f"""
                    max-width: 210px; overflow: hidden; text-overflow: ellipsis; }}
   .view-only {{ background: {theme.FLAG}; color: {theme.INK}; font-weight: 600; font-size: 13px;
                padding: 3px 8px; border-radius: 3px; white-space: nowrap; }}
-  .hub-btn {{ background: transparent; border: 0; border-bottom: 3px solid transparent;
-             color: rgba(255,255,255,.85); font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
-             font-size: 18px; padding: 8px 9px 5px; min-height: 44px; cursor: pointer; }}
-  .hub-btn:hover {{ color: white; }}
-  .hub-btn.on {{ color: white; border-bottom-color: {theme.FLAG}; }}
   .band-week {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.2;
                white-space: nowrap; }}
   .band-sub {{ font-size: 12.5px; opacity: .9; line-height: 1.25; max-width: 340px;
@@ -126,12 +124,5 @@ CSS = f"""
   .bar-saved {{ display: inline-flex; align-items: center; gap: 4px; font-size: 13px; opacity: .75;
      white-space: nowrap; padding: 0 4px; }}
   .bar-saved .material-icons {{ font-size: 16px; color: #8FD19E; }}
-  .sub-row {{ display: flex; flex-wrap: wrap; gap: 2px; padding: 0 16px; background: #E9EEE6;
-             border-bottom: 1px solid {theme.LINE}; }}
-  .sub-btn {{ background: transparent; border: 0; border-bottom: 3px solid transparent;
-             font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 17px; color: #4F5A63;
-             padding: 6px 12px 3px; min-height: 42px; cursor: pointer; }}
-  .sub-btn:hover {{ color: {theme.INK}; }}
-  .sub-btn.on {{ color: {theme.TURF}; border-bottom-color: {theme.TURF}; }}
 </style>
 """

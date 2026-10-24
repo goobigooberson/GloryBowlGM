@@ -257,6 +257,15 @@ UNTRAINED_QB_RUN_K = 0.8     # pass-rate logit per z a non-quarterback at QB pas
                              # runs (25%). With 0.8 a WR at QB ~16 dropbacks, 45 runs (26%); a DT or G ~13, 45.
                              # Before, the offense still threw ~30 times a game.
 FORM_SD = 2.6                # rating points: an average player's game-to-game swing
+# A hidden, career-long knack (Blake, Oct 23: "I remember in FOF8 a really highly rated quarterback
+# would just suck sometimes ... they just played bad their whole career despite being high rated";
+# he chose "QBs mostly"): rating points added to everything a player does, fixed for his career,
+# never shown (gameteam.hidden_form). Plus a season form: a good or bad year (rating points, new
+# each season). Sized so a QB's passer rating carries over from one season to the next about as
+# much as real QBs' (correlation ~0.40, nflverse 2006-24) while ratings explain less of it.
+KNACK_SD = {"QB": 0.0}       # by position; everyone else KNACK_SD_OTHER
+KNACK_SD_OTHER = 0.0
+SEASON_FORM_SD = 0.0
 HOME_EDGE = 0.09             # z added to the home team's players (crowd, comfort)
 AWAY_FALSE_START = 1.25      # crowd noise: away offense false starts more
 FATIGUE_PER_SNAP = {"QB": 0.5, "RB": 2.8, "FB": 3.0, "WR": 2.6, "TE": 3.0, "T": 1.6,

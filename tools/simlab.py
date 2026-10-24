@@ -92,7 +92,10 @@ def play_season(league, seed, norms=None, weeks=17, moves=True):
     camp and preseason injuries before week 1, final cuts, injured reserve,
     signings, practice squads, elevations. The league's rosters are put back
     as they were afterward, so every season starts from the same rosters.
+    Each replay (seed) gets its own hidden season form (gameteam.hidden_form).
     """
+    from engine.sim import gameteam
+    gameteam.SEASON_KEY = seed
     from engine import transactions as TR
     norms = norms or build_norms(league)
     rng = random.Random(seed)

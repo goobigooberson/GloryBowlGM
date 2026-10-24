@@ -5,11 +5,11 @@
 # ---- Colors --------------------------------------------------------------
 TURF = "#1F4A35"      # deep field green: header band
 TURF_DARK = "#163626"
-CHALK = "#ECEFEA"     # page background (a shade darker Oct 22, so panels stand out like windows)
+CHALK = "#E4E8EE"     # page background: broadcast slate (Gemini's Step 1, Oct 24; was #ECEFEA)
 PAPER = "#FFFFFF"     # tables and panels
 INK = "#18222B"       # main text
 INK_SOFT = "#5B6670"  # secondary text
-LINE = "#D9DED8"      # table rules and borders
+LINE = "#CFD6DF"      # table rules and borders (Gemini's Step 1, Oct 24; was #D9DED8)
 FLAG = "#F5C518"      # penalty-flag yellow: selection and focus
 
 # One color per rating word. Elite is blue ("blue chip"), then green, light
@@ -94,6 +94,7 @@ HEAD_HTML = f"""
   :root {{
     --turf: {TURF}; --turf-dark: {TURF_DARK}; --chalk: {CHALK}; --paper: {PAPER};
     --ink: {INK}; --ink-soft: {INK_SOFT}; --line: {LINE}; --flag: {FLAG};
+    --team-accent: {FLAG}; --team-accent-ink: {INK};
   }}
   body {{
     background: var(--chalk); color: var(--ink);
@@ -456,13 +457,16 @@ DESKTOP_CSS = f"""
     position: sticky; top: 0; z-index: 2;
   }}
   body .roster-table thead th:last-child {{ border-right: none; }}
-  body .roster-table thead th .q-table__sort-icon {{ color: var(--flag); opacity: 0.9; }}
+  body .roster-table thead th .q-table__sort-icon {{ color: var(--flag); }}
+  body .roster-table thead th.sorted .q-table__sort-icon {{ opacity: 0.9; }}   /* (Claude: only the sorted column's arrow shows) */
   body .roster-table tbody td {{
     padding: 4px 8px !important; height: 29px !important;
     font-size: 14px; border-bottom: 1px solid #E6EAE4;
     border-right: 1px solid #F0F3EE;
   }}
   body .roster-table tbody td:last-child {{ border-right: none; }}
+  /* (Claude: the scrolling spacer rows must stay zero height, or a blank strip shows under the header) */
+  body .roster-table tbody.q-virtual-scroll__padding td {{ height: auto !important; padding: 0 !important; border: 0 !important; }}
   body .roster-table tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
   body .roster-table tbody tr:hover td {{ background: #E6F0E2 !important; }}
   body .roster-table tbody tr.is-selected td {{
@@ -526,3 +530,211 @@ DESKTOP_CSS = f"""
 </style>
 """
 HEAD_HTML += DESKTOP_CSS
+
+
+# ---- Team colors (Gemini's Step 1, Oct 24) -------------------------------
+# Each team's (primary, accent). The game screen takes on the colors of the team
+# you're looking at: --turf (the bar, table headers, panel edges) becomes the
+# primary and --team-accent (the bar's bottom edge, the active section, the
+# team badge's edge) the accent. Every primary keeps white text readable on it
+# (contrast 4.5:1 or better) and every accent stands out on its primary (3:1+);
+# tools: _contrast(). Blake/Gemini gave PIT, TAM, BAL, DAL, DEN; CIN's orange is
+# a shade deeper than Gemini's #D44515 and MIA's teal deeper than #006778 so they
+# pass those checks. The rest are Claude's picks to fit each nickname.
+TEAM_COLORS = {
+    "BOS": ("#0B2545", "#C9A227"),   # Harbormen: navy and brass
+    "NYK": ("#2B2D42", "#C0C7D0"),   # Knights: gunmetal and armor silver
+    "PHI": ("#10403B", "#7FD1B9"),   # Liberty: deep green and statue patina
+    "BUF": ("#1E3A5C", "#A9DEF9"),   # Blizzard: storm blue and ice
+    "BAL": ("#241773", "#9E7C0C"),   # Clippers
+    "WAS": ("#283618", "#DDA15E"),   # Sentinels: olive drab and brass
+    "PIT": ("#181C20", "#FFB612"),   # Ironmen
+    "CIN": ("#C23D12", "#181C20"),   # Rivermen
+    "CLE": ("#2B2B2E", "#F2701E"),   # Forge: charcoal and molten orange
+    "DET": ("#21374F", "#A8DADC"),   # Mechanics: steel and chrome
+    "CHI": ("#5A0D12", "#E9C46A"),   # Express: maroon and brass
+    "IND": ("#14213D", "#FCA311"),   # Speed: navy and racing amber
+    "CHA": ("#3D1A6E", "#E8C547"),   # Monarchs: royal purple and gold
+    "ATL": ("#7A0E14", "#FF8C1A"),   # Firebirds: deep red and flame
+    "MIA": ("#00485A", "#F26522"),   # Barracudas
+    "TAM": ("#092C5C", "#4B9CD3"),   # Storm
+    "MIN": ("#0F3D3E", "#B8F2E6"),   # Freeze: deep teal and frost
+    "KCY": ("#0A2240", "#6CACE4"),   # Blues
+    "STL": ("#1E3D2F", "#D9B44A"),   # Archers: forest green and gold
+    "NSH": ("#2A1B12", "#E0A458"),   # Outlaws: saddle brown and tan
+    "HOU": ("#0D1B2A", "#E2403A"),   # Wildcatters: oil black and derrick red
+    "DAL": ("#003594", "#869397"),   # Stampede
+    "SAN": ("#4A1C1C", "#F2C14E"),   # Vaqueros: oxblood and sun gold
+    "NOR": ("#0B5D3B", "#F4C430"),   # Krewe: Mardi Gras green and gold
+    "SEA": ("#0B3C49", "#3FD0C9"),   # Sound: deep water and aqua
+    "POR": ("#23331F", "#E07A5F"),   # Lumberjacks: forest and flannel
+    "SFO": ("#2F3E46", "#E8743B"),   # Fog: slate and bridge orange
+    "DEN": ("#13264B", "#E85A19"),   # Peaks
+    "LAS": ("#0E0E2C", "#F5D547"),   # Stars: midnight and star gold
+    "SDG": ("#08415C", "#F9C74F"),   # Surf: ocean and sunshine
+    "LVG": ("#141414", "#E63946"),   # High Rollers: black and casino red
+    "PHX": ("#4A1410", "#F7B32B"),   # Scorpions: rust and desert gold
+}
+DEFAULT_TEAM_COLORS = (TURF, FLAG)   # the main menu, the free agent pool, unknown teams
+
+
+def _contrast(a, b):
+    la, lb = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def _darken(hex_color, share):
+    r, g, b = (int(hex_color[i:i + 2], 16) for i in (1, 3, 5))
+    return "#{:02X}{:02X}{:02X}".format(*(round(c * (1 - share)) for c in (r, g, b)))
+
+
+def team_colors(team_abbrev):
+    """(primary, accent) for a team's abbreviation; the classic green and flag yellow otherwise."""
+    return TEAM_COLORS.get(team_abbrev or "", DEFAULT_TEAM_COLORS)
+
+
+def team_css_vars(team_abbrev, is_user_team=True):
+    """A <style> tag that recolors the game screen for this team (see TEAM_COLORS).
+    None or "FA" (the free agent pool) gives the classic green. `is_user_team` is
+    passed along as --team-is-user (1/0) for styles that want to tell them apart."""
+    primary, accent = team_colors(team_abbrev)
+    return (f"<style>:root {{ --turf: {primary}; --turf-dark: {_darken(primary, 0.18)}; "
+            f"--team-accent: {accent}; --team-accent-ink: {_text_on(accent)}; "
+            f"--team-is-user: {1 if is_user_team else 0}; }}</style>")
+
+
+# ---- Top bar and docked page strip (Gemini's Step 1, Oct 24) --------------
+# Gemini's TOPBAR_CSS, fitted to the game's class names: its ".field-band" rules
+# are on ".top-band" (".field-band" is the big header on the menu screens and
+# would have been squashed to 58 px). Plain string, not an f-string.
+TOPBAR_CSS = """
+<style>
+  body { background: var(--chalk); }
+
+  /* Primary 60px franchise header bar */
+  .top-band {
+    background-color: var(--turf);
+    background-image:
+      linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.18) 100%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 64px);
+    border-bottom: 3px solid var(--team-accent, var(--flag));
+    box-shadow: 0 2px 8px rgba(10, 20, 30, 0.18);
+    min-height: 58px;
+    padding: 0 14px !important;
+    color: #FFFFFF;
+  }
+
+  /* Franchise badge button (left of the top bar) */
+  .team-picker-btn {
+    background: rgba(0, 0, 0, 0.24) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-left: 4px solid var(--team-accent, var(--flag)) !important;
+    border-radius: 4px !important;
+    padding: 4px 12px !important;
+    transition: background 0.12s ease;
+  }
+  .team-picker-btn:hover { background: rgba(0, 0, 0, 0.38) !important; }
+  .team-picker-btn .tsub { max-width: none !important; }
+  .view-only-pill {
+    background: var(--team-accent, var(--flag)); color: var(--team-accent-ink, #18222B);
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: .06em;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+
+  /* The 6 section tabs inside the top bar */
+  .nav-hub-btn {
+    font-family: 'Barlow Condensed', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 16.5px !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+    background: transparent !important;
+    border: 0;
+    border-radius: 0 !important;
+    padding: 0 13px !important;
+    min-height: 55px !important;
+    border-bottom: 3px solid transparent !important;
+    box-shadow: none !important;
+    cursor: pointer;
+  }
+  .nav-hub-btn:hover { color: #FFFFFF !important; background: rgba(255, 255, 255, 0.08) !important; }
+  .nav-hub-btn.is-active {
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-bottom: 3px solid var(--team-accent, var(--flag)) !important;
+  }
+
+  /* Right side: the week and the Sim buttons */
+  .topbar-Sim-cluster {
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    padding: 3px 6px 3px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar-primary-action {
+    background: var(--flag) !important;
+    color: #141C24 !important;
+    font-family: 'Barlow Condensed', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 15.5px !important;
+    letter-spacing: 0.02em !important;
+    padding: 4px 14px !important;
+    border-radius: 3px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
+  }
+  .bar-primary-action:hover { filter: brightness(1.06); }
+
+  /* Full-width docked page strip (Roster | Depth chart | Contracts | ...) */
+  .subnav-strip {
+    width: 100%;
+    background: #FFFFFF;
+    border-bottom: 1px solid #C6CFD9;
+    box-shadow: 0 1px 3px rgba(15, 25, 35, 0.05);
+    padding: 0 20px !important;
+    min-height: 38px;
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .subnav-btn {
+    font-family: 'Barlow Condensed', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    letter-spacing: 0.02em !important;
+    color: #4A5562 !important;
+    background: transparent !important;
+    border: 0;
+    border-radius: 0 !important;
+    padding: 0 14px !important;
+    min-height: 38px !important;
+    border-bottom: 3px solid transparent !important;
+    box-shadow: none !important;
+    cursor: pointer;
+  }
+  .subnav-btn:hover { color: var(--turf) !important; background: #F2F5F8 !important; }
+  .subnav-btn.is-active {
+    color: var(--turf) !important;
+    font-weight: 700 !important;
+    border-bottom: 3px solid var(--turf) !important;
+    background: rgba(0, 0, 0, 0.02) !important;
+  }
+  .subnav-badge {
+    display: inline-block;
+    background: #B45309;
+    color: #FFFFFF;
+    font-family: 'Barlow', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 8px;
+    margin-left: 5px;
+    vertical-align: 1px;
+  }
+</style>
+"""
+HEAD_HTML += TOPBAR_CSS

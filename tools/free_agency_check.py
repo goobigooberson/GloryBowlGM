@@ -296,6 +296,14 @@ def offseason(lg, rng, stats, lines):
                                                     if t.id != lg.user_team_id), reverse=True))
                 if w == FA.PRE_DRAFT_WAVES[-1]:
                     stats["legal"].append(("pre-draft FA", [t for t, _ in C.audit(lg)]))
+                if w == FA.POST_DRAFT_WAVES[-1]:
+                    # Still unsigned as camp opens: the late-bargain window (what each would ask you now).
+                    table = M.market_table(lg)
+                    for p in FA.free_agent_list(lg):
+                        info = table[p.id]
+                        if info["price"] >= M.MARKET_LINE and FA.starter_level(info) and FA._age(lg, p) <= 30:
+                            stats.setdefault("camp_unsigned", []).append({"price": info["price"], "ask": FA.ask_share(info, w),
+                                                           "starter": p.id in starters, "ovr": p.overall()})
             else:
                 OS.offseason_next(lg)
                 if phase in ("draft", "drafting") and lg.offseason["phase"] == "fa":
@@ -635,6 +643,13 @@ def fair_price_report(stats):
                 f"{pct(d['price'])} -> {pct(d['share'])} ({100 * d['ratio']:.0f}%), wave {d['wave']}, "
                 f"{sum(r >= d['price'] for r in d['rooms'])} teams had room"
                 f"{'; starter last season' if d['starter'] else ''}")
+    u = stats.get("camp_unsigned") or []
+    say(f"  C. Still unsigned when camp opens (good ratings, {rf['max_age']} or younger; the late-bargain window: you can "
+        f"sign any of them at his ask): {len(u) / S:.1f} a season")
+    if u:
+        say(f"     last season's starters {pct(sum(d['starter'] for d in u) / len(u))}; median rating {st.median(d['ovr'] for d in u):.0f}; "
+            f"median price {pct(st.median(d['price'] for d in u))} of the cap, asking {pct(st.median(d['ask'] for d in u))} "
+            f"({pct(st.median(d['ask'] / d['price'] for d in u))} of his price); priced 5%+ (stars) {sum(d['price'] >= 0.05 for d in u) / S:.1f} a season")
     say()
 
 
@@ -661,7 +676,8 @@ def main():
     stats = {"legal": [], "missing": 0, "move_all": Counter(), "move_exp": defaultdict(Counter),
              "move_pos": defaultdict(Counter), "year": Counter(), "waves": Counter(), "waves_market": Counter(),
              "deals": [], "ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [],
-             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": [], "fa_day1": [], "fair": []}
+             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": [], "fa_day1": [], "fair": [],
+             "camp_unsigned": []}
     in_season = []
     day1 = {"ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [], "dead": []}
     seeds = [int(x) for x in args.leagues.split(",")]

@@ -98,21 +98,21 @@ def build_page():
         else:
             tabs.set_value(draft_tab)
 
-    # ---- The slim green bar ------------------------------------------------
+    # ---- The top bar --------------------------------------------------------
     # Your team (click to look at another team), the sections, the week and
-    # Sim, save status, Menu. Turns slate gray while you look at a team that
-    # isn't yours. (Layout research, Oct 21: one bar instead of three.)
-    band = ui.element("div").classes("top-band w-full px-4 py-2")
+    # Sim, save status, Menu. (Layout research, Oct 21: one bar instead of three.)
+    # It takes the colors of the team you're looking at (theme.TEAM_COLORS; Gemini's
+    # Step 1, Oct 24), and another team's shows a VIEW ONLY pill and "My Team".
+    band = ui.element("div").classes("top-band w-full")
     with band:
-        band_row = ui.row().classes("w-full items-center no-wrap").style("gap:8px 14px; flex-wrap:wrap")
+        band_row = ui.row().classes("w-full items-center no-wrap").style("gap:6px 14px; flex-wrap:wrap")
     with band_row:
         @ui.refreshable
         def team_banner():
             mine = state.team_id == league.user_team_id
-            if mine:
-                band.classes(remove="other")
-            else:
-                band.classes(add="other")
+            viewed = None if state.team_id == FREE_AGENTS else league.team(state.team_id).abbrev
+            ui.html(theme.team_css_vars(viewed, is_user_team=mine), sanitize=False).style("display:none")
+            sub_tip = None
             if state.team_id == FREE_AGENTS:
                 abbrev, name = "FA", "Free agent pool"
                 sub = f"{len(league.free_agents())} unsigned players"
@@ -132,13 +132,15 @@ def build_page():
                     starters = [p for p in league.team_players(team.id) if p.id in ids]
                     if starters:
                         avg = round(sum(seen(league, p) for p in starters) / len(starters))
-                        parts.append(f"Starters: {fmt.skill(avg)}")
+                        parts.append(f"Avg: {avg}")      # short so it never clips; full words in the tooltip
+                        sub_tip = f"Starters' average rating: {fmt.skill(avg)}"
                 sub = " · ".join(parts)
-            with ui.element("button").classes("team-btn") \
+            tip = sub_tip or sub
+            with ui.element("button").classes("team-btn team-picker-btn") \
                     .props('type="button" aria-label="Your team. Click to look at another team"'):
                 ui.html(f'<span style="display:flex;align-items:center;gap:10px"><span class="abbr">{escape(abbrev)}'
                         f'</span><span style="display:flex;flex-direction:column"><span class="tname">{escape(name)}'
-                        f'</span><span class="tsub" title="{escape(sub)}">{escape(sub)}</span></span><svg width="12" height="12" '
+                        f'</span><span class="tsub" title="{escape(tip)}">{escape(sub)}</span></span><svg width="12" height="12" '
                         f'viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" '
                         f'aria-hidden="true"><path d="M2 4l4 4 4-4"/></svg></span>', sanitize=False)
                 with ui.menu().props('max-height="70vh"'):
@@ -146,10 +148,10 @@ def build_page():
                         ui.menu_item(label, on_click=lambda tid=tid: change_team(tid))
             if not mine and league.user_team_id is not None:
                 if state.team_id != FREE_AGENTS:
-                    ui.label("View only").classes("view-only") \
+                    ui.label("View only").classes("view-only-pill") \
                         .tooltip("Only your own team's depth chart and roster can be changed.")
-                ui.button("My team", on_click=lambda: change_team(league.user_team_id)) \
-                    .props("no-caps outline color=white").tooltip("Back to your own team")
+                ui.button("← My Team", on_click=lambda: change_team(league.user_team_id), color=None) \
+                    .props("no-caps unelevated").classes("bar-btn alt").tooltip("Back to your own team")
         team_banner()
 
         @ui.refreshable
@@ -157,7 +159,7 @@ def build_page():
             nav.section_buttons(pages, showing["page"], go)
         section_nav()
         ui.element("div").style("flex:1")
-        season_row = ui.row().classes("items-center no-wrap").style("gap:10px")
+        season_row = ui.row().classes("items-center no-wrap topbar-Sim-cluster").style("gap:10px")
 
         @ui.refreshable
         def save_bar():
@@ -240,7 +242,8 @@ def build_page():
         def bar_btn(text, on_click, kind="go", icon=None):
             """A button in the green bar: "go" (yellow, the main action), "alt" (dark) or "flat"."""
             return ui.button(text, icon=icon, on_click=on_click, color=None) \
-                .props("no-caps unelevated").classes(f"bar-btn {kind}")
+                .props("no-caps unelevated") \
+                .classes(f"bar-btn {kind}" + (" bar-primary-action" if kind == "go" else ""))
 
         @ui.refreshable
         def season_bar():
@@ -273,10 +276,13 @@ def build_page():
                 key, title, text = season.offseason_phase(league)
                 two_lines(f"{league.season} offseason", title, text)     # the full text is on Home
                 if league.offseason_report and league.offseason_report.get("season") == league.season:
-                    bar_btn("Offseason report", lambda: popups.open_offseason(), "flat", "description") \
-                        .tooltip("Retirements, free agency, the draft and undrafted signings so far")
+                    # (Icon only and a short draft label, Oct 24: the team-colored bar's wider
+                    # section tabs left no room for the offseason's buttons on one line.)
+                    bar_btn("", lambda: popups.open_offseason(), "flat", "description") \
+                        .props('aria-label="Offseason report"') \
+                        .tooltip("Offseason report: retirements, free agency, the draft and undrafted signings so far")
                 if key in ("draft", "drafting") or draft_day.scouting_open(league):
-                    bar_btn("Go to the draft room" if key == "drafting" else "Scout the draft class",
+                    bar_btn("Draft room" if key == "drafting" else "Scout the class",
                             lambda: show_draft(), "alt", "sports_football") \
                         .tooltip("The Draft page" + (": make your picks" if key == "drafting" else
                                                      ": scout this year's class before the draft"))
@@ -337,8 +343,9 @@ def build_page():
             two_lines(top, line)
             rep = league.offseason_report
             if pre and rep and rep.get("season") == league.season:
-                bar_btn("Offseason report", lambda: popups.open_offseason(), "flat", "description") \
-                    .tooltip("Retirements, the draft, undrafted signings and cuts this offseason")
+                bar_btn("", lambda: popups.open_offseason(), "flat", "description") \
+                    .props('aria-label="Offseason report"') \
+                    .tooltip("Offseason report: retirements, the draft, undrafted signings and cuts this offseason")
             here = season.calendar(league)
             bar_btn("Sim week", lambda: sim_through(here), "go", "play_arrow") \
                 .tooltip("Play every game this week" + (" (yours too)" if g is not None and not g["played"] else "")
@@ -366,9 +373,26 @@ def build_page():
         season_bar()
 
     # ---- Page buttons for the section you're in (Team: Roster, Depth chart...) --
+    def page_badges():
+        """Small counts on the page buttons: trade offers waiting, fifth-year options due."""
+        if startup or league.user_team_id is None:
+            return {}
+        from engine import free_agency as FA
+        from engine import trades as T
+        out = {}
+        try:
+            out["Trades"] = len(T.inbox(league))
+        except Exception:               # (a badge must never stop the screen from drawing)
+            pass
+        try:
+            out["Contracts"] = len(FA.options_for_you(league))
+        except Exception:
+            pass
+        return out
+
     @ui.refreshable
     def page_row():
-        nav.page_buttons(pages, showing["page"], go)
+        nav.page_buttons(pages, showing["page"], go, badges=page_badges())
     page_row()
 
     # ---- Tabs -----------------------------------------------------------
@@ -451,11 +475,13 @@ def build_page():
                 refresh_roster = build_roster_tab()
             with ui.tab_panel(contracts_tab).classes("p-0"):
                 refresh_contracts = build_contracts_tab(
-                    on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster()))
+                    on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster(),
+                                       page_row.refresh()))
             with ui.tab_panel(trades_tab).classes("p-0"):
                 refresh_trades = build_trade_tab(
                     on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster(),
-                                       refresh_contracts(), refresh_depth(), refresh_counts(), refresh_news()))
+                                       refresh_contracts(), refresh_depth(), refresh_counts(), refresh_news(),
+                                       page_row.refresh()))
             with ui.tab_panel(staff_tab).classes("p-0"):
                 refresh_staff = build_staff_tab(on_change=lambda: (season_bar.refresh(), refresh_roster()))
         def draft_room():
@@ -705,6 +731,7 @@ def build_page():
 
     def after_games(follow_week):
         season_bar.refresh()
+        page_row.refresh()              # the page badges (offers waiting, options due)
         team_banner.refresh()
         refresh_roster()
         refresh_contracts()

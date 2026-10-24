@@ -147,6 +147,11 @@ WAVE_ROUNDS = 3                 # Oct 23: bidding rounds in a wave. When a team'
 # 244 market-level free agents a year were on the market when it opened, 204 of them starter-level, but only
 # ~37 signed in the first wave and 120 were still unsigned at camp; real teams sign 148 market-level players
 # from other teams a year (OverTheCap 2016-21, docs/research/deal_kinds.py), the game 85).
+MAKE_ROOM_GAIN = 5.0            # Oct 23 (Blake: "teams make room"): a team that can't afford a free agent who'd
+# start for it releases a veteran at his position he's clearly better than (by this many rating points, as its
+# staff sees them) when that saves money this season within the cap-cut rule (CUT_DEAD_MAX). Before, about 9
+# free agents priced as stars were still unsigned at camp each year, wanted by teams with no room left, and any
+# of them would sign with you for 40% of his price (FOF8's cheap-star exploit).
 # ---- Knobs: players --------------------------------------------------------------------
 WINNER_K = 0.30                 # how much a winning team counts, for a player who most wants to win
 LOYALTY_K = 0.10                # how much a loyal player leans toward his old team (disloyal ones lean away)
@@ -421,6 +426,46 @@ def _restructure_left(league, tid):
             if r > 0:
                 possible += r - r // min(C.years_left(c, S), C.MAX_PRORATION_YEARS)
     return max(0, min(left, possible))
+
+
+def _room_cut(league, tid, p, info, table, pids=None):
+    """(player id, post-June 1?, cap savings $K) for the release that would make
+    room for free agent p at this AI team: a veteran on its 53 at his position
+    he's clearly better than (MAKE_ROOM_GAIN, as its staff sees them), whose
+    release saves the most this season within the cap-cut rule; or None.
+    pids: the team's player ids at his position, if already gathered."""
+    if pids is None:
+        pids = [pid for pid, t in league.rosters.items() if t == tid and league.player(pid).position == p.position]
+    s = team_score(league, tid, p, info)
+    best = None
+    for pid in pids:
+        c = league.contracts.get(pid)
+        if c is None or c["kind"] not in ("veteran", "extension", "minimum") or pid not in table:
+            continue
+        if s - team_score(league, tid, league.player(pid), table[pid]) < MAKE_ROOM_GAIN:
+            continue
+        june1, prev = C.best_release(league, pid)
+        if prev["savings"] <= 0 or sum(prev["dead"].values()) > CUT_DEAD_MAX * max(1, prev["hit"]):
+            continue
+        if best is None or prev["savings"] > best[2]:
+            best = (pid, june1, prev["savings"])
+    return best
+
+
+def _cut_to_fit(league, tid, p, info, table, need_k):
+    """Release the player _room_cut picks if that gives this team need_k of cap
+    room. True if the room is there now."""
+    cut = _room_cut(league, tid, p, info, table)
+    if cut is None or C.cap_room(league, tid) + cut[2] < need_k:
+        return False
+    pid, june1, _savings = cut
+    C.release(league, pid, june1=june1)
+    q = league.player(pid)
+    _let_go(league, pid, tid, "UFA" if q.experience >= C.RFA + 1 else _status(q), "released (to make room)")
+    from .transactions import log
+    log(league, WAVES.get(league.fa.get("wave"), "Free agency"), tid, pid, "Released",
+        f"to make room for {p.first_name} {p.last_name}")
+    return True
 
 
 def team_quality(league):
@@ -1262,6 +1307,9 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
     S = league.season
     depth = depth_lists(league, table)
     bids = defaultdict(list)
+    at_pos = defaultdict(list)                  # (team, position) -> player ids on its 53, for making room
+    for pid, t in league.rosters.items():
+        at_pos[(t, league.player(pid).position)].append(pid)
     for tid in sorted(ai_teams(league), key=lambda _t: rng.random()):
         room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap + _restructure_left(league, tid)
         z_fa = gm_style(league, tid, "fa")
@@ -1270,8 +1318,6 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
         ceiling = max((GM_FA_BUDGET[0] + GM_FA_BUDGET_ROOM * open_room) * math.exp(GM_FA_BUDGET[1] * z_fa),
                       open_room - PLAN_ROOM_MAX)
         outside_left = (ceiling - league.fa.get("outside_spent", {}).get(tid, 0.0)) * cap
-        if room <= 0:
-            continue
         spots = OFFSEASON_ROSTER_MAX - roster_count(league, tid)
         cands = []
         for p in fas:
@@ -1300,7 +1346,11 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
                 continue
             est = ask_share(table[p.id], wave) * cap * 0.9
             if spent + est > room:
-                continue
+                # No room: for a player who'd start, the team could release a worse veteran there.
+                cut = (_room_cut(league, tid, p, table[p.id], table, at_pos[(tid, p.position)])
+                       if role == "starter" else None)
+                if cut is None or spent + est > room + cut[2]:
+                    continue
             outside = league.fa["former"].get(p.id) != tid and table[p.id]["price"] >= M.MARKET_LINE
             if outside and tid != league.user_team_id and est > outside_left:
                 continue                 # his GM's ceiling for other teams' players this year
@@ -1359,7 +1409,9 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
                     # for in-season moves, and could otherwise be over the cap at week 1)
                     keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
                 if C.room_after(league, tid, _first_hit(league, c)) < keep and \
-                        not (role_of.get((pid, tid)) == "starter" and _make_room(league, tid, _first_hit(league, c) + keep, rng)):
+                        not (role_of.get((pid, tid)) == "starter"
+                             and (_make_room(league, tid, _first_hit(league, c) + keep, rng)
+                                  or _cut_to_fit(league, tid, p, info, table, _first_hit(league, c) + keep))):
                     continue
                 if roster_count(league, tid) >= OFFSEASON_ROSTER_MAX:
                     continue
