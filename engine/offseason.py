@@ -409,6 +409,8 @@ def offseason_next(league, rng=None):
         if later:
             st["wave"] = later[0]
             league.fa["wave"] = later[0]
+            if later[0] in FA.SUMMER_WAVES:
+                FA.summer_asks(league)     # leftover players' summer asks, shown to you before the wave plays
     elif phase == "draft":
         # The draft starts at pick 1: you watch it pick by pick in the draft room
         # (draft_day.py, screens/draft_page.py). With no picks of yours it's over right away.

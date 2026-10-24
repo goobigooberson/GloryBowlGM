@@ -65,6 +65,7 @@ def main():
             p["ypc"] = p.get("rush_yds", 0) / p["rush_att"] if p.get("rush_att") else 0
             p["ypa"] = p.get("pass_yds", 0) / p["pass_att"] if p.get("pass_att") else 0
             p["ypt"] = p.get("rec_yds", 0) / p["targets"] if p.get("targets") else 0
+            p["rating"] = M.passer_rating(p)
     real = BENCH["consistency"]
     print(f"\nTYPICAL CHANGE FROM ONE SEASON TO THE NEXT (league {args.league}, {args.seasons} replays, frozen ratings)")
     for label, key, stat, pos, minimum, ms, pct, vol in (
@@ -76,12 +77,29 @@ def main():
             ("Tackles (90+)", "tackles_pct", "tackles", ("ILB", "OLB", "CB", "S", "DE", "DT"), 90, 750, True, None),
             ("RB yards per carry (150+ car)", "rb_ypc_abs", "ypc", ("RB",), 150, 0, False, "rush_att"),
             ("QB yards per attempt (350+ att)", "qb_ypa_abs", "ypa", ("QB",), 350, 0, False, "pass_att"),
+            ("QB passer rating (350+ att)", "qb_rating_abs", "rating", ("QB",), 350, 0, False, "pass_att"),
             ("WR yards per target (80+ tgt)", "wr_ypt_abs", "ypt", ("WR",), 80, 0, False, "targets")):
         v, n = change(stat, pos, minimum, ms, pct, vol)
         if pct:
             print(f"  {label:34} sim {100*v:4.0f}%   real {100*real[key]:4.0f}%   (n={n})")
         else:
             print(f"  {label:34} sim {v:5.2f}   real {real[key]:5.2f}   (n={n})")
+
+    # How much a QB's ratings decide his results (Oct 23: the hidden knack, tuning.KNACK_SD, makes
+    # ratings explain less): correlation of his overall with his passer rating, 350+ attempts.
+    xs, ys = [], []
+    for s in seasons:
+        for pid, p in s.items():
+            if p["pos"] == "QB" and p.get("pass_att", 0) >= 350 and pid in ovr:
+                xs.append(ovr[pid])
+                ys.append(p["rating"])
+    if len(xs) > 3:
+        mx, my = M.mean(xs), M.mean(ys)
+        sx = (sum((x - mx) ** 2 for x in xs) / len(xs)) ** 0.5
+        sy = (sum((y - my) ** 2 for y in ys) / len(ys)) ** 0.5
+        r = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / len(xs) / sx / sy
+        print(f"  QB rating vs passer rating (350+ att): correlation {r:.2f}  (n={len(xs)}; no real equivalent: "
+              "real QBs have no ratings)")
 
     print("\nSAME PLAYER, SAME RATINGS, EACH REPLAY")
     for pos, stat in (("QB", "pass_yds"), ("RB", "rush_yds"), ("WR", "rec_yds"), ("DE", "sacks"), ("ILB", "tackles")):

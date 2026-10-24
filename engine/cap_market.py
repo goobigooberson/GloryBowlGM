@@ -197,6 +197,11 @@ def market_table(league, season=None, players=None):
         floor = C.min_salary(league, p.experience, season) / cap
         d["minimum"] = floor
         d["price"] = max(floor, d["price"] * max(0.3, f))
+    # Leftover free agents' summer asks (free_agency.summer_asks), for free_agency.ask_share.
+    for pid, share in ((getattr(league, "fa", None) or {}).get("summer_ask") or {}).items():
+        pid = int(pid)                    # (a saved league brings the ids back as text)
+        if pid in out:
+            out[pid]["summer_ask"] = share
     return out
 
 

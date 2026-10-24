@@ -83,7 +83,8 @@ GROUNDING_SHARE = 0.16       # pressured throwaways flagged for intentional grou
 DEEP_ARM_K = 0.012           # per yard per z: strong arms look deeper
 
 # ---- Completion, interception, yards after catch -------------------------
-COMP_ACCURACY_K = 0.28       # logit per z of QB accuracy for that depth
+COMP_ACCURACY_K = 0.15       # logit per z of QB accuracy for that depth (0.28 before Oct 23: the best QBs completed
+                             # too many passes; part of a QB's results now comes from his hidden knack, KNACK_SD)
                              # (Oct 21: 0.19 -> 0.28; completion % barely depended on the QB: top passers
                              # 64.3% vs worst starters 64.7%, real 68.2% vs 63.9%)
 COMP_SEPARATION_K = 0.16     # logit per unit of separation (open vs covered)
@@ -94,11 +95,12 @@ COMP_SCALE = 0.18            # logit: overall completion level (fine-tunes the l
 COMP_CAP = 0.55              # most one pass's matchups can move its completion odds (logit)
 YAC_CAP = 0.40               # most one catch's matchups can tilt yards after catch
 RUN_CAP = 0.55               # most one run's matchups can tilt it (stacked edges have diminishing returns)
-INT_SKILL_K = 0.27           # interception odds per z of QB decision-making
+INT_SKILL_K = 0.15           # interception odds per z of QB decision-making (0.27 before Oct 23, as COMP_ACCURACY_K)
 INT_DEFENDER_K = 0.22        # per z of the defender's ball skills
 INT_HURRIED = 0.55           # pressure makes interceptions more likely
 INT_SEPARATION_K = 0.30      # throws into tight coverage get picked more
-INT_SCALE = 1.00             # overall multiplier
+INT_SCALE = 1.035            # overall multiplier (1.00 before Oct 23; after INT_SKILL_K 0.27 -> 0.15 and recentering,
+                             # league interceptions ran ~6% under real)
 YAC_K = 0.08                 # tilt per z of receiver run-after-catch vs tacklers
 YAC_SEP_K = 0.04             # wide-open receivers gain more after the catch
 YAC_SCALE = 0.08             # tilt: overall yards after catch (fine-tunes league YPA)
@@ -263,9 +265,15 @@ FORM_SD = 2.6                # rating points: an average player's game-to-game s
 # never shown (gameteam.hidden_form). Plus a season form: a good or bad year (rating points, new
 # each season). Sized so a QB's passer rating carries over from one season to the next about as
 # much as real QBs' (correlation ~0.40, nflverse 2006-24) while ratings explain less of it.
-KNACK_SD = {"QB": 0.0}       # by position; everyone else KNACK_SD_OTHER
+KNACK_SD = {"QB": 3.5}       # by position; everyone else KNACK_SD_OTHER
 KNACK_SD_OTHER = 0.0
-SEASON_FORM_SD = 0.0
+SEASON_FORM_SD = {"QB": 4.5}  # by position; everyone else SEASON_FORM_SD_OTHER
+# Fitted Oct 23 (16-season realism runs, variants A-G): with these and the two QB levers above, passer
+# rating leaders #1/#3/#5/#10 113.5/106.4/103.4/98.0 (real 2021-25: 112.7/105.0/102.2/98.4; before
+# 117.4/109.5/106.1/99.5), completion #1 71.6% (71.1; before 73.1); a QB's overall vs his passer
+# rating correlation 0.47 (before 0.73: ratings decided more); frozen-ratings replays: typical
+# season-to-season passer rating change 6.3 (before 6.4; real 8.1, real players also age and move).
+SEASON_FORM_SD_OTHER = 0.0
 HOME_EDGE = 0.09             # z added to the home team's players (crowd, comfort)
 AWAY_FALSE_START = 1.25      # crowd noise: away offense false starts more
 FATIGUE_PER_SNAP = {"QB": 0.5, "RB": 2.8, "FB": 3.0, "WR": 2.6, "TE": 3.0, "T": 1.6,
@@ -329,24 +337,24 @@ INJURY_QB_MULT = 0.65        # rules protect quarterbacks
 # if player ratings or the knobs above change a lot.
 # Measured Oct 19, 2026 over 1,500 games in three different leagues.
 CENTER = {
-    "breakaway": -0.023,
-    "comp0": 0.063,
-    "comp1": 0.055,
-    "comp2": 0.051,
-    "comp3": -0.052,
-    "int0": -0.084,
-    "int1": 0.002,
-    "int2": 0.052,
-    "int3": 0.282,
-    "kr": -0.17,
-    "pr": -0.154,
-    "qb_run": 0.185,
-    "run": 0.097,
-    "scramble": 0.201,
-    "sneak": -0.021,
-    "throwaway": -1.189,
-    "yac0": 0.042,
-    "yac1": 0.045,
-    "yac2": 0.048,
-    "yac3": 0.006,
+    "breakaway": 0.011,
+    "comp0": 0.061,
+    "comp1": 0.05,
+    "comp2": 0.046,
+    "comp3": -0.063,
+    "int0": -0.112,
+    "int1": -0.017,
+    "int2": 0.045,
+    "int3": 0.259,
+    "kr": -0.058,
+    "pr": -0.041,
+    "qb_run": 0.187,
+    "run": 0.1,
+    "scramble": 0.211,
+    "sneak": 0.011,
+    "throwaway": -1.195,
+    "yac0": 0.043,
+    "yac1": 0.046,
+    "yac2": 0.051,
+    "yac3": 0.017,
 }

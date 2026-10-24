@@ -64,7 +64,7 @@ def hidden_form(p, salt, season):
     Drawn from his own dice (league salt and player id), not the game's, so it's the same
     every game and changes nothing else."""
     k = T.KNACK_SD.get(p.position, T.KNACK_SD_OTHER)
-    s = T.SEASON_FORM_SD
+    s = T.SEASON_FORM_SD.get(p.position, T.SEASON_FORM_SD_OTHER)
     if not (k or s):
         return 0.0
     if SEASON_KEY is not None:

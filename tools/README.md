@@ -94,7 +94,8 @@ python tools/recenter.py --write      # then write the new centers into engine/s
 - `data/` - nflverse player season stats 2015-2025 and snap counts 2023-2025
   (https://github.com/nflverse/nflverse-data)
 - `realism_report.txt` - written by the last `realism_check.py` run
-- `free_agency_check.py` - contracts, the cap and free agency vs the real NFL (`free_agency_report.txt`), incl. the
+- `free_agency_check.py` - contracts, the cap and free agency vs the real NFL (`free_agency_report.txt`), playing the
+  game's own offseason phase by phase (as the Next button does), then camp and the cut to 53; incl. the
   "fair price" check against FOF8's cheap-star exploit: do good free agents sign far below their worth while teams
   have room (real yardstick: `docs/research/fair_price.py`)? `--leagues 101,102,103 --seasons 4` (~5 min)
 - `draft_check.py` - the draft vs the real NFL (`draft_report.txt`), incl. sections 14-15, the tight end checks

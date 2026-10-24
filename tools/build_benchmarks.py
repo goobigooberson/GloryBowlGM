@@ -131,9 +131,10 @@ def main():
         p["ypc"] = p["rush_yds"] / p["rush_att"] if p["rush_att"] else 0
         p["ypa"] = p["pass_yds"] / p["pass_att"] if p["pass_att"] else 0
         p["ypt"] = p["rec_yds"] / p["targets"] if p["targets"] else 0
+        p["rating"] = M.passer_rating(p)
     for y in range(2015, 2021):
         for p in seasons[y]:
-            p["ypc"] = p["ypa"] = p["ypt"] = 0
+            p["ypc"] = p["ypa"] = p["ypt"] = p["rating"] = 0
     consistency = {
         "wr_targets_pct": change("targets", ("WR",), 90, 15),
         "wr_rec_yds_pct": change("rec_yds", ("WR",), 800, 15),
@@ -145,6 +146,7 @@ def main():
     # Efficiency stats: typical absolute change (players with enough volume both years).
     for key, stat, groups, vol, minimum in (("rb_ypc_abs", "ypc", ("RB",), "rush_att", 150),
                                             ("qb_ypa_abs", "ypa", ("QB",), "pass_att", 350),
+                                            ("qb_rating_abs", "rating", ("QB",), "pass_att", 350),
                                             ("wr_ypt_abs", "ypt", ("WR",), "targets", 80)):
         out = []
         for y in range(2021, 2025):

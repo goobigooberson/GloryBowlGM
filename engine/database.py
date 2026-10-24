@@ -150,8 +150,11 @@ def save_league(league: League, path, created=None):
     game crashes mid-save, the old save is still there and still works."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    if created is None:
-        created = read_save_info(path).get("created") if path.exists() else None
+    if created is None and path.exists():
+        try:
+            created = read_save_info(path).get("created")
+        except (sqlite3.DatabaseError, KeyError, ValueError):
+            created = None      # not a readable save (empty or damaged): it's simply replaced
     tmp = path.with_suffix(".saving")
     if tmp.exists():
         tmp.unlink()

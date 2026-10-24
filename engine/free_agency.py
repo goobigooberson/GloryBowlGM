@@ -152,6 +152,8 @@ MAKE_ROOM_GAIN = 5.0            # Oct 23 (Blake: "teams make room"): a team that
 # staff sees them) when that saves money this season within the cap-cut rule (CUT_DEAD_MAX). Before, about 9
 # free agents priced as stars were still unsigned at camp each year, wanted by teams with no room left, and any
 # of them would sign with you for 40% of his price (FOF8's cheap-star exploit).
+SUMMER_WAVES = (6, 7)           # ...and in these waves an unsigned starter-caliber player's ask drops to the best
+# offer a team that would start him can actually fit (summer_asks; Blake chose both, Oct 23)
 # ---- Knobs: players --------------------------------------------------------------------
 WINNER_K = 0.30                 # how much a winning team counts, for a player who most wants to win
 LOYALTY_K = 0.10                # how much a loyal player leans toward his old team (disloyal ones lean away)
@@ -321,14 +323,22 @@ def _eval(league, tid, pid):
     return _eval_draw(_salt(league), league.season, tid, pid)
 
 
-def team_score(league, tid, p, info):
+def team_score(league, tid, p, info, memo=None):
     """His market score as this team's staff sees him, for its role decisions
     (is he better than our starter, by how much; Oct 24: AI teams judge players
     through their own staff's eyes): the league's score moved by the staff's
     misjudgment of him, now and ceiling (evaluation.misjudgment). Not its view
     as such: its own players, seen surely, would barely be pulled toward
     average while other teams' players would be pulled more, and a role
-    decision compares the two (the same reason bids use the misjudgment)."""
+    decision compares the two (the same reason bids use the misjudgment).
+    memo: a dict to remember answers in (a free agency wave asks the same
+    questions round after round): a staff's view holds through the wave, even
+    of a player it signs during it (it has known him for minutes)."""
+    if memo is not None:
+        key = (tid, p.id)
+        if key not in memo:
+            memo[key] = team_score(league, tid, p, info)
+        return memo[key]
     if tid is None or not getattr(league, "staff", None):
         return info["score"]
     from . import evaluation as E
@@ -428,21 +438,43 @@ def _restructure_left(league, tid):
     return max(0, min(left, possible))
 
 
-def _room_cut(league, tid, p, info, table, pids=None):
+def _outside_left(league, tid, cap):
+    """$K this team's GM will still spend this league year on other teams'
+    market-level players (gm.py, Oct 22: GM_FA_BUDGET)."""
+    z_fa = gm_style(league, tid, "fa")
+    open_room = league.fa.setdefault("open_room", {}).setdefault(tid, max(0.0, C.cap_room(league, tid) / cap))
+    ceiling = max((GM_FA_BUDGET[0] + GM_FA_BUDGET_ROOM * open_room) * math.exp(GM_FA_BUDGET[1] * z_fa),
+                  open_room - PLAN_ROOM_MAX)
+    return (ceiling - league.fa.get("outside_spent", {}).get(tid, 0.0)) * cap
+
+
+def _keep_k(league, tid, pre, cap):
+    """Cap room ($K) an AI team keeps after signing a free agent: half its usual
+    reserve, plus all of its owner's planned savings, and never less than what
+    starts counting at week 1 (an all-in team keeps less for in-season moves, and
+    could otherwise be over the cap at week 1)."""
+    pk = plan_keep(league, tid)
+    keep = ((_reserve_share(league, tid, pre) - pk) * 0.5 + pk) * cap
+    if C.top51_in_force(league):
+        keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
+    return keep
+
+
+def _room_cut(league, tid, p, info, table, pids=None, memo=None):
     """(player id, post-June 1?, cap savings $K) for the release that would make
     room for free agent p at this AI team: a veteran on its 53 at his position
     he's clearly better than (MAKE_ROOM_GAIN, as its staff sees them), whose
     release saves the most this season within the cap-cut rule; or None.
-    pids: the team's player ids at his position, if already gathered."""
+    pids: the team's player ids at his position, if already gathered; memo: see team_score."""
     if pids is None:
         pids = [pid for pid, t in league.rosters.items() if t == tid and league.player(pid).position == p.position]
-    s = team_score(league, tid, p, info)
+    s = team_score(league, tid, p, info, memo)
     best = None
     for pid in pids:
         c = league.contracts.get(pid)
         if c is None or c["kind"] not in ("veteran", "extension", "minimum") or pid not in table:
             continue
-        if s - team_score(league, tid, league.player(pid), table[pid]) < MAKE_ROOM_GAIN:
+        if s - team_score(league, tid, league.player(pid), table[pid], memo) < MAKE_ROOM_GAIN:
             continue
         june1, prev = C.best_release(league, pid)
         if prev["savings"] <= 0 or sum(prev["dead"].values()) > CUT_DEAD_MAX * max(1, prev["hit"]):
@@ -499,18 +531,18 @@ def roster_count(league, tid):
         1 for r in getattr(league, "reserve", {}).values() if r["team"] == tid)
 
 
-def depth_lists(league, table, exclude=()):
+def depth_lists(league, table, exclude=(), memo=None):
     """{team: {position: [market scores as its staff sees them (team_score), best
-    first]}} for players on the 53 or reserve lists."""
+    first]}} for players on the 53 or reserve lists. memo: see team_score."""
     d = defaultdict(lambda: defaultdict(list))
     for pid, tid in league.rosters.items():
         if pid not in exclude:
             p = league.player(pid)
-            d[tid][p.position].append(team_score(league, tid, p, table[pid]))
+            d[tid][p.position].append(team_score(league, tid, p, table[pid], memo))
     for pid, r in getattr(league, "reserve", {}).items():
         if pid not in exclude:
             p = league.player(pid)
-            d[r["team"]][p.position].append(team_score(league, r["team"], p, table[pid]))
+            d[r["team"]][p.position].append(team_score(league, r["team"], p, table[pid], memo))
     for tid in d:
         for lst in d[tid].values():
             lst.sort(reverse=True)
@@ -579,7 +611,49 @@ def ask_share(info, wave):
     if info["price"] >= M.MARKET_LINE and starter_level(info):
         # a starter-caliber player would rather wait for the season's injuries
         f = max(f, ASK_FLOOR if wave < 7 else ASK_FLOOR_CAMP)
-    return max(info["minimum"], info["price"] * f)
+    ask = max(info["minimum"], info["price"] * f)
+    if wave in SUMMER_WAVES and info.get("summer_ask") is not None:
+        # ...unless the summer shows him what's really out there (summer_asks)
+        ask = max(info["minimum"], min(ask, info["summer_ask"]))
+    return ask
+
+
+def summer_asks(league):
+    """Oct 23 (Blake: leftover players' prices drop to fit): as the summer's waves
+    open, each unsigned starter-caliber free agent lowers his ask to the best offer
+    a team that would start him could actually make: what it can fit under its cap
+    (after its reserve, restructures, and releasing a worse veteran at his position:
+    _room_cut), within its GM's budget for other teams' players. If no team could
+    fit him at all he waits. Saved in league.fa['summer_ask'] {pid: share}; the
+    market table carries it (yours too: you see the same ask)."""
+    league.fa["summer_ask"] = {}
+    table = M.market_table(league)
+    memo = {}
+    depth = depth_lists(league, table, memo=memo)
+    cap = C.cap_for(league, league.season)
+    teams = [t for t in ai_teams(league) if roster_count(league, t) < OFFSEASON_ROSTER_MAX]
+    fits = {t: C.cap_room(league, t) - _keep_k(league, t, False, cap) + _restructure_left(league, t) for t in teams}
+    out = {}
+    for p in free_agent_list(league):
+        info = table[p.id]
+        if info["price"] < M.MARKET_LINE or not starter_level(info):
+            continue
+        best = 0.0
+        for t in teams:
+            w, role = willingness(league, t, p, info, depth, score=team_score(league, t, p, info, memo))
+            if role != "starter":
+                continue
+            room_k = fits[t]
+            if room_k < w * cap:
+                cut = _room_cut(league, t, p, info, table, memo=memo)
+                room_k += cut[2] if cut else 0
+            if league.fa.get("former", {}).get(p.id) != t:
+                room_k = min(room_k, _outside_left(league, t, cap))
+            best = max(best, min(w, room_k / cap))
+        if best >= info["minimum"]:
+            out[p.id] = best
+    league.fa["summer_ask"] = out
+    return out
 
 
 def _age(league, p):
@@ -1286,26 +1360,29 @@ def market(league, waves, rng=None, before_draft=None):
         fas = free_agent_list(league)
         if not fas:
             break
+        if wave in SUMMER_WAVES:
+            summer_asks(league)               # leftover players see what's really out there
         table = M.market_table(league)        # prices hold through the wave (the same players are ranked)
         landed = defaultdict(int)             # signings each team has made this wave
+        memo = {}                             # each staff's view of each player, for the wave
         for rnd in range(WAVE_ROUNDS):
             if rnd:
                 fas = free_agent_list(league)
                 if not fas:
                     break
             n_signed = len(signings)
-            _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, landed)
+            _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, landed, memo)
             if len(signings) == n_signed:
                 break                         # nobody signed this round: the wave is over
     return signings
 
 
-def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, landed):
+def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, landed, memo=None):
     """One round of a wave: every AI team bids on the free agents it wants (its
     offers this wave, less the players it has already landed), then each player
-    picks the offer he likes best. Adds to signings and landed."""
+    picks the offer he likes best. Adds to signings and landed. memo: see team_score."""
     S = league.season
-    depth = depth_lists(league, table)
+    depth = depth_lists(league, table, memo=memo)
     bids = defaultdict(list)
     at_pos = defaultdict(list)                  # (team, position) -> player ids on its 53, for making room
     for pid, t in league.rosters.items():
@@ -1314,17 +1391,15 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
         room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap + _restructure_left(league, tid)
         z_fa = gm_style(league, tid, "fa")
         room -= GM_FA_HOLD * max(0.0, -z_fa) * cap      # builds through the draft
-        open_room = league.fa.setdefault("open_room", {}).setdefault(tid, max(0.0, C.cap_room(league, tid) / cap))
-        ceiling = max((GM_FA_BUDGET[0] + GM_FA_BUDGET_ROOM * open_room) * math.exp(GM_FA_BUDGET[1] * z_fa),
-                      open_room - PLAN_ROOM_MAX)
-        outside_left = (ceiling - league.fa.get("outside_spent", {}).get(tid, 0.0)) * cap
+        outside_left = _outside_left(league, tid, cap)
+        fits = C.cap_room(league, tid) - _keep_k(league, tid, pre, cap) + _restructure_left(league, tid)
         spots = OFFSEASON_ROSTER_MAX - roster_count(league, tid)
         cands = []
         for p in fas:
             info = table[p.id]
             if len(depth[tid][p.position]) >= camp_max(p.position):
                 continue
-            s = team_score(league, tid, p, info)
+            s = team_score(league, tid, p, info, memo)
             w, role = willingness(league, tid, p, info, depth, quality, score=s)
             if w <= 0 or w < ask_share(info, wave):
                 continue
@@ -1345,12 +1420,22 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
             if p.position in used_pos:
                 continue
             est = ask_share(table[p.id], wave) * cap * 0.9
-            if spent + est > room:
+            cut_k = 0
+            # (in the summer it bids with what it would keep after signing, the room summer_asks counted on)
+            gate = fits if wave in SUMMER_WAVES else room
+            if spent + est > gate:
                 # No room: for a player who'd start, the team could release a worse veteran there.
-                cut = (_room_cut(league, tid, p, table[p.id], table, at_pos[(tid, p.position)])
+                cut = (_room_cut(league, tid, p, table[p.id], table, at_pos[(tid, p.position)], memo)
                        if role == "starter" else None)
-                if cut is None or spent + est > room + cut[2]:
+                if cut is None or spent + est > gate + cut[2]:
                     continue
+                cut_k = cut[2]
+            # It never offers more than it can fit (Oct 23: before, bids were checked at 90% of his ask but
+            # the winner paid up to the next bidder's figure; when that didn't fit the deal fell through,
+            # about 97 deals an offseason, and good players sat unsigned while teams still had room).
+            w = min(w, (fits + cut_k - spent) / cap)
+            if w < ask_share(table[p.id], wave):
+                continue
             outside = league.fa["former"].get(p.id) != tid and table[p.id]["price"] >= M.MARKET_LINE
             if outside and tid != league.user_team_id and est > outside_left:
                 continue                 # his GM's ceiling for other teams' players this year
@@ -1402,12 +1487,7 @@ def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, l
             else:
                 c = make_deal(league, p, tid, amount, rng)
             if tid != league.user_team_id:
-                pk = plan_keep(league, tid)
-                keep = ((_reserve_share(league, tid, pre) - pk) * 0.5 + pk) * cap
-                if C.top51_in_force(league):
-                    # never less than what starts counting at week 1 (an all-in team keeps less
-                    # for in-season moves, and could otherwise be over the cap at week 1)
-                    keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
+                keep = _keep_k(league, tid, pre, cap)
                 if C.room_after(league, tid, _first_hit(league, c)) < keep and \
                         not (role_of.get((pid, tid)) == "starter"
                              and (_make_room(league, tid, _first_hit(league, c) + keep, rng)
