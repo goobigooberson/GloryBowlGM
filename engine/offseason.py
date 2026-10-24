@@ -24,12 +24,16 @@ from .teams import ROSTER_TEMPLATE, ROSTER_SIZE
 
 # ---- Knobs ------------------------------------------------------------------
 # Typical age a player at each position is done (retirement odds climb past it).
-RETIRE_AGE = {"QB": 38, "RB": 31, "FB": 32, "WR": 33, "TE": 33, "T": 34, "G": 34, "C": 35,
+RETIRE_AGE = {"QB": 40, "RB": 31, "FB": 32, "WR": 33, "TE": 33, "T": 34, "G": 34, "C": 35,
               "DE": 33, "DT": 33, "OLB": 32, "ILB": 32, "CB": 32, "S": 33, "K": 40, "P": 39, "LS": 38}
 RETIRE_AGE_SPREAD = 2.2      # years: how gradually the odds climb around that age
 # (Oct 21: ages +1 and spread 1.6 -> 2.2, with each player's own aging profile, so a sim
 # league's "still in the league next season" by pro season matches the real NFL's:
 # careers had ended in a cliff around seasons 9-13; tools/retention_check.py.)
+# (Oct 24: QB 38 -> 40. Real QBs 34+ leave the league about 20% a year and are 12.5% of QB
+# rosters; the game's left ~46% a year, mostly by retiring, and were 6-8%. Every other
+# position's real age at the last season, 10th/median/90th percentile, already matched
+# within a year: tools/career_mix_check.py.)
 RETIRE_TALENT_K = 2.2        # better players (for their position) keep playing longer
 RETIRE_GENERATIONAL_YEARS = 2.5   # Generational players last this much longer
 RETIRE_AGE_FOLLOWS_PRIME = 1.0    # years later he's typically done per season his own prime runs long

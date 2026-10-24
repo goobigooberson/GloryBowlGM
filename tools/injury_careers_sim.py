@@ -3,7 +3,11 @@
 # (real games, full offseasons and development): players with a season-ending
 # injury vs matched uninjured players. Writes one JSON line per player-season
 # so several leagues can be pooled:
-#   python tools/injury_careers_sim.py run <seed> <seasons> <out.jsonl>
+#   python tools/injury_careers_sim.py run <seed> <seasons> <out.jsonl> [module.NAME=value ...]
+# Each line also carries his position, age, team, ratings and snaps (for
+# tools/career_mix_check.py); <out>.w1.jsonl lists every week-1 roster (the
+# 53s plus injured reserve / PUP, with depth-chart starters) and
+# <out>.players.jsonl every player's birth date and retirement.
 #   python tools/injury_careers_sim.py report <file1.jsonl> [file2 ...]
 
 import json
@@ -22,18 +26,45 @@ KIND_GROUP = {"knee": "knee", "achilles": "achilles", "foot": "foot", "shoulder"
 SEASON_ENDING_MIN = 12
 
 
+def _week1(lg, season):
+    """Every player on a week-1 roster: the 53s plus injured reserve / PUP."""
+    from datetime import date
+    from engine import depth
+    starters = set()
+    for t in lg.teams:
+        starters |= depth.starter_ids(lg.depth_charts.get(t.id, {}))
+    where = {pid: (tid, "53") for pid, tid in lg.rosters.items()}
+    where.update({pid: (r["team"], r["list"]) for pid, r in lg.reserve.items() if r["list"] != "PSIR"})
+    out = []
+    for pid, (tid, lst) in where.items():
+        p = lg.player(pid)
+        out.append({"pid": pid, "season": season, "pos": p.position, "age": p.age(date(season, 9, 1)),
+                    "exp": p.experience, "team": tid, "list": lst, "ovr": p.overall(),
+                    "pot": p.overall("potential"), "start": pid in starters})
+    return out
+
+
 def run(seed, seasons, out):
+    from datetime import date
     from engine.league import create_league
     from engine import season as S, injuries as I
     lg = create_league(season=2026, seed=seed)
     lg.user_team_id = 1
     S.start_season(lg, random.Random(seed))
-    with open(out, "w") as f:
+    stem = str(Path(out).with_suffix(""))
+    with open(out, "w") as f, open(stem + ".w1.jsonl", "w") as w1f:
         for yr in range(seasons):
+            w1_done = False
             while not S.season_over(lg):
                 S.play_week(lg)
+                if not w1_done and S.in_regular_season(lg) and lg.week == 1:
+                    for r in _week1(lg, lg.season):
+                        w1f.write(json.dumps(r) + "\n")
+                    w1f.flush()
+                    w1_done = True
             # Each player's share of his side's snaps per game played (regular season).
             share = defaultdict(list)
+            snaps = defaultdict(lambda: [0, 0, None])     # pid -> [offense snaps, defense snaps, team]
             for g in lg.schedule:
                 box = lg.boxes.get(g["id"])
                 if not box:
@@ -43,6 +74,8 @@ def run(seed, seasons, out):
                 for pid_s, line in box["players"].items():
                     i = tids.index(line["team"])
                     off, deff = line.get("off_snaps", 0), line.get("def_snaps", 0)
+                    sn = snaps[int(pid_s)]
+                    sn[0], sn[1], sn[2] = sn[0] + off, sn[1] + deff, line["team"]
                     if off >= deff and plays[i]:
                         share[int(pid_s)].append(off / plays[i])
                     elif plays[1 - i]:
@@ -58,10 +91,18 @@ def run(seed, seasons, out):
                 s = share[p.id]
                 f.write(json.dumps({"pid": p.id, "season": lg.season, "pg": POS_GROUP[p.position],
                                     "sn": p.experience + 1, "share": round(sum(s) / len(s), 3), "games": len(s),
-                                    "ending": ending.get(p.id)}) + "\n")
+                                    "ending": ending.get(p.id), "pos": p.position,
+                                    "age": p.age(date(lg.season, 9, 1)), "team": snaps[p.id][2],
+                                    "off": snaps[p.id][0], "def": snaps[p.id][1],
+                                    "ovr": p.overall(), "pot": p.overall("potential")}) + "\n")
             f.flush()
             S.start_next_season(lg, random.Random(yr))
             print(f"season {yr + 1} done", flush=True)
+    with open(stem + ".players.jsonl", "w") as pf:
+        for p in lg.players:
+            pf.write(json.dumps({"pid": p.id, "pos": p.position, "birth": str(p.birth_date), "exp": p.experience,
+                                 "retired": p.retired, "draft_year": p.draft_year,
+                                 "generational": bool(p.generational)}) + "\n")
 
 
 def report(files):

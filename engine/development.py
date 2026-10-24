@@ -88,16 +88,33 @@ DROP_SHARE = 0.75         # potential falls below current: current falls this sh
 #   P   distance flat into season 14                                           -> 1-14
 #   LS, FB: no usable data (LS set like P; FB like RB, a little longer).
 # The FOF8 design doc's examples were QB 5-13, RB 3-9, K 1-16: real players peak earlier.
-PEAK_SEASONS = {"QB": (2, 9), "RB": (2, 6), "FB": (2, 7), "WR": (2, 6), "TE": (3, 8),
-                "T": (3, 10), "G": (3, 8), "C": (3, 10), "DE": (3, 9), "DT": (3, 8),
-                "OLB": (2, 8), "ILB": (2, 8), "CB": (2, 7), "S": (3, 8),
+# Re-fitted Oct 24 (Blake: aging "extremely fine tuned and accurate"; tools/career_mix_check.py,
+# aging_check.py, retention_check.py and the snap-share curves, real vs 8 simulated leagues x
+# 14 seasons): set to the table above, the game's players kept their snap share 2-4 seasons
+# longer than real ones (real RBs lose 20 points of share by season 10, the game's were
+# still +6), because a simulated league's survivors are the late agers, just as in the real
+# data. So the table is now the one whose SIMULATED curves match the real curves: one season
+# earlier for RB, FB, T, G, C, DE, DT, LB, CB and S (QB, WR, TE matched as they were).
+PEAK_SEASONS = {"QB": (2, 9), "RB": (2, 5), "FB": (2, 6), "WR": (2, 6), "TE": (3, 8),
+                "T": (3, 9), "G": (3, 7), "C": (3, 9), "DE": (3, 8), "DT": (3, 7),
+                "OLB": (2, 7), "ILB": (2, 7), "CB": (2, 6), "S": (3, 7),
                 "K": (1, 9), "P": (1, 14), "LS": (1, 14)}
-DECLINE_BASE = 1.2        # rating points lost the first year past the peak...
-DECLINE_GROWTH = 0.45     # ...and this much more each further year
+DECLINE_BASE = 3.0        # rating points lost the first year past the peak...
+DECLINE_GROWTH = 1.0      # ...and this much more each further year
+# (Oct 24: were 1.2 and 0.45. With those, a player 4 seasons past his prime had lost ~7
+# points of potential, too little to cost most starters their jobs: 9+ year veterans were
+# 15.4% of week-1 rosters (real 8.0%) and 18.8% of starters (real 9.2%), and only ~15% of
+# regulars past season 9 lost 5+ points of snap share a year (real 43-49%). Tried 2.0/0.7
+# (veterans 14.0%) and 3.0/0.7 (late careers too gentle at WR and DL); 3.0/1.0 lands the
+# real snap-share slide for WR/TE, RB and DL, and players in their 30s now see their share
+# rise or fall about as often as real ones do.)
 # How fast each position declines once past its peak (1.0 = the rates above). Real kickers
 # lose accuracy slowly (about half a point of FG% a year at first) and punters barely lose
-# distance at all; the other positions' slides look alike within the data's noise.
-DECLINE_SCALE = {"K": 0.5, "P": 0.35, "LS": 0.35}
+# distance at all. Quarterbacks (Oct 24) lose efficiency about half as fast as receivers
+# once past their prime (real EPA per dropback: -10 from peak by season 13, receivers -28
+# by season 10); at the full rate, 11-13 year starting QBs played again 64% of the time
+# (real 92%) and QBs 34+ were 6% of QB rosters (real 12.5%).
+DECLINE_SCALE = {"K": 0.5, "P": 0.35, "LS": 0.35, "QB": 0.5}
 # Everyone ages differently (Blake, Oct 21: not "27 hits and the same predictable drop-off").
 # Each player has his own aging profile, fixed for his career (seeded by his id):
 AGING_PEAK_SD = 2.5       # his prime ends this many seasons earlier/later than his position's (spread)

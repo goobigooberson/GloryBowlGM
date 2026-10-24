@@ -861,3 +861,62 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
 - **Results:** realism (16 seasons): passer rating #1/#3/#5/#10 115.5 / 106.2 / 102.5 / 98.1 (real 112.7 / 105.0 / 102.2 / 98.4; before 117.4 / 109.5 / 106.1 / 99.5); completion #1 71.9% (71.1; before 73.1). Living leagues (2 x 5 seasons): a QB's passer rating carries over season to season at correlation 0.34 (real 0.40; before 0.47), and his overall predicts his passer rating at 0.46 (before 0.65): a highly rated QB can be ordinary for years, a modest one can overachieve. Team-sport test: the best QB (91) with an average cast 11.6 wins, a below-average one (64) 9.5. Integration (3 seasons): 0 problems. Out of range 29 of 303 (before 24; the added ones are kicker/data-label caveats and measures at a range edge).
 - **Side effects / known gaps:** 4,500-yard passing seasons 2.2 a year (real 3.8; before 2.6); the very safest QB still throws slightly too few INTs (0.7% vs 0.9%). Staffs and AI teams can't see the knack (it's hidden); benching a QB who plays badly comes with the planned coaching work.
 - **Also fixed:** saving over a file that isn't a readable save (empty or damaged) crashed; it's now simply replaced (`database.save_league`).
+
+### Aging and decline fitted to real careers (Oct 24, night; side session. Blake: "another thing i want you to make sure is extremely fine tuned and accurate is player aging and how they regress over time")
+- **New yardstick, `tools/career_mix_check.py`** (real: nflverse weekly rosters 2013-26, week 1, the 53 plus injured reserve/PUP; snap counts 2013-25; game: the same measures on simulated leagues). It covers: rosters by experience and age; the share of 9+ year veterans; starters (each team's 11+11 snap leaders) by age and experience; leaving the league by experience and by age; career length; and age at the last season. For the game only it also prints starters' average overall by season and the rating curve by pro season. `tools/injury_careers_sim.py run` now also records age, team, ratings and snaps, week-1 rosters (`<out>.w1.jsonl`) and every player's retirement (`<out>.players.jsonl`). Used together with `aging_check.py` (still a regular), `retention_check.py` (plays again) and the snap-share curves (delta method, scratchpad `aging_compare.py`).
+- **Real targets found along the way:** 9+ year veterans are 8.0% of week-1 rosters (2013-26, IR included; the 9.2% used before was a different count) and 9.2% of starters. Real starters' age mix: 23 and under 19.9%, 24-25 24.5%, 26-27 22.7%, 28-29 16.3%, 30-31 9.6%, 32-33 4.3%, 34+ 2.7%. Players leaving after 3+ seasons are 25/28/33 at their last season (10th percentile / median / 90th). Season rosters lack most linemen's pfr ids, so starters are matched through nflverse's player list.
+- **Baseline (code as of 58880fa; 8 random-roster leagues x 14 real seasons, seasons 7-14; real / game):**
+  - 9+ year veterans: rosters 8.0 / 15.4% (OL 6.7 / 21.0), starters 9.2 / 18.8%.
+  - Rookies are 16.5 / 12.9% of week-1 rosters.
+  - Leaving the league per season: exp 7-8 31 / 27%, 9-10 36 / 32%.
+  - Snap share by pro season: game players kept their jobs 2-4 seasons longer, e.g. RB at season 10 -20 / +3 points vs season 1, DB -8 / +7, LB -4 / +13.
+  - Of regulars past season 9, 43-49% lost 5+ points of snap share the next season (real) vs 32-35% (game).
+  - Starters' average overall (internal): 66.8 in season 1, 70.8 in seasons 5-8, 69.1 in season 14.
+- **Tried, one knob at a time (6 leagues x 14 seasons each; 9+ share of rosters / starters):**
+  - steeper decline `DECLINE_BASE`/`DECLINE_GROWTH` 2.0/0.7: 14.0 / 16.9%.
+  - prime ending one season earlier everywhere: 14.6 / 17.7%.
+  - 3.0/1.0: 13.0 / 15.0% (WR/TE share curve now real).
+  - prime two seasons earlier: 13.2 / 15.3%.
+  - 3.0/1.0 with each position's prime fitted to its real curve: 11.5 / 12.2%, but the league's level slid ~0.3 a season for good.
+  - plus draft classes 3 points stronger (`draft.LEVEL_SHIFT` -10 -> -7): 10.4 / 10.6%, level flat from season 5 on.
+  - plus a gentler late decline (3.0/0.7): late careers too slow at WR and DL, dropped.
+  - QBs at half speed: QB 9+ share 22.3% (real 22.2).
+  - QB retirement age 38 -> 40: final.
+- **Changed:**
+  - `development.DECLINE_BASE` 1.2 -> 3.0 and `DECLINE_GROWTH` 0.45 -> 1.0. A player 4 seasons past his prime now loses about 18 points of potential, against about 7 before.
+  - `development.PEAK_SEASONS` one season earlier for RB, FB, T, G, C, DE, DT, OLB, ILB, CB and S. QB, WR, TE and K/P/LS are unchanged.
+  - `development.DECLINE_SCALE` QB 0.5. Real QBs lose efficiency about half as fast as receivers past their prime: EPA -10 from peak by season 13, receivers -28 by season 10.
+  - `offseason.RETIRE_AGE` QB 38 -> 40.
+  - `draft.LEVEL_SHIFT` -10 -> -7.
+  - The individual aging profile (`AGING_PEAK_SD` 2.5, `AGING_RATE_SD` 0.35, `AGING_YEAR_NOISE` 0.5) and the other positions' retirement ages are unchanged: the real age at the last season already matched within a year.
+- **Final (8 leagues x 14 seasons, seasons 7-14; real / game; before in brackets):**
+  - 9+ year veterans: rosters 8.0 / 10.7% [15.4], starters 9.2 / 11.1% [18.8]. By group (rosters): RB 4.5 / 3.9, WR 6.1 / 6.7, DL 8.5 / 8.5, LB 5.8 / 8.3, DB 5.0 / 7.7, TE 6.6 / 9.7, OL 6.7 / 13.1, QB 22.2 / 25.2, K/P 26.7 / 28.3.
+  - Starters' age mix: 23 and under 19.9 / 19.9, 24-25 24.5 / 24.0, 26-27 22.7 / 21.5, 28-29 16.3 / 17.1, 30-31 9.6 / 10.6, 32-33 4.3 / 4.9, 34+ 2.7 / 2.0. Average roster age 26.0 / 26.2 [26.6].
+  - Snap share at season 10 vs season 1: RB -20 / -11 [+3], WR/TE -15 / -13 [-1], DL 0 / -4 [+7], LB -4 / -3 [+13], DB -8 / -8 [+7]. Each group's peak season is 4 (real 2-5).
+  - Regulars losing 5+ points of share a year: seasons 9-10 49 / 40% [35], 11+ 43 / 42% [32]. Regulars gaining 5+: 9-10 12 / 14%, 11+ 11 / 11%. Late careers are now as uneven as real ones: some hold on and a few bounce back, most slide.
+  - Plays again next season, contributors in seasons 9-10: RB 65 / 66, WR/TE 70 / 70, OL 69 / 72, DL 76 / 69, LB 73 / 71, DB 65 / 71.
+  - Age at the last season: game within a year of real at every group (all positions 25/28/33 both). QB is 26/29/37 real vs 25/30/35.
+  - Starters' average overall (internal) by season: 65.5, 67.1, 68.8, 69.9, 70.5, 70.9, then 70.8 ... 69.9 at season 14: flat after the first 5 seasons (see the finding below).
+- **Checks:**
+  - Realism check (16 seasons): 26 of 303 outside the real range (before 29); league averages unchanged (points 23.0, yards 332.8, YPC 4.5). The generated test leagues' veterans now start out more aged.
+  - Integration test (scratchpad `integration_seasons.py`, startup-draft league, 8 seasons, the real game flow with save/load at every stage): **0 problems**. Point-differential spread 4.4-6.1. Starters 62.5 -> 64.7 -> 66.6 -> 66.9 -> 68.5 -> 68.6 -> 69.0 -> 68.5. 9+ year veterans 6.4% -> 10.0% (a startup league starts young and ages into it).
+  - `tools/draft_check.py` (6 x 22):
+    - 9+ year veterans 14% -> 10% (real 9).
+    - Drafted rookies among starters 7% -> 8% (real 8).
+    - Starter 3+ seasons by round: R2 55 -> 60% (real 58), R3 34 -> 39 (38), R4 21 -> 25 (25), R5 14 -> 18 (20). Late picks now start about as often as real ones; this was the old churn gap.
+    - Pro Bowlers per class 25.4 -> 31.0 (real 30.6).
+    - R1 starter 3+ 83 -> 85% (real 78).
+    - On a 53 again next season at 10-12 seasons: 59/57/52 (real 64/62/60), a little low now.
+    - **Watch (draft session):** the first tight end taken went from median pick 20 to 28 (real 21), and a TE in round 1 from 73% to 61% (real 78%). The overall TE draft-position fit improved (+0.10 -> +0.02) and the "elite TE falls past pick 8" checks are about the same; possibly noise in 132 drafts, worth a look.
+  - Team sport and consistency tests not rerun: nothing they measure changed (one season with frozen rosters).
+- **Finding, not fixed: why a new league's level rises in its first 5 seasons.** A new league's young players are made much rawer than the draft makes rookies. The generator sets current = 70% of potential for a rookie, 77% at 1 year, 84% at 2 (`player.generate_player`, `developed`); the draft uses ~88%. Week-1 rookies average 46 internal in a new league vs 52 later, 1-year players 49 vs 56. They grow into their potentials over the first seasons, so starters go 65 -> 70 in random leagues and 62.5 -> 69 in startup-draft leagues. After that the level holds. Fixing it means making new leagues' young players as developed as drafted ones, then rebuilding the display scale (`tools/build_rating_scale.py`), which was measured on new leagues and 1-5-season-old ones. That changes what every new league shows, so it's for Blake / the main session to decide.
+- **Remaining gaps (not aging):**
+  - Rookies are 13.8% of week-1 rosters (real 16.5%). Openings go to veterans who weren't on a week-1 roster the year before (8.6% of rosters vs real 5.2%) instead of rookies. That's cut-down and signing rules (`offseason.keep_value`, `transactions`), and it's most of the leftover 9+ gap.
+  - The game's rookies enter ~0.5 years younger than real ones at OL, TE, QB, DL and LB (`draft.AGE_MEAN` is one value for all positions), which adds experience at a given age (OL 9+ 13.1% vs 6.7%, while OL starters' age mix is real).
+  - Players 34+ leave a bit too often (48% a year vs 34%). Tightening this further would push the 9+ share up, so it was left.
+  - QBs who play 25%+ of snaps play again less often than real at every stage (75-83% vs 90-95%, before and after): backups' playing time, not aging.
+- **PROVISIONAL (judgment calls for Blake):**
+  - (1) `PEAK_SEASONS` is now the table whose simulated curves match the real curves. It is one season earlier than the real curves read directly, because a simulated league's survivors are its late agers, just as in real data.
+  - (2) QBs age at half speed and retire around 40 instead of 38.
+  - (3) Draft classes 3 points stronger to hold the league's level with the faster aging.
+  - (4) Accepting 9+ veterans at ~11% rather than over-aging players to force 8%, since the oldest already leave a little too often.

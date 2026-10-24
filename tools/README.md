@@ -102,3 +102,10 @@ python tools/recenter.py --write      # then write the new centers into engine/s
   against FOF8's "elite TEs fall past pick 8" exploit (rookie draft by true grade, public board and hindsight;
   startup draft vs real contract ranks; real data: `docs/research/te_draft.py`). ~10 min; `--startup-only` ~20 s
 - `trade_check.py` - player trades vs the real NFL (`trade_report.txt`; real data: `docs/research/trade_research.py` -> `real_trades.json`): trades a league year and by phase, the deadline rush, deals per team, who's traded (position, age, contract size, stars), what comes back, how far out the picks are, legality; and the exploit checks (asks by position, quantity for quality, dumping bad contracts, buy low / sell high, lowballs). Made-up results, the game's own offseason. `--leagues 101,102,103,104,105,106 --seasons 3` (~4 min); `--calls 0` for a no-trades baseline
+- `career_mix_check.py` - aging and careers vs the real NFL (Oct 24): week-1 rosters by experience and age, the share
+  of 9+ year veterans, starters' age and experience, leaving the league by experience and age, career length,
+  age at the last season, and (game only) starters' average overall by season and the rating curve by pro season.
+  Real: nflverse weekly rosters 2013-26 and snap counts. Game: `injury_careers_sim.py run <seed> <seasons> <out.jsonl>`
+  (about a minute a season; it also writes `<out>.w1.jsonl` and `<out>.players.jsonl`), then
+  `python tools/career_mix_check.py <out1.jsonl> ... [--skip 6]` (leaves out each league's first 6 seasons, which still
+  carry the made-up starting rosters). Use with `aging_check.py sim` and `retention_check.py` on the same files.

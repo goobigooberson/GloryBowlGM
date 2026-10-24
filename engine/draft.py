@@ -72,7 +72,10 @@ CLASS_EARLY = {"QB": 1.14, "RB": 1.06, "FB": 0.73, "TE": 1.09, "WR": 0.98, "T": 
                "DE": 1.02, "DT": 0.98, "ILB": 1.03, "CB": 1.07, "K": 0.73, "P": 0.80, "LS": 0.79}
 POOL = 2.5                   # prospects made per class spot; the class is the best of them
 CLASS_FRINGE = 0.4           # plus this share more from the next tier down (undrafted long shots)
-LEVEL_SHIFT = -10            # rating points the class is set below the pool (league level steady)
+LEVEL_SHIFT = -7             # rating points the class is set below the pool (league level steady)
+                             # (Oct 24: -10 -> -7 with the faster real-data aging in development.py,
+                             # which takes more out of veterans; at -10 the league's starters slid
+                             # ~0.3 a season for good, at -7 they hold steady from season 5 on.)
 SHIFT_TAPER = (86, 96)       # full shift up to this potential, none from this one (top prospects)
 # Positions whose classes sit higher or lower than that (rating points), so each
 # position's picks turn out like the real ones (QB: real first-round QBs start 3+
