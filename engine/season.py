@@ -322,7 +322,10 @@ def _preseason_game_numbers(league, g):
 def new_game(league, g, norms=None):
     """A Game object for a scheduled game, ready to play (or to watch)."""
     cal = game_calendar(league, g)
-    seed = f"{league.season}-{g['id']}"
+    # The league's own dice (its salt) go into every game's seed: before Oct 23 the seed was only
+    # the season and game id, so every save drew the same dice (and the same weather) for the
+    # same game slot. Within one save a game still plays out the same if it's replayed.
+    seed = f"{league.settings.get('salt', '')}-{league.season}-{g['id']}"
     kw = {}
     if is_preseason_game(g):
         # Preseason weeks are in August: the weather looks up "week 0 and earlier".
@@ -744,7 +747,7 @@ def advance_offseason(league, rng=None):
         if t.id != league.user_team_id:
             league.auto_depth_chart(t.id)
     for t in league.teams:
-        league.vote_captains(t.id, rng=random.Random(f"captains-{league.season}-{t.id}"))
+        league.vote_captains(t.id, rng=random.Random(f"captains-{league.settings.get('salt', '')}-{league.season}-{t.id}"))
     # Next season's schedules (same-place games from last season's finish).
     teams_now = {p.id: transactions.team_of(league, p.id)[0] for p in league.players if p.retired is None}
     carry = [(pid, teams_now.get(pid), kind, games) for pid, _t, kind, games in st.get("carry", ())
@@ -808,6 +811,8 @@ def end_week(league):
                 league.final_cuts = transactions.final_cuts(league, league.injuries, league.recovering, cal, rng)
         transactions.weekly(league, league.injuries, league.recovering, cal,
                             "Final cuts" if final else label, rng, preseason=not final)
+        from . import trades           # player trades (trades.py, Oct 23): camp and cut-down day
+        trades.step(league)
         league.pre_week += 1
         if league.pre_week > PRESEASON_WEEKS:
             league.stage = REGULAR_SEASON
@@ -819,6 +824,8 @@ def end_week(league):
                             records=records(league) if league.week >= 3 else None)   # waivers: from week 4
         league.week += 1
         money_week(league, label)
+        from . import trades           # player trades (trades.py, Oct 23): up to the deadline
+        trades.step(league)
         if league.week > n_weeks(league):
             start_playoffs(league)
         return

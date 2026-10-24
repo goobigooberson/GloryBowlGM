@@ -48,6 +48,9 @@ IR_RETURNS = 8                   # each team can bring back 8 players from IR a 
 PUP_MIN_GAMES = 4                # PUP to start the season: misses at least the first 4 games
 ELEVATIONS_PER_GAME = 2          # practice squad players a team may elevate for a game...
 ELEVATIONS_PER_PLAYER = 3        # ...each at most 3 times a season (then he must be signed to the 53)
+SHORT_AT_CAP = 2                 # a team with no cap room left for even a minimum deal may leave up to
+                                 # this many 53-man spots open in-season (real teams often carry an open
+                                 # spot; game-day minimums are met with elevations). Oct 23, judgment.
 WAIVER_EXPERIENCE = 4            # released players with fewer than 4 seasons go on waivers (others are free)
 
 # ---- How AI teams behave (judgment calls, tuned to the real counts above) ---
@@ -444,13 +447,20 @@ def camp_value(p, league=None, tid=None):
 
 def camp_pool(league, injuries):
     """{position: [free agents a team would bring to camp, best first]}:
-    healthy, not on waivers, and (with contracts) asking about the minimum
-    (a starter-caliber free agent doesn't come to camp for the minimum)."""
+    healthy, not on waivers, and (with contracts) asking about the minimum by
+    now (a starter-caliber free agent doesn't come to camp for the minimum).
+    Oct 23: by what he asks once camp opens, not his spring price; before, a
+    veteran priced a little over the minimum who went unsigned through free
+    agency was never invited (teams made up street free agents instead) and
+    often left the league: 3-4 year players were out of the league at week 1
+    twice as often as real ones (20% vs 9%)."""
     cheap = None
     if getattr(league, "contracts", None):
         from . import cap_market as M
+        from . import free_agency as FA
         table = M.market_table(league)
-        cheap = lambda p: table.get(p.id, {}).get("price", 0) <= M.MINIMUM_LINE   # noqa: E731
+        camp_wave = FA.POST_DRAFT_WAVES[-1]
+        cheap = lambda p: p.id in table and FA.ask_share(table[p.id], camp_wave) <= M.MINIMUM_LINE   # noqa: E731
     pool = defaultdict(list)
     for p in free_agent_pool(league, injuries):
         if cheap is None or cheap(p):
@@ -696,7 +706,7 @@ def final_cuts(league, injuries, recovering, cal, rng, label="Final cuts"):
         else:
             league.auto_depth_chart(t.id)
         if any(league.rosters.get(pid) != t.id for pid in league.captains.get(t.id, {}).values()):
-            league.vote_captains(t.id, rng=random.Random(f"captains-{league.season}-{t.id}-cuts"))
+            league.vote_captains(t.id, rng=random.Random(f"captains-{league.settings.get('salt', '')}-{league.season}-{t.id}-cuts"))
     for t in ai:
         n = len([1 for x in league.rosters.values() if x == t.id])
         assert n == ROSTER_SIZE, (t.abbrev, n)
@@ -829,10 +839,18 @@ def fill_roster_spot(league, injuries, recovering, tid, label, rng, position=Non
     if best_own and (best_out is None or value(best_own, league, tid) + OWN_PS_BONUS >= value(best_out, league, tid)):
         promote(league, best_own.id, label)
         return best_own
-    if best_out is None:
+    street = best_out is None
+    if street:
         best_out = street_free_agent(position, experience=rng.choice([0, 1, 2]), season_year=league.season)
         league.players.append(best_out)
     sign(league, injuries, recovering, best_out.id, tid, label)
+    if street and getattr(league, "contracts", None):
+        # A street free agent signs for the minimum (Oct 23: the week's contract writer priced
+        # him like any free agent, up to several million, with no check that the team, which
+        # had no one affordable to sign, could pay it).
+        from . import contracts as C
+        C.sign(league, C.minimum_contract(league, best_out.id, tid, years=1, week=C.pay_week(league)),
+               phase=f"signed {label}".strip(), new_team=True)
     return best_out
 
 
@@ -890,7 +908,10 @@ def injury_cover(league, injuries, recovering, tid, cal, label, rng, preseason=F
     "let the staff also make short-term injury signings on my 53, like AI
     teams do"). Returns True if the 53 changed."""
     changed = False
-    while sum(1 for x in league.rosters.values() if x == tid) < ROSTER_SIZE:
+    while (n := sum(1 for x in league.rosters.values() if x == tid)) < ROSTER_SIZE:
+        if (n >= ROSTER_SIZE - SHORT_AT_CAP and getattr(league, "stage", "") == "regular_season"
+                and not _room_for_minimum(league, tid)):
+            break               # at the cap: an open spot or two, game-day elevations instead
         fill_roster_spot(league, injuries, recovering, tid, label, rng)
         changed = True
     if not preseason:
@@ -898,6 +919,8 @@ def injury_cover(league, injuries, recovering, tid, cal, label, rng, preseason=F
             position = _thin_position(league, injuries, tid)
             if position is None:
                 break
+            if not _room_for_minimum(league, tid):
+                break       # at the cap: no swap (a cut veteran is still paid); game-day elevations instead
             out = release_candidate(league, injuries, tid, avoid=position)
             if out is None:
                 _ask_instead(league, injuries, tid, label, {"cover": position},
@@ -1135,21 +1158,42 @@ def elevations_for_game(league, injuries, tid, unavailable, routine=True):
             break
         short = _short_positions(roster)
         options = [p for p in squad if p not in picked and (p.position in short or not short)]
-        if not options:
-            break
+        if not options or not _room_for_game_check(league, tid, len(picked) + 1):
+            break           # (no room for his game check: the team plays a body short, Oct 23)
         p = max(options, key=lambda q: value(q, league, tid))
         picked.append(p)
         roster.append(p)
-    if routine and not picked and squad:
+    if routine and not picked and squad and _room_for_game_check(league, tid):
         # Routine depth: now and then a team dresses one more at its thinnest
-        # position (special teams, a banged-up group).
-        rng = random.Random(f"elev-{league.season}-{tid}-{len(league.transactions)}")
+        # position (special teams, a banged-up group), if it has the cap room for
+        # his game check (Oct 23: teams at the cap went over on routine elevations).
+        rng = random.Random(f"elev-{league.settings.get('salt', '')}-{league.season}-{tid}-{len(league.transactions)}")
         if rng.random() < ELEVATE_ROUTINE:
             have = _counts(roster)
             thin = min(ROSTER_TEMPLATE, key=lambda x: (have[x] - ROSTER_TEMPLATE[x], -ROSTER_TEMPLATE[x]))
             options = [p for p in squad if p.position == thin] or squad
             picked.append(max(options, key=lambda q: value(q, league, tid)))
     return picked
+
+
+def _room_for_minimum(league, tid):
+    """Room under the cap (counting this week's unwritten signings) for one more player at
+    the minimum for the rest of the season; always True in leagues without contracts."""
+    if not getattr(league, "contracts", None):
+        return True
+    from . import contracts as C
+    from .free_agency import pending_hits
+    rest = (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
+    return C.cap_room(league, tid, top51=False) - pending_hits(league, tid) >= C.min_salary(league, 10) * rest
+
+
+def _room_for_game_check(league, tid, n=1):
+    """Room under the cap for n elevated players' game checks (the highest, a veteran's
+    minimum for a week); always True in leagues without contracts."""
+    if not getattr(league, "contracts", None):
+        return True
+    from . import contracts as C
+    return C.cap_room(league, tid, top51=False) >= n * C.min_salary(league, 10) / C.PAY_WEEKS
 
 
 def _short_positions(players):

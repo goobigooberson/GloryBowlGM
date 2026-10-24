@@ -84,7 +84,7 @@ def build_new_game_page():
     ui.add_head_html(theme.HEAD_HTML)
     ui.query("body").style(f"background:{theme.CHALK}")
     # Startup draft first: Blake's main way to start a league (CLAUDE.md).
-    form = {"season": 2026, "season_games": 17, "roster_method": "startup_draft",
+    form = {"season": 2026, "season_games": 17, "roster_method": "startup_draft", "owner_can_fire": False,
             "team_id": None, "name": "", "name_edited": False}
     state.pending_league = None
     step = {"n": 1}
@@ -142,6 +142,15 @@ def build_new_game_page():
                         'preseason. Teams start fairly even; the gaps grow over the seasons.</div>', sanitize=False)
                 ui.html(f'<div class="coming-later"><b>{ROSTER_METHODS["legacy"]}</b>: real rosters '
                         'from a chosen season. Coming in a later step.</div>', sanitize=False)
+
+                ui.label("Your job").classes("field-label")
+                ui.switch("Your owner can fire you", value=form["owner_can_fire"],
+                          on_change=lambda e: form.update(owner_can_fire=bool(e.value))).props("color=green-10")
+                ui.label("Off (FOF8's usual choice): your job is safe however the team does. On: after each "
+                         "season your owner judges you the way real owners judge GMs (your record, the "
+                         "playoffs, how long you've had the job). If he fires you, teams with an open GM job "
+                         "make offers and you pick your next team. You can change this any time on your "
+                         "Staff page.").classes("legend")
 
             with ui.row().classes("w-full justify-end mt-4"):
                 create_btn = ui.button("Build the league", on_click=lambda: build_league(create_btn)) \
@@ -276,7 +285,8 @@ def build_new_game_page():
             body.refresh()
 
     def settings_now():
-        return {"season_games": form["season_games"], "roster_method": form["roster_method"]}
+        return {"season_games": form["season_games"], "roster_method": form["roster_method"],
+                "owner_can_fire": form["owner_can_fire"]}
 
     def back_to_menu():
         state.pending_league = None

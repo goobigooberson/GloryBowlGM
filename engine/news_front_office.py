@@ -63,6 +63,47 @@ def _gm_open(ctx, season, rng, tid, name, age):
         f"After their search, the {ctx.full(tid)} named {name}, {age}, general manager."])
 
 
+def _your_move(ctx, season, entries, rng):
+    """You were fired (the owner-can-fire setting) and took another team's job."""
+    from . import gm as G
+    from . import bitter
+    fired = next((e for e in entries if e["move"] == "fired"), None)
+    hired = next((e for e in entries if e["move"] == "hired"), None)
+    y = G.you(ctx.league) or {"record": []}
+    if fired and fired["team"] in ctx.teams:
+        tid = fired["team"]
+        rec = [r for r in y["record"] if r["team"] == tid]
+        w, l_, t_ = (sum(r["w"] for r in rec), sum(r["l"] for r in rec), sum(r["t"] for r in rec))
+        trips = sum(1 for r in rec if r.get("seed"))
+        last = _last_line(ctx, season, tid)
+        after = f" after {_a(last['w'])} {_wl(last['w'], last['l'], last['t'])} season" if last else ""
+        body = (f"The {ctx.full(tid)} have fired you as general manager{after}. In "
+                f"{plural(len(rec), 'season')} you went {_wl(w, l_, t_)}"
+                + (f" with {plural(trips, 'playoff trip')}." if trips else " and never made the playoffs."))
+        if hired and hired["team"] in ctx.teams:
+            body += f" You won't be out of work long: the {ctx.full(hired['team'])} have hired you."
+        ctx.add(season, CAL_FIRED, "front_office", f"{ctx.nick(tid)} fire their general manager: you", body,
+                teams=[tid], importance=70, key=f"you-out-{season}-{tid}")
+        ctx.post(season, CAL_FIRED, ctx.insider(rng),
+                 f"The {ctx.nick(tid)} have fired their GM after {plural(len(rec), 'season')} ({_wl(w, l_, t_)}). "
+                 "Ownership wants a new direction, per sources.", teams=[tid], importance=60, kind="front_office")
+        ctx.post(season, CAL_FIRED, ctx.fan(tid, rng, 1 if w < l_ else 0),
+                 (f"{_wl(w, l_, t_)}. Ownership finally pulled the plug." if w < l_ else
+                  f"{_wl(w, l_, t_)} and the GM gets fired? This owner is never happy."),
+                 teams=[tid], importance=30, kind="front_office")
+    if hired and hired["team"] in ctx.teams:
+        tid = hired["team"]
+        last = _last_line(ctx, season, tid)
+        body = (f"The {ctx.full(tid)} have hired you as their general manager"
+                + (f", {hired['note']}" if hired.get("note") else "") + "."
+                + (f" You take over a team that went {_wl(last['w'], last['l'], last['t'])} last season." if last else ""))
+        ctx.add(season, CAL_HIRED, "front_office", f"{ctx.nick(tid)} hire you as general manager", body,
+                teams=[tid], importance=70, key=f"you-in-{season}-{tid}")
+        ctx.post(season, CAL_HIRED, bitter.team_account(ctx, tid),
+                 f"Welcome to {ctx.city(tid)}! Our new general manager is ready to get to work. {bitter.tag(ctx, tid)}",
+                 teams=[tid], importance=45, kind="front_office")
+
+
 def front_office_news(ctx, season):
     """Stories and bits for the offseason that opened league year `season`."""
     league = ctx.league
@@ -71,13 +112,15 @@ def front_office_news(ctx, season):
         return
     from . import gm as G
     from . import staff as S
-    gmlog = [e for e in (st.get("gm") or {}).get("log", []) if e["season"] == season and not e.get("quiet")]
+    allgm = [e for e in (st.get("gm") or {}).get("log", []) if e["season"] == season and not e.get("quiet")]
+    gmlog = [e for e in allgm if not e.get("you")]
     hclog = [e for e in st.get("log", []) if e["season"] == season and e["job"] == "HC"
              and e["move"] in ("fired", "retired", "hired")]
     gm_out = {e["team"]: e for e in gmlog if e["move"] in ("fired", "retired")}
     hc_out = {e["team"]: e for e in hclog if e["move"] in ("fired", "retired")}
     rng = ctx.rng(season, "front-office")
     done_hc = set()
+    _your_move(ctx, season, [e for e in allgm if e.get("you")], rng)
     # 1. GMs out (with the head coach, when both go).
     for tid, e in sorted(gm_out.items()):
         if tid not in ctx.teams:

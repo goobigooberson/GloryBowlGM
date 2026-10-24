@@ -205,6 +205,11 @@ TRADE_STYLE_K = 0.4          # e^(k x style): how much the habit moves a team's 
 # top 10 but 21% of those picks; 13% into 11-32 vs 4.5%).
 QB_TRADE_UP = 4.0            # urge to trade up multiplied by this when its man is a QB it needs...
 QB_TRADE_CHANCE = 4.0        # ...and such a deal this many times likelier to get done
+FUTURE_MIN_PRICE = 45.0       # ...and only to move up into a pick worth at least this (about pick 125): real
+                             # next-year picks in draft-day deals are mostly for mid-round picks; without the limit
+                             # late-round trade-ups doubled (picks 129+: 12.6 a draft vs real ~8)
+FUTURE_PACKAGE_COST = 40.0   # a team pays with this draft's picks unless a next-year pick fits the price at least
+                             # this many chart points closer (real draft-time deals 2013-25: 23% include one)
 TRADE_PREMIUM = (-0.05, 0.03)  # between AI teams the price is chart value x (1 + this), as close as the
                                # picks allow (real median 0.98-1.01). Deals with you: never below the chart.
 
@@ -652,6 +657,11 @@ class DraftRoom:
         self.prospects = {p.id: p for p in prospects}
         self.available = [p.id for p in prospects]
         self.slots = pick_slots(order)
+        # Picks traded before the draft (trades.py, Oct 23) belong to the team that holds them.
+        from .trades import pick_owners
+        owners = pick_owners(league, self.season)
+        for s in self.slots:
+            s["team"] = owners.get((s["round"], s["from"]), s["team"])
         self.next = 0                       # index into slots
         self.picks = []                     # made picks
         self.trades = []                    # draft-day trades
@@ -748,21 +758,53 @@ class DraftRoom:
     def _later_slots(self, tid, start):
         return [i for i in range(start, len(self.slots)) if self.slots[i]["team"] == tid]
 
-    def _package(self, buyer, j, price):
-        """The buyer's pick j plus the fewest, closest-to-fair later picks of
-        his (at most 3 in all) worth at least `price` chart points, or None."""
+    def _package(self, buyer, j, price, owner=None):
+        """The buyer's pick j plus the fewest, closest-to-fair other picks of his (at most
+        3 in all) worth at least `price` chart points: later picks in this draft, or one of
+        next year's (trades.py, Oct 23; real draft-time deals 2013-25: 23% include a
+        next-year pick, valued by the team taking it at about a round lower). Returns
+        (slot indexes, next-year pick keys), or None."""
         from itertools import combinations
         base = jj_value(self.slots[j]["pick"])
-        extra = self._later_slots(buyer, j + 1)
+        owner = self.slots[self.next]["team"] if owner is None else owner
+        extra = [("slot", k, jj_value(self.slots[k]["pick"])) for k in self._later_slots(buyer, j + 1)]
+        if price >= FUTURE_MIN_PRICE:
+            extra += [("future", key, v) for key, v in self._futures(buyer, owner)]
         best = None
         for n in (0, 1, 2):
             for combo in combinations(extra, n):
-                v = base + sum(jj_value(self.slots[k]["pick"]) for k in combo)
-                if v >= price and (best is None or v < best[0]):
-                    best = (v, [j, *combo])
+                if sum(1 for c in combo if c[0] == "future") > 1:
+                    continue
+                v = base + sum(c[2] for c in combo)
+                cost = v + FUTURE_PACKAGE_COST * sum(1 for c in combo if c[0] == "future")
+                if v >= price and (best is None or cost < best[0]):
+                    best = (cost, combo)
             if best is not None:
-                return best[1]
+                combo = best[1]
+                return [j] + [c[1] for c in combo if c[0] == "slot"], [c[1] for c in combo if c[0] == "future"]
         return None
+
+    def _futures(self, tid, valued_by):
+        """[(key, value)] next year's picks this team owns, as `valued_by` values them."""
+        from . import trades as T
+        if not getattr(self.league, "contracts", None):
+            return []
+        out = []
+        for key in T.team_picks(self.league, tid):
+            if T.parse_key(key)[0] == self.season + 1:
+                out.append((key, T.pick_value(self.league, valued_by, key)))
+        return out
+
+    def _package_value(self, give, futures, owner):
+        from . import trades as T
+        return (sum(jj_value(self.slots[k]["pick"]) for k in give)
+                + sum(T.pick_value(self.league, owner, key) for key in futures))
+
+    def _move_futures(self, keys, to_team):
+        from . import trades as T
+        reg = T.ensure(self.league)["picks"]
+        for key in keys:
+            reg[key] = to_team
 
     def _style(self, tid):
         info = getattr(self, "team_info", {}).get(tid)
@@ -823,17 +865,21 @@ class DraftRoom:
         if self.rng.random() > chance:
             return None
         price = jj_value(slot["pick"]) * (1 + self.rng.uniform(*TRADE_PREMIUM))
-        give = self._package(buyer, j, price)
-        if give is None:
+        pkg = self._package(buyer, j, price, owner)
+        if pkg is None:
             return None
-        value = sum(jj_value(self.slots[k]["pick"]) for k in give)
+        give, futures = pkg
+        value = self._package_value(give, futures, owner)
         for k in give:
             self.slots[k]["team"] = owner
+        self._move_futures(futures, owner)
         self.slots[i]["team"] = buyer
         self.needs.pop(owner, None)
         self.needs.pop(buyer, None)
         deal = {"season": self.season, "up": buyer, "down": owner, "got": [slot["pick"]],
                 "gave": [self.slots[k]["pick"] for k in give], "jj_ratio": round(value / jj_value(slot["pick"]), 3)}
+        if futures:
+            deal["gave_future"] = list(futures)
         self.trades.append(deal)
         return deal
 
@@ -862,10 +908,11 @@ class DraftRoom:
             urge = self._urge(buyer, theirs, gap)
             if urge < TRADE_URGE[min(rnd, 3) - 1] * math.exp(-TRADE_STYLE_K * self._style(buyer)):
                 continue
-            give = self._package(buyer, j, jj_value(slot["pick"]))
-            if give:
-                out.append({"team": buyer, "gives": [self.slots[k]["pick"] for k in give],
-                            "chart_points": round(sum(jj_value(self.slots[k]["pick"]) for k in give)),
+            pkg = self._package(buyer, j, jj_value(slot["pick"]), team_id)
+            if pkg:
+                give, futures = pkg
+                out.append({"team": buyer, "gives": [self.slots[k]["pick"] for k in give] + list(futures),
+                            "chart_points": round(self._package_value(give, futures, team_id)),
                             "for_pick": slot["pick"], "urge": urge})
         out.sort(key=lambda o: o["urge"], reverse=True)
         return out[:most]
@@ -875,13 +922,28 @@ class DraftRoom:
         return self.ai_pick()
 
     def offer(self, from_team, to_team, give_picks, get_picks):
-        """Would the AI team to_team accept this deal (overall pick numbers of
-        this draft)? It accepts when it gets at least chart value."""
+        """Would the AI team to_team accept this deal? Picks are this draft's overall
+        numbers, or next year's pick keys ("2028-3-12", trades.py). It accepts when it
+        gets at least chart value: this draft's picks by the chart, next year's as it
+        values them (about a round lower)."""
+        from . import trades as T
         owned = {s["pick"]: s["team"] for s in self.slots[self.next:]}
-        if any(owned.get(k) != from_team for k in give_picks) or any(owned.get(k) != to_team for k in get_picks):
-            return False, "Those picks aren't theirs to trade (or have been used)."
-        give = sum(jj_value(k) for k in give_picks)
-        get = sum(jj_value(k) for k in get_picks)
+        for k in give_picks:
+            ok = owned.get(k) == from_team if isinstance(k, int) else T.owner(self.league, k) == from_team
+            if not ok:
+                return False, "Those picks aren't theirs to trade (or have been used)."
+        for k in get_picks:
+            ok = owned.get(k) == to_team if isinstance(k, int) else T.owner(self.league, k) == to_team
+            if not ok:
+                return False, "Those picks aren't theirs to trade (or have been used)."
+        for k in list(give_picks) + list(get_picks):
+            if not isinstance(k, int) and T.parse_key(k)[0] != self.season + 1:
+                return False, "Only this draft's picks and next year's can be traded in the draft room."
+
+        def worth(k):
+            return jj_value(k) if isinstance(k, int) else T.pick_value(self.league, to_team, k)
+        give = sum(worth(k) for k in give_picks)
+        get = sum(worth(k) for k in get_picks)
         if give < get:
             return False, f"Not enough: {give:.0f} chart points for {get:.0f}."
         return True, f"{give:.0f} chart points for {get:.0f}."
@@ -895,11 +957,25 @@ class DraftRoom:
                 s["team"] = to_team
             elif s["pick"] in get_picks:
                 s["team"] = from_team
+        self._move_futures([k for k in give_picks if not isinstance(k, int)], to_team)
+        self._move_futures([k for k in get_picks if not isinstance(k, int)], from_team)
         self.needs.pop(from_team, None)
         self.needs.pop(to_team, None)
-        self.trades.append({"season": self.season, "up": from_team, "down": to_team, "got": list(get_picks),
-                            "gave": list(give_picks),
-                            "jj_ratio": round(sum(map(jj_value, give_picks)) / sum(map(jj_value, get_picks)), 3)})
+        cur_give = [k for k in give_picks if isinstance(k, int)]
+        cur_get = [k for k in get_picks if isinstance(k, int)]
+        from . import trades as T
+
+        def worth(k):
+            return jj_value(k) if isinstance(k, int) else T.pick_value(self.league, to_team, k)
+        deal = {"season": self.season, "up": from_team, "down": to_team, "got": cur_get, "gave": cur_give,
+                "jj_ratio": round(sum(map(worth, give_picks)) / max(1.0, sum(map(worth, get_picks))), 3)}
+        fut_give = [k for k in give_picks if not isinstance(k, int)]
+        fut_get = [k for k in get_picks if not isinstance(k, int)]
+        if fut_give:
+            deal["gave_future"] = fut_give
+        if fut_get:
+            deal["got_future"] = fut_get
+        self.trades.append(deal)
         return True, why
 
     # ---- saving ----
@@ -998,8 +1074,12 @@ def sign_undrafted(league, undrafted, rng):
         roster = league.team_players(t.id)
         own = {x.id: roster_value(E.seen(league, t.id, x)) for x in roster}
         n = 0
+        # Only as many as its 90-man offseason roster has room for (a team with extra picks, from
+        # trades, signs fewer; Oct 23, trades session: such teams had gone over 90 until camp).
+        from .free_agency import OFFSEASON_ROSTER_MAX
+        most = min(UDFA_PER_TEAM, max(0, OFFSEASON_ROSTER_MAX - len(roster)))
         for p in sorted(pool, key=seen, reverse=True):
-            if n >= UDFA_PER_TEAM:
+            if n >= most:
                 break
             same = [x for x in roster if x.position == p.position]
             worst = min(same, key=lambda x: own[x.id]) if same else None
@@ -1307,7 +1387,7 @@ class StartupRoom:
         league = self.league
         for t in league.teams:
             league.auto_depth_chart(t.id)
-            league.vote_captains(t.id, rng=random.Random(f"captains-{league.season}-{t.id}"))
+            league.vote_captains(t.id, rng=random.Random(f"captains-{league.settings.get('salt', '')}-{league.season}-{t.id}"))
         transactions.form_practice_squads(league, league.injuries, league.recovering, rng=rng)
 
     def to_dict(self):

@@ -1,0 +1,220 @@
+{
+ "source": "nflverse draft_picks.csv (PFR career fields as of 2026); ESPN 2023 final big board (nflverse misc/espn_draft_player_probs). Script: docs/research/te_draft.py",
+ "first_te_pick": {
+  "years": "2000-2026",
+  "median": 21,
+  "top10_share": 0.222,
+  "round1_share": 0.778,
+  "after_50_share": 0.074,
+  "by_year": {
+   "2000": 14,
+   "2001": 31,
+   "2002": 14,
+   "2003": 24,
+   "2004": 6,
+   "2005": 30,
+   "2006": 6,
+   "2007": 31,
+   "2008": 30,
+   "2009": 20,
+   "2010": 21,
+   "2011": 43,
+   "2012": 34,
+   "2013": 21,
+   "2014": 10,
+   "2015": 55,
+   "2016": 35,
+   "2017": 19,
+   "2018": 25,
+   "2019": 8,
+   "2020": 43,
+   "2021": 4,
+   "2022": 55,
+   "2023": 25,
+   "2024": 13,
+   "2025": 10,
+   "2026": 16
+  }
+ },
+ "te_per_draft": {
+  "round1": 1.11,
+  "top10": 0.22
+ },
+ "best_te_hindsight": {
+  "years": "2000-2018",
+  "median_pick": 42,
+  "round1_share": 0.368,
+  "top10_share": 0.053,
+  "after_round3_share": 0.105,
+  "classes": [
+   {
+    "year": 2000,
+    "pick": 14,
+    "name": "Bubba Franks",
+    "value": 12.75
+   },
+   {
+    "year": 2001,
+    "pick": 35,
+    "name": "Alge Crumpler",
+    "value": 18.5
+   },
+   {
+    "year": 2002,
+    "pick": 14,
+    "name": "Jeremy Shockey",
+    "value": 18.5
+   },
+   {
+    "year": 2003,
+    "pick": 69,
+    "name": "Jason Witten",
+    "value": 37.0
+   },
+   {
+    "year": 2004,
+    "pick": 32,
+    "name": "Ben Watson",
+    "value": 15.0
+   },
+   {
+    "year": 2005,
+    "pick": 30,
+    "name": "Heath Miller",
+    "value": 16.75
+   },
+   {
+    "year": 2006,
+    "pick": 28,
+    "name": "Marcedes Lewis",
+    "value": 21.5
+   },
+   {
+    "year": 2007,
+    "pick": 31,
+    "name": "Greg Olsen",
+    "value": 19.0
+   },
+   {
+    "year": 2008,
+    "pick": 61,
+    "name": "Martellus Bennett",
+    "value": 12.0
+   },
+   {
+    "year": 2009,
+    "pick": 89,
+    "name": "Jared Cook",
+    "value": 11.25
+   },
+   {
+    "year": 2010,
+    "pick": 42,
+    "name": "Rob Gronkowski",
+    "value": 21.5
+   },
+   {
+    "year": 2011,
+    "pick": 43,
+    "name": "Kyle Rudolph",
+    "value": 16.0
+   },
+   {
+    "year": 2012,
+    "pick": 64,
+    "name": "Dwayne Allen",
+    "value": 5.75
+   },
+   {
+    "year": 2013,
+    "pick": 63,
+    "name": "Travis Kelce",
+    "value": 32.0
+   },
+   {
+    "year": 2014,
+    "pick": 10,
+    "name": "Eric Ebron",
+    "value": 7.5
+   },
+   {
+    "year": 2015,
+    "pick": 157,
+    "name": "C.J. Uzomah",
+    "value": 6.5
+   },
+   {
+    "year": 2016,
+    "pick": 35,
+    "name": "Hunter Henry",
+    "value": 10.75
+   },
+   {
+    "year": 2017,
+    "pick": 146,
+    "name": "George Kittle",
+    "value": 21.0
+   },
+   {
+    "year": 2018,
+    "pick": 86,
+    "name": "Mark Andrews",
+    "value": 10.75
+   }
+  ]
+ },
+ "class_top8_careers": {
+  "te_per_class": 0.37,
+  "te_median_pick": 63,
+  "other_median_pick": 19
+ },
+ "class_top32_careers": {
+  "te_per_class": 1.95,
+  "te_median_pick": 38,
+  "other_median_pick": 36
+ },
+ "round1_te_outcomes": {
+  "n": 22,
+  "starter_3plus": 0.864,
+  "starter_5plus": 0.727,
+  "pro_bowl": 0.636,
+  "never_started": 0.0
+ },
+ "espn_2023_te": [
+  {
+   "rank": 14,
+   "player": "Dalton Kincaid",
+   "pick": 25
+  },
+  {
+   "rank": 20,
+   "player": "Michael Mayer",
+   "pick": 35
+  },
+  {
+   "rank": 30,
+   "player": "Darnell Washington",
+   "pick": 93
+  },
+  {
+   "rank": 48,
+   "player": "Luke Musgrave",
+   "pick": 42
+  },
+  {
+   "rank": 55,
+   "player": "Sam LaPorta",
+   "pick": 34
+  },
+  {
+   "rank": 63,
+   "player": "Brenton Strange",
+   "pick": 61
+  },
+  {
+   "rank": 79,
+   "player": "Tucker Kraft",
+   "pick": 78
+  }
+ ]
+}

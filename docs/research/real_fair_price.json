@@ -1,0 +1,393 @@
+{
+ "source": "OverTheCap via nflverse historical_contracts.csv (May 2022 snapshot), signing years 2014-2022; nflverse snap counts (regular season) for the season before; nflverse players for ids and birth dates. Script: docs/research/fair_price.py",
+ "definitions": {
+  "good": "65%+ of his last team's offensive/defensive snaps last season, age <= 30 on Sept 1 of the signing year",
+  "free_agent": "veteran contract with a team other than the one he finished last season with",
+  "market_value": "median APY share of the cap of good free agents of his position group (pooled over the signing years)",
+  "deal": "his biggest deal of the year with a new team; under 0.25% of the cap (practice squad pay) left out",
+  "minimum_level": "APY <= 0.65% of the cap"
+ },
+ "starter_snaps": 0.65,
+ "max_age": 30,
+ "age_bands": [
+  [
+   "<=26",
+   0,
+   26
+  ],
+  [
+   "27-28",
+   27,
+   28
+  ],
+  [
+   "29-30",
+   29,
+   30
+  ]
+ ],
+ "market_value": {
+  "C": 0.0115,
+  "CB": 0.0192,
+  "DT": 0.0267,
+  "EDGE": 0.0395,
+  "G": 0.0156,
+  "LB": 0.0164,
+  "QB": 0.0137,
+  "RB": 0.0144,
+  "S": 0.0127,
+  "T": 0.0211,
+  "TE": 0.0288,
+  "WR": 0.0301
+ },
+ "market_value_n": {
+  "C": 32,
+  "CB": 123,
+  "DT": 24,
+  "EDGE": 45,
+  "G": 101,
+  "LB": 70,
+  "QB": 17,
+  "RB": 10,
+  "S": 90,
+  "T": 54,
+  "TE": 25,
+  "WR": 89
+ },
+ "all": {
+  "n": 680,
+  "n_per_season": 75.6,
+  "under_60": 0.3456,
+  "under_40": 0.2206,
+  "minimum_level": 0.225,
+  "under_1pct": 0.3103,
+  "ratio_p25": 0.438,
+  "median_cap_pct": 0.0195
+ },
+ "by_group": {
+  "C": {
+   "n": 32,
+   "n_per_season": 3.6,
+   "under_60": 0.375,
+   "under_40": 0.0625,
+   "minimum_level": 0.3438,
+   "under_1pct": 0.5,
+   "ratio_p25": 0.471,
+   "median_cap_pct": 0.0115
+  },
+  "CB": {
+   "n": 123,
+   "n_per_season": 13.7,
+   "under_60": 0.3171,
+   "under_40": 0.2033,
+   "minimum_level": 0.1707,
+   "under_1pct": 0.252,
+   "ratio_p25": 0.512,
+   "median_cap_pct": 0.0192
+  },
+  "DT": {
+   "n": 24,
+   "n_per_season": 2.7,
+   "under_60": 0.2917,
+   "under_40": 0.125,
+   "minimum_level": 0.0833,
+   "under_1pct": 0.125,
+   "ratio_p25": 0.568,
+   "median_cap_pct": 0.0267
+  },
+  "EDGE": {
+   "n": 45,
+   "n_per_season": 5.0,
+   "under_60": 0.3333,
+   "under_40": 0.2,
+   "minimum_level": 0.0889,
+   "under_1pct": 0.1333,
+   "ratio_p25": 0.487,
+   "median_cap_pct": 0.0395
+  },
+  "G": {
+   "n": 101,
+   "n_per_season": 11.2,
+   "under_60": 0.3762,
+   "under_40": 0.2673,
+   "minimum_level": 0.2673,
+   "under_1pct": 0.396,
+   "ratio_p25": 0.396,
+   "median_cap_pct": 0.0156
+  },
+  "LB": {
+   "n": 70,
+   "n_per_season": 7.8,
+   "under_60": 0.3429,
+   "under_40": 0.2857,
+   "minimum_level": 0.2857,
+   "under_1pct": 0.3429,
+   "ratio_p25": 0.365,
+   "median_cap_pct": 0.0164
+  },
+  "QB": {
+   "n": 17,
+   "n_per_season": 1.9,
+   "under_60": 0.2941,
+   "under_40": 0.2353,
+   "minimum_level": 0.2941,
+   "under_1pct": 0.3529,
+   "ratio_p25": 0.405,
+   "median_cap_pct": 0.0137
+  },
+  "RB": {
+   "n": 10,
+   "n_per_season": 1.1,
+   "under_60": 0.4,
+   "under_40": 0.3,
+   "minimum_level": 0.4,
+   "under_1pct": 0.4,
+   "ratio_p25": 0.399,
+   "median_cap_pct": 0.0144
+  },
+  "S": {
+   "n": 90,
+   "n_per_season": 10.0,
+   "under_60": 0.3333,
+   "under_40": 0.1333,
+   "minimum_level": 0.3,
+   "under_1pct": 0.4111,
+   "ratio_p25": 0.461,
+   "median_cap_pct": 0.0127
+  },
+  "T": {
+   "n": 54,
+   "n_per_season": 6.0,
+   "under_60": 0.3889,
+   "under_40": 0.2593,
+   "minimum_level": 0.2407,
+   "under_1pct": 0.2963,
+   "ratio_p25": 0.362,
+   "median_cap_pct": 0.0211
+  },
+  "TE": {
+   "n": 25,
+   "n_per_season": 2.8,
+   "under_60": 0.24,
+   "under_40": 0.12,
+   "minimum_level": 0.08,
+   "under_1pct": 0.12,
+   "ratio_p25": 0.608,
+   "median_cap_pct": 0.0288
+  },
+  "WR": {
+   "n": 89,
+   "n_per_season": 9.9,
+   "under_60": 0.382,
+   "under_40": 0.3146,
+   "minimum_level": 0.191,
+   "under_1pct": 0.2809,
+   "ratio_p25": 0.247,
+   "median_cap_pct": 0.0301
+  }
+ },
+ "by_age": {
+  "<=26": {
+   "n": 195,
+   "n_per_season": 21.7,
+   "under_60": 0.3538,
+   "under_40": 0.2769,
+   "minimum_level": 0.2615,
+   "under_1pct": 0.3333,
+   "ratio_p25": 0.365,
+   "median_cap_pct": 0.0227
+  },
+  "27-28": {
+   "n": 265,
+   "n_per_season": 29.4,
+   "under_60": 0.3132,
+   "under_40": 0.2113,
+   "minimum_level": 0.2226,
+   "under_1pct": 0.2943,
+   "ratio_p25": 0.485,
+   "median_cap_pct": 0.0223
+  },
+  "29-30": {
+   "n": 220,
+   "n_per_season": 24.4,
+   "under_60": 0.3773,
+   "under_40": 0.1818,
+   "minimum_level": 0.1955,
+   "under_1pct": 0.3091,
+   "ratio_p25": 0.46,
+   "median_cap_pct": 0.0167
+  }
+ },
+ "full_time": {
+  "n": 362,
+  "n_per_season": 40.2,
+  "under_60": 0.268,
+  "under_40": 0.1602,
+  "minimum_level": 0.1823,
+  "under_1pct": 0.2652,
+  "ratio_p25": 0.553,
+  "median_cap_pct": 0.024
+ },
+ "full_time_28": {
+  "n": 237,
+  "n_per_season": 26.3,
+  "under_60": 0.2532,
+  "under_40": 0.1899,
+  "minimum_level": 0.1983,
+  "under_1pct": 0.27,
+  "ratio_p25": 0.595,
+  "median_cap_pct": 0.0279
+ },
+ "cheapest_examples": [
+  {
+   "g": "WR",
+   "y": 2018,
+   "pct": 0.0036,
+   "share": 0.7877,
+   "age": 24,
+   "name": "Corey Coleman",
+   "years": 1,
+   "ratio": 0.1182
+  },
+  {
+   "g": "WR",
+   "y": 2019,
+   "pct": 0.0037,
+   "share": 0.7561,
+   "age": 24,
+   "name": "Chad Williams",
+   "years": 2,
+   "ratio": 0.1219
+  },
+  {
+   "g": "WR",
+   "y": 2019,
+   "pct": 0.0038,
+   "share": 0.8828,
+   "age": 26,
+   "name": "Josh Doctson",
+   "years": 1,
+   "ratio": 0.1272
+  },
+  {
+   "g": "EDGE",
+   "y": 2015,
+   "pct": 0.0052,
+   "share": 0.741,
+   "age": 27,
+   "name": "Junior Galette",
+   "years": 1,
+   "ratio": 0.1317
+  },
+  {
+   "g": "WR",
+   "y": 2018,
+   "pct": 0.004,
+   "share": 0.743,
+   "age": 27,
+   "name": "Bruce Ellington",
+   "years": 1,
+   "ratio": 0.1323
+  },
+  {
+   "g": "EDGE",
+   "y": 2018,
+   "pct": 0.0056,
+   "share": 0.7731,
+   "age": 27,
+   "name": "John Simon",
+   "years": 1,
+   "ratio": 0.143
+  },
+  {
+   "g": "WR",
+   "y": 2018,
+   "pct": 0.0045,
+   "share": 0.8709,
+   "age": 29,
+   "name": "Dontrelle Inman",
+   "years": 1,
+   "ratio": 0.1482
+  },
+  {
+   "g": "WR",
+   "y": 2018,
+   "pct": 0.0045,
+   "share": 0.8241,
+   "age": 28,
+   "name": "Rishard Matthews",
+   "years": 1,
+   "ratio": 0.1482
+  },
+  {
+   "g": "EDGE",
+   "y": 2021,
+   "pct": 0.0059,
+   "share": 0.6899,
+   "age": 30,
+   "name": "John Simon",
+   "years": 1,
+   "ratio": 0.1492
+  },
+  {
+   "g": "WR",
+   "y": 2014,
+   "pct": 0.0046,
+   "share": 0.7104,
+   "age": 25,
+   "name": "T.J. Graham",
+   "years": 2,
+   "ratio": 0.1538
+  },
+  {
+   "g": "WR",
+   "y": 2017,
+   "pct": 0.0046,
+   "share": 0.7643,
+   "age": 28,
+   "name": "Jeremy Kerley",
+   "years": 1,
+   "ratio": 0.1543
+  },
+  {
+   "g": "WR",
+   "y": 2017,
+   "pct": 0.0048,
+   "share": 0.7797,
+   "age": 27,
+   "name": "Quinton Patton",
+   "years": 1,
+   "ratio": 0.1593
+  },
+  {
+   "g": "LB",
+   "y": 2018,
+   "pct": 0.0026,
+   "share": 0.6927,
+   "age": 24,
+   "name": "James Burgess",
+   "years": 1,
+   "ratio": 0.1605
+  },
+  {
+   "g": "WR",
+   "y": 2014,
+   "pct": 0.0048,
+   "share": 0.8498,
+   "age": 25,
+   "name": "Greg Little",
+   "years": 2,
+   "ratio": 0.1613
+  },
+  {
+   "g": "EDGE",
+   "y": 2014,
+   "pct": 0.0064,
+   "share": 0.6556,
+   "age": 28,
+   "name": "Larry English",
+   "years": 1,
+   "ratio": 0.1619
+  }
+ ]
+}

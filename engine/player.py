@@ -204,6 +204,23 @@ EXPERIENCE_WEIGHTS = {
 _next_id = 1
 
 
+def _combine_value(position, drill, z, plain):
+    """A combine result from his standing z among players at his position, shaped like real
+    combine results there (combine_data.py, every combine 2000-2026): the same order as the
+    bell curve `plain` but real tails, so no one beats the real best by more than a hair
+    (Oct 23; Blake had seen a 4.14 forty; the real record is 4.21)."""
+    from . import combine_data as CD
+    table = CD.QUANTILES.get(position, {}).get(drill)
+    if not table:
+        low, high = CD.RECORDS[drill]
+        return min(high, max(low, plain))
+    p = 0.5 * (1 + math.erf(z / math.sqrt(2)))
+    for (p0, v0), (p1, v1) in zip(table, table[1:]):
+        if p <= p1:
+            return v0 + (v1 - v0) * (p - p0) / (p1 - p0) if p1 > p0 else v1
+    return table[-1][1]
+
+
 def generate_player(position=None, experience=None, season_year=2026,
                     generational=False, rng_seed=None):
     """Make one fictional player.
@@ -305,7 +322,7 @@ def generate_player(position=None, experience=None, season_year=2026,
         if lower_is_better:
             trait_z = -trait_z
         z = link * trait_z + math.sqrt(1 - link ** 2) * _roll(0, 1)
-        value = avg + z * spread
+        value = _combine_value(position, drill, z, avg + z * spread)
         if drill in ("forty", "cone", "shuttle"):
             combine[drill] = round(value, 2)
         elif drill == "vertical":
@@ -377,12 +394,13 @@ DURABILITY_GENERATIONAL = (72, 12)   # Generational players usually hold up (not
 def fill_new_ratings(p):
     """Give a player the ratings added after the first saves existed: hidden
     durability for everyone and endurance for running backs. Each is seeded by
-    the player's id, so it never changes and older saved leagues get the same
-    values without being regenerated."""
+    the player (his id, name and birth date: an id alone gave player #57 the same
+    draw in every league, Oct 23), so it never changes and older saved leagues
+    get the same values without being regenerated."""
     avg_h, h_spread, avg_w, w_spread = pos.BODY[p.position]
     weight_z = (p.weight - avg_w) / w_spread
     if getattr(p, "durability", None) is None:
-        rng = random.Random(f"durability-{p.id}")
+        rng = random.Random(f"durability-{p.id}-{p.first_name} {p.last_name}-{p.birth_date}")
         if p.generational:
             mean, spread = DURABILITY_GENERATIONAL
         else:
@@ -392,7 +410,7 @@ def fill_new_ratings(p):
     if p.position == "RB" and "endurance" not in p.skills:
         # How big a workload he can carry in a game before he wears down.
         # Stronger, thicker backs tend to handle more; plenty of luck.
-        rng = random.Random(f"endurance-{p.id}")
+        rng = random.Random(f"endurance-{p.id}-{p.first_name} {p.last_name}-{p.birth_date}")
         value = (50 + 0.35 * (p.athletic.get("strength", 50) - 50) + 5 * weight_z
                  + (10 if p.generational else 0) + rng.gauss(0, 13))
         value = _clamp(round(value), 10, 99)

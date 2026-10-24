@@ -20,6 +20,7 @@ from .home_page import build_home_tab, CSS as HOME_CSS
 from .state import (state, FREE_AGENTS, team_starter_ids, mark_changed, save_now, save_copy,
                     close_game, start_next_season, advance_offseason, finish_startup)
 from .contracts_page import build_contracts_tab
+from .trade_page import build_trade_tab
 from .staff_page import build_staff_tab
 from .draft_page import build_draft_tab
 from .roster_page import build_roster_tab
@@ -63,7 +64,7 @@ def build_page():
     # The pages that exist right now (during a new league's startup draft only the
     # Draft page: no rosters, games or contracts yet), and the one to open on.
     startup = draft_day.in_startup(league)
-    pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Staff", "Draft", "Depth chart", "Position counts",
+    pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Trades", "Staff", "Draft", "Depth chart", "Position counts",
                                         "Schedule", "Standings", "Stats", "Playoffs", "Bitter", "Awards", "Game"]
     if not startup and not season.in_offseason(league):
         pages.remove("Draft")    # Blake: the Draft section shows only in the offseason (scouting is offseason-only)
@@ -381,6 +382,7 @@ def build_page():
             home_tab = ui.tab("Home")        # the overview (home_page.py)
             roster_tab = ui.tab("Roster")
             contracts_tab = ui.tab("Contracts")
+            trades_tab = ui.tab("Trades")    # player trades (trade_page.py, Oct 23)
             staff_tab = ui.tab("Staff")      # your coaching staff and the carousel (staff_page.py)
         draft_tab = ui.tab("Draft")          # scouting, the draft room, results (draft_page.py)
         if not startup:
@@ -425,6 +427,7 @@ def build_page():
         return None
     refresh_roster = refresh_contracts = refresh_depth = refresh_counts = refresh_schedule = noop
     refresh_staff = noop
+    refresh_trades = noop
     refresh_standings = refresh_stats = refresh_playoffs = refresh_news = refresh_awards = noop
     refresh_home = noop
 
@@ -449,6 +452,10 @@ def build_page():
             with ui.tab_panel(contracts_tab).classes("p-0"):
                 refresh_contracts = build_contracts_tab(
                     on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster()))
+            with ui.tab_panel(trades_tab).classes("p-0"):
+                refresh_trades = build_trade_tab(
+                    on_change=lambda: (season_bar.refresh(), team_banner.refresh(), refresh_roster(),
+                                       refresh_contracts(), refresh_depth(), refresh_counts(), refresh_news()))
             with ui.tab_panel(staff_tab).classes("p-0"):
                 refresh_staff = build_staff_tab(on_change=lambda: (season_bar.refresh(), refresh_roster()))
         def draft_room():
@@ -560,11 +567,62 @@ def build_page():
         if game_ctrl.busy():
             ui.notify("Finish the game you're watching first.")
             return
+        # Your owner's verdict first, if he can fire you (gm.owner_review; Blake, Oct 23).
+        from engine import gm as G
+        rv = G.owner_review(league)
+        if rv:
+            mark_changed()
+        if rv and rv.get("fired") and rv.get("new_team") is None:
+            show_fired(rv)
+            return
+        go_next_season()
+
+    def go_next_season():
+        old = league.user_team_id
         start_next_season()
+        state.team_id = league.user_team_id
         state.main_tab = "Contracts"
-        ui.notify(f"The {league.season - 1} season is in the books. The {league.season} league year begins.",
+        moved = league.user_team_id != old
+        ui.notify((f"Welcome to the {league.team(league.user_team_id).name}. " if moved else "")
+                  + f"The {league.season - 1} season is in the books. The {league.season} league year begins.",
                   type="positive")
         ui.navigate.reload()
+
+    def show_fired(rv):
+        """You've been fired: the offers, and you pick your next team."""
+        from engine import gm as G
+        rec = season.records(league)
+        old = league.team(rv["team"])
+        w, l_, t_ = rv["record"]
+        with ui.dialog().props("persistent") as dlg, ui.card().classes("p-6").style("min-width:520px; max-width:640px"):
+            ui.label("You've been fired").classes("condensed text-3xl")
+            ui.label(f"The {old.name}{chr(39) if old.name.endswith('s') else chr(39) + 's'} owner has decided to go in a new direction after a {w}-{l_}"
+                     + (f"-{t_}" if t_ else "") + f" season, your {G._ordinal(rv['tenure'])} in charge. "
+                     "Other owners have called. Pick your next team:").classes("legend")
+            for tid in rv["offers"]:
+                t = league.team(tid)
+                r = rec.get(tid, {"w": 0, "l": 0, "t": 0})
+                with ui.row().classes("items-center justify-between w-full no-wrap").style(
+                        "border-top:1px solid #E1E5E0; padding:8px 0"):
+                    with ui.column().classes("gap-0"):
+                        ui.label(t.name).classes("condensed text-xl")
+                        ui.label(f"Went {season.record_text(r)} this season; their general manager job is open."
+                                 ).classes("legend")
+                    with ui.row().classes("gap-2 no-wrap"):
+                        ui.button("Look at the team", on_click=lambda k=tid: popups.open_team(k)) \
+                            .props("flat no-caps dense")
+                        ui.button("Take this job", on_click=lambda k=tid: take(k)) \
+                            .props("no-caps unelevated color=green-10")
+
+            def take(k):
+                ok, msg = G.take_job(league, k)
+                if not ok:
+                    ui.notify(msg, type="warning")
+                    return
+                mark_changed()
+                dlg.close()
+                go_next_season()
+        dlg.open()
 
     # ---- The offseason's Next button ------------------------------------------
     with ui.dialog() as unsigned_dialog, ui.card().classes("p-6").style("min-width:460px"):
@@ -650,6 +708,7 @@ def build_page():
         team_banner.refresh()
         refresh_roster()
         refresh_contracts()
+        refresh_trades()
         refresh_staff()
         refresh_draft()
         refresh_depth()

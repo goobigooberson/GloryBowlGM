@@ -527,7 +527,8 @@ class GameTeam:
         # but a team keeps its identity while its coordinator stays and the style
         # moves with him). A league without staffs draws it from the team and season
         # as before. The roster still shapes it each game.
-        style = _StyleDice(self.league, self.id) or random.Random(f"style-{self.league.season}-{self.id}-{self.abbrev}")
+        style = _StyleDice(self.league, self.id) or random.Random(
+            f"style-{self.league.settings.get('salt', '')}-{self.league.season}-{self.id}-{self.abbrev}")
 
         def tz(slot):
             p = self.starter(slot)

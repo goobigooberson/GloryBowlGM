@@ -406,8 +406,28 @@ restructure frequency from OverTheCap (June 2021).
   not spending" (a GM). Real data says the habit mostly outlasts GM changes (0.57 of 0.62), so the
   plan is mostly the owner's (`PLAN_OWNER_SHARE`) with the GM's free agency and cap styles in it.
 - **You getting fired**: off by default, with a setting to turn it on (FOF8's option; Blake always
-  had it off). AI GMs are still hired and fired around the league. You can't be fired yet, so the
-  "on" side is a piece still to build.
+  had it off). AI GMs are still hired and fired around the league. Built Oct 23 (below).
+
+### The owner can fire you (Oct 23; Blake: "build the 'owner can fire you' setting here: off by default, on in settings, FOF8-style")
+- **Setting:** `league.settings["owner_can_fire"]` (default off): a switch on the New game screen
+  and on your Staff page (change it any time).
+- **How the owner judges you:** FOF8 weighed finances as much as wins; this game has no team
+  finances yet, so your owner uses the same real odds as the AI GMs' owners (`gm.FIRE_GM`: your
+  record, the playoffs, your seasons in charge; real 2003-26). Averaged over a career that's about
+  1 season in 7, far more after a bad year in your third season or later, rarely after a playoff
+  year or in your first season.
+- **Job security** on the Staff page: Secure / Safe for now / Uneasy / Hot seat / On the way out,
+  with the chance and its basis (in-season: the record so far with three .500 games mixed in, so
+  one bad week isn't the hot seat; "New in the job" right after you take one).
+- **The verdict** comes when you press "Start the offseason" (`gm.owner_review`, once a season, kept
+  in the save: reloading can't re-roll it). If he fires you: the AI owners' GM changes for that
+  offseason are decided right then, and the teams opening their job that rank you among their top 3
+  candidates offer it (at most 3; if none would, the owner most ready for a change makes one).
+  You pick one (`gm.take_job`); the move happens as the offseason starts (your old team hires an
+  AI GM, the new team's GM is let go), and you run the new team's offseason from there. There's no
+  "retire" option yet. News: your firing and hiring as stories, an insider's scoop, the old team's
+  fans, the new team's welcome. Your own GM record (seasons, record, playoff trips, titles,
+  reputation) shows on the Staff page and team window.
 
 ### PROVISIONAL (for Blake)
 - The style sizes (knobs marked Oct 22 in `free_agency.py`, `gm.py`), the coach-judging spread,

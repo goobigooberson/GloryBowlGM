@@ -196,6 +196,8 @@ def save_league(league: League, path, created=None):
         "awards": json.dumps(getattr(league, "awards", None) or {}, separators=(",", ":")),
         # Coaching staffs and front offices (staff.py, Oct 24).
         "staff": json.dumps(getattr(league, "staff", None) or {}, separators=(",", ":")),
+        # Player trades (trades.py, Oct 23): traded picks, the trade log, GMs' moods, offers to you.
+        "trades": json.dumps(getattr(league, "trades", None) or {}, separators=(",", ":")),
         # Finished seasons' news, kept as it was (news.freeze_season, Oct 22; compressed text).
         "news_archive": json.dumps(getattr(league, "news_archive", None) or {}, separators=(",", ":")),
     }
@@ -527,6 +529,8 @@ def load_league(path):
         # Coaching staffs (saves from before Oct 24 have none: every team gets one,
         # seeded by the save's salt so it's the same staff every time it loads).
         league.staff = json.loads(info.get("staff") or "{}") or None
+        # Player trades (saves from before Oct 23 have none: they start empty).
+        league.trades = json.loads(info.get("trades") or "{}")
         # Finished seasons' news (saves from before Oct 22 have none: news writes every season).
         league.news_archive = json.loads(info.get("news_archive") or "{}") or None
         from . import staff
@@ -557,7 +561,7 @@ def load_league(path):
         if team.id not in league.captains:
             # Seeded by season and team, so an older save gets the same
             # captains every time it loads (keeps the sim reproducible).
-            league.vote_captains(team.id, rng=random.Random(f"captains-{league.season}-{team.id}"))
+            league.vote_captains(team.id, rng=random.Random(f"captains-{league.settings.get('salt', '')}-{league.season}-{team.id}"))
     # A draft class's hidden notes (draft.py: the truth, the league's shared mistake...) go back
     # on its prospects, so every screen and tool sees the same grades from the moment it loads.
     notes = league.draft.get("notes") if isinstance(league.draft, dict) else None

@@ -156,7 +156,7 @@ def draft_order(league, season_lines):
         return (r["w"] + 0.5 * r["t"]) / g if g else 0.0
     stage = {"Missed the playoffs": 0, "Lost in the Wild Card round": 1, "Lost in the divisional round": 2,
              "Lost in the conference championship": 3}
-    tie = random.Random(f"draft-order-{league.season}")
+    tie = random.Random(f"draft-order-{league.settings.get('salt', '')}-{league.season}")
     coin = {r["team"]: tie.random() for r in season_lines}
 
     def key(r):
@@ -412,6 +412,10 @@ def offseason_next(league, rng=None):
     elif phase == "draft":
         # The draft starts at pick 1: you watch it pick by pick in the draft room
         # (draft_day.py, screens/draft_page.py). With no picks of yours it's over right away.
+        # First, the draft's trades with players (trades.py, Oct 23; real teams make 1-2 a draft):
+        # before the room opens, so a pick in this draft that changes hands goes to its new owner.
+        from . import trades
+        trades.step(league, phase="draft")
         r = _phase_rng(league, "draft", rng)
         if _draft_phase(league, r):
             _draft_done(league, r)
@@ -427,6 +431,10 @@ def offseason_next(league, rng=None):
     elif phase == "camp":
         _camp_phase(league, _phase_rng(league, "camp", rng))
         st["phase"] = "done"
+    # Player trades (trades.py, Oct 23): AI teams deal with each other and call you with
+    # offers as the league year opens, through free agency and up to the draft, and after it.
+    from . import trades
+    trades.step(league)                 # (its own dice: the rest of the offseason draws as before)
     return st["phase"]
 
 

@@ -148,8 +148,10 @@ def ensure_state(p):
 
 def aging_profile(p):
     """His own aging: (seasons his prime ends later (+) or earlier (-) than
-    his position's, decline speed multiplier). Fixed for his career."""
-    rng = random.Random(f"aging-{p.id}")
+    his position's, decline speed multiplier). Fixed for his career. (Seeded by
+    who he is, not just his id: every league numbers its players from 1, so an
+    id alone gave player #57 the same aging in every league; Oct 23.)"""
+    rng = random.Random(f"aging-{p.id}-{p.first_name} {p.last_name}-{p.birth_date}")
     shift = max(-AGING_PEAK_LIMIT, min(AGING_PEAK_LIMIT, round(rng.gauss(0, AGING_PEAK_SD))))
     rate = math.exp(rng.gauss(0, AGING_RATE_SD))
     return shift, rate

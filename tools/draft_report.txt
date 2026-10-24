@@ -1,4 +1,4 @@
-Draft realism check (engine/draft.py), 6 leagues x 22 seasons, 603 s
+Draft realism check (engine/draft.py), 6 leagues x 22 seasons (report from a saved 543 s run)
 
 Leagues: 101, 102, 104, 105, 106, 107; drafts run: 132; careers followed (classes after year 3, 8+ seasons): 17472
 
@@ -146,3 +146,24 @@ Leagues: 101, 102, 104, 105, 106, 107; drafts run: 132; careers followed (classe
    league 106: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 23/1/51/68.1  2031: 35/3/57/71.9  2037: 23/1/55/69.5  2043: 18/5/52/68.3  2048: 18/4/54/69.0
    league 107: on screen 80+ / 90+ / median / starters' internal avg by season: 2026: 22/1/51/68.0  2031: 32/3/56/71.5  2037: 20/3/55/69.2  2043: 23/0/52/68.3  2048: 19/5/52/68.4
    starters' average by position, first season -> last 5 seasons (internal): QB 67->70 RB 67->69 FB 74->73 TE 67->68 WR 66->67 T 69->68 G 65->65 C 67->67 DE 71->72 DT 67->68 OLB 65->66 ILB 68->68 CB 65->67 S 65->67 K 74->77 P 76->77 LS 77->76
+14. TIGHT ENDS: DO THE BEST ONES FALL? (the FOF8 exploit: elite TEs lasted past pick 8; sim | real)
+   first TE taken: median pick 21 | 21   in the top 10   27% |   22%   in round 1   74% |   78%   after pick 50   11% |    7%  (real 2000-2026)
+   TEs per draft: in round 1 1.19 | 1.11   in the top 10 0.30 | 0.22
+   By true grade (what he really is, plus his position's value on every board; sim only):
+     the class's best TE: median pick 32, after pick 8   85%, after 32   48%, after 64   25%
+     graded in the class's top 8: TEs 0.31 a class, median pick 13, after pick 8   73%, after 32   15%, after 64    0%
+                                  others 7.7 a class, median pick 9, after pick 8   53%, after 32   10%, after 64    2%
+     graded as first-rounders (top 32): TEs 1.30 a class, median pick 33, after pick 8   87%, after 32   52%, after 64   16%
+                                        others 30.7 a class, median pick 24, after pick 8   79%, after 32   38%, after 64   14%
+   Ranked in the top 32 on the public big board: TEs 1.39 a draft, median pick 23, after pick 8   85%, after 32   31%, after 64    3%; others median pick 17, after pick 8   75%, after 32   17%, after 64    2%
+     real (ESPN's 2023 board, the only year in the data): Dalton Kincaid ranked 14 -> pick 25, Michael Mayer ranked 20 -> pick 35, Darnell Washington ranked 30 -> pick 93, Luke Musgrave ranked 48 -> pick 42, Sam LaPorta ranked 55 -> pick 34
+   In hindsight (career value: seasons started + 1.5 per Pro Bowl + 0.25 per season; real classes 2000-2018):
+     the class's best TE was picked: median 33 | 42   in round 1   47% |   37%   top 10   19% |    5%   after round 3    5% |   10%
+     TEs among the class's top 8 careers: 0.46 a class | 0.37, median pick 20 | 63; other positions there 12 | 19
+     TEs among the class's top 32 careers: 1.42 a class | 1.95, median pick 35 | 38; other positions there 30 | 36
+   First-round TEs, how they turned out (n 96 | 22): starter 3+ seasons   85% |   86%   5+   69% |   73%   Pro Bowl   50% |   64%   never started    6% |    0%
+
+15. STARTUP DRAFT: TIGHT ENDS (10 new leagues; sim | real contract rank, OverTheCap 2015-22)
+   pick of the k-th TE taken: 1th 48 | 100   3th 106 | 130   5th 154 | 162   10th 304 | 239   20th 530 | 318   32th 818 | 492
+   TE fit (average log ratio, + = later than real): +0.05; the other positions: C -0.06, CB +0.06, DE +0.01, DT +0.06, G +0.01, K +0.27, LS +0.36, P +0.19, QB -0.09, RB +0.12, S -0.18, T +0.23, WR -0.06
+   elite players (2+ spreads above the league's starters at their position): median pick TE 66 (n 16, after pick 8  100%), QB 2 (n 17, after pick 8    0%), other positions 67 (n 333, after pick 8  100%)

@@ -250,7 +250,12 @@ def top51_in_force(league):
     first regular-season game."""
     stage = getattr(league, "stage", "")
     if stage == "regular_season":
-        return pay_week(league) == 0
+        if pay_week(league) > 0:
+            return False
+        # Week 1: until its games are played. (Before Oct 23 it also covered the moves made
+        # right after the week-1 games, when the week counter still said 1: AI teams signed
+        # players by the top-51 count and were over the cap once every contract counted.)
+        return not any(g.get("played") for g in getattr(league, "schedule", ()) if g.get("week") == 1)
     return stage not in ("regular_season_done", "playoffs", "season_complete")
 
 

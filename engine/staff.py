@@ -888,7 +888,7 @@ def utility(league, c, tid, job, salary):
     m = max(1, market_value(league, c, job))
     cur = LEVEL[c["job"]] if c["team"] is not None else 0
     up = max(0, LEVEL[job] - cur) if c["track"] == "coach" else (1 if c["team"] is None else 0)
-    taste = random.Random(f"taste-{c['id']}-{tid}").gauss(0, U_NOISE)
+    taste = random.Random(f"taste-{league.settings.get('salt', '')}-{c['id']}-{tid}").gauss(0, U_NOISE)
     return (U_MONEY * math.log(max(1, salary) / m) + U_PROMOTION * up + U_OUTLOOK * _outlook(league, tid)
             + (U_TIE if _tie(league, c, tid) else 0.0) + taste)
 
@@ -970,7 +970,7 @@ def carousel_next(league, rng=None):
 
 
 def _ai_value(league, c, tid, job):
-    noise = random.Random(f"view-{tid}-{c['id']}").gauss(0, AI_VIEW_NOISE)
+    noise = random.Random(f"view-{league.settings.get('salt', '')}-{tid}-{c['id']}").gauss(0, AI_VIEW_NOISE)
     v = reputation_score(c, job) + noise
     # The team's general manager hires the staff, and some see through a coach's
     # reputation better than others (gm.py, Oct 22; hidden, PROVISIONAL).

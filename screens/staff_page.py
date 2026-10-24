@@ -167,9 +167,19 @@ def gm_html(league, tid, compact=False):
     record, where he came from and what he's known for."""
     teams = {t.id: t for t in league.teams}
     if tid == league.user_team_id:
+        yv = G.your_view(league)
+        line = ""
+        if yv and yv["seasons"]:
+            rep, col = _rating(yv["reputation"])
+            line = (f'<div>Your record as a GM: {_wl(yv["record"])} in {yv["seasons"]} season'
+                    f'{"s" if yv["seasons"] != 1 else ""}' + (f', {yv["playoffs"]} playoff trip'
+                    f'{"s" if yv["playoffs"] != 1 else ""}' if yv["playoffs"] else '')
+                    + (f', {yv["titles"]} title{"s" if yv["titles"] != 1 else ""}' if yv["titles"] else '')
+                    + f'. Reputation around the league: <span style="color:{col};font-weight:600">'
+                    f'{escape(rep)}</span></div>')
         return ('<div class="panel-heading" style="margin-top:0">General manager</div>'
                 '<div><b>You.</b> You run the front office: the draft, free agency, contracts and hiring the '
-                'coaching staff.</div>')
+                'coaching staff.</div>' + line)
     p = G.gm_of(league, tid)
     if not p:
         return ('<div class="panel-heading" style="margin-top:0">General manager</div>'
@@ -305,6 +315,25 @@ def build_staff_tab(on_change=None):
                 with ui.element("div").classes("report px-5 py-3").style("margin-top:6px; max-width:900px"):
                     ui.html(gm_html(league, tid, compact=True), sanitize=False)
                 return
+            # Your job (Blake, Oct 23: the owner firing you is off by default, on in settings).
+            js = G.job_security(league)
+            if js:
+                with ui.row().classes("items-center gap-3 no-wrap").style("margin-top:4px"):
+                    if js["on"]:
+                        ui.html(f'Your job: <b>{escape(js["word"])}</b> <span class="legend">({escape(js["basis"])}; '
+                                f'about a {round(js["chance"] * 100)}% chance your owner would move on if he '
+                                f'decided today)</span>', sanitize=False) \
+                            .tooltip("After each season your owner judges you the way real owners judge GMs: "
+                                     "your record, the playoffs, how long you've had the job (real odds, "
+                                     "2003-26). New GMs get time; a bad team in your third year or later is "
+                                     "the hot seat.")
+                    else:
+                        ui.label("Your owner can't fire you (the setting is off).").classes("legend")
+                    ui.switch("Owner can fire you", value=js["on"],
+                              on_change=lambda e: (G.set_can_be_fired(league, e.value), changed())) \
+                        .props("dense color=green-10") \
+                        .tooltip("FOF8's option. Off: your job is safe. On: you can be fired after a season, "
+                                 "and teams with an open GM job make you offers.")
             car = league.staff.get("carousel")
             if car:
                 with ui.element("div").classes("notice carousel-box").style("margin-top:6px"):

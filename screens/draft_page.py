@@ -1546,14 +1546,15 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
                 ui.label("No calls: nobody behind you wants to move up badly enough.").classes("legend")
             for o in offs:
                 with ui.row().classes("items-center gap-2 no-wrap w-full").style("border-bottom:1px solid #EEF1EC;padding:4px 0"):
-                    ui.html(f'<div><b>{escape(league.team(o["team"]).name)}</b> offer pick'
-                            f'{"s" if len(o["gives"]) > 1 else ""} {", ".join(map(str, o["gives"]))} '
+                    ui.html(f'<div><b>{escape(league.team(o["team"]).name)}</b> offer '
+                            f'{escape(DD.pick_list(league, o["gives"]))} '
                             f'<span class="legend">({o["chart_points"]:,} chart points for your '
                             f'{o["for_points"]:,})</span></div>', sanitize=False).style("flex:1")
                     ui.button("Accept", on_click=lambda o=o: take_offer(o)).props("no-caps dense color=green-10")
         ui.html("<h3>Make an offer</h3>", sanitize=False)
-        ui.label("Picks in this draft only. AI teams want at least full value by the Jimmy Johnson trade "
-                 "chart (what real teams use), and a team on the clock (or a few picks from it) that loves a "
+        ui.label("Picks in this draft, or next year's. AI teams want at least full value by the Jimmy Johnson "
+                 "trade chart (what real teams use); a pick next year is worth about a round less to them "
+                 "(the real market's rule of thumb). A team on the clock (or a few picks from it) that loves a "
                  "player still on the board won't move down.").classes("legend")
         others = {t.id: t.name for t in sorted(league.teams, key=lambda t: t.name) if t.id != uid}
         offer = view.setdefault("offer", {"team": None, "give": [], "get": [], "clock": None})
@@ -1566,14 +1567,24 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
 
         def label(s):
             return f"#{s['pick']} (round {s['round']}, {DD.chart_points(s['pick']):,} pts)"
+
+        def options(slots, team):
+            # This draft's picks by number, then next year's (worth to the team that would get them).
+            out = {s["pick"]: label(s) for s in slots}
+            other = offer["team"] if team == uid else uid
+            for key, name in DD.next_year_picks(league, team):
+                out[key] = f"{name} (next year, ~{DD.future_points(league, key, other):,} pts)"
+            return out
         ui.select(others, value=offer["team"], label="Trade with",
                   on_change=lambda e: (offer.update(team=e.value, get=[]), ctx["trades_refresh"]())) \
             .props("dense outlined options-dense").classes("w-full mt-2")
-        ui.select({s["pick"]: label(s) for s in theirs}, value=[x for x in offer["get"] if x in {s["pick"] for s in theirs}],
+        theirs_opts = options(theirs, offer["team"])
+        mine_opts = options(mine, uid)
+        ui.select(theirs_opts, value=[x for x in offer["get"] if x in theirs_opts],
                   multiple=True, label="You get",
                   on_change=lambda e: (offer.update(get=list(e.value or [])), preview.refresh())) \
             .props("dense outlined options-dense use-chips").classes("w-full mt-1")
-        ui.select({s["pick"]: label(s) for s in mine}, value=[x for x in offer["give"] if x in {s["pick"] for s in mine}],
+        ui.select(mine_opts, value=[x for x in offer["give"] if x in mine_opts],
                   multiple=True, label="You give",
                   on_change=lambda e: (offer.update(give=list(e.value or [])), preview.refresh())) \
             .props("dense outlined options-dense use-chips").classes("w-full mt-1")
@@ -1974,6 +1985,8 @@ def build_draft_tab(on_change=None, on_next=None, on_startup_done=None):
 def _trade_line(league, t):
     up, down = league.team(t["up"]).abbrev, league.team(t["down"]).abbrev
     you = league.user_team_id in (t["up"], t["down"])
+    got = t["got"] + t.get("got_future", [])
+    gave = t["gave"] + t.get("gave_future", [])
     return (f'<div class="ln" style="white-space:normal;{"font-weight:600;background:#FFF6CF" if you else ""}">'
-            f'{up} get pick{"s" if len(t["got"]) > 1 else ""} {", ".join(map(str, t["got"]))}; {down} get '
-            f'{", ".join(map(str, t["gave"]))} <span class="legend">(chart {t["jj_ratio"]:.2f}x)</span></div>')
+            f'{up} get {escape(DD.pick_list(league, got))}; {down} get {escape(DD.pick_list(league, gave))} '
+            f'<span class="legend">(chart {t["jj_ratio"]:.2f}x)</span></div>')

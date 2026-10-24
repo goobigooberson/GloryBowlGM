@@ -266,6 +266,16 @@ def build_contracts_tab(on_change=None):
 
         with ui.element("div").classes("report px-6 py-5") \
                 .style("flex: 0 0 440px; height: calc(100vh - 372px); overflow-y: auto"):
+            # (Defined before panel() is first drawn: opening a save during free agency
+            # draws the Free agency view right away, and it uses this.)
+            def offers_box():
+                offers = league.fa.get("user_offers", {})
+                if not offers:
+                    return
+                lines = "".join(f'<li>{escape(league.player(pid).position)} {escape(league.player(pid).name)}: '
+                                f'{_m(o["apy"])} x {o["years"]}</li>' for pid, o in offers.items())
+                ui.html(f'<h3>Your offers this wave</h3><ul style="margin:4px 0 0 18px">{lines}</ul>', sanitize=False)
+
             @ui.refreshable
             def panel():
                 pid = view["pid"]
@@ -619,14 +629,6 @@ def build_contracts_tab(on_change=None):
             if result == "accept":
                 changed()
         money_form(ask, offer, "Make offer" if not mine else "Change offer")
-
-    def offers_box():
-        offers = league.fa.get("user_offers", {})
-        if not offers:
-            return
-        lines = "".join(f'<li>{escape(league.player(pid).position)} {escape(league.player(pid).name)}: '
-                        f'{_m(o["apy"])} x {o["years"]}</li>' for pid, o in offers.items())
-        ui.html(f'<h3>Your offers this wave</h3><ul style="margin:4px 0 0 18px">{lines}</ul>', sanitize=False)
 
     # ---- Data ---------------------------------------------------------------
     def rows_for():

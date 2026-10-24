@@ -91,6 +91,16 @@ EXPERIENCE_BONUS = -7.0
 DIRECTOR_REP = (41, 8)        # a scouting director's reputation as a GM candidate (mean, spread)
 NEWCOMER_REP = (43, 8)
 # In-season: none yet (the game has no in-season head coach firings for AI teams yet either).
+# You (Blake, Oct 23: "gm firing should by default be off, but can be enabled in settings. i always
+# had it off in fof8"): with league.settings["owner_can_fire"] on, your owner judges you after each
+# season by the same real odds as the AI GMs (record, tenure, playoffs). FOF8 weighed finances as
+# much as wins; this game has no team finances yet, so results decide, as they mostly do for real GMs.
+# If you're fired, teams with an open GM job that want you make offers and you pick your next team.
+YOU_OFFERS = 3                # at most this many offers
+YOU_SHORTLIST = 3             # an owner offers you the job if you're among his top this many candidates
+YOU_PRIOR_GAMES = 3           # in-season job security: the record so far, with this many .500 games mixed in
+SECURITY_WORDS = ((0.05, "Secure"), (0.12, "Safe for now"), (0.25, "Uneasy"), (0.45, "Hot seat"),
+                  (9.9, "On the way out"))
 # ---------------------------------------------------------------------------------
 
 
@@ -139,6 +149,12 @@ def ensure(league):
             p["out_since"] = league.season - rng.choice((0, 1, 1, 2))
     # You are your team's GM: if you took over a team that had one, he's out of work.
     user = league.user_team_id
+    y = g.setdefault("you", {"team": user, "since": league.settings.get("first_season", league.season),
+                             "record": [], "rep": 50.0, "jobs": []})
+    if user is not None and y.get("team") != user:
+        if y.get("team") is not None:
+            y["jobs"].append({"team": y["team"], "from": y["since"], "to": league.season - 1})
+        y["team"], y["since"] = user, league.season
     if user is not None:
         cur = g["jobs"].get(str(user))
         if cur is not None:
@@ -281,7 +297,12 @@ def _showing(r):
 def record_season(league, lines):
     g = league.staff["gm"]
     rng = _rng(league, "rep")
+    y = g.get("you")
     for r in lines:
+        if y is not None and r["team"] == league.user_team_id:
+            y["record"].append({"season": r["season"], "team": r["team"], "w": r.get("w", 0), "l": r.get("l", 0),
+                                "t": r.get("t", 0), "result": r.get("result", ""), "seed": r.get("seed")})
+            y["rep"] = round(_clip(y["rep"] + REP_MOVE * (_showing(r) - y["rep"])), 1)
         p = gm_of(league, r["team"])
         if not p:
             continue
@@ -349,7 +370,7 @@ def _director_rep(league, c):
     squeezed toward a newcomer's level (he hasn't run a team)."""
     from . import staff as S
     rep = S.reputation(c, "eval") or 50
-    return DIRECTOR_REP[0] + 0.4 * (rep - 55) + random.Random(f"gm-dir-{c['id']}").gauss(0, DIRECTOR_REP[1] * 0.6)
+    return DIRECTOR_REP[0] + 0.4 * (rep - 55) + random.Random(f"gm-dir-{league.settings.get('salt', '')}-{c['id']}").gauss(0, DIRECTOR_REP[1] * 0.6)
 
 
 def _owner_view(league, tid, kind, x):
@@ -411,6 +432,22 @@ def offseason_start(league, lines, rng=None):
     g = league.staff["gm"]
     rng = rng or _rng(league, "offseason")
     record_season(league, lines)
+    # Your owner's verdict, made when you started the offseason (owner_review): if you were
+    # fired and took another job, you move now (its GM was let go to make room for you).
+    review = g.get("review")
+    decided = None
+    if review and review.get("season") == league.season - 1 and review.get("fired"):
+        decided = set(review.get("ai_fired", ()))
+        old, new = review["team"], review.get("new_team")
+        _log_you(league, old, "fired", review.get("note", ""))
+        if new is not None:
+            if gm_of(league, new):
+                fire(league, new)
+            decided.discard(new)
+            league.user_team_id = new
+            _log_you(league, new, "hired", f"after the {league.team(old).name} let you go")
+            ensure(league)
+        review["done"] = True
     _age_year(league, rng)
     by_team = {r["team"]: r for r in lines}
     user = league.user_team_id
@@ -425,7 +462,9 @@ def offseason_start(league, lines, rng=None):
         r = by_team.get(tid, {})
         tenure = max(1, league.season - (p["since"] or league.season))
         chance = min(0.95, fire_chance(_wins17(r), tenure, bool(r.get("seed"))) * FIRE_LIFT)
-        if p.get("interim") or rng.random() < chance:
+        roll = rng.random()
+        fired = (tid in decided) if decided is not None else roll < chance
+        if p.get("interim") or fired:
             changes.append((tid, fire(league, tid)))
     out = []
     if changes:
@@ -444,6 +483,190 @@ def offseason_start(league, lines, rng=None):
         del g["people"][k]
     g["season"] = league.season
     return out
+
+
+# ---------------------------------------------------------------------------
+# You: your owner's patience (off unless league.settings["owner_can_fire"])
+# ---------------------------------------------------------------------------
+
+def can_be_fired(league):
+    return bool(league.settings.get("owner_can_fire", False))
+
+
+def set_can_be_fired(league, on):
+    league.settings["owner_can_fire"] = bool(on)
+
+
+def you(league):
+    st = getattr(league, "staff", None)
+    g = st.get("gm") if st else None
+    if not g:
+        return None
+    if "you" not in g:
+        ensure(league)
+    return g.get("you")
+
+
+def _log_you(league, tid, move, note=""):
+    league.staff["gm"]["log"].append({"season": league.season, "team": tid, "gid": None, "name": "you",
+                                      "move": move, "note": note, "you": True})
+
+
+def _your_tenure(league, finished):
+    """Seasons you've run your current team (the one just played counts once it's over)."""
+    y = you(league)
+    since = y.get("since", league.season) if y else league.season
+    return max(1, league.season - since + (1 if finished else 0))
+
+
+def job_security(league):
+    """How your owner sees you right now: {"chance" (that he'd let you go if the season
+    ended today), "word", "on" (the setting), "tenure", "basis" (plain words)}. In the
+    offseason it's last season's verdict-to-be; during the season, the record so far
+    (with a few .500 games mixed in early on, so one bad week isn't the hot seat)."""
+    tid = league.user_team_id
+    if tid is None or not getattr(league, "staff", None):
+        return None
+    from . import season as SE
+    from . import playoffs as po
+    y = you(league) or {}
+    if (SE.in_offseason(league) or SE.in_preseason(league)) and y.get("since") == league.season:
+        # You just took this job: the owner hasn't seen a season of yours yet.
+        p = min(0.95, fire_chance(8.5, 1, False) * FIRE_LIFT)
+        return {"chance": p, "word": "New in the job", "on": can_be_fired(league), "tenure": 1,
+                "basis": "you just took over; your first season decides the owner's view"}
+    if SE.in_offseason(league) or SE.in_preseason(league):
+        last = next((r for r in reversed(league.team_history) if r["team"] == tid
+                     and r["season"] == league.season - 1), None)
+        w17 = _wins17(last) if last else 8.5
+        playoffs = bool(last and last.get("seed"))
+        tenure = _your_tenure(league, False)
+        basis = (f"last season {last['w']}-{last['l']}" + (f"-{last['t']}" if last['t'] else "") if last
+                 else "no season played yet")
+    else:
+        r = SE.records(league).get(tid, {"w": 0, "l": 0, "t": 0})
+        g = r["w"] + r["l"] + r["t"]
+        w = r["w"] + 0.5 * r["t"]
+        w17 = 17 * (w + 0.5 * YOU_PRIOR_GAMES) / (g + YOU_PRIOR_GAMES)
+        over = SE.season_over(league)
+        playoffs = bool(po.seed_of(league, tid)) if (over or SE.in_playoffs(league)) else False
+        tenure = _your_tenure(league, True)
+        basis = f"this season {r['w']}-{r['l']}" + (f"-{r['t']}" if r["t"] else "")
+    p = min(0.95, fire_chance(w17, tenure, playoffs) * FIRE_LIFT)
+    word = next(wd for lim, wd in SECURITY_WORDS if p < lim)
+    return {"chance": p, "word": word, "on": can_be_fired(league), "tenure": tenure,
+            "basis": f"{basis}, your {_ordinal(tenure)} season in charge" + (", playoffs" if playoffs else "")}
+
+
+def _ordinal(n):
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+def _ai_firings(league, lines, rng):
+    """Which AI owners change GMs this offseason (decided early when you're fired, so
+    the jobs that open can be offered to you; offseason_start then uses these)."""
+    by_team = {r["team"]: r for r in lines}
+    out = []
+    for t in league.teams:
+        if t.id == league.user_team_id:
+            continue
+        p = gm_of(league, t.id)
+        if p is None:
+            out.append(t.id)
+            continue
+        r = by_team.get(t.id, {})
+        tenure = max(1, league.season + 1 - (p["since"] or league.season + 1))
+        chance = min(0.95, fire_chance(_wins17(r), tenure, bool(r.get("seed"))) * FIRE_LIFT)
+        if rng.random() < chance:
+            out.append(t.id)
+    return out
+
+
+def owner_review(league):
+    """The season is over and you're starting the offseason: if your owner can fire
+    you, he decides (once a season, kept in the save). Returns the review:
+    {"season", "fired", "chance", "team", "offers": [team ids], "new_team"}, or None
+    when the setting is off (or there's no team of yours)."""
+    tid = league.user_team_id
+    if tid is None or not can_be_fired(league) or not ensure(league):
+        return None
+    g = league.staff["gm"]
+    S = league.season
+    rv = g.get("review")
+    if rv and rv.get("season") == S:
+        return rv
+    from . import season as SE
+    if not SE.season_over(league):
+        return None
+    lines = SE.team_season_summary(league)
+    mine = next(r for r in lines if r["team"] == tid)
+    tenure = _your_tenure(league, True)
+    chance = min(0.95, fire_chance(_wins17(mine), tenure, bool(mine.get("seed"))) * FIRE_LIFT)
+    rng = random.Random(f"gm-you-{_salt(league)}-{S}")
+    fired = rng.random() < chance
+    rv = {"season": S, "fired": fired, "chance": round(chance, 3), "team": tid, "offers": [], "new_team": None,
+          "record": [mine["w"], mine["l"], mine["t"]], "tenure": tenure}
+    if fired:
+        ai_fired = _ai_firings(league, lines, rng)
+        rv["ai_fired"] = ai_fired
+        rv["offers"] = _offers(league, ai_fired, rng)
+        if not rv["offers"]:
+            # Nobody's job is open: the owner most ready for a change makes one now that you're
+            # available (owners do move when a GM they like comes free).
+            by_team = {r["team"]: r for r in lines}
+            hot = max((t.id for t in league.teams if t.id != tid and gm_of(league, t.id)),
+                      key=lambda k: fire_chance(_wins17(by_team.get(k, {})),
+                                                max(1, S + 1 - (gm_of(league, k)["since"] or S)),
+                                                bool(by_team.get(k, {}).get("seed"))))
+            rv["ai_fired"].append(hot)
+            rv["offers"] = [hot]
+        w, l_, t_ = rv["record"]
+        rv["note"] = f"after {tenure} season{'s' if tenure != 1 else ''} in charge"
+    g["review"] = rv
+    return rv
+
+
+def _your_view(league, tid, rng_key):
+    """An owner's read of you as a candidate (your record's reputation, his own read,
+    and that you were just let go elsewhere)."""
+    y = you(league)
+    noise = random.Random(f"gm-owner-you-{_salt(league)}-{league.season}-{tid}-{rng_key}").gauss(0, OWNER_NOISE)
+    return y["rep"] + noise + EXPERIENCE_BONUS
+
+
+def _offers(league, open_teams, rng):
+    """Teams (of those opening their GM job) whose owners would offer it to you: you're
+    among each one's top candidates. At most YOU_OFFERS, the keenest first."""
+    out = []
+    for tid in open_teams:
+        mine = _your_view(league, tid, "offer")
+        pool = candidates(league, tid)
+        better = sum(1 for kind, x in pool if _owner_view(league, tid, kind, x) > mine)
+        out.append((better, tid))
+    out.sort()
+    return [tid for better, tid in out if better < YOU_SHORTLIST][:YOU_OFFERS]
+
+
+def take_job(league, tid):
+    """You accept an offer (after being fired). You move when the offseason starts."""
+    rv = (league.staff.get("gm") or {}).get("review")
+    if not rv or not rv.get("fired") or tid not in rv.get("offers", ()):
+        return False, "That job isn't offered to you."
+    rv["new_team"] = tid
+    return True, f"You're the new general manager of the {league.team(tid).name}."
+
+
+def your_view(league):
+    """Your own GM record for the screens: reputation, seasons, teams, playoff trips."""
+    y = you(league)
+    if not y:
+        return None
+    rec = y["record"]
+    return {"reputation": int(round(_clip(y["rep"]))), "seasons": len(rec),
+            "record": (sum(r["w"] for r in rec), sum(r["l"] for r in rec), sum(r["t"] for r in rec)),
+            "playoffs": sum(1 for r in rec if r.get("seed")),
+            "titles": sum(1 for r in rec if (r.get("result") or "").startswith("Won")),
+            "since": y.get("since"), "jobs": list(y.get("jobs", ())), "history": list(rec)}
 
 
 # ---------------------------------------------------------------------------

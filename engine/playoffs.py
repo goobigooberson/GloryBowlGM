@@ -73,7 +73,7 @@ class Results:
             rh = 1.0 if hs > as_ else (0.5 if hs == as_ else 0.0)
             self.games[h].append((a, rh, hs, as_))
             self.games[a].append((h, 1.0 - rh, as_, hs))
-        self.coin = random.Random(f"coin-{league.season}")
+        self.coin = random.Random(f"coin-{league.settings.get('salt', '')}-{league.season}")
         self.coin_order = {tid: self.coin.random() for tid in self.teams}
 
     def same_div(self, a, b):
@@ -306,7 +306,7 @@ def make_round(league, rnd):
 
 def glory_bowl_site(league):
     """Host stadium (team abbreviation) for this season's Glory Bowl."""
-    rng = random.Random(f"glory-bowl-{league.season}")
+    rng = random.Random(f"glory-bowl-{league.settings.get('salt', '')}-{league.season}")
     return rng.choice(GLORY_BOWL_SITES)
 
 

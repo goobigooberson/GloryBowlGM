@@ -94,3 +94,10 @@ python tools/recenter.py --write      # then write the new centers into engine/s
 - `data/` - nflverse player season stats 2015-2025 and snap counts 2023-2025
   (https://github.com/nflverse/nflverse-data)
 - `realism_report.txt` - written by the last `realism_check.py` run
+- `free_agency_check.py` - contracts, the cap and free agency vs the real NFL (`free_agency_report.txt`), incl. the
+  "fair price" check against FOF8's cheap-star exploit: do good free agents sign far below their worth while teams
+  have room (real yardstick: `docs/research/fair_price.py`)? `--leagues 101,102,103 --seasons 4` (~5 min)
+- `draft_check.py` - the draft vs the real NFL (`draft_report.txt`), incl. sections 14-15, the tight end checks
+  against FOF8's "elite TEs fall past pick 8" exploit (rookie draft by true grade, public board and hindsight;
+  startup draft vs real contract ranks; real data: `docs/research/te_draft.py`). ~10 min; `--startup-only` ~20 s
+- `trade_check.py` - player trades vs the real NFL (`trade_report.txt`; real data: `docs/research/trade_research.py` -> `real_trades.json`): trades a league year and by phase, the deadline rush, deals per team, who's traded (position, age, contract size, stars), what comes back, how far out the picks are, legality; and the exploit checks (asks by position, quantity for quality, dumping bad contracts, buy low / sell high, lowballs). Made-up results, the game's own offseason. `--leagues 101,102,103,104,105,106 --seasons 3` (~4 min); `--calls 0` for a no-trades baseline

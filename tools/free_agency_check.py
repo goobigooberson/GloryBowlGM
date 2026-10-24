@@ -2,16 +2,20 @@
 # Contracts, the salary cap and free agency vs the real NFL.
 #
 # Builds generated leagues (engine.league.create_league), gives them contracts
-# (free_agency.initial_contracts), then runs offseasons in the real order:
-#   season ends -> retirements -> new league year (cap, re-signings, tags,
-#   extensions, cap cuts) -> free agency (4 waves) -> draft + rookie deals ->
-#   undrafted -> free agency (3 more waves) -> cut to 53 -> practice squads ->
-#   training camp (development)
+# (free_agency.initial_contracts), then runs the game's own offseasons
+#   (offseason.py, phase by phase as the Next button plays them: retirements,
+#   coaching and GM changes, the new league year with re-signings, tags,
+#   extensions and cap cuts, free agency's 4 waves, the draft and undrafted
+#   signings, 3 more waves, trades, camp), training camp (development) and
+#   the cut from 90 to 53 after the preseason (transactions.final_cuts)
 # and prints the sim next to the real numbers for every benchmark:
 #   where players go (same team / new team / out of the league), the deals
 #   signed (minimum share, one-year share, market deals by position, lengths,
 #   guarantees, ages), the pay ladder by position, team payrolls, positional
-#   spending, rookie scale, tags/extensions, and cap legality.
+#   spending, rookie scale, tags/extensions, and cap legality; and the "fair
+#   price" check: do good players sign far below their worth while teams still
+#   have room (FOF8's cheap-star exploit; real yardstick from
+#   docs/research/fair_price.py)?
 # Seasons between offseasons are not played (fast): records are made up from
 # team strength. --games plays one real season per league first (slow) to
 # count in-season signings too.
@@ -42,11 +46,13 @@ from engine import free_agency as FA                  # noqa: E402
 from engine import offseason as OS                    # noqa: E402
 from engine import transactions as TR                 # noqa: E402
 from engine import development                        # noqa: E402
+from engine import depth as DEPTH                     # noqa: E402
 from engine.league import create_league               # noqa: E402
 
 RESEARCH = ROOT / "docs" / "research"
 REAL_C = json.loads((RESEARCH / "real_contracts.json").read_text())
 REAL_M = json.loads((RESEARCH / "real_movement.json").read_text())
+REAL_FP = json.loads((RESEARCH / "real_fair_price.json").read_text())
 # Big deals (5%+ of the cap), 2019-22: 321 deals by length (real_contracts_summary.md)
 REAL_BIG_YEARS = {1: 61, 2: 32, 3: 86, 4: 90, 5: 46, 6: 6}
 # Franchise tags per year (real 2019-24, public tag trackers): about 6-14, usually ~7-9.
@@ -192,7 +198,50 @@ def play_real_season(lg, seed, counts):
 
 
 # ---------------------------------------------------------------------------
-# One offseason, in the real order
+# Fair price: free agency wave by wave, with what each player was worth and
+# what room every AI team had when the wave opened
+# ---------------------------------------------------------------------------
+
+FAIR_LINE = 0.6            # "far below his worth": under this share of his market value
+
+
+def wave_context(lg, w):
+    """What every free agent is worth and the room every AI team has, as wave w opens."""
+    cap = C.cap_for(lg, lg.season)
+    pre = w in FA.PRE_DRAFT_WAVES
+    room = {tid: (C.cap_room(lg, tid) - FA._reserve_share(lg, tid, pre) * cap + FA._restructure_left(lg, tid)) / cap
+            for tid in FA.ai_teams(lg)}
+    return M.market_table(lg), room
+
+
+def record_wave(lg, w, table, room, signed, stats, before, starters):
+    """For each signing of the wave: the player's market price, his ask, whether
+    he was a starter last season, and the room every other AI team had."""
+    cap = C.cap_for(lg, lg.season)
+    for s_ in signed:
+        p = lg.player(s_["pid"])
+        info = table[p.id]
+        stats["fair"].append({
+            "pid": p.id, "pos": p.position, "group": LADDER_GROUP[p.position], "age": FA._age(lg, p),
+            "ovr": p.overall(), "wave": w, "share": s_["apy"] / cap, "price": info["price"],
+            "ask": FA.ask_share(info, w), "good_rating": info["price"] >= M.MARKET_LINE and FA.starter_level(info),
+            "starter": p.id in starters, "last_team": before.get(p.id), "team": s_["team"],
+            "rooms": sorted(r for t, r in room.items() if t != s_["team"]),
+            "name": f"{p.first_name} {p.last_name}", "season": lg.season, "league": lg.name})
+
+
+def cut_to_53(lg, salt):
+    """After the (skipped) preseason: the game's final cuts from 90 to 53, waiver
+    claims, practice squads, everyone under the cap (transactions.final_cuts)."""
+    lg.stage, lg.week, lg.pre_week = "preseason", 1, 5
+    r = TR.final_cuts(lg, {}, {}, 5, random.Random(f"fa-check-cuts-{salt}-{lg.season}"))
+    lg.stage, lg.week = "regular_season", 1
+    return r
+
+
+# ---------------------------------------------------------------------------
+# One offseason: the game's own (offseason.py, phase by phase, as your Next
+# button plays it), then training camp and the cut to 53 after the preseason
 # ---------------------------------------------------------------------------
 
 def offseason(lg, rng, stats, lines):
@@ -201,64 +250,65 @@ def offseason(lg, rng, stats, lines):
     for pid, r in lg.reserve.items():
         before[pid] = r["team"]
     exp_before = {pid: lg.player(pid).experience for pid in before}
+    starters = set()                 # last season's starters (the base packages of each depth chart)
+    for t in lg.teams:
+        starters |= DEPTH.starter_ids(lg.depth_charts.get(t.id, {}))
     TR.end_of_season(lg)
     for p in lg.players:
         if p.id in lg.rosters:
             p.experience += 1
     lg.season += 1
-    lg.stage, lg.week, lg.pre_week = "preseason", 1, 1
     S = lg.season
-    # Retirements (their contracts end; bonus money stays on the cap).
-    retired = set(OS.retirements(lg, rng))
-    for pid in retired:
-        C.retire(lg, pid)
-        OS.retire(lg, pid)
-    order = OS.draft_order(lg, lines)
-    FA.ensure(lg)
-    rep = FA.league_year_start(lg, rng, draft_order=order)
+    # Retirements, the draft class, GM changes, the new league year (the game's own dice).
+    OS.offseason_start(lg, lines)
+    retired = {pid for pid, _t in lg.offseason_report["retired"]}
+    rep = lg.offseason_report.get("free_agency") or {}
     stats["legal"].append(("league year", [t for t, _ in C.audit(lg)]))
     # Cap room the day free agency opens (after re-signings, tags, cap cuts; top 51 counts).
     cap = C.cap_for(lg, S)
     stats["fa_open"].append(sorted((C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id),
                                    reverse=True))
-    sign1 = FA.market(lg, FA.PRE_DRAFT_WAVES[:1], rng)
-    # ...and right after the first wave (the real day-after snapshots include the first day's signings).
-    stats["fa_day1"].append(sorted((C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id),
-                                   reverse=True))
-    sign1 += FA.market(lg, FA.PRE_DRAFT_WAVES[1:], rng)
-    stats["legal"].append(("pre-draft FA", [t for t, _ in C.audit(lg)]))
-    from engine import draft as D       # the real draft (Step 8; the placeholder in offseason.py is gone)
-    rookies = D.make_class(lg, rng)
-    lg.players.extend(rookies)
-    picks, undrafted = D.run_draft(lg, rookies, order, rng)
-    FA.sign_draft_picks(lg, picks)
-    udfa, _unsigned = D.sign_undrafted(lg, undrafted, rng)
-    FA.sign_undrafted(lg, udfa)
-    stats["legal"].append(("draft", [t for t, _ in C.audit(lg)]))
-    sign2 = FA.market(lg, FA.POST_DRAFT_WAVES, rng)
-    lt = FA.tagged_long_term(lg, rng)
-    cuts = FA.cut_down(lg)
-    OS.fill_short_positions(lg, rng)
-    FA.sync(lg, "cut-down")
-    released = defaultdict(list)
-    for pid, tid in cuts:
-        released[tid].append(lg.player(pid))
-    TR.form_practice_squads(lg, {}, {}, released, rng)
-    FA.sync(lg, "practice squads")
-    FA.final_compliance(lg, full=True)     # every contract counts from week 1 (the game's final cuts do this;
-                                           # before Oct 24 the tool checked only the top 51 here)
-    FA.sync(lg, "final cuts")
-    OS.trim_free_agents(lg, rng)
-    for p in rookies:
-        p.__dict__.pop("_board", None)
-        p.__dict__.pop("_grade", None)
-    OS.update_depth_charts(lg, None)
-    lg.draft_history.extend(picks)
+    sign1, sign2 = [], []
+    n_signed = 0
+    long_term = []
+    plain_long_term = FA.tagged_long_term
+
+    def counted_long_term(*a, **k):
+        n = plain_long_term(*a, **k)
+        long_term.append(n)
+        return n
+    FA.tagged_long_term = counted_long_term
+    try:
+        while lg.offseason["phase"] != "done":
+            phase = lg.offseason["phase"]
+            if phase == "fa":
+                w = lg.offseason["wave"]
+                table, room = wave_context(lg, w)
+                OS.offseason_next(lg)
+                signed = lg.offseason_report["fa_signings"][n_signed:]
+                n_signed += len(signed)
+                record_wave(lg, w, table, room, signed, stats, before, starters)
+                (sign1 if w in FA.PRE_DRAFT_WAVES else sign2).extend(signed)
+                if w == FA.PRE_DRAFT_WAVES[0]:
+                    # ...and right after the first wave (the real day-after snapshots include the first
+                    # day's signings).
+                    stats["fa_day1"].append(sorted((C.cap_room(lg, t.id) / cap for t in lg.teams
+                                                    if t.id != lg.user_team_id), reverse=True))
+                if w == FA.PRE_DRAFT_WAVES[-1]:
+                    stats["legal"].append(("pre-draft FA", [t for t, _ in C.audit(lg)]))
+            else:
+                OS.offseason_next(lg)
+                if phase in ("draft", "drafting") and lg.offseason["phase"] == "fa":
+                    stats["legal"].append(("draft", [t for t, _ in C.audit(lg)]))
+    finally:
+        FA.tagged_long_term = plain_long_term
+    # Training camp (development), then the preseason's cut to 53 (the preseason's games are skipped).
     development.training_camp(lg, None, None)
     for t in lg.teams:
         lg.auto_depth_chart(t.id)
+    lg.offseason = None
+    cuts = cut_to_53(lg, lg.settings.get("salt", ""))
     # Week 1: everyone counts against the cap now.
-    lg.stage, lg.week = "regular_season", 1
     over = [(t, room) for t, room in C.audit(lg, top51=False)]
     stats["legal"].append(("week 1", [t for t, _ in over]))
     stats["missing"] += len(C.missing_contracts(lg))
@@ -278,11 +328,12 @@ def offseason(lg, rng, stats, lines):
             stats["gone_why"][eg][why] += 1
             stats["gone_why"]["pos " + GROUP_MOVE[p.position]][why] += 1
     for k, v in rep.items():
-        stats["year"][k] += v
+        if isinstance(v, (int, float)):
+            stats["year"][k] += v
     stats["year"]["fa_signed_pre"] += len(sign1)
     stats["year"]["fa_signed_post"] += len(sign2)
-    stats["year"]["tag_long_term"] += lt
-    stats["year"]["cut_down"] += len(cuts)
+    stats["year"]["tag_long_term"] += sum(long_term)
+    stats["year"]["cut_down"] += cuts.get("cuts", 0)
     stats["year"]["unsigned_fa_week1"] += len(lg.free_agents())
     for s in sign1 + sign2:
         stats["waves"][s["wave"]] += 1
@@ -511,6 +562,82 @@ def report(stats, n_leagues, real_deals_in_season):
     say()
 
 
+def fair_price_report(stats):
+    """FOF8's cheap-star exploit: good players signing far below their worth
+    while teams still have room. Two views: the same yardstick as the real NFL
+    (last season's starters, 30 or younger, signing with a new team, against
+    what real good free agents at the position signed for), and the game's own
+    (good ratings too, against his market price)."""
+    S = stats["seasons"]
+    rf = REAL_FP
+    real_val = rf["market_value"]
+    say("FAIR PRICE: DO GOOD FREE AGENTS SIGN FAR BELOW THEIR WORTH? (FOF8's cheap-star exploit)")
+    say(f"  A. Same yardstick as the real NFL: last season's starter (game: base-package starter on his depth chart; "
+        f"real: {int(100 * rf['starter_snaps'])}%+ of snaps in the games he played), {rf['max_age']} or younger, "
+        f"signed with a new team in free agency (offseason waves). Market value = what real good free agents at his "
+        f"position signed for (median, share of the cap; real {rf['source'].split(';')[0]}).")
+    a = [d for d in stats["fair"] if d["starter"] and d["age"] <= rf["max_age"] and d["last_team"] is not None
+         and d["team"] != d["last_team"] and d["group"] in real_val]
+    ra = rf["all"]
+    if not a:
+        say("     (no such signings)")
+    else:
+        for d in a:
+            d["ratio_real"] = d["share"] / real_val[d["group"]]
+        n = len(a)
+        say(f"     per season {n / S:5.1f} [{ra['n_per_season']:.1f}]   median deal {pct(st.median(d['share'] for d in a))} "
+            f"of the cap [{pct(ra['median_cap_pct'])}]")
+        say(f"     under 60% of market value {pct(sum(d['ratio_real'] < 0.6 for d in a) / n)} [{pct(ra['under_60'])}]   "
+            f"under 40% {pct(sum(d['ratio_real'] < 0.4 for d in a) / n)} [{pct(ra['under_40'])}]   "
+            f"at about the minimum (<= 0.65%) {pct(sum(d['share'] <= M.MINIMUM_LINE for d in a) / n)} "
+            f"[{pct(ra['minimum_level'])}]")
+        gm = defaultdict(list)
+        for d in a:
+            gm[d["group"]].append(d["share"])
+        say("     median deal by position, game [real]: " + "  ".join(
+            f"{g} {100 * st.median(v):.1f} [{100 * real_val[g]:.1f}]"
+            for g, v in sorted(gm.items(), key=lambda kv: -len(kv[1]))))
+        by_w = Counter(d["wave"] for d in a)
+        cheap_w = Counter(d["wave"] for d in a if d["ratio_real"] < FAIR_LINE)
+        say("     by wave (signed / under 60%): " + ", ".join(f"{w}: {by_w[w]} / {cheap_w[w]}" for w in sorted(by_w)))
+    # B. The game's own view: good ratings too, against the game's own price for him.
+    say("  B. The game's own view: good ratings too (rated as a starter league-wide, priced 1%+ of the cap), "
+        f"{rf['max_age']} or younger, any team, against his market price the day the wave opened. Real reference: A.")
+    b = [d for d in stats["fair"] if d["good_rating"] and d["age"] <= rf["max_age"]]
+    if not b:
+        say("     (no such signings)")
+        say()
+        return
+    for d in b:
+        d["ratio"] = d["share"] / d["price"]
+    cheap = [d for d in b if d["ratio"] < FAIR_LINE]
+    n = len(b)
+    say(f"     per season {n / S:5.1f}; median deal {pct(st.median(d['ratio'] for d in b))} of his price; "
+        f"under 60% of his price {pct(len(cheap) / n)} ({len(cheap) / S:.1f} a season); under 40% "
+        f"{pct(sum(d['ratio'] < 0.4 for d in b) / n)}; last season's starters among them "
+        f"{pct(sum(d['starter'] for d in b) / n)}")
+    by_w = Counter(d["wave"] for d in b)
+    cheap_w = Counter(d["wave"] for d in cheap)
+    say("     by wave (signed / under 60%): " + ", ".join(f"{w}: {by_w[w]} / {cheap_w[w]}" for w in sorted(by_w)))
+    tiers = (("1-2% of the cap", 0.0, 0.02), ("2-5%", 0.02, 0.05), ("5%+ (stars)", 0.05, 9.0))
+    say("     by his price: " + "   ".join(
+        f"{label}: {len(t) / S:.1f} a season, under 60% {pct(sum(d['ratio'] < FAIR_LINE for d in t) / max(1, len(t)))}"
+        for label, lo, hi in tiers for t in [[d for d in b if lo <= d["price"] < hi]]))
+    if cheap:
+        able = [sum(r >= d["price"] for r in d["rooms"]) for d in cheap]
+        med = [st.median(d["rooms"]) for d in cheap if d["rooms"]]
+        say(f"     when one of them signed under 60%: other AI teams with spendable room for his full price "
+            f"{st.mean(able):.1f} on average (median {st.median(able)}); their median spendable room "
+            f"{pct(st.mean(med))} of the cap")
+        say("     cheapest (age, rating, price -> deal, wave, other teams with room for his price):")
+        for d in sorted(cheap, key=lambda d: d["ratio"])[:8]:
+            say(f"       {d['league']} {d['season']} {d['pos']:3} {d['name']}, {d['age']}, ovr {d['ovr']}: price "
+                f"{pct(d['price'])} -> {pct(d['share'])} ({100 * d['ratio']:.0f}%), wave {d['wave']}, "
+                f"{sum(r >= d['price'] for r in d['rooms'])} teams had room"
+                f"{'; starter last season' if d['starter'] else ''}")
+    say()
+
+
 def top_signings(lg, n=12):
     S = lg.season
     ds = sorted((d for d in lg.contract_log if d["season"] == S and d["kind"] not in ("rookie", "practice")),
@@ -534,7 +661,7 @@ def main():
     stats = {"legal": [], "missing": 0, "move_all": Counter(), "move_exp": defaultdict(Counter),
              "move_pos": defaultdict(Counter), "year": Counter(), "waves": Counter(), "waves_market": Counter(),
              "deals": [], "ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [],
-             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": [], "fa_day1": []}
+             "dead": [], "seasons": 0, "gone_why": defaultdict(Counter), "fa_open": [], "fa_day1": [], "fair": []}
     in_season = []
     day1 = {"ladder": defaultdict(list), "spend": defaultdict(list), "payroll": [], "room": [], "dead": []}
     seeds = [int(x) for x in args.leagues.split(",")]
@@ -545,6 +672,7 @@ def main():
         lg.settings["salt"] = f"fa-check-{seed}"
         lg.user_team_id = None
         FA.initial_contracts(lg)
+        cut_to_53(lg, f"fa-check-{seed}")       # a new league starts at camp: the cut to 53 first
         snapshot_contracts(lg, day1)
         rng = random.Random(f"fa-check-{seed}")
         if args.games:
@@ -568,6 +696,7 @@ def main():
             f"one-year {pct(sum(1 for d in in_season if d['years'] == 1) / len(in_season))}")
     say()
     report(stats, len(seeds), [d for d in in_season] if in_season else [])
+    fair_price_report(stats)
     top_signings(last)
     say(f"\n({time.time() - t0:.0f} s)")
     (ROOT / "tools" / "free_agency_report.txt").write_text("\n".join(out_lines), encoding="utf-8")

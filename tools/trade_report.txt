@@ -1,0 +1,44 @@
+PLAYER TRADES vs the real NFL 
+6 leagues x 3 league years (made-up results; the game's own offseason). Real: nflverse trades, 2021-25 unless noted (2013-25 in brackets where given).
+
+Trades with players a league year: 52.1   real 2021-25 59.8 (range 41-67) [2013-25 47.2]
+By phase (a league year):
+  1 league year to draft        17.3   real  19.0
+  2 draft                        1.3   real   1.4
+  3 after draft to camp          2.2   real   2.8
+  4 camp and preseason          17.2   real  19.4
+  5 season to deadline          14.1   real  17.2
+  (real 'league year to draft' includes deals agreed after the deadline and made official when the league year opens)
+Draft-day pick deals (the draft room): 20.1 a draft (real ~30), with a next-year pick 14% (real 23%)
+In-season by weeks before the deadline (0 = deadline week):  sim | real
+  0: 6.7|9.2  1: 2.8|3.2  2: 0.4|0.4  3: 0.3|2.2  4: 0.5|0.6  5: 0.8|0.8  6: 0.8|0.2  7: 0.9|0.4  8: 0.9|0.2
+Deals with players per team a year: mean 3.26 (real 2.96), sd 2.26 (2.38), teams with none 8% (14%), most 14 (13)  [real: 2013-25]
+What's in them (a year):  players both ways (+ picks) 4.9, players for picks 47.2   real [2013-25]: player for nothing 0.1, players both ways (+ picks) 3.8, players for picks 40.1, players for players 3.3 (picks-only deals are the draft room's)
+Players traded a year: 57.0   real [2013-25] 54.9; players per deal with players 1.09 (real 1.16)
+Who's traded, by position: share of players traded (share of roster spots) | real [2013-25]:
+  QB 12% (6%) | 10%  RB 6% (8%) | 7%  WR 13% (11%) | 16%  TE 4% (6%) | 5%  OL 14% (17%) | 16%  EDGE 11% (9%) | 8%  DL 5% (8%) | 5%  LB 11% (13%) | 12%  DB 20% (17%) | 18%  K/P/LS 4% (6%) | 2%
+Age when traded: mean 26.2 (real 26.5), median 25.0 (26); by age sim|real: 22:10%|3% 23:13%|8% 24:15%|18% 25:13%|17% 26:9%|15% 27:7%|10% 28:8%|7% 29:8%|8% 30:5%|4% 31:4%|3% 32:2%|4% 33:5%|4%
+Contract size (share of the cap a year): median 0.6% (real 1.1%), 75th 2.9% (4.1%), 90th 6.8% (8.1%), under 1% 61% (46%)
+Stars (deals of 8%+ of the cap) a year: 3.8 (real 4.5, range 1-10); first-rounders in their first 4 seasons 4.6 (real 6.8)
+What comes back for one player traded for picks (best pick's round; chart value of the picks at the middle of each round):  sim | real [2013-25]
+  under 2% n 34.6/yr  rounds 1:3% 2:7% 3:13% 4:15% 5:12% 6:14% 7:36%  value median 35 (25th 9, 75th 111)
+           real 18.5/yr  rounds 1:2% 2:2% 3:4% 4:8% 5:19% 6:31% 7:34%  value median 14 (25th 9, 75th 35)
+  2-5%     n  7.1/yr  rounds 1:5% 2:15% 3:17% 4:10% 5:7% 6:9% 7:37%  value median 56 (25th 9, 75th 269)
+           real  5.8/yr  rounds 1:7% 2:5% 3:13% 4:14% 5:22% 6:28% 7:11%  value median 35 (25th 21, 75th 158)
+  5-10%    n  4.7/yr  rounds 1:7% 2:38% 3:20% 4:12% 5:2% 6:6% 7:15%  value median 269 (25th 76, 75th 420)
+           real  4.6/yr  rounds 1:7% 2:10% 3:17% 4:13% 5:15% 6:28% 7:10%  value median 35 (25th 21, 75th 193)
+  10%+     n  0.8/yr  rounds 1:47% 2:40% 3:0% 4:0% 5:0% 6:0% 7:13%  value median 840 (25th 455, 75th 1000)
+           real  1.8/yr  rounds 1:46% 2:25% 3:12% 4:0% 5:8% 6:8% 7:0%  value median 608 (25th 255, 75th 1406)
+Picks traded, by drafts away (0 = the next draft):  0: 77% (real 82%)  1: 17% (real 16%)  2: 4% (real 2%)
+Legality: trades that left a team over the cap or its roster limit: 0 (of 938). Outside the regular season, team-steps over the cap: 3; over the roster limit: 0 (648 steps checked); where: {"('offseason', 'done')": 1, "('preseason', 1)": 1, "('preseason', 2)": 1}
+Team strength spread (starters, z) by season: 0.245
+(1191 s of work)
+
+EXPLOIT CHECKS (your team = the first team; at the start and end of each league)
+1. What an AI team asks for one of its 5 best players at each position (chart points; and per 1% of the cap his market price is):
+   QB 1935 (95/1%)  RB 439 (59/1%)  WR 982 (80/1%)  TE 435 (57/1%)  T 679 (64/1%)  G 598 (76/1%)  DE 797 (67/1%)  DT 812 (77/1%)  OLB 540 (84/1%)  CB 737 (72/1%)  S 607 (75/1%)
+2. Three of your average starters for one of their 12 most valuable players: illegal 181, lowball 104, no 3
+3. Your worst contracts (3%+ of the cap) for a 7th-round pick: illegal 98, counter 97, accept 17, close 4; the accepted ones with true ratings: good for the AI team in 13 of 17 (median +40 points)
+4. Buy from one AI team at its ask, sell to the keenest other: profitable 3% of 1440; median -31, 90th -26 chart points (median ask 37)
+5. A 7th for their best player, six calls in a row: illegal:  below, or on the Roster tab)., illegal:  below, or on the Roster tab)., illegal:  below, or on the Roster tab)., illegal:  below, or on the Roster tab)., illegal:  below, or on the Roster tab)., illegal:  below, or on the Roster tab). | lowball, lowball, gone, gone, gone, gone | illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade. | illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade., illegal: e salary cap after this trade.
+(208 s)

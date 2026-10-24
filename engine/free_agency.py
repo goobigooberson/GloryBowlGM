@@ -142,6 +142,11 @@ OFFERS_PER_WAVE = {1: 5, 2: 4, 3: 4, 4: 5, 5: 6, 6: 8, 7: 10}   # Oct 22: waves 
 # sets) went most 37.7-38.3 -> 29.4-30.6% [real 4-yr average 26.4], 5th 22.4-23.4 -> 19.2-19.3 [16.3],
 # median 10.4-11.4 -> 9.5-10.0 [8.0], 24th 5.6-6.5 -> 5.9-6.2 [3.7], teams under 2% 2.2-3.3 -> 2.0-2.5 [5.8].
 # The low end needs teams that truly spend themselves into a corner (see the build log).
+WAVE_ROUNDS = 3                 # Oct 23: bidding rounds in a wave. When a team's target signs elsewhere it moves
+# on to its next one in the same wave, as real teams do within hours (before, it sat out until the next wave:
+# 244 market-level free agents a year were on the market when it opened, 204 of them starter-level, but only
+# ~37 signed in the first wave and 120 were still unsigned at camp; real teams sign 148 market-level players
+# from other teams a year (OverTheCap 2016-21, docs/research/deal_kinds.py), the game 85).
 # ---- Knobs: players --------------------------------------------------------------------
 WINNER_K = 0.30                 # how much a winning team counts, for a player who most wants to win
 LOYALTY_K = 0.10                # how much a loyal player leans toward his old team (disloyal ones lean away)
@@ -1017,7 +1022,10 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None):
                 gain = r - r // n
                 if best is None or gain > best[0]:
                     best = (gain, pid)
-        if best and best[0] > 0.002 * cap:
+        # A restructure worth doing: at least 0.2% of the cap, or all that's needed when the team
+        # is only a little over (Oct 23: a team $100K over with no restructure worth 0.2% left
+        # stayed over all season; the trades session found AI teams drifting over in-season).
+        if best and best[0] > min(0.002 * cap, need):
             C.restructure(league, best[1], min(C.restructure_room(league, league.contracts[best[1]], S),
                                                int(need * 1.3) + 1))
             moves.append(("restructure", best[1]))
@@ -1036,6 +1044,9 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None):
         nxt = hits[C.TOP_51] if t51 and len(hits) > C.TOP_51 else 0
         on53 = sum(1 for t in league.rosters.values() if t == tid)
         practice = getattr(league, "practice", {})
+        # His replacement is paid only for the weeks left (Oct 23: a full year at the minimum
+        # was counted all season, so late in a season almost no cut seemed to save anything).
+        refill = C.min_salary(league, 1) * (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
         for pid in team_ids:
             if pid in practice:
                 continue        # a practice squad spot is refilled at the same pay: cutting saves nothing
@@ -1049,8 +1060,8 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None):
                 # The spot has to be refilled, at about the minimum: only what's saved beyond that
                 # helps. (Before Oct 23, getting under the cap at week 1 cut and refilled minimum
                 # players round after round: a team over by $38M went down to 11 players.)
-                saved -= C.min_salary(league, 1)
-            if saved <= 0.001 * cap:
+                saved -= refill
+            if saved <= min(0.001 * cap, need / 2):     # a cut worth it (or half of a small need)
                 continue
             value = table[pid]["price"] * cap
             cands.append((value / saved, pid, use_june))
@@ -1230,126 +1241,147 @@ def market(league, waves, rng=None, before_draft=None):
         fas = free_agent_list(league)
         if not fas:
             break
-        table = M.market_table(league)
-        depth = depth_lists(league, table)
-        bids = defaultdict(list)
-        for tid in sorted(ai_teams(league), key=lambda _t: rng.random()):
-            room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap + _restructure_left(league, tid)
-            z_fa = gm_style(league, tid, "fa")
-            room -= GM_FA_HOLD * max(0.0, -z_fa) * cap      # builds through the draft
-            open_room = league.fa.setdefault("open_room", {}).setdefault(tid, max(0.0, C.cap_room(league, tid) / cap))
-            ceiling = max((GM_FA_BUDGET[0] + GM_FA_BUDGET_ROOM * open_room) * math.exp(GM_FA_BUDGET[1] * z_fa),
-                          open_room - PLAN_ROOM_MAX)
-            outside_left = (ceiling - league.fa.get("outside_spent", {}).get(tid, 0.0)) * cap
-            if room <= 0:
-                continue
-            spots = OFFSEASON_ROSTER_MAX - roster_count(league, tid)
-            cands = []
-            for p in fas:
-                info = table[p.id]
-                if len(depth[tid][p.position]) >= camp_max(p.position):
-                    continue
-                s = team_score(league, tid, p, info)
-                w, role = willingness(league, tid, p, info, depth, quality, score=s)
-                if w <= 0 or w < ask_share(info, wave):
-                    continue
-                gain = s - (depth[tid][p.position][STARTER_COUNT.get(p.position, 1) - 1]
-                            if len(depth[tid][p.position]) >= STARTER_COUNT.get(p.position, 1) else 0)
-                cands.append(({"starter": 0, "backup": 1, "depth": 2}[role], -gain, p, w, role))
-            cands.sort(key=lambda x: (x[0], x[1]))
-            used_pos = set()
-            spent = 0
-            made = 0
-            limit = max(1, round(OFFERS_PER_WAVE.get(wave, 10) * math.exp(GM_FA_OFFERS_K * max(0.0, z_fa))))
-            for _r, _g, p, w, role in cands:
-                if made >= limit or spots - made <= 0:
+        table = M.market_table(league)        # prices hold through the wave (the same players are ranked)
+        landed = defaultdict(int)             # signings each team has made this wave
+        for rnd in range(WAVE_ROUNDS):
+            if rnd:
+                fas = free_agent_list(league)
+                if not fas:
                     break
-                if p.position in used_pos:
-                    continue
-                est = ask_share(table[p.id], wave) * cap * 0.9
-                if spent + est > room:
-                    continue
-                outside = league.fa["former"].get(p.id) != tid and table[p.id]["price"] >= M.MARKET_LINE
-                if outside and tid != league.user_team_id and est > outside_left:
-                    continue                 # his GM's ceiling for other teams' players this year
-                if outside:
-                    outside_left -= est
-                used_pos.add(p.position)
-                spent += est
-                made += 1
-                bids[p.id].append((tid, w, role))
-        for pid, offer in league.fa.get("user_offers", {}).items():
-            if league.player(pid).id in {p.id for p in fas}:
-                bids[pid].append((offer["team"], offer["apy"] / cap, "user"))
-        # Each player chooses.
-        for pid in sorted(bids, key=lambda x: -table[x]["price"]):
-            p = league.player(pid)
-            if pid in league.rosters:
-                continue
-            info = table[pid]
-            ask = ask_share(info, wave)
-            lst = sorted(bids[pid], key=lambda b: -b[1])
-            role_of = {(pid, tid): role for tid, _w, role in lst}
-            second = lst[1][1] if len(lst) > 1 else ask
-            offers = []
-            uo = league.fa.get("user_offers", {}).get(pid)
-            for i, (tid, w, role) in enumerate(lst):
-                amount = max(ask, min(w, second)) if i == 0 else w
-                if role == "user":
-                    # Your offer: what you offered, weighed with its years and guarantees (with
-                    # OFFER_ROUNDING of slack: the screens round money to $10K).
-                    amount = offer_value(league, pid, uo["apy"], uo["years"], uo["guaranteed"],
-                                         asking_terms(league, pid, tid, wave, table=table)) / cap
-                    amount = max(amount, ask) if amount >= ask - OFFER_ROUNDING / cap else amount
-                if amount < ask:
-                    continue
-                u = amount / max(info["price"], 1e-9)
-                u += WINNER_K * ((p.wants_winner - 50) / 50) * (quality.get(tid, 0.5) - 0.5)
-                if tid == league.fa["former"].get(pid):
-                    u += FAMILIAR + LOYALTY_K * (p.loyalty - 50) / 50
-                if role == "starter":
-                    u += ROLE_K
-                u += rng.gauss(0, CHOICE_SD)
-                offers.append((u, tid, amount))
-            for _u, tid, amount in sorted(offers, reverse=True):
-                if tid == league.user_team_id and uo is not None:
-                    c = C.build(league, pid, tid, "veteran" if uo["apy"] / cap > M.MINIMUM_LINE else "minimum",
-                                league.season, uo["years"], uo["apy"], guaranteed=uo["guaranteed"])
-                    if C.room_after(league, tid, C.cap_hit(league, c)) < 0:
-                        continue          # your offer can't fit under your cap any more: he looks elsewhere
-                else:
-                    c = make_deal(league, p, tid, amount, rng)
-                if tid != league.user_team_id:
-                    pk = plan_keep(league, tid)
-                    keep = ((_reserve_share(league, tid, pre) - pk) * 0.5 + pk) * cap
-                    if C.top51_in_force(league):
-                        # never less than what starts counting at week 1 (an all-in team keeps less
-                        # for in-season moves, and could otherwise be over the cap at week 1)
-                        keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
-                    if C.room_after(league, tid, _first_hit(league, c)) < keep and \
-                            not (role_of.get((pid, tid)) == "starter" and _make_room(league, tid, _first_hit(league, c) + keep, rng)):
-                        continue
-                    if roster_count(league, tid) >= OFFSEASON_ROSTER_MAX:
-                        continue
-                    # The multi-year plan: another team's player on a long deal can't push next
-                    # season's commitments past what this team will commit now; it offers one year.
-                    if (league.fa["former"].get(pid) != tid and len(c["years"]) > 1
-                            and C.commitments(league, tid, S + 1) + C.cap_hit(league, c, S + 1, full=True)
-                            > plan_next(league, tid) * C.cap_for(league, S + 1)):
-                        c = make_deal(league, p, tid, amount, rng, years=1)
-                        if C.room_after(league, tid, _first_hit(league, c)) < keep:
-                            continue
-                former = league.fa["former"].get(pid)
-                if former != tid and c["apy"] / cap >= M.MARKET_LINE:
-                    spent_out = league.fa.setdefault("outside_spent", {})
-                    spent_out[tid] = spent_out.get(tid, 0.0) + c["apy"] / cap
-                _sign(league, p, c, WAVES.get(wave, "Free agency"), "free agency", f"FA wave {wave}",
-                      new_team=(former is not None and former != tid) if former is not None else True)
-                signings.append({"wave": wave, "pid": pid, "team": tid, "apy": c["apy"], "years": len(c["years"]),
-                                 "former": former})
-                league.fa.get("user_offers", {}).pop(pid, None)
-                break
+            n_signed = len(signings)
+            _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, landed)
+            if len(signings) == n_signed:
+                break                         # nobody signed this round: the wave is over
     return signings
+
+
+def _bidding_round(league, wave, pre, fas, table, quality, cap, rng, signings, landed):
+    """One round of a wave: every AI team bids on the free agents it wants (its
+    offers this wave, less the players it has already landed), then each player
+    picks the offer he likes best. Adds to signings and landed."""
+    S = league.season
+    depth = depth_lists(league, table)
+    bids = defaultdict(list)
+    for tid in sorted(ai_teams(league), key=lambda _t: rng.random()):
+        room = C.cap_room(league, tid) - _reserve_share(league, tid, pre) * cap + _restructure_left(league, tid)
+        z_fa = gm_style(league, tid, "fa")
+        room -= GM_FA_HOLD * max(0.0, -z_fa) * cap      # builds through the draft
+        open_room = league.fa.setdefault("open_room", {}).setdefault(tid, max(0.0, C.cap_room(league, tid) / cap))
+        ceiling = max((GM_FA_BUDGET[0] + GM_FA_BUDGET_ROOM * open_room) * math.exp(GM_FA_BUDGET[1] * z_fa),
+                      open_room - PLAN_ROOM_MAX)
+        outside_left = (ceiling - league.fa.get("outside_spent", {}).get(tid, 0.0)) * cap
+        if room <= 0:
+            continue
+        spots = OFFSEASON_ROSTER_MAX - roster_count(league, tid)
+        cands = []
+        for p in fas:
+            info = table[p.id]
+            if len(depth[tid][p.position]) >= camp_max(p.position):
+                continue
+            s = team_score(league, tid, p, info)
+            w, role = willingness(league, tid, p, info, depth, quality, score=s)
+            if w <= 0 or w < ask_share(info, wave):
+                continue
+            gain = s - (depth[tid][p.position][STARTER_COUNT.get(p.position, 1) - 1]
+                        if len(depth[tid][p.position]) >= STARTER_COUNT.get(p.position, 1) else 0)
+            cands.append(({"starter": 0, "backup": 1, "depth": 2}[role], -gain, p, w, role))
+        cands.sort(key=lambda x: (x[0], x[1]))
+        used_pos = set()
+        spent = 0
+        made = 0
+        limit = max(1, round(OFFERS_PER_WAVE.get(wave, 10) * math.exp(GM_FA_OFFERS_K * max(0.0, z_fa))))
+        limit -= landed[tid]
+        if limit <= 0:
+            continue
+        for _r, _g, p, w, role in cands:
+            if made >= limit or spots - made <= 0:
+                break
+            if p.position in used_pos:
+                continue
+            est = ask_share(table[p.id], wave) * cap * 0.9
+            if spent + est > room:
+                continue
+            outside = league.fa["former"].get(p.id) != tid and table[p.id]["price"] >= M.MARKET_LINE
+            if outside and tid != league.user_team_id and est > outside_left:
+                continue                 # his GM's ceiling for other teams' players this year
+            if outside:
+                outside_left -= est
+            used_pos.add(p.position)
+            spent += est
+            made += 1
+            bids[p.id].append((tid, w, role))
+    for pid, offer in league.fa.get("user_offers", {}).items():
+        if league.player(pid).id in {p.id for p in fas}:
+            bids[pid].append((offer["team"], offer["apy"] / cap, "user"))
+    # Each player chooses.
+    for pid in sorted(bids, key=lambda x: -table[x]["price"]):
+        p = league.player(pid)
+        if pid in league.rosters:
+            continue
+        info = table[pid]
+        ask = ask_share(info, wave)
+        lst = sorted(bids[pid], key=lambda b: -b[1])
+        role_of = {(pid, tid): role for tid, _w, role in lst}
+        second = lst[1][1] if len(lst) > 1 else ask
+        offers = []
+        uo = league.fa.get("user_offers", {}).get(pid)
+        for i, (tid, w, role) in enumerate(lst):
+            amount = max(ask, min(w, second)) if i == 0 else w
+            if role == "user":
+                # Your offer: what you offered, weighed with its years and guarantees (with
+                # OFFER_ROUNDING of slack: the screens round money to $10K).
+                amount = offer_value(league, pid, uo["apy"], uo["years"], uo["guaranteed"],
+                                     asking_terms(league, pid, tid, wave, table=table)) / cap
+                amount = max(amount, ask) if amount >= ask - OFFER_ROUNDING / cap else amount
+            if amount < ask:
+                continue
+            u = amount / max(info["price"], 1e-9)
+            u += WINNER_K * ((p.wants_winner - 50) / 50) * (quality.get(tid, 0.5) - 0.5)
+            if tid == league.fa["former"].get(pid):
+                u += FAMILIAR + LOYALTY_K * (p.loyalty - 50) / 50
+            if role == "starter":
+                u += ROLE_K
+            u += rng.gauss(0, CHOICE_SD)
+            offers.append((u, tid, amount))
+        for _u, tid, amount in sorted(offers, reverse=True):
+            if tid == league.user_team_id and uo is not None:
+                c = C.build(league, pid, tid, "veteran" if uo["apy"] / cap > M.MINIMUM_LINE else "minimum",
+                            league.season, uo["years"], uo["apy"], guaranteed=uo["guaranteed"])
+                if C.room_after(league, tid, C.cap_hit(league, c)) < 0:
+                    continue          # your offer can't fit under your cap any more: he looks elsewhere
+            else:
+                c = make_deal(league, p, tid, amount, rng)
+            if tid != league.user_team_id:
+                pk = plan_keep(league, tid)
+                keep = ((_reserve_share(league, tid, pre) - pk) * 0.5 + pk) * cap
+                if C.top51_in_force(league):
+                    # never less than what starts counting at week 1 (an all-in team keeps less
+                    # for in-season moves, and could otherwise be over the cap at week 1)
+                    keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
+                if C.room_after(league, tid, _first_hit(league, c)) < keep and \
+                        not (role_of.get((pid, tid)) == "starter" and _make_room(league, tid, _first_hit(league, c) + keep, rng)):
+                    continue
+                if roster_count(league, tid) >= OFFSEASON_ROSTER_MAX:
+                    continue
+                # The multi-year plan: another team's player on a long deal can't push next
+                # season's commitments past what this team will commit now; it offers one year.
+                if (league.fa["former"].get(pid) != tid and len(c["years"]) > 1
+                        and C.commitments(league, tid, S + 1) + C.cap_hit(league, c, S + 1, full=True)
+                        > plan_next(league, tid) * C.cap_for(league, S + 1)):
+                    c = make_deal(league, p, tid, amount, rng, years=1)
+                    if C.room_after(league, tid, _first_hit(league, c)) < keep:
+                        continue
+            former = league.fa["former"].get(pid)
+            if former != tid and c["apy"] / cap >= M.MARKET_LINE:
+                spent_out = league.fa.setdefault("outside_spent", {})
+                spent_out[tid] = spent_out.get(tid, 0.0) + c["apy"] / cap
+            _sign(league, p, c, WAVES.get(wave, "Free agency"), "free agency", f"FA wave {wave}",
+                  new_team=(former is not None and former != tid) if former is not None else True)
+            signings.append({"wave": wave, "pid": pid, "team": tid, "apy": c["apy"], "years": len(c["years"]),
+                             "former": former})
+            landed[tid] += 1
+            league.fa.get("user_offers", {}).pop(pid, None)
+            break
 
 
 def tagged_long_term(league, rng=None):
@@ -1386,14 +1418,17 @@ def set_pick_reserve(league, order):
     (one pick a round at its spot in the order)."""
     cap = C.cap_for(league, league.season)
     n = len(order)
-    out = {}
-    for i, tid in enumerate(order):
-        total = 0
+    from .trades import pick_owners     # picks traded away or picked up (trades.py, Oct 23)
+    owners = pick_owners(league, league.season)
+    held = {tid: [] for tid in order}
+    for i, orig in enumerate(order):
         for rnd in range(7):
-            pick = rnd * n + i + 1
-            total += C.rookie_apy_share(pick) * cap
+            held.setdefault(owners.get((rnd + 1, orig), orig), []).append(rnd * n + i + 1)
+    out = {}
+    for tid in order:
+        total = sum(C.rookie_apy_share(pick) * cap for pick in held.get(tid, []))
         # rookies push minimum players out of the top 51
-        out[tid] = max(0.0, total / cap - 7 * C.min_salary(league, 1) / cap)
+        out[tid] = max(0.0, total / cap - len(held.get(tid, [])) * C.min_salary(league, 1) / cap)
     league.fa["pick_reserve"] = out
     return out
 
@@ -1548,10 +1583,27 @@ def asking_hit(league, tid, pid, week=None):
     return C.cap_hit(league, c)
 
 
+def pending_hits(league, tid):
+    """$K of this season's cap for players a team signed this week whose contracts aren't
+    written yet (sync writes them at the end of the week). Oct 23: each in-season signing was
+    checked as if the team's other new signings that week didn't exist, so two signings that
+    each fit could together put a team over the cap. While only the top 51 count (offseason,
+    camp) it's left out: a cheap new signing there usually isn't among the 51 biggest hits."""
+    if C.top51_in_force(league):
+        return 0
+    total = 0
+    for pid in C.players_with_team(league, tid):
+        c = league.contracts.get(pid)
+        if c is None or c["team"] != tid:
+            total += asking_hit(league, tid, pid)
+    return total
+
+
 def affordable(league, tid, pid, week=None, also=0):
     """Can this team sign this free agent now and stay under the cap (also:
-    $K of other signings it's making that aren't on the books yet)?"""
-    left = C.room_after(league, tid, asking_hit(league, tid, pid, week) + also)
+    $K of other signings it's making that aren't on the books yet; this week's
+    unwritten signings are counted too: pending_hits)?"""
+    left = C.room_after(league, tid, asking_hit(league, tid, pid, week) + also + pending_hits(league, tid))
     return left >= (0 if tid == league.user_team_id else 0)
 
 
@@ -1585,7 +1637,7 @@ class AffordCheck:
                               reverse=True)[:C.TOP_51]
                 self.teams[tid] = (hits, sum(hits), C.adjusted_cap(L, tid, L.season) - C.charges(L, tid, L.season))
             else:
-                self.teams[tid] = (None, None, C.cap_room(L, tid, L.season))
+                self.teams[tid] = (None, None, C.cap_room(L, tid, L.season) - pending_hits(L, tid))
         hits, total, base = self.teams[tid]
         if hits is None:
             left = base - new
@@ -1658,7 +1710,7 @@ def sync(league, label=""):
             # minimum whoever he was, so a starter-level player could be had for the minimum.
             # Camp bodies are minimum-level players, so they still get the minimum.)
             terms = in_season_terms(league, pid, week)
-            c = make_deal(league, p, tid, terms["apy_share"], random.Random(f"sync-{pid}-{week}"), years=1,
+            c = make_deal(league, p, tid, terms["apy_share"], random.Random(f"sync-{_salt(league)}-{pid}-{week}"), years=1,
                           week=week)
         else:
             c = C.minimum_contract(league, pid, tid, years=1)

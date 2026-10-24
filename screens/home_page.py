@@ -204,6 +204,16 @@ def build_home_tab(go, watch, open_summary, on_change):
             items.append({"tag": "Staff asks", "tag_class": "att-ask", "html": escape(r["why"]),
                           "buttons": [("Approve", lambda i=i: answer(i, True), True),
                                       ("Decline", lambda i=i: answer(i, False), False)]})
+        # AI teams' trade offers (trades.py, Oct 23): each good until the next week or phase.
+        from engine import trades
+        for o in trades.inbox(league):
+            team_name = league.team(o["team"]).name
+            items.append({"tag": "Trade call", "tag_class": "att-ask",
+                          "html": (f'The {escape(team_name)} called: they want '
+                                   f'{escape(trades.side_text(league, o["give"]))} for '
+                                   f'{escape(trades.side_text(league, o["get"]))}.'
+                                   f'<div class="legend">Good until your next week or phase.</div>'),
+                          "buttons": [("See offers", lambda: go("Trades"), True)]})
         if not season.user_moves_open(league):
             return items
         handled = set()

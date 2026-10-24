@@ -7,6 +7,7 @@
 #
 #   python tools/draft_check.py                      (6 leagues x 22 seasons, ~3 minutes)
 #   python tools/draft_check.py --leagues 101,102 --seasons 16
+#   python tools/draft_check.py --startup-only       (just the startup draft's tight ends, ~1 minute)
 #
 # Writes tools/draft_report.txt. How to read it: each line is "sim | real".
 # Career measures use classes drafted after the first 3 seasons (the league
@@ -452,7 +453,203 @@ def report(results, out):
 
     front_offices(results, runs, w)
     league_health(results, runs, w)
+    tight_ends(results, runs, w)
     return out
+
+
+def _true_value(n):
+    """A prospect's true worth on a board (his true grade plus his position's
+    value, as engine/draft.py's board_grade adds it), or None."""
+    from engine import draft as D
+    g = n.get("grade")
+    if g is None:
+        return None
+    v = g + D.POS_SHIFT.get(n["pos"], 0.0)
+    star = D.POS_STAR.get(n["pos"])
+    if star and g > D.STAR_GRADE:
+        v += star * (g - D.STAR_GRADE)
+    return v
+
+
+def tight_ends(results, runs, w):
+    """FOF8's AI valued tight ends among the lowest of all positions, so elite TE
+    prospects fell past pick 8. Where do the best TEs go here, by their true grade,
+    by the public board and in hindsight, compared with other positions and with
+    the real NFL (docs/research/te_draft.py)?"""
+    real = json.load(open(RESEARCH / "real_te_draft.json"))
+    w("14. TIGHT ENDS: DO THE BEST ONES FALL? (the FOF8 exploit: elite TEs lasted past pick 8; sim | real)")
+    drafts = [d for r in results for d in r["drafts"]]
+    n_d = max(1, len(drafts))
+    first, r1, top10 = [], 0, 0
+    for d in drafts:
+        tes = sorted(pk["pick"] for pk in d["picks"] if d["notes"][pk["pid"]]["pos"] == "TE")
+        if tes:
+            first.append(tes[0])
+        r1 += sum(1 for x in tes if x <= 32)
+        top10 += sum(1 for x in tes if x <= 10)
+    rf = real["first_te_pick"]
+    w(f"   first TE taken: median pick {st.median(first):.0f} | {rf['median']:.0f}   in the top 10 "
+      f"{fmt(sum(x <= 10 for x in first) / len(first))} | {fmt(rf['top10_share'])}   in round 1 "
+      f"{fmt(sum(x <= 32 for x in first) / len(first))} | {fmt(rf['round1_share'])}   after pick 50 "
+      f"{fmt(sum(x > 50 for x in first) / len(first))} | {fmt(rf['after_50_share'])}  (real {rf['years']})")
+    w(f"   TEs per draft: in round 1 {r1 / n_d:.2f} | {real['te_per_draft']['round1']:.2f}   in the top 10 "
+      f"{top10 / n_d:.2f} | {real['te_per_draft']['top10']:.2f}")
+
+    # By true grade (the game knows what each prospect really is; real teams' grades aren't public).
+    sets = {k: defaultdict(list) for k in ("top8", "top32")}
+    best_te = []
+    board = defaultdict(list)
+    for d in drafts:
+        vals = sorted(((v, pk["pick"], d["notes"][pk["pid"]]["pos"]) for pk in d["picks"]
+                       if (v := _true_value(d["notes"][pk["pid"]])) is not None), reverse=True)
+        for i, (_v, pick, pos) in enumerate(vals[:32]):
+            key = "TE" if pos == "TE" else "other"
+            sets["top32"][key].append(pick)
+            if i < 8:
+                sets["top8"][key].append(pick)
+        tes = [(n["grade"], pk["pick"]) for pk in d["picks"] if (n := d["notes"][pk["pid"]])["pos"] == "TE"
+               and n.get("grade") is not None]
+        if tes:
+            best_te.append(max(tes)[1])
+        for pk in d["picks"]:
+            br = pk.get("board_rank")
+            if br and br <= 32:
+                board["TE" if d["notes"][pk["pid"]]["pos"] == "TE" else "other"].append(pk["pick"])
+
+    def where(picks):
+        if not picks:
+            return "none"
+        return (f"median pick {st.median(picks):.0f}, after pick 8 {fmt(sum(x > 8 for x in picks) / len(picks))}, "
+                f"after 32 {fmt(sum(x > 32 for x in picks) / len(picks))}, after 64 "
+                f"{fmt(sum(x > 64 for x in picks) / len(picks))}")
+    w("   By true grade (what he really is, plus his position's value on every board; sim only):")
+    w(f"     the class's best TE: {where(best_te)}")
+    for k, label in (("top8", "graded in the class's top 8"), ("top32", "graded as first-rounders (top 32)")):
+        te, ot = sets[k]["TE"], sets[k]["other"]
+        w(f"     {label}: TEs {len(te) / n_d:.2f} a class, {where(te)}")
+        w(f"     {' ' * len(label)}  others {len(ot) / n_d:.1f} a class, {where(ot)}")
+    w(f"   Ranked in the top 32 on the public big board: TEs {len(board['TE']) / n_d:.2f} a draft, "
+      f"{where(board['TE'])}; others {where(board['other'])}")
+    w("     real (ESPN's 2023 board, the only year in the data): " + ", ".join(
+        f"{e['player']} ranked {e['rank']} -> pick {e['pick']}" for e in real["espn_2023_te"][:5]))
+
+    # In hindsight: careers (the same yardstick for both).
+    def value(c):
+        return sum(c["starts"]) + 1.5 * c["pro_bowls"] + 0.25 * c["seasons_on_roster"]
+    hb, h8, h32, n_cls = [], defaultdict(list), defaultdict(list), 0
+    for run in runs:
+        by = defaultdict(list)
+        for c in DO.careers([run], min_seasons=MIN_SEASONS, skip_first=SKIP_FIRST):
+            by[c["season"]].append(c)
+        for cls in by.values():
+            n_cls += 1
+            cls.sort(key=value, reverse=True)
+            tes = [c for c in cls if c["group"] == "TE"]
+            if tes:
+                hb.append(tes[0]["pick"])
+            for i, c in enumerate(cls[:32]):
+                key = "TE" if c["group"] == "TE" else "other"
+                h32[key].append(c["pick"])
+                if i < 8:
+                    h8[key].append(c["pick"])
+    rb = real["best_te_hindsight"]
+    if hb:
+        w(f"   In hindsight (career value: seasons started + 1.5 per Pro Bowl + 0.25 per season; real classes "
+          f"{rb['years']}):")
+        w(f"     the class's best TE was picked: median {st.median(hb):.0f} | {rb['median_pick']:.0f}   in round 1 "
+          f"{fmt(sum(x <= 32 for x in hb) / len(hb))} | {fmt(rb['round1_share'])}   top 10 "
+          f"{fmt(sum(x <= 10 for x in hb) / len(hb))} | {fmt(rb['top10_share'])}   after round 3 "
+          f"{fmt(sum(x > 100 for x in hb) / len(hb))} | {fmt(rb['after_round3_share'])}")
+        for label, h, rk in (("top 8", h8, "class_top8_careers"), ("top 32", h32, "class_top32_careers")):
+            rr = real[rk]
+            w(f"     TEs among the class's {label} careers: {len(h['TE']) / max(1, n_cls):.2f} a class | "
+              f"{rr['te_per_class']:.2f}, median pick {st.median(h['TE']) if h['TE'] else float('nan'):.0f} | "
+              f"{rr['te_median_pick']}; other positions there {st.median(h['other']):.0f} | {rr['other_median_pick']}")
+    cs = DO.careers(runs, min_seasons=MIN_SEASONS, skip_first=SKIP_FIRST)
+    r1 = [c for c in cs if c["group"] == "TE" and c["pick"] <= 32]
+    ro = real["round1_te_outcomes"]
+    if r1:
+        n = len(r1)
+        w(f"   First-round TEs, how they turned out (n {n} | {ro['n']}): starter 3+ seasons "
+          f"{fmt(sum(sum(c['starts']) >= 3 for c in r1) / n)} | {fmt(ro['starter_3plus'])}   5+ "
+          f"{fmt(sum(sum(c['starts']) >= 5 for c in r1) / n)} | {fmt(ro['starter_5plus'])}   Pro Bowl "
+          f"{fmt(sum(c['pro_bowls'] > 0 for c in r1) / n)} | {fmt(ro['pro_bowl'])}   never started "
+          f"{fmt(sum(sum(c['starts']) == 0 for c in r1) / n)} | {fmt(ro['never_started'])}")
+    w("")
+
+
+# ---------------------------------------------------------------------------
+# The startup draft's tight ends (new leagues; a few seconds a league)
+# ---------------------------------------------------------------------------
+
+def _startup_worker(seed):
+    import random
+    from engine import draft as D
+    from engine.league import create_league
+    random.seed(f"startup-check-{seed}")     # a worker runs several leagues: start each from the same dice
+    lg = create_league(seed=seed)
+    lg.settings["salt"] = f"startup-check-{seed}"
+    pool = [p for p in lg.players if p.retired is None and (p.id in lg.rosters or p.id in lg.practice)]
+    stats = D.starter_stats_from(pool)
+    info = {p.id: (p.position, p.overall(), (p.overall() - stats[p.position][0]) / stats[p.position][1])
+            for p in pool}
+    picks = D.startup_draft(lg, random.Random(f"startup-check-{seed}"))
+    return [(pk["pick"],) + info[pk["pid"]] for pk in picks]
+
+
+def startup_tight_ends(seeds, w):
+    """Where the startup draft's TEs go: the pick of the 1st, 3rd, 5th... TE
+    against the real contract rank of the 1st, 3rd, 5th... best-paid TE
+    (docs/research/real_startup_value.json, the yardstick the startup draft's
+    position values were fitted to), next to every other position's fit; and
+    where elite players go by position (the FOF8 exploit: an elite TE lasting
+    much longer than an equally elite player elsewhere)."""
+    real = json.load(open(RESEARCH / "real_startup_value.json"))["ranks"]
+    # A new league comes out a little differently in each Python process (somewhere in league
+    # creation or the startup draft, the order of a set of strings matters, and Python shuffles
+    # string hashes per process), and a process that has already made a league makes the next one
+    # differently too, so each league gets a fresh worker with a fixed hash seed: the same leagues
+    # every run.
+    import os
+    old = os.environ.get("PYTHONHASHSEED")
+    os.environ["PYTHONHASHSEED"] = "0"
+    try:
+        with Pool(min(len(seeds), 6), maxtasksperchild=1) as pool:    # a fresh process per league
+            runs = pool.map(_startup_worker, seeds, chunksize=1)
+    finally:
+        if old is None:
+            os.environ.pop("PYTHONHASHSEED", None)
+        else:
+            os.environ["PYTHONHASHSEED"] = old
+    w(f"15. STARTUP DRAFT: TIGHT ENDS ({len(seeds)} new leagues; sim | real contract rank, OverTheCap 2015-22)")
+    ks = (1, 3, 5, 10, 20, 32)
+    kth = defaultdict(lambda: defaultdict(list))
+    elite = defaultdict(list)
+    for picks in runs:
+        seen = Counter()
+        for pick, pos, _ovr, z in sorted(picks):
+            seen[pos] += 1
+            kth[pos][seen[pos]].append(pick)
+            if z >= 2.0:
+                elite["TE" if pos == "TE" else "QB" if pos == "QB" else "other"].append(pick)
+    rows = {}
+    for pos, rk in real.items():
+        cells, errs = [], []
+        for k in ks:
+            if kth[pos][k] and str(k) in rk:
+                g = st.median(kth[pos][k])
+                errs.append(math.log(g / rk[str(k)]))
+                cells.append(f"{k}th {g:.0f} | {rk[str(k)]:.0f}")
+        if errs:
+            rows[pos] = (cells, errs)
+    te_cells, te_errs = rows["TE"]
+    w("   pick of the k-th TE taken: " + "   ".join(te_cells))
+    w(f"   TE fit (average log ratio, + = later than real): {st.mean(te_errs):+.2f}; the other positions: " +
+      ", ".join(f"{pos} {st.mean(e):+.2f}" for pos, (_c, e) in sorted(rows.items()) if pos != "TE"))
+    w("   elite players (2+ spreads above the league's starters at their position): median pick "
+      + ", ".join(f"{k} {st.median(v):.0f} (n {len(v)}, after pick 8 {fmt(sum(x > 8 for x in v) / len(v))})"
+                  for k, v in (("TE", elite["TE"]), ("QB", elite["QB"]), ("other positions", elite["other"])) if v))
+    w("")
 
 
 def _corr(a, b):
@@ -617,7 +814,16 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "tools" / "draft_report.txt"))
     ap.add_argument("--save", help="also keep the raw results in this file (pickle)")
     ap.add_argument("--load", help="report on raw results saved earlier with --save (no new run)")
+    ap.add_argument("--startup-leagues", default="201,202,203,204,205,206,207,208,209,210",
+                    help="new leagues for the startup draft's tight end check ('' to skip)")
+    ap.add_argument("--startup-only", action="store_true", help="only the startup draft's tight end check")
     a = ap.parse_args()
+    startup_seeds = [int(x) for x in a.startup_leagues.split(",") if x.strip()]
+    if a.startup_only:
+        out = []
+        startup_tight_ends(startup_seeds, out.append)
+        print("\n".join(out))
+        return
     seeds = [int(x) for x in a.leagues.split(",")]
     t0 = time.time()
     import pickle
@@ -632,6 +838,8 @@ def main():
     out = [f"Draft realism check (engine/draft.py), {len(seeds)} leagues x {a.seasons} seasons, "
            f"{time.time() - t0:.0f} s", ""]
     report(results, out)
+    if startup_seeds:
+        startup_tight_ends(startup_seeds, out.append)
     text = "\n".join(out)
     print(text)
     Path(a.out).write_text(text, encoding="utf-8")

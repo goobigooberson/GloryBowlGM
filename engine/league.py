@@ -129,6 +129,8 @@ class League:
     draft: dict = None                               # this year's draft class and draft in progress, or a
                                                      # startup draft (draft_day.py); None when there's none
     news_archive: dict = None                        # finished seasons' news, kept as it was (news.py)
+    trades: dict = None                              # player trades: traded picks, the log, GMs' moods,
+                                                     # offers to you (trades.py)
 
     def team_players(self, team_id):
         """The team's 53-man roster (the players who can play)."""
@@ -241,6 +243,11 @@ def create_league(season=2026, seed=None, camp=True):
     preseason, and the rating scale)."""
     if seed is not None:
         random.seed(seed)
+    # A new league numbers its players from 1. Player ids feed many of the league's dice (each
+    # team's view of a player, contract draws...), so a counter left over from a league made
+    # earlier in the same run made the same seed come out differently (Oct 23).
+    from . import player as player_module
+    player_module._next_id = 1
     teams = make_teams()
     n_teams = len(teams)
     league = League(season=season, teams=teams)

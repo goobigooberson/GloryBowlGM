@@ -376,70 +376,153 @@ HEAD_HTML = f"""
 # tables have shaded headers, striped and highlighted rows, panels sit like
 # windows with a green top edge. "body " in front wins over each page's own
 # styles. To undo any of it, delete its lines here.
+# Oct 24: replaced with Gemini's "front-office polish" version (Blake designs the look with
+# Gemini): bevelled buttons, tighter tables with green uppercase headers and column lines,
+# bold starters on the depth chart, aligned numbers, squarer fields and menus.
 DESKTOP_CSS = f"""
 <style>
   /* Instant page switches; quick pop-ups (a desktop program doesn't slide) */
   body [class*="q-transition--slide"], body [class*="q-transition--jump"] {{
     transition: none !important; animation: none !important; }}
   body .q-dialog__inner[class*="q-transition--"], body .q-dialog__backdrop[class*="q-transition--"] {{
-    transition-duration: .09s !important; }}
+    transition-duration: .08s !important; }}
   body .q-ripple {{ display: none !important; }}
 
-  /* Buttons: squarer, firmer */
-  body .q-btn {{ border-radius: 3px; font-weight: 600; letter-spacing: 0; }}
+  /* Global numeric alignment for sports stats & salaries */
+  body table, body .q-table, body .depth-row, body .sched-row, body .team-sched {{
+    font-variant-numeric: tabular-nums;
+  }}
+
+  /* Buttons: tactile desktop bevel, squarer corners, firmer typography */
+  body .q-btn {{
+    border-radius: 3px; font-weight: 600; letter-spacing: 0.01em;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+  }}
+  body .q-btn--flat, body .q-btn--unelevated {{ box-shadow: none; }}
   body .q-btn--outline:before {{ border-width: 1px; }}
 
-  /* Button groups (Roster / Practice squad / ...) look like one segmented control */
-  body .q-btn-toggle {{ border: 1px solid #C7D0C4; border-radius: 3px; overflow: hidden; box-shadow: none; }}
-  body .q-btn-toggle .q-btn {{ border-radius: 0; min-height: 34px; padding: 0 14px; font-weight: 500; }}
-  body .q-btn-toggle .q-btn.bg-white {{ background: #F3F6F1 !important; color: #3C4852 !important; }}
-  body .q-btn-toggle .q-btn.bg-white:hover {{ background: #E4EBE1 !important; }}
-  body .q-btn-toggle .q-btn + .q-btn {{ border-left: 1px solid #C7D0C4; }}
-  body .q-btn-toggle .q-btn:not(.bg-white) {{ font-weight: 600; }}
+  /* Segmented button groups (Roster / Practice squad / ...) */
+  body .q-btn-toggle {{
+    border: 1px solid #B8C3B5; border-radius: 3px; overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06); background: #EAEEE8;
+  }}
+  body .q-btn-toggle .q-btn {{
+    border-radius: 0; min-height: 31px; padding: 0 12px; font-weight: 600;
+    font-size: 13.5px; box-shadow: none;
+  }}
+  body .q-btn-toggle .q-btn.bg-white {{
+    background: #F4F7F2 !important; color: #3A4650 !important; font-weight: 500;
+  }}
+  body .q-btn-toggle .q-btn.bg-white:hover {{ background: #E5ECE2 !important; color: var(--ink) !important; }}
+  body .q-btn-toggle .q-btn + .q-btn {{ border-left: 1px solid #C2CCC0; }}
 
-  /* Drop-downs and text boxes: compact and square, not form fields */
-  body .q-field--outlined .q-field__control {{ border-radius: 3px; background: #FFFFFF; }}
-  body .q-field--outlined .q-field__control:before {{ border-color: #C7D0C4; }}
-  body .q-field--outlined.q-field--dense .q-field__control {{ min-height: 36px; }}
-  body .q-field--dense .q-field__native, body .q-field--dense .q-field__input {{ min-height: 34px; padding: 0; }}
-  body .q-field--dense .q-field__marginal {{ height: 36px; }}
-  body .q-menu {{ border-radius: 3px; box-shadow: 0 6px 18px rgba(0,0,0,.18); }}
-  body .q-menu .q-item {{ min-height: 30px; padding: 4px 12px; }}
+  /* Drop-downs and text boxes: compact desktop toolbar height */
+  body .q-field--outlined .q-field__control {{
+    border-radius: 3px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }}
+  body .q-field--outlined .q-field__control:before {{ border-color: #B8C3B5; }}
+  body .q-field--outlined.q-field--dense .q-field__control {{ min-height: 32px; }}
+  body .q-field--dense .q-field__native, body .q-field--dense .q-field__input {{
+    min-height: 30px; padding: 0; font-size: 13.5px; font-weight: 500;
+  }}
+  body .q-field--dense .q-field__marginal {{ height: 32px; }}
+  body .q-menu {{ border-radius: 3px; border: 1px solid #B8C3B5; box-shadow: 0 8px 24px rgba(15,30,20,.22); }}
+  body .q-menu .q-item {{ min-height: 28px; padding: 4px 12px; font-size: 14px; }}
 
-  /* Panels sit like windows: green top edge, squarer corners, a faint shadow */
-  body .report, body .hcard, body .roster-table, body .box-panels {{
-    border-radius: 3px; border-top: 3px solid var(--turf); box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
-  body .menu-panel {{ border-radius: 3px; box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
+  /* Cards & Side Panels: crisp ledger borders with turf accent bar */
+  body .report, body .hcard, body .box-panels {{
+    border-radius: 3px; border: 1px solid #C8D0C5;
+    border-top: 3px solid var(--turf);
+    box-shadow: 0 1px 3px rgba(20, 35, 25, .07);
+  }}
+  body .menu-panel {{
+    border-radius: 3px; border: 1px solid #C8D0C5;
+    box-shadow: 0 2px 6px rgba(20, 35, 25, .08);
+  }}
 
-  /* Tables: shaded header, striped rows, row highlight under the mouse */
-  /* Header rows in the accent green, like the draft board (Blake liked its look, Oct 22) */
-  body .roster-table thead th {{ background: var(--turf); color: white; border-bottom: 0; letter-spacing: .02em; }}
-  body .roster-table thead th .q-table__sort-icon {{ color: var(--flag); }}
-  body .roster-table thead tr th {{ position: sticky; top: 0; z-index: 2; }}
+  /* Data Tables (Roster, Contracts, Trades, Staff, Stats):
+     Tighter padding so 11-column tables never clip on the right edge */
+  body .roster-table {{
+    border-radius: 3px; border: 1px solid #C2CBC0;
+    border-top: none; box-shadow: 0 1px 3px rgba(20, 35, 25, .06);
+  }}
+  body .roster-table .q-table__middle {{ overflow-x: auto; }}
+  body .roster-table thead th {{
+    background: var(--turf); color: #FFFFFF; border-bottom: 2px solid var(--turf-dark);
+    border-right: 1px solid rgba(255,255,255,0.10);
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    font-size: 14px; text-transform: uppercase; letter-spacing: .035em;
+    padding: 5px 8px !important; height: 30px !important;
+    position: sticky; top: 0; z-index: 2;
+  }}
+  body .roster-table thead th:last-child {{ border-right: none; }}
+  body .roster-table thead th .q-table__sort-icon {{ color: var(--flag); opacity: 0.9; }}
+  body .roster-table tbody td {{
+    padding: 4px 8px !important; height: 29px !important;
+    font-size: 14px; border-bottom: 1px solid #E6EAE4;
+    border-right: 1px solid #F0F3EE;
+  }}
+  body .roster-table tbody td:last-child {{ border-right: none; }}
   body .roster-table tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
-  body .roster-table tbody tr:hover td {{ background: #EAF2E6; }}
-  body .roster-table tbody tr.is-selected td {{ background: #FFF6CF; }}
-  body .box-table th {{ background: #EEF2EC; color: #2F3B34; }}
-  body .box-table tbody tr:hover td {{ background: #F1F6EE; }}
-  body .standings {{ border-radius: 3px; border-top: 3px solid var(--turf); box-shadow: 0 1px 3px rgba(20, 40, 30, .08); }}
-  body .standings th {{ background: var(--turf); color: white; border-bottom: 0; }}
-  body .standings tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
-  body .standings tbody tr:hover td {{ background: #EAF2E6; }}
-  body .standings tr.mine td {{ background: #FFF6CF; }}
-  body .standings caption {{ padding: 2px 0 6px; }}
-  body .sched-row:hover, body .team-sched.played:hover {{ background: #EAF2E6; }}
-  body .sched-row.is-selected, body .team-sched.is-selected {{ background: #FFF6CF; }}
+  body .roster-table tbody tr:hover td {{ background: #E6F0E2 !important; }}
+  body .roster-table tbody tr.is-selected td {{
+    background: #FFF4BF !important; font-weight: 500;
+  }}
 
-  /* Links to players and teams: plain text until you point at them */
+  /* Standings & Box Tables */
+  body .standings {{
+    border-radius: 3px; border: 1px solid #C2CBC0; border-top: none;
+    box-shadow: 0 1px 3px rgba(20, 35, 25, .06);
+  }}
+  body .standings th {{
+    background: var(--turf); color: white; border-bottom: 2px solid var(--turf-dark);
+    font-size: 13.5px; text-transform: uppercase; letter-spacing: .03em; padding: 4px 8px;
+  }}
+  body .standings td {{ padding: 4px 8px; font-size: 14px; }}
+  body .standings tbody tr:nth-child(even) td {{ background: #F7F9F6; }}
+  body .standings tbody tr:hover td {{ background: #E6F0E2; }}
+  body .standings tr.mine td {{ background: #FFF4BF; font-weight: 600; }}
+  body .standings caption {{ padding: 2px 0 5px; font-size: 18px; letter-spacing: .01em; }}
+
+  body .box-table th {{
+    background: #E4EAE2; color: #243029; text-transform: uppercase;
+    font-size: 12.5px; letter-spacing: .03em; padding: 4px 6px;
+  }}
+  body .box-table tbody tr:nth-child(even) td {{ background: #F9FAF8; }}
+  body .box-table tbody tr:hover td {{ background: #EBF2E8; }}
+
+  /* Depth Chart Grid: Give Starters visual priority over 2nd-4th string */
+  body .depth-head {{
+    background: var(--turf) !important; color: white !important;
+    padding: 5px 10px; border-radius: 3px 3px 0 0;
+    text-transform: uppercase; letter-spacing: .03em; font-size: 13.5px;
+  }}
+  body .depth-row {{
+    padding: 4px 10px; font-size: 13.5px; border-left: 1px solid #C8D0C5;
+    border-right: 1px solid #C8D0C5;
+  }}
+  body .depth-row:not(.depth-head) > span:nth-child(3) {{
+    font-weight: 600; background: rgba(31, 74, 53, 0.045);
+    padding: 2px 6px; border-radius: 2px;
+  }}
+  body .depth-row:hover {{ background: #E6F0E2; }}
+  body .depth-row.is-selected {{ background: #FFF4BF; box-shadow: inset 4px 0 0 var(--flag); }}
+
+  /* Schedule rows */
+  body .sched-row:hover, body .team-sched.played:hover {{ background: #E6F0E2; }}
+  body .sched-row.is-selected, body .team-sched.is-selected {{ background: #FFF4BF; }}
+
+  /* Links to players and teams: crisp hover state */
   body .pname {{ color: inherit; font-weight: 600; text-decoration: none; }}
   body .pname:hover {{ color: var(--turf); text-decoration: underline; }}
 
   /* Thin desktop scrollbars */
-  ::-webkit-scrollbar {{ width: 11px; height: 11px; }}
-  ::-webkit-scrollbar-track {{ background: transparent; }}
-  ::-webkit-scrollbar-thumb {{ background: #BAC4B6; border-radius: 6px; border: 3px solid transparent;
-                               background-clip: content-box; }}
-  ::-webkit-scrollbar-thumb:hover {{ background: #8E9B89; border: 3px solid transparent; background-clip: content-box; }}
+  ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
+  ::-webkit-scrollbar-track {{ background: #E4E8E1; }}
+  ::-webkit-scrollbar-thumb {{
+    background: #A8B4A4; border-radius: 5px; border: 2px solid #E4E8E1;
+  }}
+  ::-webkit-scrollbar-thumb:hover {{ background: #7D8C78; }}
 </style>
 """
 HEAD_HTML += DESKTOP_CSS

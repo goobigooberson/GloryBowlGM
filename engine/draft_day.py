@@ -348,15 +348,17 @@ def accept_offer(league, offer):
     if not ok:
         return False, why
     team = league.team(offer["team"])
-    return True, (f"Trade: {team.name} move up to pick {offer['for_pick']}; you get pick"
-                  f"{'s' if len(offer['gives']) > 1 else ''} {', '.join(map(str, offer['gives']))}.")
+    return True, (f"Trade: {team.name} move up to pick {offer['for_pick']}; you get "
+                  f"{pick_list(league, offer['gives'])}.")
 
 
 def trade_check(league, other, give, get):
     """Would AI team `other` take this deal (your picks `give` for its picks
-    `get`, overall pick numbers in this draft)? (yes?, explanation). AI teams
-    want at least full Jimmy Johnson chart value from you (draft.py), and a
-    team on the clock that loves a player sitting there won't move down."""
+    `get`: overall pick numbers in this draft, or next year's pick keys like
+    "2028-3-12", trades.py)? (yes?, explanation). AI teams want at least full
+    Jimmy Johnson chart value from you (draft.py; next year's picks as they value
+    them, about a round lower), and a team on the clock that loves a player
+    sitting there won't move down."""
     r = room(league)
     uid = _user(league)
     if r is None:
@@ -375,9 +377,10 @@ def trade_check(league, other, give, get):
     if near:
         s0 = near[0]
         mine = r.scores(other, s0["round"])
-        first = min(give)
+        now = [k for k in give if isinstance(k, int)]
         upcoming = [s["pick"] for s in r.slots[r.next:]]
-        gap = upcoming.index(first) if first in upcoming else 0
+        # (only next year's picks for it: it would give up the player entirely)
+        gap = upcoming.index(min(now)) if now and min(now) in upcoming else len(mine) - 1
         if len(mine) > 1 and mine[0][0] - mine[min(gap, len(mine) - 1)][0] > ON_CLOCK_KEEP:
             return False, (f"{league.team(other).name} won't move down: there's a player on the board they "
                            f"want with that pick. ({why})")
@@ -394,9 +397,40 @@ def propose(league, other, give, get):
     _save(league)
     if not done:
         return False, why
-    return True, (f"Trade with {league.team(other).name}: you give pick{'s' if len(give) > 1 else ''} "
-                  f"{', '.join(map(str, sorted(give)))} for pick{'s' if len(get) > 1 else ''} "
-                  f"{', '.join(map(str, sorted(get)))} ({why}).")
+    return True, (f"Trade with {league.team(other).name}: you give {pick_list(league, give)} for "
+                  f"{pick_list(league, get)} ({why}).")
+
+
+def pick_list(league, picks):
+    """'picks 12, 77 and a 2028 3rd-round pick, PIT's' (this draft's by number, next year's by name)."""
+    from . import trades as T
+    now = sorted(k for k in picks if isinstance(k, int))
+    later = [T.pick_label(league, k) for k in picks if not isinstance(k, int)]
+    bits = []
+    if now:
+        bits.append(f"pick{'s' if len(now) > 1 else ''} {', '.join(map(str, now))}")
+    bits += [f"a {x}" for x in later]
+    return " and ".join(bits) if bits else "nothing"
+
+
+def next_year_picks(league, team_id):
+    """[(key, label, chart points to the team that would get it)] a team's picks in next
+    year's draft, for draft-room offers."""
+    from . import trades as T
+    r = room(league)
+    if r is None:
+        return []
+    out = []
+    for key in T.team_picks(league, team_id):
+        if T.parse_key(key)[0] == r.season + 1:
+            out.append((key, T.pick_label(league, key, short=True)))
+    return out
+
+
+def future_points(league, key, valued_by):
+    """What a next-year pick is worth now to the team that would get it (chart points)."""
+    from . import trades as T
+    return round(T.pick_value(league, valued_by, key))
 
 
 def chart_points(pick_no):
