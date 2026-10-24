@@ -168,9 +168,31 @@ def deadline_week(league):
 
 
 def deadline_date(league):
-    """The real deadline: the Tuesday after the deadline week's Sunday."""
+    """The real deadline: the Tuesday after the deadline week's Sunday (4 pm ET; real
+    2024-25: Nov 5 and Nov 4, the Tuesday after week 9)."""
     from .schedule import week_sunday
     return week_sunday(league.season, deadline_week(league)) + timedelta(days=2)
+
+
+def deadline_words(league):
+    """Where the deadline stands, in words that agree with the week shown in the header.
+    The game moves from one week's games to the next; "Week 10" is the stretch after
+    week 9's games and before week 10's, which holds the real deadline (Tuesday), so trades
+    are still open then and close once week 10 is played."""
+    from .schedule import week_sunday
+    dw = deadline_week(league)
+    dl = deadline_date(league)
+    day = f"{dl:%A}, {dl:%B} {dl.day}"
+    stage = getattr(league, "stage", "")
+    if stage == "regular_season" and league.week == dw + 1:
+        nxt = week_sunday(league.season, dw + 1)
+        return (f"Deadline week: trades close at the deadline, {day}, between week {dw}'s games and week "
+                f"{dw + 1}'s ({nxt:%a}, {nxt:%b} {nxt.day}). Once you play week {dw + 1}, trades are closed "
+                f"until the new league year.")
+    if stage == "regular_season" and league.week > dw + 1:
+        return f"The deadline was {day}, after week {dw}'s games. Trades reopen when the new league year starts."
+    return (f"The trade deadline is {day}, the Tuesday after week {dw}'s games; after it, trades reopen when "
+            f"the new league year starts.")
 
 
 def window(league):
@@ -196,9 +218,10 @@ def window(league):
         if league.week <= dw:
             return True, ""
         if league.week == dw + 1:
-            return True, "Today is the trade deadline."
-        return False, (f"The trade deadline has passed (Tuesday after week {dw}). Trades reopen when the "
-                       f"new league year starts.")
+            return True, f"Deadline week: last chance to trade before week {dw + 1}'s games."
+        dl = deadline_date(league)
+        return False, (f"The trade deadline passed on {dl:%A}, {dl:%B} {dl.day}, after week {dw}'s games. "
+                       f"Trades reopen when the new league year starts.")
     if stage == "startup_draft":
         return False, "The startup draft is on."
     return False, "Trades reopen when the new league year starts."

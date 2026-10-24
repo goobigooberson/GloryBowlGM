@@ -23,8 +23,14 @@ from nicegui import app, context, ui
 
 from .state import state
 
-# Window sizes (logical pixels; FOF8-like compact windows so a few fit beside the game).
-SIZES = {"player": (1240, 860), "team": (1300, 900), "game": (940, 900)}
+# Window sizes, fixed: each opens at the size its content was laid out for, so everything
+# fits neatly (Blake, Oct 23: "player card windows ... should open at fixed sizes so that
+# everything fits in them organized and neat ... all pop out windows"; at 1240x860 he had
+# to drag a player card bigger to read it). Logical pixels; never bigger than the screen.
+# Measured: a player card's three columns need 1440 wide and ~1280 tall (a 4-season QB);
+# the team window's roster and schedule are long lists that scroll; a box score scrolls.
+# Still resizable (e.g. to fit the narrower portrait monitor; the card's columns then wrap).
+SIZES = {"player": (1440, 1280), "team": (1440, 1240), "game": (940, 1100)}
 TITLES = {"player": "Player card", "team": "Team", "game": "Game summary"}
 CASCADE = 30                      # each new window opens this far down and right of the last
 
@@ -196,8 +202,16 @@ def install_in_window_process():
                 x0, y0 = int(window.x or 0), int(window.y or 0)
             except Exception:
                 x0 = y0 = 0
+            x, y = x0 + 120 + step, y0 + 40 + step
+            try:            # never bigger than the screen, and on it
+                scr = webview.screens[0]
+                width, height = min(width, scr.width - 40), min(height, scr.height - 90)
+                x = max(scr.x if hasattr(scr, "x") else 0, min(x, scr.width - width - 20))
+                y = max(0, min(y, scr.height - height - 60))
+            except Exception:
+                pass
             w = original(title, base + path, width=width, height=height,
-                         x=x0 + 120 + step, y=y0 + 90 + step, min_size=(560, 420),
+                         x=x, y=y, min_size=(560, 420),
                          background_color="#ECEFEA", text_select=True)
             popouts.append(w)
 

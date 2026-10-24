@@ -183,7 +183,7 @@ def contract_text(league, pid):
             + (f", {kind}" if kind else "") + f"; cap hit this season {C.fmt_money(C.cap_hit(league, c))}")
 
 
-def report_html(p, with_stats=True):
+def report_html(p, with_stats=True, part="all"):
     """The player report. with_stats=False leaves out this season's stats
     (the full player card shows the whole career instead)."""
     league = state.league
@@ -244,7 +244,7 @@ def report_html(p, with_stats=True):
         if s not in pos.HIDDEN_SKILLS)          # hidden ratings never appear on screen
 
     ovr_word, ovr_color = rating_cell(ovr)
-    return f"""
+    head = f"""
     <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
       <span class="pos-tag" style="{pos_style}">{p.position}</span>
       <span class="legend">{escape(pos_name)}</span>
@@ -256,14 +256,23 @@ def report_html(p, with_stats=True):
       <span class="legend">potential {pot}</span>
     </div>
     <h3>Bio</h3>{fact_grid(facts)}
-    {injury_history_html(league, p)}
+    {injury_history_html(league, p)}"""
+    ratings = f"""
     <h3>Ratings</h3>
     {skills}
-    <div class="legend" style="margin-top:6px">Dark bar: ability now. Light bar: room to grow.</div>
-    {f"<h3>Season stats</h3>{player_stats_html(league, p.id)}" if with_stats else ""}
+    <div class="legend" style="margin-top:6px">Dark bar: ability now. Light bar: room to grow.</div>"""
+    stats = f"<h3>Season stats</h3>{player_stats_html(league, p.id)}" if with_stats else ""
+    extra = f"""
     <h3>Combine</h3>{fact_grid(combine)}
     <h3>Personality</h3>{fact_grid([(k, fmt.trait(v)) for k, v in traits])}
     """
+    # part: "bio" or "ratings" (ratings, combine, personality) for the player card's columns
+    # (Oct 23: the card opens in its own window, three columns so it fits without scrolling).
+    if part == "bio":
+        return head
+    if part == "ratings":
+        return ratings + extra
+    return head + ratings + stats + extra
 
 
 # ---------------------------------------------------------------------------

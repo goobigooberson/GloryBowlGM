@@ -144,11 +144,9 @@ def build_trade_tab(on_change=None):
                 ui.label("Pick your team first.").classes("legend")
                 return
             ok, why = T.window(league)
-            dl = T.deadline_date(league)
-            dw = T.deadline_week(league)
             if ok:
-                text = (f'<b>Trades are open.</b> {escape(why)} The deadline is the Tuesday after week {dw} '
-                        f'({dl:%a, %b} {dl.day}); after it, trades reopen when the new league year starts. '
+                extra = "" if why.startswith("Deadline week") else (escape(why) + " ")
+                text = (f'<b>Trades are open.</b> {extra}{escape(T.deadline_words(league))} '
                         f'Picks in the next three drafts can be traded.')
             else:
                 text = f'<b>Trades are closed.</b> {escape(why)}'

@@ -84,11 +84,32 @@ def card_header(league, p):
 
 
 def card_body(league, p):
-    """The report on the left; honors, career stats and ratings by season on the right."""
-    with ui.row().classes("w-full px-8 py-4 gap-6 no-wrap items-start"):
-        with ui.element("div").classes("report px-6 py-5").style("flex: 0 0 460px"):
-            ui.html(report_html(p, with_stats=False), sanitize=False)
-        with ui.element("div").classes("report px-6 py-5").style("flex: 1 1 0; min-width: 0; overflow-x: auto"):
+    """Three columns: bio and ratings by season; ratings, combine and personality; honors and
+    career stats. They wrap onto more rows in a narrow window (Oct 23: in a pop-out window the card
+    was taller than the window; Blake had to drag it bigger to read everything)."""
+    with ui.row().classes("w-full px-6 py-4 gap-4 items-start").style("flex-wrap: wrap"):
+        with ui.element("div").classes("report px-5 py-4").style("flex: 0 0 360px"):
+            ui.html(report_html(p, with_stats=False, part="bio"), sanitize=False)
+            hist = [r for r in league.rating_history if r["pid"] == p.id]
+            if hist:
+                ui.label("Ratings by season").classes("panel-heading")
+                ui.label("Overall and potential at each training camp (the first row is when he joined the "
+                         "league). Development happens at camp; see how his ceiling moved.").classes("legend")
+                # As your staff sees him now (Oct 24): his history moved by your staff's
+                # current read of him, so the last row matches the ratings above.
+                from engine import evaluation as EV
+                off_o = EV.overall(league, league.user_team_id, p) - p.overall() if league.user_team_id is not None else 0
+                off_p = (EV.overall(league, league.user_team_id, p, "potential") - p.overall("potential")
+                         if league.user_team_id is not None else 0)
+                rows = "".join(f"<tr><td class='l'>{r['season']}</td><td>{shown(r['ovr'] + off_o, p.position)}</td>"
+                               f"<td>{shown(r['pot'] + off_p, p.position)}</td></tr>"
+                               for r in sorted(hist, key=lambda r: r["season"]))
+                ui.html(f'<table class="box-table" style="max-width:360px"><thead><tr><th class="l">Season</th>'
+                        f'<th>Overall</th><th>Potential</th></tr></thead><tbody>{rows}</tbody></table>',
+                        sanitize=False)
+        with ui.element("div").classes("report px-5 py-4").style("flex: 0 0 330px"):
+            ui.html(report_html(p, with_stats=False, part="ratings"), sanitize=False)
+        with ui.element("div").classes("report px-5 py-4").style("flex: 1 1 560px; min-width: 0; overflow-x: auto"):
             honors = AW.player_honors(league, p.id)
             if honors:
                 ui.label("Awards and honors").classes("condensed").style("font-size:30px;font-weight:700;line-height:1.1")
@@ -110,20 +131,3 @@ def card_body(league, p):
                     ui.html(tables, sanitize=False).classes("w-full")
             if not any_stats:
                 ui.label("No regular-season or playoff stats yet.").classes("legend mt-3")
-            hist = [r for r in league.rating_history if r["pid"] == p.id]
-            if hist:
-                ui.label("Ratings by season").classes("panel-heading")
-                ui.label("Overall and potential at each training camp (the first row is when he joined the "
-                         "league). Development happens at camp; see how his ceiling moved.").classes("legend")
-                # As your staff sees him now (Oct 24): his history moved by your staff's
-                # current read of him, so the last row matches the ratings above.
-                from engine import evaluation as EV
-                off_o = EV.overall(league, league.user_team_id, p) - p.overall() if league.user_team_id is not None else 0
-                off_p = (EV.overall(league, league.user_team_id, p, "potential") - p.overall("potential")
-                         if league.user_team_id is not None else 0)
-                rows = "".join(f"<tr><td class='l'>{r['season']}</td><td>{shown(r['ovr'] + off_o, p.position)}</td>"
-                               f"<td>{shown(r['pot'] + off_p, p.position)}</td></tr>"
-                               for r in sorted(hist, key=lambda r: r["season"]))
-                ui.html(f'<table class="box-table" style="max-width:360px"><thead><tr><th class="l">Season</th>'
-                        f'<th>Overall</th><th>Potential</th></tr></thead><tbody>{rows}</tbody></table>',
-                        sanitize=False)
