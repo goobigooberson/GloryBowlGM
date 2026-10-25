@@ -15,3 +15,6 @@ tools/data/nflverse/
 .claude/settings.local.json
 # Separate working copies Claude sessions make (git worktrees; each has its own branch)
 .claude/worktrees/
+# Test saves and screenshots the check tools make (tools/make_test_saves.py, tools/screens_check.py)
+tools/data/test_saves/
+tools/data/screens/

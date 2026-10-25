@@ -2095,7 +2095,10 @@ def withdraw_offer(league, pid):
 def interest(league, pids, wave=None, table=None):
     """Rough interest from other teams this wave: {pid: 'Several teams' / 'A few teams'
     / 'No other teams'} (how many AI teams would bid at his ask; never their offers)."""
-    wave = wave or league.fa.get("wave", 1)
+    # (before the market opens, league.fa["wave"] is None: rate interest as for wave 1. Was
+    # .get("wave", 1), which passed the None on and crashed the Contracts tab's Free agency
+    # view in the coaching and re-sign phases; found by tools/screens_check.py, Oct 25)
+    wave = wave or league.fa.get("wave") or 1
     table = table or M.market_table(league)
     depth = depth_lists(league, table)
     quality = team_quality(league)

@@ -1,0 +1,4 @@
+# Tools for development only (not part of the game or its .exe):
+#     python -m pip install -r requirements-dev.txt
+-r requirements.txt
+playwright          # tools/screens_check.py drives the browser (Microsoft Edge) with it
