@@ -24,6 +24,12 @@
 #   speed        CPU seconds per week of real games and per offseason Next click (one league,
 #                run alone at the end so the other jobs don't slow it)
 #   draft        (--full) the draft over 22 seasons (tools/draft_check.py's harness)
+#   rookies      drafted rookies' playing time by round and the draft board's Developed %
+#                (tools/rookie_check.py on lab leagues, fast games): one unit per league
+#   integration  the whole game with a team of yours, start to finish, save/load at every
+#                stage (tools/integration_check.py): problems must be 0
+# The sim suite also reports QB season styles (tools/qb_style_check.py: efficient low-volume
+# passers, running QBs, pass attempts per game).
 #
 # How to read it. Each measure is averaged over its units (offseasons, seasons, leagues).
 # Its noise band is how much that average would swing from luck alone (the spread of the
@@ -66,6 +72,9 @@ SIM_SEASONS = 4
 DRAFT_SEEDS = (101, 102, 104, 105, 106, 107)
 DRAFT_SEASONS = 22
 DET_SEED = 211
+ROOKIE_SEEDS = (301, 302, 303, 304)
+ROOKIE_SEASONS = 7            # classes from the 2nd and 3rd league years followed 5 seasons
+INTEGRATION_SEASONS = 3
 SPEED_SEED = 212
 
 # ---- Real targets and labels ------------------------------------------------------------
@@ -123,7 +132,7 @@ FA_LABELS = {
     "tags": ("franchise tags", "n"), "cap_cuts": ("cap cuts", "n"), "extensions": ("extensions", "n"),
     "wk1_cap_used": ("cap used at week 1 (average team)", "pct"), "wk1_dead": ("dead money at week 1", "pct"),
 }
-MUST_BE_ZERO = {"fa.illegal", "fa.over_cap_team_weeks", "determinism.mismatch"}
+MUST_BE_ZERO = {"fa.illegal", "fa.over_cap_team_weeks", "determinism.mismatch", "integration.problems"}
 
 # ---- Jobs ------------------------------------------------------------------------------
 
@@ -154,9 +163,19 @@ def work(job):
         import simlab
         _k, seed, i = job
         league = simlab.get_league(str(seed))
+        import qb_style_check as QS
         res = simlab.play_season(league, seed=f"{seed}-{i}", norms=simlab.build_norms(league))
+        plays = res["team_tot"].get("plays", 0) / max(1, res["team_games"])
+        qb, att_pg = QS.season_measures(QS.game_qbs(res["players"], plays))
         return kind, {"avg": simlab.league_averages(res["team_tot"], res["team_games"]),
-                      "common": MS.measure(res["players"])}
+                      "common": MS.measure(res["players"]), "qb": qb, "qb_att_pg": att_pg, "seed": seed}
+    if kind == "rookies":
+        import rookie_check as RK
+        return kind, RK.run_league((job[1], job[2]))
+    if kind == "integration":
+        import integration_check as IC
+        res = IC.run(job[1], say=lambda *a, **k: None)
+        return kind, {"problems": res["problems"], "health": res["health"]}
     if kind == "determinism":
         from lab import Lab, fingerprint
         lab = Lab(job[1]).run(1)
@@ -243,6 +262,39 @@ def combine(parts):
             vals = [p["common"].get(key) for p in parts["sim"]]
             if any(v is not None for v in vals):
                 out[f"sim.common.{key}"] = measure(vals, r["mean"], key, lo=r["min"], hi=r["max"])
+        import qb_style_check as QS
+        qreal = QS.real()
+        for key in ("qb_efficient_low_volume", "qb_600_rush"):
+            r = qreal[key]
+            out[f"sim.qb.{key}"] = measure([p["qb"][key] for p in parts["sim"] if "qb" in p], r["mean"],
+                                           QS.LABELS[key], lo=r["min"], hi=r["max"])
+        # Attempts per game: percentiles of all seasons' starters, one value per league (4 seasons each).
+        by_league = defaultdict(list)
+        for p in parts["sim"]:
+            by_league[p.get("seed")] += p.get("qb_att_pg", [])
+        for key in ("qb_att_pg_p10", "qb_att_pg_p50", "qb_att_pg_p90"):
+            vals = [QS.percentiles(v).get(key) for v in by_league.values() if v]
+            out[f"sim.qb.{key}"] = measure(vals, qreal[key]["mean"], QS.LABELS[key])
+    if parts.get("rookies"):
+        import rookie_check as RK
+        rl = RK.real()
+        names = {"rookie_regular": "drafted rookies who are regulars (half the snaps) as rookies",
+                 "started_as_rookie": "eventual regulars (years 1-5) who already were as rookies",
+                 "ever": "drafted players who are regulars in years 1-5"}
+        for b, _r in RK.BUCKETS:
+            for k, lbl in names.items():
+                vals = [RK.summarize(p["players"])[b][k] for p in parts["rookies"] if p["players"]]
+                out[f"rookies.r{b}.{k}"] = measure(vals, rl[b][k], f"round {b}: {lbl}", "pct")
+        for k, lbl in (("devl_70plus", "draft board: drafted players shown 70%+ developed"),
+                       ("devl_80plus", "draft board: ...80%+ developed")):
+            vals = [RK.devl_shares(p["devl"]).get(k) for p in parts["rookies"]]
+            out[f"rookies.{k}"] = measure(vals, None, lbl, "pct")
+    if parts.get("integration"):
+        ip = parts["integration"][0]
+        out["integration.problems"] = measure([len(ip["problems"])], 0,
+                                              "whole-game test (your team, save/load each stage): problems (must be 0)")
+        out["integration.starters_last_season"] = measure([ip["health"][-1][2]] if ip["health"] else [], None,
+                                                          "whole-game test: starters' average overall, last season")
     if parts.get("determinism"):
         fps = [p["fp"] for p in parts["determinism"]]
         out["determinism.mismatch"] = measure([0 if len(set(fps)) == 1 else 1], 0,
@@ -409,6 +461,10 @@ def run(suites, workers):
         jobs += [("determinism", DET_SEED), ("determinism", DET_SEED)]
     if "sim" in suites:
         jobs += [("sim", s, i) for s in SIM_SEEDS for i in range(SIM_SEASONS)]
+    if "rookies" in suites:
+        jobs += [("rookies", s, ROOKIE_SEASONS) for s in ROOKIE_SEEDS]
+    if "integration" in suites:
+        jobs += [("integration", INTEGRATION_SEASONS)]
     parts = defaultdict(list)
     done = 0
     if jobs:
@@ -425,7 +481,7 @@ def run(suites, workers):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--suites", default="fa,sim,determinism,speed")
+    ap.add_argument("--suites", default="fa,sim,determinism,rookies,integration,speed")
     ap.add_argument("--full", action="store_true", help="also the draft suite")
     ap.add_argument("--save-baseline", action="store_true")
     ap.add_argument("--report-only", action="store_true")

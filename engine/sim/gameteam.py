@@ -604,6 +604,13 @@ class GameTeam:
         # some throw to the backs, some spread it out.
         self.role_bias = {slot: b + style.gauss(0, T.STYLE_ROLE_SD.get(slot[:2], 0.12))
                           for slot, b in T.TARGET_ROLE_BIAS.items()}
+        # A star tight end is a featured part of the passing game, whoever the coordinator
+        # is (Oct 25: the pull above didn't follow his talent, so the league's best tight
+        # ends drew ~17% of their teams' targets vs real ~20-27%, and the top TE caught 92-99
+        # passes a season vs real 107-126; tuning.TE_FEATURE_K).
+        te = self.starter("TE1")
+        if te is not None:
+            self.role_bias["TE1"] += T.TE_FEATURE_K * max(0.0, self.talent_z(te, "TE1") - T.TE_FEATURE_FROM)
         # Receivers' and tight ends' pull follows the player, not the spot (Oct 23): a backup
         # filling the top receiver's spot while he rests doesn't inherit his share of throws
         # (real teams keep feeding their best receivers; once they rotate like real ones, the

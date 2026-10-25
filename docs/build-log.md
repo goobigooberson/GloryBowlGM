@@ -980,6 +980,114 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
   - Realism check, 16 seasons: 22 of 303 outside the real range (last committed report 35; other changes since then are in that comparison too).
 - **For Blake to judge:** how the Developed % column reads now (first-rounders mostly 70-90%, late-rounders often 40-60%), and whether late-round rookies' current ratings feel too low on screen (rounds 6-7 show ~18-20 now, ceilings ~40).
 
+### Today's one-off checks made permanent, in the scoreboard (Oct 25, night; Blake: "lets do it in your order just make sure it wont compromise development accuracy", item 3 of Claude's list)
+- **New tools (measure only; nothing in `engine/` changed):**
+  - `tools/rookie_check.py`: drafted rookies' playing time by round vs real (regulars as rookies, regular in years 2-5, ever regular, eventual regulars who started as rookies; real from nflverse snap counts, 2013-2021 classes, saved in `tools/real_rookie_bloom.json`) and the draft board's Developed % (share of drafted players at 70%+ / 80%+). On lab leagues (fast games).
+  - `tools/qb_style_check.py`: efficient low-volume passers (100+ rating on under a 3,600-yard pace), 600+ yard rushing QBs, starting QBs' pass attempts per game (10th / 50th / 90th percentile) vs real 2010-2024 (`tools/real_qb_styles.json`).
+  - `tools/integration_check.py`: the whole-game test the main session ran from its scratchpad before big commits (startup draft with a team of yours, seasons, every offseason phase with you in it, save/load at each stage); problems must be 0.
+- **Scoreboard:** default suites now `fa, sim, determinism, rookies, integration, speed` (~10 minutes). The sim suite also reports the QB styles. `integration.problems` is a must-be-zero number. Baseline re-saved from the committed code in a clean worktree. Old measures unchanged (0 changes beyond the noise).
+- **What the new numbers show (game / real):**
+  - Rookies: round 1 regulars as rookies 64.5% / 61.0%, eventual regulars who started as rookies 67.4% / 66.3%; rounds 4-5 11.6% / 9.6% and 32.9% / 24.2%. Draft board: 48% of drafted players show 70%+ developed, 29% 80%+.
+  - QBs: efficient low-volume seasons 0.31 / 0.33 a season (fine). **Running QBs (600+ rushing) 3.2 / 1.8 a season**, and **pass-happy teams throw less than real: 90th percentile 36.3 / 39.1 attempts a game** (median 32.8 / 33.9, 10th 28.7 / 28.6). Both are open; for Blake to decide whether to tune.
+  - Whole-game test (3 seasons): 0 problems.
+- **Still flagged BROKEN (known, not new):** AI teams slightly over the cap ~20 team-weeks a season ($56K-$166K), and cap legality misses 0.3 an offseason.
+
+### AI teams over the cap in season: three causes fixed (Oct 25, night; the scoreboard's must-be-zero "AI team-weeks over the cap", ~20 a season)
+- **Traced** on lab leagues (scratchpad `cap_trace_lab.py`, `cap_who.py`: every week, every AI team over the cap, the contracts added and removed, the code path of each signing that went over).
+- **1. An off-by-one week (most of it).** After a week's games, the AI's roster moves (`season.end_week` -> `transactions.weekly`) run before the week number moves on, so `contracts.pay_week` counted that week's check as still to come. A player signed then was charged one week too many. Weeks 1-17 the week's cap clean-up absorbed it; after the last regular-season game, a team at the cap that signed injury cover went ~$56K over (one week of a minimum salary) and stayed over through the playoffs, since nothing was left to pay, cut or restructure. Fix: once the week's games are played, its check counts as paid (`league.week_played`, set in `season.play_week` around `end_week`, cleared when the week advances). Every in-season signing, release and restructure after a week's games now counts the right weeks.
+- **2. The deal checked wasn't the deal signed.** Whether an AI team can afford an in-season free agent was priced with one set of dice (`asking_hit`, `AffordCheck`: `random.Random(0)`), the contract written at the week's end with another (`sync`), so the signing bonus came out different and a team at the cap could end up a few hundred $K over. Both now use `free_agency._deal_rng` (the same dice).
+- **3. Making room before signing at the cap.** An AI team more than `SHORT_AT_CAP` (2) short after injuries fills the spots even at the cap; now it first restructures and then cuts to make room for each one (`transactions._make_room_for_minimum`, using `free_agency._comply`), as real teams do. Not your team.
+- **Result (scoreboard, 3 lab leagues x 4 seasons):** AI team-weeks over the cap 20.5 -> 4.2 after fix 1, 4.7 with all three (the same within the noise); cap legality misses at offseason checkpoints 0.3 -> 0.1. Nothing else moved beyond the noise except the new rookie measures (next item).
+- **Left (known gap):** teams with heavy dead money (one had $52M) that still need injury cover: no restructure or cut saves anything, so they fill the spots and sit $0.2-3M over for the rest of the season. Getting to exactly zero would mean letting such a team play with too few players (game-day elevations only), which is a design call for Blake. One league also started a season $2.5M over at week 1 (the week-1 clean-up couldn't get it under); not traced further.
+- **Tool note:** the new rookie measures (`rookies.*`, 4 lab leagues) swung past their noise bands twice from these small changes, both directions: 4 leagues is too few for a reliable band on per-round shares. Treat their flags as "look", not "broken", until the suite gets more leagues (planned with the lab speed-up).
+- **Scoreboard baseline** re-saved from this run.
+
+### Pass rush and tight ends retuned on settled leagues (Oct 25; side session, from the main session's settled-leagues recheck)
+- **Why:** once new leagues started settled (entry above), the realism check tests leagues that look like ones a few seasons in. It showed a small, consistent shift in measures that were already at the edge: 10+ sack seasons ~26 a season (real 17-24), 12+ ~14 (real 7-11), the top tight end's catches 92-98 (real 107-126), 80-tackle seasons and DL tackles high.
+- **How it was measured:** a scratchpad runner played 16-24 new leagues x 2 seasons (32-48 seasons) per setting through `tools/simlab.py`, knobs set from outside, so `engine/sim/` stayed untouched until the final edit. Real yardsticks: nflverse season stats 2021-25, snap counts 2023-25 and weekly stats (one-game spikes, `tools/game_extremes_check.py`'s list).
+- **Pass rush, what was wrong:**
+  - Team totals were already right: sacks a team game 2.37 (real 2.46), team sack spread 9.2 (real 8.8), each team's sack leader 10.4 on average with a spread of 3.4 (real 10.3 / 3.5).
+  - The shape across players was too flat. Team #2 sacker 7.4 (real 6.8). Sacks by players with under 3 for the season were 20% of all sacks (real 26%). League ranks #10-#50 ran 0.5-0.8 high, while the league leader was 18.4 (real 20.1).
+  - Cause: clean-up sacks (the man who won first isn't the one who finishes, 45% of sacks) went half to the other defensive end (`CLEANUP_WEIGHT` DE 0.7, DT 0.35). That turned many second ends into 10-sack players.
+  - Snap shares are not the cause: the top 20 sackers play 69-70% of snaps in both the game and the real NFL.
+- **Pass rush, tried (32 seasons each; 10+ / 12+ sack seasons, leader; baseline 23.5 / 12.6, 18.4):**
+  - `RUSH_WIN_K` 0.27 -> 0.36 (ratings matter more in every rush matchup): 24.8 / 13.5, 18.9. Worse. Rejected.
+  - `CLEANUP_WEIGHT` DE 0.4, DT 0.35: 19.6 / 9.8, 18.1. Good, but interior linemen took 26.3% of sacks (real ~20-25%) and DT 6+ sack seasons went 9 -> 13.
+  - The same plus `SACK_CLEANUP` 0.55: 17.3 / 7.5, leader 16.9. Too flat at the top.
+  - The same plus `RUSH_WIN_K` 0.33-0.36: leader 19.5-20.2, but single teams reached 86-95 sacks (real max 70). Rejected.
+  - `HOT_RUSHER_K` 0.3 / 0.9: no clear effect on 3-sack games.
+  - DE 0.4 / DT 0.25: 21.9 / 11.3, leader 17.9, DT share 23.5%. DE 0.3 / DT 0.25: 20.8 / 10.8, DT share 25.3%. DE 0.3 / DT 0.2: about the same as 0.4 / 0.25.
+- **Tight ends, what was wrong:**
+  - Real TE targets by rank #1/#2/#3/#5/#10/#20 are 154/131/119/106/88/68. The game had 134/119/111/100/84/64: a little low everywhere, much lower at the top.
+  - Catch rates were already high (top TEs ~77% vs real ~73%), so the gap is targets, not efficiency.
+  - Cause: who the passing game features is mostly the coordinator's random style (`STYLE_ROLE_SD` TE 0.32) and doesn't follow the tight end's talent. TEs rated 88+ (internal) drew a median 17% of their team's targets; real elite TEs (Kelce, Andrews, Kittle, Bowers, McBride) draw 20-28%.
+- **Tight ends, tried (a star TE's extra pull = K per z of talent above FROM, z vs the average starting TE; TE targets #1/#2/#3/#5/#10/#20):**
+  - K 0.25, FROM 0.5: 155/137/125/112/92/66. Top right, middle 5-8% high, 80-catch seasons high.
+  - K 0.4, FROM 0.5: 163/146/132/116/95/69. Too much.
+  - K 0.4 with the style spread cut to 0.24: about the same.
+  - K 0.2, FROM 0.5: 145/127/117/106/88/68.
+  - K 0.25, FROM 0.8: 146/129/122/108/87/68. Top TE 113 catches, 1,198 yards.
+  - K 0.3, FROM 1.0: 141/126/117/103/85/67.
+- **Changed:**
+  - `tuning.CLEANUP_WEIGHT` DE 0.7 -> 0.4, DT 0.35 -> 0.25. Who finishes a clean-up sack; blitzers and others stay 1.0, so a little more goes to blitzing linebackers and DBs.
+  - New `tuning.TE_FEATURE_FROM` 0.8 and `TE_FEATURE_K` 0.25, used in `gameteam._build_tendencies`. The starting tight end's target pull (`role_bias["TE1"]`) gets +0.25 per z of talent above 0.8, on top of the coordinator's style. Only clearly-better-than-average starters are affected. No new dice are drawn, so everything else in a game rolls the same.
+  - The code reproduces the tested settings exactly: 32 of 32 seasons identical.
+- **Results, 48 new-league seasons (real; before, where measured on 32):**
+  - Sacks:
+    - 10+ sack seasons 23.1 (18.8 [17-24]; 23.5), 12+ 11.5 (9.8 [7-11]; 12.6), 15+ 3.7 (3.6).
+    - Leader 19.5 (20.1; 18.4). Ranks #5/#10/#20/#50: 14.2/12.1/10.1/7.0 (14.4/12.0/9.4/6.5).
+    - Team sack profile #1/#2/#3: 10.4/7.4/5.4 (10.2/6.8/5.0).
+    - DT share of sacks 23.7%; DBs 6.7% (5.9 before, real 7.8). QB hits 20+ 32.4 (26.8 [19-33]; 33.4).
+  - TE targets #1/#2/#3/#5/#10/#20: 144/128/118/105/86/65. TE1 target share p50/p90/p95/p98: 0.13/0.21/0.24/0.27 (real 0.14/0.20/0.23/0.26).
+  - TE leaderboard: top TE catches 108.8 (113.8 [107-126]; 98.9); TE #3/#5/#10 88/78/64 (85/76/62); top TE yards 1,175 (1,230; 1,045); 700-yard TEs 7.2 (8.2 [7-9]; 6.4); 100-catch TEs 1.35 (1.2; 0.56).
+  - Receivers: leading receiver 1,756 yards (1,811), 40th-most targets 97.1 (100.2; 96.4), 100-target players 37.2 (39.8; 36.1).
+  - League averages unchanged: points 22.9, yards 332.7, YPA 7.1, YPC 4.5, sacks 2.41.
+- **Checks:**
+  - Realism check, 16 seasons (saved + 101-103): **24 of 303 outside (35 before)**. Every sack measure, QB hits and 80-tackle seasons (113.6, at the edge) are now inside. League averages unchanged (points 22.9, yards 332.1, YPC 4.5, YPA 7.1).
+    - The top TE's catches 102.6 is still just under the flag line (103.3). The fixed saved test league holds it down: an old league with five TEs rated 90+ and a flat passing game (top receiver 120 catches, real 133; 12-catch games 6 a season, real 16). On it the top TE went 89 -> 96 catches (6 seasons); on new leagues 99 -> 109.
+  - Scoreboard sim suite (101-104 x 4) vs the 01:54 baseline: one flag, targets#40 96.3 -> 92.8. On the 48-season runs that measure didn't move (96.4 -> 97.1): luck in the smaller sample. Its `latest.json` / `report.txt` were put back as they were. New baseline not saved (the main session's call: it would also pick up other sessions' uncommitted edits).
+  - Team sport test (league 101, 160 games), before / after:
+    - Below-average QB with stacked / average / weak cast: 10.7 / 8.0 / 3.0 wins, then 11.4 / 8.4 / 3.1.
+    - Best QB: 12.5 / 9.7 / 4.4, then 12.2 / 9.0 / 4.0.
+    - Great QB on a bad roster: 5.6, then 5.5. Generational QB: 7.9, then 8.0.
+    - Within the test's usual +/-0.7 wins.
+  - Consistency test, 4 replays, before / after:
+    - Saved league: edge sacks 33% -> 20% (real 33%).
+    - League 101: 29% -> 31%.
+    - On the 16-league runs: 32% -> 30%, while a run that didn't touch the pass rush moved it to 26%. The saved league's 20% is that measure's noise.
+    - Everything else stayed real on both leagues (WR targets 10-12% vs 12, tackles 13-14% vs 13, RB carries 13-17% vs 14).
+  - Recenter (look only): not needed for this change, since nothing changed how ratings turn into matchup edges. But it shows drift since the Oct 19 centers, from player generation (settled leagues): `kr` -0.058 -> -0.148, `pr` -0.041 -> -0.101, `breakaway` 0.011 -> -0.009, `scramble` 0.211 -> 0.236, comp sites about +0.01. Not written (see follow-ups).
+- **Findings, not changed:**
+  - **DL tackles "high" is the known label issue.** Against real line + edge LBs (the game's ends play the 3-4 edge role), #10 68.9 is inside the real 66-72 and 50+ tackle seasons 52 inside 38-60.
+  - **80-tackle seasons and DB 80+ (57.7 vs 46) come from playing time, not tackle credit.**
+    - The game's top five DBs per team play 97/90/81/69/56% of defensive snaps vs real 93/85/76/65/53%.
+    - Game teams use 27 defenders a season vs real 33 (2023-25 snap counts).
+    - That's in-season roster churn (`engine/transactions.py`, injuries), not `TACKLE_POOL`, which was matched per snap on Oct 23. Changing who gets credit would hide it.
+  - **One-game 3+ sack performances run 24-27 a season (real 16.4; Oct 23 was 20-25).** Still high after this change (27.2 -> ~25). `HOT_RUSHER_K` doesn't move it.
+  - **Tackles for loss have the same flat shape** (leader 22 vs real 27.5; 10+ TFL seasons 63 vs 53). Not tackled here.
+  - **Team passing volume varies less than real.** Team targets in a season have a spread of 47 (real 61), part of why 4,500-yard passers are low (2.0 vs 3.8). Even generated rosters are part of it (CLAUDE.md: recheck after startup-draft leagues).
+- **PROVISIONAL (judgment calls for Blake):**
+  - (1) Clean-up weights. No real data says who finishes a clean-up sack. DE 0.4 / DT 0.25 is the setting whose season results fit the real ones, keeping interior linemen at ~24% of sacks.
+  - (2) A star TE is featured by any coordinator: K 0.25 above +0.8 z, picked to fit the whole TE target ladder rather than the top alone. The coordinator's random style still varies it (spread unchanged at 0.32).
+  - (3) The top TE's catches were tuned on new leagues (inside the real range there). The fixed saved test league still reads a little low.
+- **Follow-ups (main session):**
+  - Recentering for the settled-league change: run `tools/recenter.py --write`, then the realism check. The return centers moved most.
+  - Save a new scoreboard baseline once the open sessions' engine edits are in.
+  - In-season defender churn (27 vs 33 a season).
+  - 3-sack single games.
+- **Rechecked on top of main 23757f2 (Oct 25, 04:30):**
+  - Scoreboard (all suites) vs main's 03:59 baseline: 384 measures within the noise, nothing regressed; QB hits 15+ 66.4 -> 59.6 IMPROVED (real 53.8).
+  - The two cap flags (`fa.illegal` 0.08, `fa.over_cap_team_weeks` 4.67) are the same as the baseline's: they come from the cap code (made-up game results), not the sim.
+  - 32 seasons before / after this change on main: 25 / 21 measures outside the real range (11 / 6 without the known label and kicker reasons). Numbers identical to the run above.
+
+### Standard test saves and the every-screen check (Oct 25; side session. Background: the Contracts tab's "500 Server error" in free agency (`offers_box`, Oct 23) reached Blake because nothing visited every page automatically; Gemini also needs fresh screenshots of every screen in one command)
+- **`tools/make_test_saves.py` (new):** one command (~1.5 min) rebuilds 19 saves through the same engine calls the screens make: New game's startup draft (seeded), Sim week, Start the offseason (owner review, history file), the offseason's Next, the Contracts tab's franchise tag and free agency offers, the draft room. Your team is human-run (PIT by default, `league.user_team_id` set). Moments: startup draft (you on the clock), new game (camp open), preseason, week 8, trade deadline week, regular season over, playoffs (divisional next), season complete, coaching carousel, re-sign, after your franchise tag, free agency waves 1 and 2 (an offer of yours out), the draft is next, draft day (pick 1 on the clock), the draft with you on the clock, after the draft, camp next, camp open (next preseason, 90-man rosters). The first season plays the real sim (nearly every screen shows its stats; `--games fast` swaps in the lab's made-up results; the offseason plays no games, so it gains nothing from fast games). If you're over the cap at a deadline, it approves your staff's suggested moves, as a player would. **Same seed, same saves:** built twice, all 19 fingerprints (rosters, contracts, ratings) matched. Output `tools/data/test_saves/` (git-ignored, with `index.json`); `saves/` is never touched.
+- **`tools/screens_check.py` (new):** opens the game in browser mode (`app.py --browser --no-show --saves-dir=...`) on copies of the test saves and clicks through the main menu, Load game, Settings and New game screens; every section and page in `screens/nav.SECTIONS`; every view toggle and tab on them (the practice squad "Staff runs it" setting and speed toggles skipped); the player card, team window, game summary and offseason report pop-ups and their tabs; the team picker (another team, the free agent pool); the draft room's views; and the Contracts tab's Re-sign and Free agency lists with a player picked. It never presses Sim, Next or Save. Reports any server traceback, 500 page, browser console error or failed click with the save and page; a 1600x900 screenshot of every step; exit code 1 on any problem. Three game copies run side by side: **19 saves, 1,199 steps, 922 screenshots in under 4 minutes.** Output `tools/data/screens/` (git-ignored): screenshots per save, `report.txt` (full tracebacks), `report.json`, the game's logs.
+- **Driver: Playwright with Microsoft Edge.** pip-installable, and it drives the Edge already on every Windows PC (`channel="msedge"`), so no browser download; it reads console errors and server responses directly. Dev-only: `requirements-dev.txt` (new); the game never imports it, so PyInstaller leaves it out of the .exe.
+- **Real crash found and fixed:** the Contracts tab's **Free agency view during the coaching carousel and the re-sign phase** threw `TypeError: '<' not supported between instances of 'NoneType' and 'int'` (`free_agency.interest` -> `ask_share`). Before the market opens `league.fa["wave"]` is None, and `interest()`'s fallback `league.fa.get("wave", 1)` passed the None through (the key exists). Now `league.fa.get("wave") or 1`, the evident intent. `interest()` only feeds the screens' "Other teams" column, so nothing about how the game plays changed (all 19 test-save fingerprints identical before and after). One line in `engine/free_agency.py`.
+- **Not counted as errors (the report gives counts):** (1) Quasar's `Anchor: target "#c123" not found` in the browser console, about 2,600 a run, mostly when the green bar is redrawn after picking another team: a tooltip outlives the element it was on. Nothing visible; could be tidied in the screens someday. (2) Two `ConnectionResetError [WinError 10054]` tracebacks from Python's own networking on Windows when the browser drops a connection while leaving a page (not game code).
+- **Not covered yet:** the desktop window and pop-out windows (browser mode keeps pop-ups in the page); the Watch a game page while a game plays; dialogs behind Sim/Next/Save (the check never changes the league); clicking rows on tables other than Contracts.
+
 ### Faster lab and offseason, same results (Oct 25; side session. Every tuning job runs many lab leagues, and the draft tuning that day waited ~40 minutes on them. Blake's condition: "make sure it wont compromise development accuracy")
 - **Rule kept:** only changes that give exactly the same game. No tuning number, rule or AI decision changed. Every change was checked against an untouched copy of the starting code (commit 8e2eea9) playing the same leagues.
 - **Where the time went (cProfile on 2 lab seasons, then each block timed on its own):** of a ~55 s fast-games season: free agency waves 16 s, the weekly AI roster moves 12.5 s, trades 11 s, AI depth charts 7 s (inside those), next season's schedule 5.6 s, writing the season's news 3.3 s. Underneath most of it: each team's staff "seeing" players (evaluation.py, 1.4 million looks a season), each recomputed every week or wave from scratch.

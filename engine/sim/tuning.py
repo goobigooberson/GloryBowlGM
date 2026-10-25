@@ -26,7 +26,11 @@ SACK_GIVEN_PRESSURE = -1.55  # logit: share of pressures that become sacks
 SACK_SENSE_RUSH_K = 0.24     # QBs who feel pressure take fewer sacks
 SACK_SCRAMBLE_K = 0.10       # mobile QBs escape more often
 HIT_ON_HURRIED_THROW = 0.42
-CLEANUP_WEIGHT = {"DE": 0.7, "DT": 0.35}  # who finishes a clean-up sack (blitzers and other spots 1.0)
+CLEANUP_WEIGHT = {"DE": 0.4, "DT": 0.25}  # who finishes a clean-up sack (blitzers and other spots 1.0)
+                             # (Oct 25: was DE 0.7, DT 0.35. Half the clean-ups went to the other end, so
+                             # too many second ends reached 10 sacks: 23.5 10+ sack seasons and 12.6 12+
+                             # vs real 18.8 / 9.8 on settled leagues; team #2 sacker 7.4 vs real 6.8;
+                             # sacks from players with under 3 just 20% vs real 26%.)
 SACK_CLEANUP = 0.45          # share of sacks finished by someone other than the man who won first
                              # (Oct 19: 0.55 -> 0.45; sacks were spread too evenly: leader 17.3 vs real 20.1, too many 10-12 sack rushers)
 
@@ -58,6 +62,10 @@ TARGET_ROLE_BIAS = {         # extra pull toward each player's role (shapes targ
 # receivers' snaps and their targets went to backups, cutting the league's top receiver from
 # ~1,810 yards to ~1,590; real stars keep their share of throws. TE1 -0.22 -> -0.08 with it, or the
 # receivers' boost took the tight ends' share: TE #3/#5 in receiving yards fell to 809/717 vs real 966/825.)
+TE_FEATURE_FROM = 0.8        # a starting tight end this far above the average starter (talent z)...
+TE_FEATURE_K = 0.25          # ...gets this much more pull toward him per z beyond it (gameteam: featured star TE)
+                             # (Oct 25, real 2021-25 TE targets by rank #1/#2/#3/#5/#10/#20: 154/131/119/106/88/68;
+                             # before 134/119/111/100/84/64, after 144/128/118/105/86/65 over 48 seasons)
 ROUTE_DEPTH_TILT = 0.20      # overall push on route depths (matches the real aDOT)
 POSITION_DEPTH = {"WR": -0.10, "TE": -0.35}  # route depth by position group (real aDOT: WR 10.8, TE 6.3)
 RB_CATCH_BONUS = 0.20        # logit: backs catch checkdowns more often than the depth alone says
