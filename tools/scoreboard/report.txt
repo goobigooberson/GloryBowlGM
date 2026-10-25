@@ -1,14 +1,17 @@
 ==============================================================================================================
-SCOREBOARD 2026-10-25 03:59  suites: fa, sim, determinism, rookies, integration, speed  (496 s)
+SCOREBOARD 2026-10-25 04:33  suites: fa, sim, determinism, rookies, integration, speed  (560 s)
 Compared with the baseline of 2026-10-25 03:59. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: 
   BROKEN  fa.illegal: cap legality misses at offseason checkpoints + missing contracts (must be 0) = 0.1
   BROKEN  fa.over_cap_team_weeks: AI team-weeks over the cap during seasons (must be 0) = 4.7
 
-CHANGES BIGGER THAN THE NOISE (0):
+CHANGES BIGGER THAN THE NOISE (2):
+  verdict   measure                                        now   (noise)   baseline      real  why
+  IMPROVED  sim.common.qb_hits>=15                        59.6    +/-6.4       66.4      53.8  -3.2 x noise
+  CHANGED   integration.starters_last_season              67.2    +/-0.0       67.0         -  changed  (whole-game test: starters' average overall, last season)
 
-OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 27
-  pass_yds#20 HIGH, pass_yds#32 HIGH, pass_yds>=4500 low, pass_int>=15 HIGH, rec_td>=10 HIGH, targets>=100 low, te_rec_yds#5 low, te_rec_yds>=700 low, te_rec#1 low, te_rec>=100 low, db_tackles#5 low, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, edge_sacks#10 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl>=10 HIGH, qb_hits>=20 HIGH, fgm>=30 HIGH, fgm>=35 HIGH, fga#20 HIGH, fga#32 HIGH, fga>=35 HIGH
+OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 20
+  pass_yds>=4500 low, targets#40 low, targets>=100 low, wr_rec_yds>=1300 HIGH, te_rec_yds>=700 low, te_rec#1 low, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles#20 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, sacks>=12 HIGH, edge_sacks#10 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl>=10 HIGH, fgm>=35 HIGH, fga>=35 HIGH
 
-Everything else (386 measures) is within the noise of the baseline.
+Everything else (384 measures) is within the noise of the baseline.
