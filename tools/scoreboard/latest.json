@@ -3800,7 +3800,7 @@
   "real_hi": null
  },
  "integration.starters_last_season": {
-  "mean": 67.2,
+  "mean": 67.4,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3820,8 +3820,8 @@
   "real_hi": null
  },
  "speed.sec_per_week_real_games": {
-  "mean": 1.4917279411764706,
-  "se": 0.09989724341135386,
+  "mean": 1.1709558823529411,
+  "se": 0.06743859368250597,
   "n": 17,
   "real": null,
   "label": "seconds per regular-season week (real games, one league)",
@@ -3830,8 +3830,8 @@
   "real_hi": null
  },
  "speed.sec_per_fa_wave": {
-  "mean": 1.4285714285714286,
-  "se": 0.20073158209028638,
+  "mean": 0.8080357142857143,
+  "se": 0.12297061179320821,
   "n": 7,
   "real": null,
   "label": "seconds per free agency Next click",
@@ -3840,7 +3840,7 @@
   "real_hi": null
  },
  "speed.sec_offseason_total": {
-  "mean": 19.71875,
+  "mean": 12.9375,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3850,7 +3850,7 @@
   "real_hi": null
  },
  "speed.sec_resign_phase": {
-  "mean": 0.328125,
+  "mean": 0.21875,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3860,7 +3860,7 @@
   "real_hi": null
  },
  "speed.sec_draft_phase": {
-  "mean": 1.515625,
+  "mean": 1.28125,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3870,7 +3870,7 @@
   "real_hi": null
  },
  "speed.sec_camp_phase": {
-  "mean": 4.140625,
+  "mean": 2.8125,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3880,7 +3880,7 @@
   "real_hi": null
  },
  "_meta": {
-  "when": "2026-10-25 04:33",
+  "when": "2026-10-25 04:45",
   "suites": [
    "fa",
    "sim",
@@ -3889,7 +3889,7 @@
    "integration",
    "speed"
   ],
-  "seconds": 559.502687215805,
+  "seconds": 346.7392234802246,
   "set": []
  }
 }

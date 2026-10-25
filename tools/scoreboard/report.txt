@@ -1,17 +1,20 @@
 ==============================================================================================================
-SCOREBOARD 2026-10-25 04:33  suites: fa, sim, determinism, rookies, integration, speed  (560 s)
-Compared with the baseline of 2026-10-25 03:59. A change counts if it's more than 3x the normal run-to-run swing.
+SCOREBOARD 2026-10-25 04:45  suites: fa, sim, determinism, rookies, integration, speed  (347 s)
+Compared with the baseline of 2026-10-25 04:33. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: 
   BROKEN  fa.illegal: cap legality misses at offseason checkpoints + missing contracts (must be 0) = 0.1
   BROKEN  fa.over_cap_team_weeks: AI team-weeks over the cap during seasons (must be 0) = 4.7
 
-CHANGES BIGGER THAN THE NOISE (2):
+CHANGES BIGGER THAN THE NOISE (5):
   verdict   measure                                        now   (noise)   baseline      real  why
-  IMPROVED  sim.common.qb_hits>=15                        59.6    +/-6.4       66.4      53.8  -3.2 x noise
-  CHANGED   integration.starters_last_season              67.2    +/-0.0       67.0         -  changed  (whole-game test: starters' average overall, last season)
+  FASTER    speed.sec_camp_phase                         2.81s  +/-0.00s      4.14s         -  -32%  (seconds: training camp phase)
+  FASTER    speed.sec_offseason_total                   12.94s  +/-0.00s     19.72s         -  -34%  (seconds for a whole offseason)
+  FASTER    speed.sec_per_fa_wave                        0.81s  +/-0.71s      1.43s         -  -43%  (seconds per free agency Next click)
+  FASTER    speed.sec_resign_phase                       0.22s  +/-0.00s      0.33s         -  -33%  (seconds: start of league year phase)
+  CHANGED   integration.starters_last_season              67.4    +/-0.0       67.2         -  changed  (whole-game test: starters' average overall, last season)
 
 OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 20
   pass_yds>=4500 low, targets#40 low, targets>=100 low, wr_rec_yds>=1300 HIGH, te_rec_yds>=700 low, te_rec#1 low, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles#20 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, sacks>=12 HIGH, edge_sacks#10 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl>=10 HIGH, fgm>=35 HIGH, fga>=35 HIGH
 
-Everything else (384 measures) is within the noise of the baseline.
+Everything else (381 measures) is within the noise of the baseline.
