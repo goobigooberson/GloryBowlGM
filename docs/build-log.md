@@ -1122,3 +1122,17 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
 - **What:** one command tries engine settings side by side on the scoreboard's suites and ranks them against the real NFL. Variants: every combination of `--try "module.NAME=v1,v2"` values, or `--variant "a=1;b=2"` lists, plus the code as it is ("current"); one pool of processes, a fresh process per job (the knob is set in that process only). Score = the average over the target measures of |game - real| / noise (noise = the measure's own luck band, at least 2% of the real value). Side effects: other measures that moved from current beyond 3x the noise. Must-be-zero numbers listed if any variant breaks them. It measures only; nothing is written into the code.
 - **Checked on tonight's real case** (rookie suite, 8 leagues per variant, 24 jobs, 10m44s): current 0.82/0.08 score 1.50, 0.85/0.08 3.25, the old 0.88/0.05 4.54. Same answer as the manual tuning. Side effects found: the draft board's Developed % (70%+ share 0.48 -> 0.59 / 0.72), as expected.
 - **Rookie suite now 8 leagues** (`scoreboard.ROOKIE_SEEDS`, was 4): with 4, small unrelated changes pushed the per-round shares past their noise bands twice tonight. With 8 the bands are believable (e.g. round 1 rookie regulars 0.594 +/- 0.016). The scoreboard takes a few minutes longer; baseline re-saved.
+
+### Overnight summary for Blake (Oct 25 night; Blake asleep, "full permission" to merge finished branches after their checks)
+- **Merged into main, each after its checks:**
+  1. Today's checks made permanent (rookie playing time vs real, QB season styles, the whole-game test), run by the scoreboard.
+  2. Standard test saves (19, one command) and the every-screen check (every page, tab and pop-up on every save: 1,199 steps, ~4 minutes, 0 problems). It found and fixed one crash: the Contracts tab's Free agency view before the market opens.
+  3. The lab and offseason about 1.5x faster with results proven identical: every league field and player compared at every checkpoint, on 5 seeds including 2 Claude picked independently. The offseason's Next clicks and simming weeks in the game run this code too: a whole offseason 27.5 -> 15.8 s of CPU, a regular-season week 1.98 -> 1.31 s.
+  4. The knob sweep (`tools/sweep.py`), checked on the draft readiness tuning: it picks the same setting the hand tuning did.
+  5. Cap fixes: AI team-weeks over the cap ~20 -> ~4.5 a season.
+  6. The sacks and tight ends session's sim retune: measures outside the real range 27 -> 20 on the scoreboard.
+- **For Blake to decide:**
+  - (a) Running QBs (600+ rushing yards) happen 3.2 times a season vs real 1.8, and the most pass-happy teams' QBs throw 36.3 times a game vs real 39.1: tune?
+  - (b) The last cap gap: teams with heavy dead money that need injury cover go $0.2-3M over. Fixing it fully means letting them play short-handed.
+  - (c) How the draft board's Developed % feels now.
+- **State:** main at the latest commit, every check green except the known cap gap. Scoreboard baseline saved. The sessions' worktrees (`.claude/worktrees/screen-checks-*`, `lab-speed-*`) are merged and can be archived.
