@@ -47,7 +47,9 @@ def start_season(league, rng=None, carryover=None):
     results and injuries. carryover: last season's long injuries that keep
     players out of the start of this one [(pid, team, kind, games)].
     Then the first week of training camp (practice injuries)."""
-    rng = rng or random.Random()
+    # The league's own dice for the year's schedule (Oct 25: it was unseeded, so a league never played out the
+    # same twice and the check tools couldn't compare runs; every save still gets its own schedules).
+    rng = rng or random.Random(f"schedule-{league.settings.get('salt', '')}-{league.season}")
     ranks = league.division_ranks or sched.random_division_ranks(league, rng)
     league.schedule = sched.build_schedule(league, league.season, ranks,
                                            league.settings.get("season_games", 17), rng)
@@ -127,7 +129,8 @@ def note_long_injury(league, pid, kind, weeks, cal, team):
 def add_preseason(league, rng=None):
     """For a save made before the preseason existed, at regular-season week 1
     with nothing played: add this year's preseason in front of it."""
-    league.preseason = sched.build_preseason(league, league.season, league.schedule, rng or random.Random())
+    league.preseason = sched.build_preseason(league, league.season, league.schedule, rng or random.Random(
+        f"preseason-{league.settings.get('salt', '')}-{league.season}"))
     league.pre_week = 1
     league.stage = PRESEASON
 
@@ -753,7 +756,7 @@ def advance_offseason(league, rng=None):
     carry = [(pid, teams_now.get(pid), kind, games) for pid, _t, kind, games in st.get("carry", ())
              if teams_now.get(pid)]
     league.offseason = None
-    start_season(league, rng or random.Random(), carry)
+    start_season(league, rng, carry)
     return None
 
 

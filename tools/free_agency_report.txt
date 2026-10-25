@@ -1,150 +1,152 @@
-Day 1 (new leagues, before any offseason): cap used average  86.1% (lowest  74.8%, highest  88.3%), dead money   2.6%
-  ladder #1/#5/#10/#32 QB 26.2 / 21.5 / 16.4 / 2.7  WR 15.5 / 12.2 / 9.7 / 4.8
+Day 1 (new leagues at their first week 1): cap used average  95.2% (lowest  72.1%, highest 100.0%), dead money   2.6%
+  ladder #1/#5/#10/#32 QB 27.3 / 21.4 / 16.8 / 3.3  WR 15.3 / 11.8 / 9.7 / 5.0
+Signed during the seasons: 1220 deals a season; minimum  97.3%, one-year  87.9%
 
 ====================================================================================================
-FREE AGENCY CHECK: 3 league(s), 12 offseason(s) in all. Real numbers in brackets.
+FREE AGENCY CHECK: 2 league(s), 2 offseason(s) in all. Real numbers in brackets.
 ====================================================================================================
 Cap legality: AI teams over the cap at any checkpoint: 0 (must be 0)
 Players on a team without a contract at week 1: 0 (must be 0)
+During the seasons: AI team-weeks over the cap: 25 (must be 0) (by $56K to $166K)
 
 WHERE LAST SEASON'S PLAYERS ARE IN WEEK 1 (same team / new team / no team)
-  all     n/season   1696   same  55.3% [ 65.7%]   new  29.4% [ 23.8%]   gone  15.3% [ 10.5%]
-  0-2     n/season    674   same  72.9% [ 80.9%]   new  18.9% [ 13.7%]   gone   8.1% [  5.4%]
-  3-4     n/season    410   same  45.0% [ 54.4%]   new  38.6% [ 36.7%]   gone  16.5% [  8.9%]
-  5-7     n/season    384   same  47.2% [ 53.7%]   new  35.0% [ 32.3%]   gone  17.8% [ 14.0%]
-  8+      n/season    228   same  35.5% [ 47.0%]   new  34.1% [ 24.7%]   gone  30.4% [ 28.3%]
-  QB      n/season     96   same  51.8% [ 59.3%]   new  40.7% [ 32.2%]   gone   7.5% [  8.4%]
-  RB      n/season    128   same  52.9% [ 64.9%]   new  28.5% [ 23.4%]   gone  18.6% [ 11.7%]
-  WR      n/season    192   same  56.2% [ 65.2%]   new  36.9% [ 25.6%]   gone   6.9% [  9.1%]
-  TE      n/season     96   same  54.0% [ 64.9%]   new  33.4% [ 24.0%]   gone  12.6% [ 11.2%]
-  OL      n/season    288   same  57.8% [ 67.3%]   new  29.7% [ 22.4%]   gone  12.4% [ 10.3%]
-  DL      n/season    288   same  56.9% [ 65.2%]   new  22.1% [ 25.3%]   gone  21.0% [  9.5%]
-  LB      n/season    224   same  50.9% [ 64.2%]   new  29.0% [ 23.6%]   gone  20.1% [ 12.2%]
-  DB      n/season    288   same  54.7% [ 65.8%]   new  30.1% [ 23.8%]   gone  15.1% [ 10.3%]
-  K       n/season     32   same  71.9% [ 67.5%]   new  12.0% [ 17.7%]   gone  16.1% [ 14.8%]
-  P       n/season     32   same  61.5% [ 75.0%]   new  19.5% [ 15.7%]   gone  19.0% [  9.3%]
-  LS      n/season     32   same  50.8% [ 79.0%]   new  25.8% [  8.7%]   gone  23.4% [ 12.3%]
-  why 'gone' (per season): 0-2: unsigned free agent 25, left (unsigned, gave up) 18, retired 12; 3-4: unsigned free agent 34, retired 21, left (unsigned, gave up) 13; 5-7: retired 31, unsigned free agent 29, left (unsigned, gave up) 9; 8+: retired 48, unsigned free agent 14, left (unsigned, gave up) 7
-  by position: DB: retired 18, unsigned 18, left 8; DL: unsigned 26, retired 20, left 14; K: unsigned 4, retired 1, left 0; LB: unsigned 22, retired 20, left 3; LS: unsigned 6, retired 2, left 0; OL: retired 14, unsigned 14, left 8; P: unsigned 4, retired 2, left 0; QB: retired 4, left 3; RB: retired 15, unsigned 6, left 3; TE: retired 7, left 5, unsigned 1; WR: retired 9, left 3, unsigned 2
+  all     n/season   1942   same  53.7% [ 65.7%]   new  30.3% [ 23.8%]   gone  16.0% [ 10.5%]
+  0-2     n/season   1008   same  68.6% [ 80.9%]   new  18.5% [ 13.7%]   gone  12.9% [  5.4%]
+  3-4     n/season    412   same  40.8% [ 54.4%]   new  44.7% [ 36.7%]   gone  14.4% [  8.9%]
+  5-7     n/season    359   same  39.7% [ 53.7%]   new  40.8% [ 32.3%]   gone  19.5% [ 14.0%]
+  8+      n/season    162   same  25.2% [ 47.0%]   new  44.0% [ 24.7%]   gone  30.8% [ 28.3%]
+  QB      n/season    110   same  45.7% [ 59.3%]   new  45.7% [ 32.2%]   gone   8.6% [  8.4%]
+  RB      n/season    152   same  56.9% [ 64.9%]   new  24.7% [ 23.4%]   gone  18.4% [ 11.7%]
+  WR      n/season    227   same  54.8% [ 65.2%]   new  34.6% [ 25.6%]   gone  10.6% [  9.1%]
+  TE      n/season    108   same  53.7% [ 64.9%]   new  33.3% [ 24.0%]   gone  13.0% [ 11.2%]
+  OL      n/season    327   same  57.3% [ 67.3%]   new  30.1% [ 22.4%]   gone  12.5% [ 10.3%]
+  DL      n/season    317   same  54.1% [ 65.2%]   new  26.0% [ 25.3%]   gone  19.9% [  9.5%]
+  LB      n/season    244   same  51.1% [ 64.2%]   new  31.1% [ 23.6%]   gone  17.8% [ 12.2%]
+  DB      n/season    336   same  54.0% [ 65.8%]   new  29.5% [ 23.8%]   gone  16.5% [ 10.3%]
+  K       n/season     43   same  47.7% [ 67.5%]   new  19.8% [ 17.7%]   gone  32.6% [ 14.8%]
+  P       n/season     38   same  47.4% [ 75.0%]   new  31.6% [ 15.7%]   gone  21.1% [  9.3%]
+  LS      n/season     39   same  51.3% [ 79.0%]   new  24.4% [  8.7%]   gone  24.4% [ 12.3%]
+  why 'gone' (per season): 0-2: unsigned free agent 64, left (unsigned, gave up) 52, retired 14; 3-4: retired 23, unsigned free agent 22, left (unsigned, gave up) 14; 5-7: retired 30, unsigned free agent 28, left (unsigned, gave up) 11; 8+: retired 36, unsigned free agent 8, left (unsigned, gave up) 6
+  by position: DB: unsigned 20, retired 18, left 18; DL: unsigned 27, left 18, retired 18; K: unsigned 12, left 2; LB: unsigned 23, retired 18, left 2; LS: unsigned 4, retired 4, left 2; OL: unsigned 14, left 14, retired 14; P: unsigned 4, retired 3, left 0; QB: left 7, retired 2; RB: unsigned 13, retired 10, left 5; TE: retired 7, left 6, unsigned 1; WR: retired 10, left 10, unsigned 5
 
-VETERAN DEALS SIGNED IN A LEAGUE YEAR (everything but rookie deals, incl. practice squad deals; offseason only)
-  deals per season   2290 [2477; real counts include in-season and futures deals]
-  at about the minimum (<= 0.65% of the cap)  83.8% [76-87% by position]
-  one-year deals  86.4% [75-80%]
-  (without practice squad deals: minimum  79.1%, one-year  82.5%)
-  by kind per season: minimum 960, practice 512, futures 380, veteran 294, tender 89, extension 42, tag 12
+VETERAN DEALS SIGNED IN A LEAGUE YEAR (everything but rookie deals, incl. practice squad deals and the season's signings)
+  deals per season   3474 [2477; real counts include in-season and futures deals]
+  at about the minimum (<= 0.65% of the cap)  87.6% [76-87% by position]
+  one-year deals  85.8% [75-80%]
+  (without practice squad deals: minimum  82.3%, one-year  79.7%)
+  by kind per season: minimum 1507, practice 1037, futures 402, veteran 295, tender 135, extension 82, tag 16
 
 MARKET DEALS (1%+ of the cap) per season, by position: sim [real]; median share; years; guaranteed; age 26-27 share
-  QB     13.4 [ 21.8]   median   5.1% [  2.8%]   years 2.07 [1.95]   gtd  64.8% [ 66.7%]   age 26-27  21.7% [ 24.4%]
-  WR     28.5 [ 40.8]   median   5.1% [  2.7%]   years 2.34 [2.07]   gtd  50.3% [ 52.8%]   age 26-27  46.5% [ 42.9%]
-  EDGE   26.3 [ 36.0]   median   3.9% [  2.8%]   years 2.37 [2.11]   gtd  50.2% [ 50.8%]   age 26-27  39.6% [ 46.3%]
-  DT     26.1 [ 37.0]   median   3.4% [  2.5%]   years 2.24 [2.12]   gtd  46.0% [ 50.0%]   age 26-27  34.8% [ 44.1%]
-  CB     25.0 [ 36.0]   median   3.5% [  2.2%]   years 2.17 [2.09]   gtd  48.6% [ 50.0%]   age 26-27  39.7% [ 45.8%]
-  T      25.8 [ 26.5]   median   3.2% [  2.8%]   years 2.15 [2.28]   gtd  49.3% [ 47.7%]   age 26-27  35.9% [ 34.0%]
-  LB     26.3 [ 30.0]   median   1.9% [  1.8%]   years 2.09 [2.07]   gtd  44.1% [ 49.0%]   age 26-27  40.8% [ 50.0%]
-  S      24.4 [ 26.7]   median   2.5% [  2.2%]   years 2.25 [2.18]   gtd  45.4% [ 50.0%]   age 26-27  38.6% [ 40.6%]
-  G      21.2 [ 24.0]   median   2.7% [  2.4%]   years 2.04 [2.33]   gtd  45.0% [ 46.2%]   age 26-27  35.0% [ 41.0%]
-  TE     13.2 [ 21.7]   median   3.2% [  2.2%]   years 2.26 [2.18]   gtd  46.8% [ 48.4%]   age 26-27  42.4% [ 41.5%]
-  RB     12.9 [ 18.5]   median   3.0% [  1.8%]   years 2.19 [1.99]   gtd  47.5% [ 49.7%]   age 26-27  39.4% [ 36.9%]
-  C      11.1 [ 13.3]   median   2.8% [  2.2%]   years 2.08 [2.19]   gtd  46.5% [ 46.2%]   age 26-27  33.8% [ 40.0%]
-  K      11.7 [ 10.8]   median   2.1% [  1.8%]   years 2.23 [2.43]   gtd  40.6% [ 44.4%]   age 26-27  25.7% [ 27.7%]
-  P       6.9 [  6.5]   median   1.5% [  1.4%]   years 2.10 [2.85]   gtd  37.0% [ 37.9%]   age 26-27  37.3% [ 20.5%]
-  FB      5.8 [  2.7]   median   1.6% [  1.2%]   years 1.71 [2.94]   gtd  36.7% [ 42.8%]   age 26-27  50.7% [ 37.5%]
-  LS      0.4 [  0.0]   median   1.0% [  0.0%]   years 2.00 [0.00]   gtd  43.8% [  0.0%]   age 26-27  60.0% [  0.0%]
-  total  278.9 [ 352.3]
-  market deal lengths: 1y  43.1% [ 42.1%]  2y  20.0% [ 22.9%]  3y  18.2% [ 18.9%]  4y  12.6% [ 10.3%]  5y   5.8% [  5.2%]  6y   0.3% [  0.5%]
-  big deals (5%+) per season 90.4 [80]; lengths: 1y  19.2% [ 19.0%]  2y  14.2% [ 10.0%]  3y  29.0% [ 26.8%]  4y  26.8% [ 28.0%]  5y  10.0% [ 14.3%]  6y   0.8% [  1.9%]
-  market deals by age: <=25  18.5% [ 13.9%]  26-27  37.9% [ 40.7%]  28-29  22.3% [ 21.0%]  30-31  11.7% [ 11.6%]  32+   9.8% [ 12.8%]
-  market deals with a new team  38.8% [~50-57%, OTC team field, rough]
+  QB     17.0 [ 21.8]   median   5.5% [  2.8%]   years 2.21 [1.95]   gtd  63.3% [ 66.7%]   age 26-27  35.3% [ 24.4%]
+  WR     35.5 [ 40.8]   median   4.9% [  2.7%]   years 2.38 [2.07]   gtd  50.0% [ 52.8%]   age 26-27  46.5% [ 42.9%]
+  EDGE   29.5 [ 36.0]   median   4.7% [  2.8%]   years 2.34 [2.11]   gtd  48.9% [ 50.8%]   age 26-27  27.1% [ 46.3%]
+  DT     30.0 [ 37.0]   median   3.9% [  2.5%]   years 2.48 [2.12]   gtd  47.3% [ 50.0%]   age 26-27  38.3% [ 44.1%]
+  CB     22.0 [ 36.0]   median   6.5% [  2.2%]   years 2.57 [2.09]   gtd  52.6% [ 50.0%]   age 26-27  45.5% [ 45.8%]
+  T      29.0 [ 26.5]   median   7.1% [  2.8%]   years 2.52 [2.28]   gtd  51.3% [ 47.7%]   age 26-27  36.2% [ 34.0%]
+  LB     26.5 [ 30.0]   median   2.9% [  1.8%]   years 2.47 [2.07]   gtd  44.8% [ 49.0%]   age 26-27  41.5% [ 50.0%]
+  S      32.5 [ 26.7]   median   4.3% [  2.2%]   years 2.48 [2.18]   gtd  48.8% [ 50.0%]   age 26-27  49.2% [ 40.6%]
+  G      22.0 [ 24.0]   median   2.6% [  2.4%]   years 1.95 [2.33]   gtd  47.0% [ 46.2%]   age 26-27  29.5% [ 41.0%]
+  TE     17.5 [ 21.7]   median   4.4% [  2.2%]   years 2.51 [2.18]   gtd  49.3% [ 48.4%]   age 26-27  40.0% [ 41.5%]
+  RB      9.5 [ 18.5]   median   5.2% [  1.8%]   years 2.84 [1.99]   gtd  49.5% [ 49.7%]   age 26-27  42.1% [ 36.9%]
+  C      10.5 [ 13.3]   median   3.6% [  2.2%]   years 2.33 [2.19]   gtd  42.9% [ 46.2%]   age 26-27  33.3% [ 40.0%]
+  K      18.0 [ 10.8]   median   1.9% [  1.8%]   years 2.11 [2.43]   gtd  37.0% [ 44.4%]   age 26-27  22.2% [ 27.7%]
+  P       8.0 [  6.5]   median   1.5% [  1.4%]   years 1.81 [2.85]   gtd  40.8% [ 37.9%]   age 26-27  18.8% [ 20.5%]
+  FB      6.5 [  2.7]   median   1.8% [  1.2%]   years 1.31 [2.94]   gtd  20.4% [ 42.8%]   age 26-27  23.1% [ 37.5%]
+  LS      0.5 [  0.0]   median   1.1% [  0.0%]   years 1.00 [0.00]   gtd  29.3% [  0.0%]   age 26-27 100.0% [  0.0%]
+  total  314.5 [ 352.3]
+  market deal lengths: 1y  40.7% [ 42.1%]  2y  15.6% [ 22.9%]  3y  19.2% [ 18.9%]  4y  16.5% [ 10.3%]  5y   7.8% [  5.2%]  6y   0.2% [  0.5%]
+  big deals (5%+) per season 125.5 [80]; lengths: 1y  16.7% [ 19.0%]  2y  12.0% [ 10.0%]  3y  26.7% [ 26.8%]  4y  30.3% [ 28.0%]  5y  13.9% [ 14.3%]  6y   0.4% [  1.9%]
+  market deals by age: <=25  30.2% [ 13.9%]  26-27  37.5% [ 40.7%]  28-29  20.8% [ 21.0%]  30-31   7.0% [ 11.6%]  32+   4.5% [ 12.8%]
+  market deals with a new team  31.0% [~50-57%, OTC team field, rough]
 
 PAY LADDER AT WEEK 1: Nth best-paid at each position (average per year, share of the cap at signing)
   pos              #1           #3           #5          #10          #16          #24          #32          #48          #64          #96
-  QB      25.4 [24.1]  22.3 [22.7]  20.6 [21.9]  14.6 [17.0]    6.1 [6.7]    3.0 [4.3]    1.6 [2.6]    0.5 [1.0]    0.4 [0.6]    0.3 [0.4]
-  WR      16.7 [14.4]  14.1 [13.4]  12.5 [11.5]   10.6 [9.9]    9.0 [8.6]    7.0 [6.3]    5.3 [4.8]    2.7 [1.9]    1.4 [1.5]    0.7 [0.8]
-  EDGE    15.3 [15.3]  13.7 [13.3]  12.1 [11.3]    9.5 [8.8]    8.4 [8.1]    6.7 [7.0]    4.7 [4.8]    2.3 [2.7]    1.2 [1.6]    0.5 [0.8]
-  T       13.8 [12.6]  11.9 [11.1]  10.9 [10.1]    9.7 [9.3]    8.2 [8.5]    5.6 [6.4]    3.4 [3.4]    1.4 [1.7]    0.8 [1.2]    0.4 [0.6]
-  DT      14.5 [12.7]  11.4 [10.6]   10.3 [9.9]    8.0 [7.7]    5.4 [5.2]    4.2 [4.3]    3.3 [3.4]    1.7 [2.2]    0.9 [1.5]    0.4 [0.6]
-  CB      12.7 [10.6]  10.6 [10.1]   10.0 [9.7]    8.2 [7.9]    6.8 [6.5]    4.6 [4.4]    3.2 [3.5]    1.6 [1.9]    0.9 [1.4]    0.5 [0.7]
-  LB      11.1 [10.8]    9.3 [9.0]    7.7 [7.2]    6.0 [5.6]    4.5 [3.8]    2.5 [2.0]    1.9 [1.7]    1.2 [1.2]    0.9 [0.8]    0.6 [0.6]
-  S        10.8 [9.6]    9.0 [8.4]    8.1 [7.4]    6.8 [6.2]    5.1 [4.8]    3.1 [2.6]    2.2 [1.9]    1.1 [1.1]    0.6 [0.9]    0.4 [0.5]
-  G         9.6 [8.8]    8.6 [7.9]    7.8 [7.8]    5.8 [5.1]    4.4 [4.1]    2.8 [2.6]    2.1 [2.0]    0.9 [1.1]    0.6 [0.7]    0.3 [0.5]
-  RB        8.6 [8.1]    8.0 [7.6]    7.3 [6.6]    4.3 [3.4]    2.5 [2.9]    1.5 [1.6]    0.9 [1.2]    0.5 [0.7]    0.4 [0.6]    0.3 [0.5]
-  TE        9.2 [7.8]    7.9 [7.6]    7.2 [6.8]    5.3 [5.3]    3.5 [3.9]    2.0 [2.7]    1.0 [1.7]    0.5 [0.7]    0.4 [0.6]    0.3 [0.5]
-  C         7.8 [7.4]    7.3 [6.7]    6.4 [6.2]    3.6 [3.4]    2.3 [2.4]    1.0 [1.2]    0.6 [0.7]    0.4 [0.5]    0.3 [0.4]             
-  K         3.5 [2.7]    2.8 [2.4]    2.5 [2.4]    2.3 [2.2]    1.9 [1.8]    0.6 [1.0]    0.3 [0.4]                                       
-  P         2.3 [2.0]    1.9 [1.6]    1.7 [1.5]    1.2 [1.2]    0.7 [0.6]    0.4 [0.5]    0.3 [0.4]                                       
-  FB        3.3 [3.0]    2.0 [1.6]    1.6 [1.5]    0.8 [0.7]    0.4 [0.4]    0.4          0.3                                             
-  LS        1.0 [0.8]    0.8 [0.6]    0.7 [0.6]    0.6 [0.6]    0.6 [0.6]    0.4 [0.5]    0.3 [0.4]                                       
+  QB      25.7 [24.1]  22.9 [22.7]  19.9 [21.9]  12.2 [17.0]    5.7 [6.7]    3.7 [4.3]    2.1 [2.6]    0.6 [1.0]    0.4 [0.6]    0.3 [0.4]
+  WR      15.3 [14.4]  14.7 [13.4]  13.2 [11.5]   10.7 [9.9]    9.0 [8.6]    6.6 [6.3]    4.4 [4.8]    2.5 [1.9]    1.4 [1.5]    0.6 [0.8]
+  EDGE    15.1 [15.3]  13.3 [13.3]  10.8 [11.3]    8.8 [8.8]    7.9 [8.1]    5.4 [7.0]    3.8 [4.8]    2.2 [2.7]    1.0 [1.6]    0.5 [0.8]
+  T       13.9 [12.6]  11.8 [11.1]  10.4 [10.1]    9.5 [9.3]    8.5 [8.5]    6.4 [6.4]    3.5 [3.4]    2.0 [1.7]    0.9 [1.2]    0.4 [0.6]
+  DT      11.7 [12.7]  10.9 [10.6]   10.0 [9.9]    7.9 [7.7]    5.2 [5.2]    4.4 [4.3]    3.3 [3.4]    1.7 [2.2]    0.7 [1.5]    0.4 [0.6]
+  CB      10.8 [10.6]  10.2 [10.1]    9.6 [9.7]    8.3 [7.9]    6.8 [6.5]    4.0 [4.4]    2.8 [3.5]    1.6 [1.9]    0.7 [1.4]    0.4 [0.7]
+  LB      12.6 [10.8]    8.6 [9.0]    7.2 [7.2]    5.5 [5.6]    4.1 [3.8]    2.6 [2.0]    2.0 [1.7]    1.2 [1.2]    0.8 [0.8]    0.5 [0.6]
+  S         9.7 [9.6]    9.4 [8.4]    8.8 [7.4]    6.5 [6.2]    4.9 [4.8]    3.4 [2.6]    2.3 [1.9]    1.0 [1.1]    0.6 [0.9]    0.4 [0.5]
+  G         9.2 [8.8]    8.0 [7.9]    7.2 [7.8]    5.0 [5.1]    3.6 [4.1]    2.4 [2.6]    1.7 [2.0]    0.6 [1.1]    0.5 [0.7]    0.3 [0.5]
+  RB        9.0 [8.1]    8.0 [7.6]    7.4 [6.6]    4.3 [3.4]    1.9 [2.9]    1.1 [1.6]    0.8 [1.2]    0.5 [0.7]    0.4 [0.6]    0.3 [0.5]
+  TE        9.8 [7.8]    7.9 [7.6]    7.2 [6.8]    5.7 [5.3]    3.1 [3.9]    1.7 [2.7]    0.9 [1.7]    0.5 [0.7]    0.4 [0.6]    0.3 [0.5]
+  C         7.4 [7.4]    6.6 [6.7]    5.7 [6.2]    3.6 [3.4]    1.6 [2.4]    0.9 [1.2]    0.6 [0.7]    0.4 [0.5]    0.3 [0.4]             
+  K         3.3 [2.7]    2.7 [2.4]    2.4 [2.4]    2.0 [2.2]    1.1 [1.8]    0.4 [1.0]    0.3 [0.4]                                       
+  P         2.5 [2.0]    1.8 [1.6]    1.6 [1.5]    1.1 [1.2]    0.6 [0.6]    0.4 [0.5]    0.3 [0.4]                                       
+  FB        3.3 [3.0]    2.4 [1.6]    1.4 [1.5]    0.6 [0.7]    0.4 [0.4]    0.3          0.3                                             
+  LS        1.0 [0.8]    0.8 [0.6]    0.7 [0.6]    0.6 [0.6]    0.5 [0.6]    0.4 [0.5]    0.3 [0.4]                                       
 
 POSITIONAL SPENDING (share of all cap dollars on contracts, week 1)
-  WR 13.6 [12.7]  EDGE 11.9 [11.7]  CB 9.3 [10.5]  QB 9.9 [10.3]  T 10.1 [9.8]  DT 8.9 [9.5]  LB 8.0 [6.7]  S 7.0 [6.5]  G 5.9 [5.9]  TE 4.6 [5.4]  RB 3.9 [4.9]  C 3.2 [2.9]  K 1.6 [1.4]  P 0.9 [0.8]  LS 0.5 [0.5]  FB 0.8 [0.4]
+  WR 13.1 [12.7]  EDGE 10.9 [11.7]  CB 9.0 [10.5]  QB 10.8 [10.3]  T 11.3 [9.8]  DT 9.4 [9.5]  LB 8.0 [6.7]  S 7.1 [6.5]  G 5.4 [5.9]  TE 4.5 [5.4]  RB 3.8 [4.9]  C 3.0 [2.9]  K 1.3 [1.4]  P 0.9 [0.8]  LS 0.5 [0.5]  FB 0.8 [0.4]
 
 TEAM PAYROLLS AT WEEK 1 (everyone counts)
-  cap used: average  97.5%, lowest  80.4%, 10th pct  94.9%, 90th pct  99.6%, highest 100.0%  [real teams spend close to the cap]
-  cap room: median   1.7% of the cap; dead money average   7.8% [real 2023-25: roughly 5-10% of the cap a team]
+  cap used: average  96.7%, lowest  81.0%, 10th pct  91.6%, 90th pct 100.0%, highest 100.0%  [real teams spend close to the cap]
+  cap room: median   1.9% of the cap; dead money average   8.2% [real 2023-25: roughly 5-10% of the cap a team]
 
 CAP ROOM WHEN FREE AGENCY OPENS (share of the cap, AI teams; real March 2024 in brackets, teams over the cap counted as 0)
-  most room   49.4%  [ 39.9%]
-  2nd         42.7%  [ 35.8%]
-  5th         30.9%  [ 27.4%]
-  8th         24.4%  [ 20.6%]
-  median      16.1%  [ 13.2%]
-  24th         9.8%  [  2.7%]
-  teams with under 2% of the cap: 0.8 a year  [7-8 of 32 in 2024 and 2025]
+  most room   53.8%  [ 39.9%]
+  2nd         48.7%  [ 35.8%]
+  5th         33.3%  [ 27.4%]
+  8th         25.5%  [ 20.6%]
+  median      12.1%  [ 13.2%]
+  24th         6.2%  [  2.7%]
+  teams with under 2% of the cap: 1.5 a year  [7-8 of 32 in 2024 and 2025]
 
 CAP ROOM AFTER FREE AGENCY'S FIRST WAVE (share of the cap, AI teams; real just after the league year opened: target = 2022-2025 average, then 2021 | 2022 | 2023 | 2024 | 2025)
-  most room   31.3%  [target  26.4%;  23.9% |  21.3% |  20.0% |  28.2% |  36.1%]
-  2nd         26.4%  [target  22.6%;  20.6% |  19.1% |  14.9% |  26.6% |  29.7%]
+  most room   25.6%  [target  26.4%;  23.9% |  21.3% |  20.0% |  28.2% |  36.1%]
+  2nd         22.3%  [target  22.6%;  20.6% |  19.1% |  14.9% |  26.6% |  29.7%]
   5th         15.6%  [target  16.3%;  15.9% |  15.4% |  10.1% |  17.9% |  21.8%]
-  8th         12.3%  [target  13.0%;   8.6% |  11.9% |   9.5% |  13.4% |  17.3%]
-  median       8.0%  [target   8.0%;   4.8% |   6.6% |   7.3% |   6.4% |  11.6%]
-  24th         5.5%  [target   3.7%;   0.7% |   3.2% |   4.1% |   1.4% |   5.9%]
-  teams with under 2% of the cap: 1.1 a year  [target 5.8; 12 | 8 | 3 | 10 | 2]
+  8th         11.6%  [target  13.0%;   8.6% |  11.9% |   9.5% |  13.4% |  17.3%]
+  median       7.1%  [target   8.0%;   4.8% |   6.6% |   7.3% |   6.4% |  11.6%]
+  24th         4.8%  [target   3.7%;   0.7% |   3.2% |   4.1% |   1.4% |   5.9%]
+  teams with under 2% of the cap: 2.0 a year  [target 5.8; 12 | 8 | 3 | 10 | 2]
 
 ROOKIE SCALE (average per year, share of the cap) by round: sim [real median 2017-22]
   R1 1.92% [1.90%]  R2 0.83% [0.85%]  R3 0.58% [0.60%]  R4 0.49% [0.50%]  R5 0.43% [0.40%]  R6 0.41% [0.40%]  R7 0.39% [0.40%]
 
 THE LEAGUE YEAR, per season
-  re-signed before free agency 248, ERFA kept 66, RFA tenders 22, let go 450, reserve/future deals 380
-  extensions 42, fifth-year options exercised 21, franchise tags 12.0 [6-14], tagged players signed long-term 4.3, cap cuts 32
-  free agent signings before the draft 224, after 174; by wave: 1: 113 (72 market), 2: 52 (19 market), 3: 32 (6 market), 4: 28 (2 market), 5: 39 (5 market), 6: 84 (15 market), 7: 51 (5 market)
-  cut at the cut-down 1185; free agents left unsigned at week 1 260
+  re-signed before free agency 228, ERFA kept 95, RFA tenders 40, let go 526, reserve/future deals 402
+  extensions 82, fifth-year options exercised 38, franchise tags 15.5 [6-14], tagged players signed long-term 7.5, cap cuts 29
+  free agent signings before the draft 210, after 126; by wave: 1: 98 (66 market), 2: 47 (16 market), 3: 32 (3 market), 4: 33 (1 market), 5: 38 (3 market), 6: 55 (13 market), 7: 32 (4 market)
+  cut at the cut-down 1123; free agents left unsigned at week 1 270
 
 FAIR PRICE: DO GOOD FREE AGENTS SIGN FAR BELOW THEIR WORTH? (FOF8's cheap-star exploit)
   A. Same yardstick as the real NFL: last season's starter (game: base-package starter on his depth chart; real: 65%+ of snaps in the games he played), 30 or younger, signed with a new team in free agency (offseason waves). Market value = what real good free agents at his position signed for (median, share of the cap; real OverTheCap via nflverse historical_contracts.csv (May 2022 snapshot), signing years 2014-2022).
-     per season  78.3 [75.6]   median deal   1.8% of the cap [  1.9%]
-     under 60% of market value  34.5% [ 34.6%]   under 40%  22.2% [ 22.1%]   at about the minimum (<= 0.65%)  20.2% [ 22.5%]
-     median deal by position, game [real]: LB 1.0 [1.6]  S 2.1 [1.3]  WR 1.5 [3.0]  G 1.3 [1.6]  T 2.6 [2.1]  DT 4.7 [2.7]  CB 3.4 [1.9]  C 2.2 [1.1]  EDGE 4.7 [4.0]  RB 1.5 [1.4]  TE 3.1 [2.9]  QB 2.9 [1.4]
-     by wave (signed / under 60%): 1: 384 / 17, 2: 118 / 26, 3: 41 / 21, 4: 25 / 21, 5: 69 / 48, 6: 214 / 125, 7: 89 / 66
+     per season  67.5 [75.6]   median deal   1.6% of the cap [  1.9%]
+     under 60% of market value  40.0% [ 34.6%]   under 40%  27.4% [ 22.1%]   at about the minimum (<= 0.65%)  25.2% [ 22.5%]
+     median deal by position, game [real]: LB 0.8 [1.6]  G 1.3 [1.6]  S 1.9 [1.3]  WR 1.9 [3.0]  DT 3.5 [2.7]  T 7.0 [2.1]  TE 1.0 [2.9]  QB 2.7 [1.4]  EDGE 6.3 [4.0]  CB 1.6 [1.9]  C 5.0 [1.1]  RB 1.7 [1.4]
+     by wave (signed / under 60%): 1: 54 / 1, 2: 18 / 7, 3: 6 / 6, 4: 7 / 6, 5: 6 / 5, 6: 25 / 14, 7: 19 / 15
   B. The game's own view: good ratings too (rated as a starter league-wide, priced 1%+ of the cap), 30 or younger, any team, against his market price the day the wave opened. Real reference: A.
-     per season 109.1; median deal 107.8% of his price; under 60% of his price  28.1% (30.7 a season); under 40%   9.0%; last season's starters among them  69.1%
-     by wave (signed / under 60%): 1: 634 / 0, 2: 157 / 0, 3: 44 / 0, 4: 18 / 0, 5: 71 / 0, 6: 266 / 249, 7: 119 / 119
-     by his price: 1-2% of the cap: 51.4 a season, under 60%  29.5%   2-5%: 34.0 a season, under 60%  28.4%   5%+ (stars): 23.7 a season, under 60%  24.6%
-     when one of them signed under 60%: other AI teams with spendable room for his full price 3.3 on average (median 3.0); their median spendable room  -0.5% of the cap
+     per season 100.5; median deal 108.0% of his price; under 60% of his price  27.9% (28.0 a season); under 40%  11.4%; last season's starters among them  63.2%
+     by wave (signed / under 60%): 1: 107 / 0, 2: 25 / 0, 3: 3 / 0, 5: 7 / 0, 6: 37 / 34, 7: 22 / 22
+     by his price: 1-2% of the cap: 41.5 a season, under 60%  28.9%   2-5%: 32.5 a season, under 60%  24.6%   5%+ (stars): 26.5 a season, under 60%  30.2%
+     when one of them signed under 60%: other AI teams with spendable room for his full price 5.0 on average (median 4.0); their median spendable room  -0.3% of the cap
      cheapest (age, rating, price -> deal, wave, other teams with room for his price):
-       league 103 2030 QB  Jimmay Gabriel, 27, ovr 70: price  17.7% ->   0.8% (5%), wave 7, 0 teams had room; starter last season
-       league 101 2030 QB  Bruce Reid, 29, ovr 72: price  10.1% ->   0.6% (6%), wave 7, 0 teams had room; starter last season
-       league 103 2029 QB  DeVonta Nizialek, 26, ovr 56: price   6.7% ->   0.4% (6%), wave 7, 0 teams had room
-       league 103 2028 QB  Shaun Ford, 30, ovr 62: price  11.8% ->   0.8% (6%), wave 7, 2 teams had room
-       league 101 2030 DE  Tyshaun Mincey, 29, ovr 71: price   7.1% ->   0.6% (9%), wave 7, 1 teams had room; starter last season
-       league 101 2027 QB  Erick Hudson, 27, ovr 65: price   5.6% ->   0.6% (11%), wave 7, 2 teams had room
-       league 102 2030 TE  T.J. Pickens, 26, ovr 60: price   3.2% ->   0.4% (12%), wave 7, 2 teams had room
-       league 101 2030 QB  Chris Craig, 29, ovr 85: price  22.7% ->   2.7% (12%), wave 6, 0 teams had room; starter last season
-  C. Still unsigned when camp opens (good ratings, 30 or younger; the late-bargain window: you can sign any of them at his ask): 50.1 a season
-     last season's starters  50.1%; median rating 60; median price   2.0% of the cap, asking   0.7% ( 40.0% of his price); priced 5%+ (stars) 5.9 a season
+       league 102 2027 WR  David Laury, 26, ovr 61: price   5.4% ->   0.6% (11%), wave 7, 5 teams had room; starter last season
+       league 102 2027 DE  Nate Bucannon, 29, ovr 63: price   5.7% ->   0.6% (11%), wave 6, 5 teams had room; starter last season
+       league 101 2027 QB  Paul King, 28, ovr 76: price  17.8% ->   2.1% (12%), wave 7, 0 teams had room; starter last season
+       league 102 2027 DE  Olsen Simonich, 30, ovr 63: price   4.6% ->   0.7% (14%), wave 7, 6 teams had room
+       league 102 2027 G   William Robertson, 21, ovr 53: price   2.0% ->   0.3% (16%), wave 7, 10 teams had room
+       league 101 2027 DT  Elijah Samia, 25, ovr 52: price   2.1% ->   0.4% (19%), wave 7, 3 teams had room; starter last season
+       league 102 2027 G   Jonah Henry, 30, ovr 80: price   6.3% ->   1.4% (21%), wave 7, 5 teams had room; starter last season
+       league 101 2027 DT  Isaiah Clowney, 28, ovr 53: price   1.8% ->   0.4% (22%), wave 7, 3 teams had room; starter last season
+  C. Still unsigned when camp opens (good ratings, 30 or younger; the late-bargain window: you can sign any of them at his ask): 80.5 a season
+     last season's starters  51.6%; median rating 57; median price   2.2% of the cap, asking   0.8% ( 40.0% of his price); priced 5%+ (stars) 9.5 a season
 
-Biggest deals of the 2030 league year in league league 103:
-  CLE QB  Dom Mims, 30, ovr 80: tag 1y $89.2M ($89.2M/yr,  21.5% of cap), $89.2M gtd
-  BOS QB  Jahfari Robbins, 30, ovr 81: tag 1y $80.3M ($80.3M/yr,  19.4% of cap), $80.3M gtd
-  CHI DE  Marcus Roby, 30, ovr 89: veteran 1y $64.9M ($64.9M/yr,  15.7% of cap), $49.5M gtd  (new team)
-  NOR QB  J.J. Faulk, 27, ovr 89: tag 1y $62.2M ($62.2M/yr,  15.0% of cap), $62.2M gtd
-  CHI WR  Jerrion Hayes, 33, ovr 91: veteran 1y $60.0M ($60.0M/yr,  14.5% of cap), $45.6M gtd  (new team)
-  PIT WR  Travis Smith, 26, ovr 89: extension 4y $234M ($58.5M/yr,  14.1% of cap), $156M gtd
-  PHX WR  Victor Henderson, 26, ovr 85: veteran 2y $110M ($55.1M/yr,  13.3% of cap), $72.5M gtd  (new team)
-  HOU T   John Phillips, 25, ovr 94: extension 4y $218M ($54.5M/yr,  13.1% of cap), $178M gtd
-  BUF S   Karan Ramsay, 33, ovr 90: veteran 1y $53.9M ($53.9M/yr,  13.0% of cap), $38.4M gtd  (new team)
-  SAN DE  Josh Andrew, 27, ovr 84: veteran 4y $209M ($52.2M/yr,  12.6% of cap), $110M gtd
-  PIT WR  Kyzir Davis, 26, ovr 83: veteran 4y $206M ($51.5M/yr,  12.4% of cap), $170M gtd  (new team)
-  LAS DT  Jordan Mady, 28, ovr 82: veteran 3y $139M ($46.3M/yr,  11.2% of cap), $77.1M gtd
+Biggest deals of the 2027 league year in league 102:
+  SFO QB  Adam Davis, 31, ovr 79: veteran 2y $131M ($65.6M/yr,  20.3% of cap), $102M gtd
+  MIN QB  William Johnson, 28, ovr 69: tag 1y $64.6M ($64.6M/yr,  20.1% of cap), $64.6M gtd
+  STL QB  Elijah Adebo, 38, ovr 74: veteran 2y $121M ($60.6M/yr,  18.8% of cap), $81.4M gtd
+  BUF QB  Nate Tillman, 26, ovr 84: tag 1y $60.4M ($60.4M/yr,  18.7% of cap), $60.4M gtd
+  TAM QB  Peter Williams, 26, ovr 78: extension 4y $239M ($59.8M/yr,  18.6% of cap), $197M gtd
+  PIT WR  Aaron Buckley, 25, ovr 78: extension 4y $207M ($51.6M/yr,  16.0% of cap), $119M gtd
+  NYK WR  Jared Scott, 27, ovr 79: extension 3y $149M ($49.8M/yr,  15.5% of cap), $104M gtd
+  HOU DE  Branden Medrano, 27, ovr 88: veteran 4y $197M ($49.3M/yr,  15.3% of cap), $110M gtd
+  NOR WR  Rashaun Jones, 27, ovr 79: veteran 4y $186M ($46.4M/yr,  14.4% of cap), $129M gtd
+  DEN WR  John Gentry, 27, ovr 78: extension 2y $90.0M ($45.0M/yr,  14.0% of cap), $59.8M gtd
+  NYK DE  Jake Taylor, 27, ovr 80: veteran 5y $224M ($44.8M/yr,  13.9% of cap), $139M gtd
+  WAS WR  Brevin Mock, 27, ovr 67: veteran 3y $132M ($44.0M/yr,  13.7% of cap), $79.5M gtd  (new team)
 
-(443 s)
+(99 s, fast games)

@@ -1,0 +1,70 @@
+{
+ "speed.sec_per_week_real_games": {
+  "mean": 2.5128676470588234,
+  "se": 0.16760356642046692,
+  "n": 17,
+  "real": null,
+  "label": "seconds per regular-season week (real games, one league)",
+  "unit": "sec",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "speed.sec_per_fa_wave": {
+  "mean": 2.5736607142857144,
+  "se": 0.38157240048413416,
+  "n": 7,
+  "real": null,
+  "label": "seconds per free agency Next click",
+  "unit": "sec",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "speed.sec_offseason_total": {
+  "mean": 34.90625,
+  "se": 0.0,
+  "n": 1,
+  "real": null,
+  "label": "seconds for a whole offseason",
+  "unit": "sec",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "speed.sec_resign_phase": {
+  "mean": 0.40625,
+  "se": 0.0,
+  "n": 1,
+  "real": null,
+  "label": "seconds: start of league year phase",
+  "unit": "sec",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "speed.sec_draft_phase": {
+  "mean": 2.078125,
+  "se": 0.0,
+  "n": 1,
+  "real": null,
+  "label": "seconds: the draft (no picks of yours)",
+  "unit": "sec",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "speed.sec_camp_phase": {
+  "mean": 8.71875,
+  "se": 0.0,
+  "n": 1,
+  "real": null,
+  "label": "seconds: training camp phase",
+  "unit": "sec",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "_meta": {
+  "when": "2026-10-25 02:22",
+  "suites": [
+   "speed"
+  ],
+  "seconds": 218.54349732398987,
+  "set": []
+ }
+}

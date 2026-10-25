@@ -201,6 +201,19 @@ EXPERIENCE_WEIGHTS = {
     "ST": [12.5, 10.2, 11.1, 7.5, 6.7, 6.5, 6.8, 6.3, 4.6, 5.6, 4.7, 3.8, 3.6, 2.9, 2.1, 5.1],
 }
 
+# Young players in a NEW league (Oct 25; Blake: "make new leagues' young players as
+# developed as drafted rookies"). A league that has run a few seasons has young
+# players the draft made: a rookie at ~88% of his ceiling, a 2nd-year player ~93%,
+# 3rd-year ~95%, 4th-year ~96.5% (internal overall; 8 simulated leagues x 14
+# seasons), and rookies' and 2nd-year players' ceilings a few points lower than a
+# new league's, since the draft sets each class below the pool it's drawn from
+# (draft.LEVEL_SHIFT). New leagues used to make them at 71% / 78% / 85% / 91% with
+# the higher ceilings, so the league's starters climbed ~5 points over its first 5
+# seasons as they grew up (65 -> 70 internal; startup-draft leagues 62.5 -> 69),
+# then held. Now a new league's young players match a running league's:
+NEW_LEAGUE_READY = {0: 0.89, 1: 0.935, 2: 0.965, 3: 0.985}   # base share of the ceiling (then the usual noise)
+NEW_LEAGUE_POT_SHIFT = {0: -5.0, 1: -2.5}                     # ceiling, rating points (not Generational players)
+
 _next_id = 1
 
 
@@ -222,13 +235,16 @@ def _combine_value(position, drill, z, plain):
 
 
 def generate_player(position=None, experience=None, season_year=2026,
-                    generational=False, rng_seed=None):
+                    generational=False, rng_seed=None, new_league=False):
     """Make one fictional player.
     position:     e.g. "QB". Random if left out.
     experience:   pro seasons played. Random if left out.
     season_year:  the season he is being created for (sets his birth date).
     generational: True makes a once-in-a-generation talent. The league decides
                   how rare these are (see league.py); never set this casually.
+    new_league:   he's for a new league's starting rosters: young players are made
+                  as developed as drafted ones (NEW_LEAGUE_READY). Off for draft
+                  prospects and street free agents (draft.py shapes those itself).
     """
     global _next_id
     if rng_seed is not None:
@@ -288,7 +304,11 @@ def generate_player(position=None, experience=None, season_year=2026,
     athletic["intelligence"] = _clamp(round(_roll(intel_avg, 15)))
 
     # 3 and 4. Skills: potential, then current
-    developed = _clamp(min(1.0, 0.70 + 0.07 * experience) + _roll(0, 0.05), 0.55, 1.0)
+    base = NEW_LEAGUE_READY.get(experience) if new_league else None
+    if base is None:
+        base = min(1.0, 0.70 + 0.07 * experience)
+    developed = _clamp(base + _roll(0, 0.05), 0.55, 1.0)
+    pot_shift = 0.0 if generational or not new_league else NEW_LEAGUE_POT_SHIFT.get(experience, 0.0)
     skills = {}
     skill_list = pos.POSITIONS[position][1]
     # Positions with few skills (K, P) get less random wobble per skill, so
@@ -302,7 +322,7 @@ def generate_player(position=None, experience=None, season_year=2026,
         potential = talent_share * talent
         for trait, tw in trait_weights.items():
             potential += tw * athletic[trait]
-        potential = _clamp(round(potential + _roll(0, wobble)), 5, 99)
+        potential = _clamp(round(potential + _roll(0, wobble) + pot_shift), 5, 99)
         if generational and _w >= 2:
             # His most important skills top out near the ceiling of the scale.
             potential = max(potential, random.randint(90, 99))

@@ -271,11 +271,11 @@ def create_league(season=2026, seed=None, camp=True):
         needed = per_team * n_teams
 
         # 1. The pool
-        pool = [generate_player(position, season_year=season)
+        pool = [generate_player(position, season_year=season, new_league=True)
                 for _ in range(max(MIN_POOL, int(needed * POOL_FACTOR)))]
 
         # Generational players at this position are guaranteed a roster spot.
-        locked = [generate_player(position, season_year=season, generational=True)
+        locked = [generate_player(position, season_year=season, generational=True, new_league=True)
                   for _ in range(generational_positions.count(position))]
 
         # 2. Keep the best

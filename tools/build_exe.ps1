@@ -1,5 +1,5 @@
 # build_exe.ps1
-# Packages the game into ONE file, FrontOfficeFootball.exe, and zips it, so you
+# Packages the game into ONE file, GloryBowlGM.exe, and zips it, so you
 # can send it to someone who doesn't have Python. Everything is inside the .exe,
 # so it works even if they double-click it without unzipping first.
 # Run it from the project folder with:
@@ -9,8 +9,9 @@
 #     powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1 -ErrorWindow
 # Needs PyInstaller once:  python -m pip install pyinstaller
 #
-# The packaged game keeps its saves in Documents\Front Office Football\saves
-# (engine/saves.py). If its window doesn't appear within 30 seconds, it opens in
+# The packaged game keeps its saves in Documents\Glory Bowl GM\saves (or an
+# existing Documents\Front Office Football\saves from older copies;
+# engine/saves.py). If its window doesn't appear within 30 seconds, it opens in
 # the web browser instead (app.py). Your own saves are NOT included.
 # The big temporary build files go in C:\Users\<you>\FOF-build (outside
 # OneDrive, so OneDrive doesn't sync scratch files). The finished zip goes in
@@ -21,7 +22,7 @@ param([switch]$ErrorWindow)
 $ErrorActionPreference = "Stop"
 $project = Split-Path -Parent $PSScriptRoot
 $buildRoot = Join-Path $env:USERPROFILE "FOF-build"
-$name = "FrontOfficeFootball"
+$name = "GloryBowlGM"
 $zipName = $name
 if ($ErrorWindow) { $zipName = "$name-ErrorWindow" }
 
@@ -55,7 +56,7 @@ Set-Content -Path (Join-Path $appDir "Play in browser (if the window won't open)
 if ($ErrorWindow) {
     # Double-clicking this runs the game and keeps the text window open
     # afterwards, so any error message stays on screen for a screenshot.
-    $bat = "@echo off`r`necho Starting Front Office Football...`r`n`"%~dp0$name.exe`"`r`necho.`r`necho The game has stopped. If there's an error above, take a screenshot of this window.`r`npause`r`n"
+    $bat = "@echo off`r`necho Starting Glory Bowl GM...`r`n`"%~dp0$name.exe`"`r`necho.`r`necho The game has stopped. If there's an error above, take a screenshot of this window.`r`npause`r`n"
     Set-Content -Path (Join-Path $appDir "START HERE - shows errors.bat") -Value $bat -Encoding ascii -NoNewline
 }
 

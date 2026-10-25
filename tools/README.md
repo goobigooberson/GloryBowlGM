@@ -1,6 +1,36 @@
 # Realism tools
 
-These check that the game sim produces real-NFL-like stats. They were built
+## Start here: the scoreboard and the league lab (Oct 25)
+
+- `scoreboard.py`: one command runs the checks side by side (free agency on the lab, the
+  sim's stats, determinism, speed; `--full` adds the draft), boils them down to about 360
+  headline numbers next to the real NFL, and compares them with the saved baseline
+  (`scoreboard/baseline.json`). It flags only changes bigger than the numbers' normal
+  run-to-run swing (3x), as IMPROVED / REGRESSED (toward / away from the real NFL) or
+  CHANGED; must-be-zero numbers (cap legality, determinism) as BROKEN; speed (CPU time)
+  past 25%. The same build always gives the same numbers.
+
+  ```
+  python tools/scoreboard.py                       # before and after a change (~9 min)
+  python tools/scoreboard.py --save-baseline       # after a change you're keeping
+  python tools/scoreboard.py --suites fa --set free_agency.WAVE_ROUNDS=1   # try a knob, no code edit
+  python tools/scoreboard.py --report-only --all   # re-read the last run, every measure
+  ```
+  Writes `scoreboard/latest.json` and `scoreboard/report.txt`.
+- `lab.py`: the league lab every new check should build on. A league made the way New Game
+  makes one, played through the game's own code: `season.play_week` week by week (camp,
+  final cuts, injuries, roster moves, waivers, trades, awards, money), then the offseason
+  phase by phase through `season.begin_offseason` / `advance_offseason`, exactly as the Next
+  button plays it. `games="fast"` swaps each game for a quick made-up result (everything
+  around the games is real; about a minute a season + offseason); `games="real"` plays the
+  sim. Checks attach to moments with `lab.on(event, fn)`: season_start, week_end,
+  regular_season (week 1, after final cuts), season_end, offseason_start, phase_before /
+  phase_after (each offseason phase or free agency wave). `python tools/lab.py 101 fast 2`
+  plays one league two seasons and prints its progress. `free_agency_check.py` runs on it.
+  (Older harnesses: `simlab.py` plays games from fixed rosters for the sim's stats;
+  `draft_lab.py` runs the draft's 22-season careers without contracts.)
+
+The tools below check that the game sim produces real-NFL-like stats. They were built
 during Step 6 calibration (Oct 19, 2026) and are what the sim was tuned with.
 None of them change or save your league. Run them from the project folder.
 

@@ -1,0 +1,11 @@
+==============================================================================================================
+SCOREBOARD 2026-10-25 02:22  suites: speed  (219 s)
+Compared with the baseline of 2026-10-25 01:54. A change counts if it's more than 3x the normal run-to-run swing.
+==============================================================================================================
+MUST BE ZERO: all fine
+
+CHANGES BIGGER THAN THE NOISE (0):
+
+OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 0
+
+Everything else (6 measures) is within the noise of the baseline.
