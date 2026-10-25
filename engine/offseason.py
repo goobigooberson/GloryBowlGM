@@ -220,11 +220,17 @@ def cut_to_53(league):
     return cuts
 
 
-def fill_short_positions(league, rng, teams=None):
+def fill_short_positions(league, rng, teams=None, within_cap=False):
     """Any position still short (more retirements than rookies there): sign
     the best free agent at that position the team can afford (with contracts:
-    he's paid what he asks, so a capped-out team takes a street free agent)."""
+    he's paid what he asks, so a capped-out team takes a street free agent).
+    within_cap (final cuts, when every contract starts to count): affordable
+    counting every contract, after restructuring or cutting to make room
+    (free_agency._comply); a team that still can't fit even a street free
+    agent's minimum leaves the rest open (Oct 25: it signed them anyway and
+    could start the season over the cap)."""
     from . import free_agency as FA
+    from . import contracts as C
     money = bool(getattr(league, "contracts", None))
     signed = []
     for t in (teams if teams is not None else league.teams):
@@ -233,10 +239,26 @@ def fill_short_positions(league, rng, teams=None):
         for p in roster:
             have[p.position] += 1
         due = 0             # $K of this team's fills here, not on the books until free_agency.sync
+
+        def left():
+            # (this round's fills are on the 53 without contracts yet: pending_hits counts them)
+            return C.cap_room(league, t.id, top51=False) - FA.pending_hits(league, t.id, full=True)
+        full = False
         for position, want in ROSTER_TEMPLATE.items():
-            while have[position] < want:
+            while have[position] < want and not full:
                 fas = [p for p in league.free_agents() if p.position == position]
-                if money:
+                if money and within_cap:
+                    street = C.min_salary(league, 2)
+                    if left() < street:
+                        FA._comply(league, t.id, random.Random(f"fill-{league.settings.get('salt', '')}-{league.season}-{t.id}"),
+                                   target=(street + FA.pending_hits(league, t.id, full=True))
+                                   / C.cap_for(league, league.season), top51=False)
+                        if left() < street:
+                            full = True         # no room even for the minimum: the spot stays open
+                            break
+                    room = left()
+                    fas = [p for p in fas if FA.asking_hit(league, t.id, p.id) <= room]
+                elif money:
                     fas = [p for p in fas if FA.affordable(league, t.id, p.id, also=due)]
                 if not fas:
                     # A made-up street free agent, at undrafted-rookie level (draft.py; made at
