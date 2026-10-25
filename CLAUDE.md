@@ -69,6 +69,10 @@ priorities" section overrides everything else in that document.
   deleted ("Permission denied"), OneDrive marked it read-only; in PowerShell:
   `Get-ChildItem -Recurse -Force .git\worktrees\<name> | % { $_.Attributes = 'Normal' }`
   then `Remove-Item -Recurse -Force .git\worktrees\<name>`.
+  If the worktree folder itself is left behind, first remove its data link alone with
+  `cmd /c rmdir <folder>	ools\data
+flverse` (a link to the real 643 MB data; `rmdir`
+  removes only the link), check it's gone, then clear the flags and delete the folder.
 
 ## Design rules
 
