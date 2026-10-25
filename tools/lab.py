@@ -280,14 +280,70 @@ class Lab:
         return self
 
 
-def fingerprint(league):
-    """A short code for the league's state (rosters, contracts, ratings): the same
-    code means the same league (determinism checks)."""
+def _feed(h, x, path=()):
+    """Feeds x into the hash h, everything in it, in a fixed way: dicts in their own
+    order (order can matter to later dice), sets sorted, objects field by field."""
+    if x is None or isinstance(x, (bool, int, float, str, bytes)):
+        h.update(repr(x).encode())
+        h.update(b"|")
+        return
+    if id(x) in path:
+        h.update(b"<cycle>")
+        return
+    path = path + (id(x),)
+    if isinstance(x, dict):
+        h.update(b"{")
+        for k, v in x.items():
+            _feed(h, k, path)
+            h.update(b":")
+            _feed(h, v, path)
+        h.update(b"}")
+    elif isinstance(x, (list, tuple)):
+        h.update(b"[" if isinstance(x, list) else b"(")
+        for v in x:
+            _feed(h, v, path)
+        h.update(b"]")
+    elif isinstance(x, (set, frozenset)):
+        h.update(b"<set>")
+        for v in sorted(x, key=repr):
+            _feed(h, v, path)
+    elif hasattr(x, "__dict__"):
+        h.update(type(x).__name__.encode() + b"(")
+        for k, v in x.__dict__.items():
+            h.update(k.encode() + b"=")
+            _feed(h, v, path)
+        h.update(b")")
+    else:
+        h.update(repr(x).encode())
+
+
+def fingerprint_parts(league):
+    """One short code per part of the league: every field of the League (rosters, depth
+    charts, contracts, cap numbers, transactions, draft picks, injuries, awards, history,
+    news archive, trades...; not its own speed-up caches, the fields named _...), every
+    player with all his ratings and hidden values, plus the game's shared dice (Python's
+    random module) and the next new player's id, which later seasons depend on."""
     import hashlib
-    state = (sorted(league.rosters.items()), sorted(getattr(league, "practice", {}).items()),
-             sorted((pid, c["team"], c["apy"]) for pid, c in (getattr(league, "contracts", {}) or {}).items()),
-             [(p.id, p.overall(), p.retired) for p in league.players])
-    return hashlib.md5(repr(state).encode()).hexdigest()[:12]
+    from engine import player as player_module
+    parts = {}
+    for name, value in league.__dict__.items():
+        if name.startswith("_"):
+            continue
+        h = hashlib.md5()
+        _feed(h, value)
+        parts[name] = h.hexdigest()[:12]
+    h = hashlib.md5()
+    _feed(h, random.getstate())
+    _feed(h, player_module._next_id)
+    parts["(shared dice, next id)"] = h.hexdigest()[:12]
+    return parts
+
+
+def fingerprint(league):
+    """A short code for the league's whole state (fingerprint_parts): the same code
+    means the same league (determinism checks; speed work must keep it unchanged)."""
+    import hashlib
+    return hashlib.md5(repr(sorted(fingerprint_parts(league).items())).encode()).hexdigest()[:12]
 
 
 if __name__ == "__main__":

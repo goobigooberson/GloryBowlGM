@@ -230,23 +230,28 @@ class _Weeks:
         return out
 
     def team_cost(self, t):
+        # (Oct 25, for speed: the search asks this ~1.5 million times a schedule; one pass
+        # over the weeks with the lookups done once. The same count as before.)
         bye_lo, bye_hi = self.bye_lo, self.bye_hi
-        bad_bye = sum(1 for w in range(1, self.W)
-                      if self.at[t][w] is None and not (bye_lo <= w <= bye_hi))
+        at, games, W = self.at[t], self.games, self.W
+        bad_bye = 0
         streak, last, run = 0, None, 0
         prev_opp, rematch = None, 0
-        for w in range(1, self.W + 1):
-            gi = self.at[t][w]
+        for w in range(1, W + 1):
+            gi = at[w]
             if gi is None:
+                if w < W and not (bye_lo <= w <= bye_hi):
+                    bad_bye += 1
                 last, run, prev_opp = None, 0, None
                 continue
-            side = "H" if self.games[gi][0] == t else "A"
-            run = run + 1 if side == last else 1
-            last = side
+            h, a, _k = games[gi]
+            home = h == t
+            run = run + 1 if home is last else 1
+            last = home
             if run >= 3:
                 streak += 1
             # Division rival twice in back-to-back weeks: the NFL spaces these out.
-            opp = self.other(gi, t)
+            opp = a if home else h
             if opp == prev_opp:
                 rematch += 1
             prev_opp = opp

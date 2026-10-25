@@ -108,20 +108,37 @@ def market_score(p, season, cur=None, pot=None):
     return sum(w * v for w, v in zip(SCORE_WEIGHTS, proj))
 
 
+_RUNGS = {}
+
+
+def _rungs(ladder):
+    """A ladder's rungs with their logs, worked out once (Oct 25, for speed: the price
+    table asks ~1.5 million prices a season). Rebuilt if the ladder is replaced."""
+    table = LADDER[ladder]
+    got = _RUNGS.get(ladder)
+    if got is None or got[0] is not table:
+        pts = sorted(table.items())
+        segs = [(r1, math.log(r0), math.log(r1) - math.log(r0), math.log(v0), math.log(v1) - math.log(v0))
+                for (r0, v0), (r1, v1) in zip(pts, pts[1:])]
+        (r0, v0), (r1, v1) = pts[-2], pts[-1]
+        tail = (math.log(v1), (math.log(v1) - math.log(v0)) / (math.log(r1) - math.log(r0)), math.log(r1))
+        got = _RUNGS[ladder] = (table, pts[0], segs, tail)
+    return got
+
+
 def ladder_price(ladder, rank):
     """The real ladder's share at a (possibly fractional) rank: log-linear
     between the measured rungs; past the last rung it keeps falling at the
     last rungs' rate (the caller floors it at the minimum)."""
-    pts = sorted(LADDER[ladder].items())
-    if rank <= pts[0][0]:
-        return pts[0][1]
-    for (r0, v0), (r1, v1) in zip(pts, pts[1:]):
+    _table, first, segs, tail = _rungs(ladder)
+    if rank <= first[0]:
+        return first[1]
+    for r1, log_r0, log_span, log_v0, log_rise in segs:
         if rank <= r1:
-            t = (math.log(rank) - math.log(r0)) / (math.log(r1) - math.log(r0))
-            return math.exp(math.log(v0) + t * (math.log(v1) - math.log(v0)))
-    (r0, v0), (r1, v1) = pts[-2], pts[-1]
-    slope = (math.log(v1) - math.log(v0)) / (math.log(r1) - math.log(r0))
-    return math.exp(math.log(v1) + slope * (math.log(rank) - math.log(r1)))
+            t = (math.log(rank) - log_r0) / log_span
+            return math.exp(log_v0 + t * log_rise)
+    log_v1, slope, log_r1 = tail
+    return math.exp(log_v1 + slope * (math.log(rank) - log_r1))
 
 
 def on_rookie_deal(league, p):

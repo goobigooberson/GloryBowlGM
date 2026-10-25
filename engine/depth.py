@@ -147,9 +147,20 @@ RELATED = {
 }
 
 
+_RELATED_PAIRS = [None, {}]
+
+
 def related(a, b):
     """0-1: how much of position b's craft a player from position a already has."""
-    return 1.0 if a == b else RELATED.get(frozenset((a, b)), 0.0)
+    # (Oct 25, for speed: each pair's answer remembered while RELATED is the same table.)
+    memo = _RELATED_PAIRS[1]
+    if _RELATED_PAIRS[0] is not RELATED:
+        _RELATED_PAIRS[0], memo = RELATED, {}
+        _RELATED_PAIRS[1] = memo
+    v = memo.get((a, b))
+    if v is None:
+        v = memo[(a, b)] = 1.0 if a == b else RELATED.get(frozenset((a, b)), 0.0)
+    return v
 
 # Which side of the line each offensive line spot is on.
 SLOT_SIDE = {"LT": "L", "LG": "L", "RG": "R", "RT": "R"}
@@ -241,49 +252,122 @@ def spot_fit(p, slot):
     return {"now": now, "ceiling": ceiling, "notes": notes, "size": size_note}
 
 
+_SPOT_TERMS = {}
+
+
+def _spot_terms(slot):
+    """What rating_at needs to know about a spot, worked out once (Oct 25, for speed):
+    (position, return skill or None, [(skill, weight, untrained share, trait weights)],
+    weight sum, rated on its own skills?, line side, (average weight, weight spread))."""
+    position = SLOTS[slot][1]
+    if position in ("KR", "PR"):
+        out = (position, "kick_return" if position == "KR" else "punt_return", (), 0, False, None, None)
+    else:
+        weights = SPOT_SKILLS.get(slot) or pos.POSITIONS[position][1]
+        terms = []
+        weight_sum = 0
+        for skill, w in weights:
+            if w > 0:
+                info = pos.SKILLS.get(skill)
+                trait_weights = info[1] if info else {}
+                terms.append((skill, w, 1 - sum(trait_weights.values()), tuple(trait_weights.items())))
+                weight_sum += w
+        _h, _hs, avg_w, w_spread = pos.BODY[position]
+        out = (position, None, tuple(terms), weight_sum, slot in SPOT_SKILLS, SLOT_SIDE.get(slot),
+               (avg_w, w_spread))
+    _SPOT_TERMS[slot] = out
+    return out
+
+
 def rating_at(p, slot):
     """How well player p would play this spot right now, 1-99: spot_fit's "now",
     worked out on its own (Oct 22, for speed: AI depth charts ask this ~1,900
     times a team, and the ceiling half and the notes were thrown away). Same
-    arithmetic in the same order as spot_fit, so the result is identical."""
-    position = SLOTS[slot][1]
-    if position in ("KR", "PR"):
-        skill = "kick_return" if position == "KR" else "punt_return"
-        return p.skills[skill][0] if skill in p.skills else 15
-    if position == p.position and slot not in SPOT_SKILLS:
+    arithmetic in the same order as spot_fit, so the result is identical.
+    (Oct 25, for speed: each spot's weights looked up once, _spot_terms; his own
+    skills' average worked out only when a skill is missing. Same arithmetic.)"""
+    position, return_skill, terms, weight_sum, own_skills, spot_side, body =         _SPOT_TERMS.get(slot) or _spot_terms(slot)
+    skills = p.skills
+    if return_skill is not None:
+        return skills[return_skill][0] if return_skill in skills else 15
+    ppos = p.position
+    if position == ppos and not own_skills:
         now = p.overall()
     else:
-        weights = SPOT_SKILLS.get(slot) or pos.POSITIONS[position][1]
-        r = related(p.position, position) if position != p.position else 0.0
-        own_now = [cur for cur, _pot in p.skills.values()]
-        technique = UNTRAINED_TECHNIQUE + r * max(0.0, sum(own_now) / len(own_now) - UNTRAINED_TECHNIQUE)
+        technique = None
+        athletic = p.athletic
         total = 0.0
-        weight_sum = 0
-        for skill, w in weights:
-            if w > 0:
-                if skill in p.skills:
-                    value = p.skills[skill][0]
-                else:                                   # as _skill_value(p, skill, 0, position)
-                    _label, trait_weights = pos.SKILLS[skill]
-                    value = (1 - sum(trait_weights.values())) * technique
-                    for trait, tw in trait_weights.items():
-                        value += tw * p.athletic.get(trait, 50)
-                total += value * w
-                weight_sum += w
+        for skill, w, untrained, traits in terms:
+            if skill in skills:
+                value = skills[skill][0]
+            else:                                   # as _skill_value(p, skill, 0, position)
+                if technique is None:
+                    r = related(ppos, position) if position != ppos else 0.0
+                    own_now = [cur for cur, _pot in skills.values()]
+                    technique = UNTRAINED_TECHNIQUE + r * max(0.0, sum(own_now) / len(own_now)
+                                                              - UNTRAINED_TECHNIQUE)
+                value = untrained * technique
+                for trait, tw in traits:
+                    value += tw * athletic.get(trait, 50)
+            total += value * w
         now = total / weight_sum
-    close = related(p.position, position)
-    if position != p.position:
+    if position != ppos:
         learned = p.learned.get(position, 0) / 100
         now -= NEW_POSITION_NOW * (1 - learned)
-    spot_side = SLOT_SIDE.get(slot)
     if spot_side and p.side in ("L", "R") and p.side != spot_side:
         learned = p.learned.get("side", 0) / 100
         now -= SIDE_SWITCH_NOW * (1 - learned)
-    _h, _hs, avg_w, w_spread = pos.BODY[position]
+    avg_w, w_spread = body
     off_size = abs(p.weight - avg_w) / w_spread
-    if position != p.position and off_size > 1.5:
-        now -= (off_size - 1.5) * 6 * (1 - close)
+    if position != ppos and off_size > 1.5:
+        now -= (off_size - 1.5) * 6 * (1 - related(ppos, position))
     return max(1, min(99, round(now)))
+
+
+def _ratings_of(p):
+    """{spot: rating_at(p, spot)} for every spot at once (Oct 25, for speed: AI depth charts
+    ask nearly every pair; his overall and his skills' average are worked out once here
+    instead of once per spot). The same arithmetic as rating_at, so the same numbers."""
+    skills, ppos, athletic, learned = p.skills, p.position, p.athletic, p.learned
+    out = {}
+    avg = overall = None
+    for slot in SLOTS:
+        position, return_skill, terms, weight_sum, own_skills, spot_side, body =             _SPOT_TERMS[slot] if slot in _SPOT_TERMS else _spot_terms(slot)
+        if return_skill is not None:
+            out[slot] = skills[return_skill][0] if return_skill in skills else 15
+            continue
+        if position == ppos and not own_skills:
+            if overall is None:
+                overall = p.overall()
+            now = overall
+        else:
+            technique = None
+            total = 0.0
+            for skill, w, untrained, traits in terms:
+                if skill in skills:
+                    value = skills[skill][0]
+                else:
+                    if technique is None:
+                        r = related(ppos, position) if position != ppos else 0.0
+                        if avg is None:
+                            own_now = [cur for cur, _pot in skills.values()]
+                            avg = sum(own_now) / len(own_now)
+                        technique = UNTRAINED_TECHNIQUE + r * max(0.0, avg - UNTRAINED_TECHNIQUE)
+                    value = untrained * technique
+                    for trait, tw in traits:
+                        value += tw * athletic.get(trait, 50)
+                total += value * w
+            now = total / weight_sum
+        if position != ppos:
+            now -= NEW_POSITION_NOW * (1 - learned.get(position, 0) / 100)
+        if spot_side and p.side in ("L", "R") and p.side != spot_side:
+            now -= SIDE_SWITCH_NOW * (1 - learned.get("side", 0) / 100)
+        avg_w, w_spread = body
+        off_size = abs(p.weight - avg_w) / w_spread
+        if position != ppos and off_size > 1.5:
+            now -= (off_size - 1.5) * 6 * (1 - related(ppos, position))
+        out[slot] = max(1, min(99, round(now)))
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -318,27 +402,30 @@ def _arrange_unit(slots, players, rating):
         assigned[slot] = best
         used.add(best.id)
 
-    def gain(slot, old, new):
-        return SLOT_IMPORTANCE[slot] * (rating(new, slot) - rating(old, slot))
-
+    # gain(slot, old, new) = SLOT_IMPORTANCE[slot] * (rating(new, slot) - rating(old, slot)),
+    # written out in the loops below (Oct 25, for speed; the same arithmetic).
+    importance = SLOT_IMPORTANCE
     improved = True
     while improved:
         improved = False
         filled = list(assigned)
         # Swap two spots' starters.
         for i, a in enumerate(filled):
+            imp_a = importance[a]
             for b in filled[i + 1:]:
                 pa, pb = assigned[a], assigned[b]
-                if gain(a, pa, pb) + gain(b, pb, pa) > 0.01:
+                if (imp_a * (rating(pb, a) - rating(pa, a))
+                        + importance[b] * (rating(pa, b) - rating(pb, b))) > 0.01:
                     assigned[a], assigned[b] = pb, pa
                     improved = True
         # Replace a starter with a bench player.
         for slot in filled:
             current = assigned[slot]
+            imp = importance[slot]
             for p in players:
                 if p.id in used:
                     continue
-                if gain(slot, current, p) > 0.01:
+                if imp * (rating(p, slot) - rating(current, slot)) > 0.01:
                     used.discard(current.id)
                     used.add(p.id)
                     assigned[slot] = current = p
@@ -351,15 +438,19 @@ def auto_depth_chart(players, pick_of=None):
     pick_of: {player id: overall draft pick} for AI teams' charts: staffs give
     their recent high picks a real chance (draft.draft_capital; without it 15%
     of top-5 picks never started, real 2%). None (your chart): no nudge."""
-    cache = {}
     if pick_of is not None:
         from .draft import draft_capital
+    # Every player's rating at every spot, plus his draft capital nudge (Oct 25, for speed:
+    # worked out up front with _ratings_of instead of pair by pair; the charts ask for
+    # nearly every pair anyway. A player listed twice keeps his first entry, as before).
+    table = {}
+    for p in players:
+        if p.id not in table:
+            c = draft_capital(p, pick_of.get(p.id)) if pick_of is not None else 0.0
+            table[p.id] = {slot: v + c for slot, v in _ratings_of(p).items()}
 
     def rating(p, slot):
-        key = (p.id, slot)
-        if key not in cache:
-            cache[key] = rating_at(p, slot) + (draft_capital(p, pick_of.get(p.id)) if pick_of is not None else 0.0)
-        return cache[key]
+        return table[p.id][slot]
 
     starting_in = {}           # player id -> unit he starts for (in the base packages)
     chart = {slot: [] for slot in SLOTS}

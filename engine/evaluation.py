@@ -233,34 +233,74 @@ def _eval_z(league, tid, kind, position=None):
     memo = league.__dict__.setdefault("_evalz", {})
     group = S.POSITION_GROUP.get(position, "ST") if kind == "own" else None
     key = (_clock(league), len(league.staff["log"]), tid, kind, group)
-    if key not in memo:
+    z = memo.get(key)
+    if z is None:
         if len(memo) > 5000:
             memo.clear()
-        memo[key] = S.eval_z(league, tid, kind, position)
-    return memo[key]
+        z = memo[key] = S.eval_z(league, tid, kind, position)
+    return z
 
 
 def _evaluators(league, tid, p, rel):
-    from . import staff as S
+    from .staff import POSITION_GROUP
     # The jobs it needs, looked up straight (= staff.staff_of(league, tid)[job]; Oct 22,
     # for speed: building the whole staff for each look was a big part of free agency).
-    jobs = league.staff["jobs"].get(str(tid), {})
-    hc = S.coach(league, jobs.get("HC"))
+    # (Oct 25, for speed: the answer remembered by the coaches' ids in those jobs; a coach's
+    # id and background never change, and a coach is only dropped from the records long
+    # after he retired, out of every job.)
+    st = league.staff
+    jobs = st["jobs"].get(str(tid), {})
+    memo = league.__dict__.get("_eval_ev")
+    if memo is None or memo[0] is not st:
+        memo = league.__dict__["_eval_ev"] = (st, {})
+    memo = memo[1]
     if rel == "own":
-        group = S.POSITION_GROUP.get(p.position, "ST")
-        spec = [c["id"] for job in ("HC", "OC", "DC", "AHC") for c in (S.coach(league, jobs.get(job)),)
-                if c and c.get("bg") == group]
-        return ("own", tuple(sorted(spec)), hc["id"] if hc else 0)
-    pp = S.coach(league, jobs.get("PP"))
-    return ("pro", pp["id"] if pp else 0, hc["id"] if hc else 0)
+        group = POSITION_GROUP.get(p.position, "ST")
+        key = (group, jobs.get("HC"), jobs.get("OC"), jobs.get("DC"), jobs.get("AHC"))
+    else:
+        key = ("pro", jobs.get("HC"), jobs.get("PP"))
+    ev = memo.get(key)
+    if ev is not None:
+        return ev
+    coaches = st["coaches"]
+    cid = jobs.get("HC")
+    hc = coaches.get(str(cid)) if cid is not None else None
+    if rel == "own":
+        spec = []
+        for job in ("HC", "OC", "DC", "AHC"):
+            cid = jobs.get(job)
+            c = coaches.get(str(cid)) if cid is not None else None
+            if c and c.get("bg") == group:
+                spec.append(c["id"])
+        ev = ("own", tuple(sorted(spec)), hc["id"] if hc else 0)
+    else:
+        cid = jobs.get("PP")
+        pp = coaches.get(str(cid)) if cid is not None else None
+        ev = ("pro", pp["id"] if pp else 0, hc["id"] if hc else 0)
+    if len(memo) > 20000:
+        memo.clear()
+    memo[key] = ev
+    return ev
+
+
+_TWOPI = 2.0 * math.pi
 
 
 def _draws(seed, skills):
-    r = random.Random(seed)
-    g_now, g_pot = r.gauss(0, 1), r.gauss(0, 1)
+    # (Oct 25, for speed: random.Random(seed).gauss(0, 1) worked out right here, the same
+    # formula in the same order (Python's random.gauss), so the draws are exactly the same.)
+    rand = random.Random(seed).random
+    keys = sorted(skills)
+    normals = []
+    for _ in range(len(keys) + 1):
+        x2pi = rand() * _TWOPI
+        g2rad = math.sqrt(-2.0 * math.log(1.0 - rand()))
+        normals.append(0 + math.cos(x2pi) * g2rad * 1)
+        normals.append(0 + math.sin(x2pi) * g2rad * 1)
+    g_now, g_pot = normals[0], normals[1]
     out = {}
-    for k in sorted(skills):
-        out[k] = (g_now, r.gauss(0, 1), g_pot, r.gauss(0, 1))
+    for i, k in enumerate(keys):
+        out[k] = (g_now, normals[2 + 2 * i], g_pot, normals[3 + 2 * i])
     return out
 
 
@@ -420,12 +460,8 @@ def _seen(league, tid, p):
         sd_own = OWN_SD * math.exp(-EVAL_K * z_own) * (ROOKIE_MULT if rookie else 1.0)
         w = max(0.0, min(1.0, (now - since) / KNOW_TICKS))
         sd = sd_other * (1 - w) + sd_own * w
-        team = _draws(f"eval-{salt}-{tid}-{p.id}-{ev}", base)
-        shared = None
     else:
         sd = sd_other
-        team = _draws(f"eval-{salt}-{tid}-{p.id}-{ev}", base)
-        shared = _shared_draws(league, f"eval-shared-{salt}-{p.id}-{league.season}", base)
     a = math.sqrt(SHARED)
     b = math.sqrt(1 - SHARED)
     pp = PLAYER_PART
@@ -437,8 +473,46 @@ def _seen(league, tid, p):
     sd_g = _growth_sd(p, league) * math.exp(-EVAL_K * z_pro)
     if rel == "own":
         sd_g *= (1 - w) + GROWTH_OWN * w
+    # The same estimate worked out before (Oct 25, for speed): the clock is part of the cache
+    # key above, so every week the same views were worked out again from the same inputs. Here
+    # they're remembered by everything the estimate below is made from: the staff, the player
+    # and what can be known of him, the mistake's size, the priors (the same object) and the
+    # dice's seeds. Everything above still runs on every miss, as before.
+    same = league.__dict__.setdefault("_eval_same", {})
+    key2 = (tid, p.id, ev, rel, salt, league.season, sd, sd_g, id(priors), gprior, a, b, pp,
+            tuple(base.items()))
+    got = same.get(key2)
+    if got is not None and got[0] is priors:
+        out, quiet = got[1], got[2]
+    else:
+        out, quiet = _estimates(base, priors, gprior, sd, sd_g, a, b, pp, q,
+                                _draws(f"eval-{salt}-{tid}-{p.id}-{ev}", base),
+                                None if rel == "own" else
+                                _shared_draws(league, f"eval-shared-{salt}-{p.id}-{league.season}", base))
+        if len(same) > 100000:
+            same.clear()
+        same[key2] = (priors, out, quiet)
+    if len(cache) > 200000:
+        cache.clear()
+        league.__dict__.get("_eval_quiet", {}).clear()
+    cache[key] = out
+    league.__dict__.setdefault("_eval_quiet", {})[key] = quiet
+    return out, key
+
+
+def _estimates(base, priors, gprior, sd, sd_g, a, b, pp, q, team, shared):
+    """_seen's estimates of every skill: (with the staff's mistake, with none)."""
     out = {}
     quiet = {}          # the same staff's estimate with no mistake (misjudgment() below)
+    # _estimate(cur, pot, n_now, n_pot, sd, sd_g, prior, gprior) twice, written out here (Oct 25,
+    # for speed: ~5 million calls a season); the same arithmetic in the same order.
+    sd2 = sd * sd
+    sdg2 = sd_g * sd_g
+    if gprior:
+        mg, vg = gprior
+        gk = vg / (vg + sdg2) if vg > 0 else None
+    else:
+        gk = None
     for k, (cur, pot) in base.items():
         g1, e1, g2, e2 = team[k]
         n_now = pp * g1 + q * e1
@@ -449,14 +523,32 @@ def _seen(league, tid, p):
             sp = 0.6 * sn + 0.8 * (pp * s2 + q * f2)
             n_now = a * sn + b * n_now
             n_pot = a * sp + b * n_pot
-        out[k] = _estimate(cur, pot, n_now, n_pot, sd, sd_g, priors.get(k), gprior)
-        quiet[k] = _estimate(cur, pot, 0.0, 0.0, sd, sd_g, priors.get(k), gprior)
-    if len(cache) > 200000:
-        cache.clear()
-        league.__dict__.get("_eval_quiet", {}).clear()
-    cache[key] = out
-    league.__dict__.setdefault("_eval_quiet", {})[key] = quiet
-    return out, key
+        prior = priors.get(k)
+        ck = None
+        if prior:
+            mc, vc, _mp, _vp = prior
+            if vc > 0:
+                ck = vc / (vc + sd2)
+        grown = max(0.0, pot - cur)
+        # with the mistake
+        c_obs = cur + sd * n_now
+        if ck is not None:
+            c_obs = mc + ck * (c_obs - mc)
+        c_seen = max(1.0, min(99.0, c_obs))
+        g_obs = grown + sd_g * n_pot
+        if gk is not None:
+            g_obs = mg + gk * (g_obs - mg)
+        out[k] = (c_seen, max(c_seen, min(99.0, c_seen + max(0.0, g_obs))))
+        # with no mistake
+        c_obs = cur + sd * 0.0
+        if ck is not None:
+            c_obs = mc + ck * (c_obs - mc)
+        c_seen = max(1.0, min(99.0, c_obs))
+        g_obs = grown + sd_g * 0.0
+        if gk is not None:
+            g_obs = mg + gk * (g_obs - mg)
+        quiet[k] = (c_seen, max(c_seen, min(99.0, c_seen + max(0.0, g_obs))))
+    return out, quiet
 
 
 def _overall_of(skills, position, which="current"):
