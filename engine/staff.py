@@ -304,10 +304,18 @@ def _start_tenure(league, rng, c, job):
     c["salary"] = market_value(league, c, job, rng)
 
 
+def _changed(league):
+    """Who holds the jobs or a coach's true ratings changed: what _job_z remembers is
+    out of date (Oct 25, for speed). Every change to either goes through here: _seat,
+    _unseat and the yearly ratings change (_age_year)."""
+    league.__dict__["_staff_v"] = league.__dict__.get("_staff_v", 0) + 1
+
+
 def _seat(league, c, tid, job, since, through, salary, interim=False):
     c.update({"team": tid, "job": job, "since": since, "through": through, "salary": int(salary),
               "out_since": None, "interim": interim})
     league.staff["jobs"][str(tid)][job] = c["id"]
+    _changed(league)
 
 
 def _unseat(league, c):
@@ -316,6 +324,7 @@ def _unseat(league, c):
         jobs[c["job"]] = None
     c.update({"team": None, "job": None, "since": None, "through": None, "salary": 0,
               "out_since": league.season, "interim": False})
+    _changed(league)
 
 
 def _pick(rng, weights):
@@ -554,6 +563,20 @@ def note_development(league, changes):
 
 
 def _job_z(league, job, key):
+    # (Oct 25, for speed: remembered until a job or a coach's true rating changes (_changed);
+    # free agency asked this ~30,000 times a season.)
+    st = league.staff
+    memo = league.__dict__.get("_job_z")
+    v = league.__dict__.get("_staff_v", 0)
+    if memo is None or memo[0] is not st or memo[1] != v:
+        memo = league.__dict__["_job_z"] = (st, v, {})
+    got = memo[2].get((job, key))
+    if got is None:
+        got = memo[2][(job, key)] = _job_z_now(league, job, key)
+    return got
+
+
+def _job_z_now(league, job, key):
     vals = [coach(league, jobs.get(job))["true"][key] for jobs in league.staff["jobs"].values()
             if jobs.get(job) is not None and coach(league, jobs.get(job)) and key in coach(league, jobs.get(job))["true"]]
     m = sum(vals) / max(1, len(vals))
@@ -643,6 +666,7 @@ def _age_year(league, rng):
         for k in c["true"]:
             c["true"][k] = round(_clip(c["true"][k] + rng.gauss(avg, GROWTH_SD)), 2)
             c["err"][k] = round(REP_KEEP * c["err"].get(k, 0.0) + rng.gauss(0, REP_NOISE), 2)
+        _changed(league)
         p_retire = _retire_chance(league, c)
         if c["team"] is None:
             p_retire = min(1.0, p_retire * 2)

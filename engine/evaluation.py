@@ -136,7 +136,11 @@ _NO_POOL = frozenset()      # (one shared empty set: callers only read it)
 def _pool(league):
     """This year's draft prospects (a startup draft's pool is the league's players:
     they're judged like any other team's players)."""
-    d = league.draft if isinstance(league.draft, dict) else None
+    d = league.draft
+    if d is None:
+        return _NO_POOL
+    if not isinstance(d, dict):
+        d = None
     if not d or d.get("kind") == "startup":
         return _NO_POOL
     ids = d.get("pool", ())

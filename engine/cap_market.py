@@ -73,8 +73,19 @@ INJURY_HISTORY_MAX = 0.15      # ...at most this much
 # -----------------------------------------------------------------------------------
 
 
+_AGES = {}
+
+
 def age_on(p, season):
-    return p.age(date(season, 9, 1))
+    # (Oct 25, for speed: remembered by birth date and season; Player.age reads only the
+    # birth date.)
+    key = (p.birth_date, season)
+    a = _AGES.get(key)
+    if a is None:
+        if len(_AGES) > 100000:
+            _AGES.clear()
+        a = _AGES[key] = p.age(date(season, 9, 1))
+    return a
 
 
 def project(p, season, n=3, cur=None, pot=None):
@@ -126,6 +137,21 @@ def _rungs(ladder):
         tail = (math.log(v1), (math.log(v1) - math.log(v0)) / (math.log(r1) - math.log(r0)), math.log(r1))
         got = _RUNGS[ladder] = (table, pts[0], segs, tail)
     return got
+
+
+def own_score(league, p, season):
+    """market_score(p, season) (his own ratings), remembered while nothing it's made from
+    changes (Oct 25, for speed: the market table is built ~150 times a season, and free
+    agency asks again for every team's look at him): the same skills (a player's skills are
+    replaced, never edited), position, experience, birth date and season."""
+    memo = league.__dict__.setdefault("_market_scores", {})
+    m = memo.get(p.id)
+    sig = (p.position, p.experience, p.birth_date, season)
+    if m is not None and m[0] is p.skills and m[1] == sig:
+        return m[2]
+    v = market_score(p, season)
+    memo[p.id] = (p.skills, sig, v)
+    return v
 
 
 def ladder_price(ladder, rank):
@@ -189,7 +215,7 @@ def market_table(league, season=None, players=None):
             hist[h.get("pid")] += min(17, h["weeks"])
     for position, group in by_pos.items():
         ladder, mult = LADDER_OF[position]
-        scored = [(market_score(p, season), p) for p in group]
+        scored = [(own_score(league, p, season), p) for p in group]
         vets = sorted((s for s, p in scored if not on_rookie_deal(league, p)), reverse=True)
         neg = [-s for s in vets]
         rookie_neg = sorted(-rookie_pay(league, p) for s, p in scored if on_rookie_deal(league, p))

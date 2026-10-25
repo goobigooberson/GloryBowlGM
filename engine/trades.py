@@ -496,6 +496,7 @@ class _Ctx:
             self.curve[pos] = ([-s for s, _r in rows], [r for _s, r in rows])
         self._scores = {}
         self.groups = {}
+        self._on_53 = None
         self.FA = FA
         self.injuries = getattr(league, "injuries", {}) or {}
         self._seasons_left = None
@@ -569,13 +570,18 @@ class _Ctx:
         in the offseason, its offseason roster; long injuries left out in-season)."""
         k = (tid, pos)
         if k not in self.groups:
+            # Every team's players by position, in the order of league.rosters, listed once for
+            # this context (Oct 25, for speed: one pass instead of one per team and position).
+            # The rosters can't change while a context lives: every roster move changes its key
+            # (_cache_key), and _dry_run_room puts back what it tries.
+            on_53 = self._on_53
+            if on_53 is None:
+                on_53 = self._on_53 = defaultdict(list)
+                for pid, t in self.league.rosters.items():
+                    on_53[(t, self.league.player(pid).position)].append(pid)
             rows = []
-            for pid, t in self.league.rosters.items():
-                if t != tid:
-                    continue
+            for pid in on_53.get((tid, pos), ()):
                 p = self.league.player(pid)
-                if p.position != pos:
-                    continue
                 if self.in_season and self.out_weeks(pid) >= 4:
                     continue
                 rows.append((self.proj(tid, p, 1)[0], pid))

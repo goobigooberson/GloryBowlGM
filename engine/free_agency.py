@@ -347,7 +347,8 @@ def team_score(league, tid, p, info, memo=None):
         return info["score"]
     cur, pot = float(p.overall()), float(p.overall("potential"))
     S = league.season
-    return info["score"] + M.market_score(p, S, cur + d_now, pot + d_pot) - M.market_score(p, S, cur, pot)
+    # (M.own_score(league, p, S) = M.market_score(p, S, cur, pot), remembered: Oct 25, for speed.)
+    return info["score"] + M.market_score(p, S, cur + d_now, pot + d_pot) - M.own_score(league, p, S)
 
 
 def ai_teams(league):
