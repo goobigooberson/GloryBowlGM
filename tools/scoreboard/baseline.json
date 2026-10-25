@@ -3620,9 +3620,9 @@
   "real_hi": null
  },
  "rookies.r1.rookie_regular": {
-  "mean": 0.5703125,
-  "se": 0.018597469865997005,
-  "n": 4,
+  "mean": 0.59375,
+  "se": 0.015625,
+  "n": 8,
   "real": 0.6097560975609756,
   "label": "round 1: drafted rookies who are regulars (half the snaps) as rookies",
   "unit": "pct",
@@ -3630,9 +3630,9 @@
   "real_hi": null
  },
  "rookies.r1.started_as_rookie": {
-  "mean": 0.6345524829021707,
-  "se": 0.017323662519929974,
-  "n": 4,
+  "mean": 0.6542207083277173,
+  "se": 0.018449337092159984,
+  "n": 8,
   "real": 0.6628787878787878,
   "label": "round 1: eventual regulars (years 1-5) who already were as rookies",
   "unit": "pct",
@@ -3640,9 +3640,9 @@
   "real_hi": null
  },
  "rookies.r1.ever": {
-  "mean": 0.8984375,
-  "se": 0.0078125,
-  "n": 4,
+  "mean": 0.908203125,
+  "se": 0.009539799663660021,
+  "n": 8,
   "real": 0.9198606271777003,
   "label": "round 1: drafted players who are regulars in years 1-5",
   "unit": "pct",
@@ -3650,9 +3650,9 @@
   "real_hi": null
  },
  "rookies.r2.rookie_regular": {
-  "mean": 0.41015625,
-  "se": 0.04956475601738094,
-  "n": 4,
+  "mean": 0.42578125,
+  "se": 0.026698378825682333,
+  "n": 8,
   "real": 0.4245614035087719,
   "label": "round 2: drafted rookies who are regulars (half the snaps) as rookies",
   "unit": "pct",
@@ -3660,9 +3660,9 @@
   "real_hi": null
  },
  "rookies.r2.started_as_rookie": {
-  "mean": 0.538642329778507,
-  "se": 0.06326416440323346,
-  "n": 4,
+  "mean": 0.5625033978888363,
+  "se": 0.035470654836529725,
+  "n": 8,
   "real": 0.568075117370892,
   "label": "round 2: eventual regulars (years 1-5) who already were as rookies",
   "unit": "pct",
@@ -3670,9 +3670,9 @@
   "real_hi": null
  },
  "rookies.r2.ever": {
-  "mean": 0.76171875,
-  "se": 0.02658929408419549,
-  "n": 4,
+  "mean": 0.7578125,
+  "se": 0.01416135886210884,
+  "n": 8,
   "real": 0.7473684210526316,
   "label": "round 2: drafted players who are regulars in years 1-5",
   "unit": "pct",
@@ -3680,9 +3680,9 @@
   "real_hi": null
  },
  "rookies.r3.rookie_regular": {
-  "mean": 0.21875,
-  "se": 0.04941058844013093,
-  "n": 4,
+  "mean": 0.224609375,
+  "se": 0.023611242185312534,
+  "n": 8,
   "real": 0.21407624633431085,
   "label": "round 3: drafted rookies who are regulars (half the snaps) as rookies",
   "unit": "pct",
@@ -3690,9 +3690,9 @@
   "real_hi": null
  },
  "rookies.r3.started_as_rookie": {
-  "mean": 0.36276573669474527,
-  "se": 0.07307893217485409,
-  "n": 4,
+  "mean": 0.3999020942195397,
+  "se": 0.03952967794730678,
+  "n": 8,
   "real": 0.36683417085427134,
   "label": "round 3: eventual regulars (years 1-5) who already were as rookies",
   "unit": "pct",
@@ -3700,9 +3700,9 @@
   "real_hi": null
  },
  "rookies.r3.ever": {
-  "mean": 0.58984375,
-  "se": 0.03213271531055486,
-  "n": 4,
+  "mean": 0.5625,
+  "se": 0.027700164388372445,
+  "n": 8,
   "real": 0.5835777126099707,
   "label": "round 3: drafted players who are regulars in years 1-5",
   "unit": "pct",
@@ -3710,9 +3710,9 @@
   "real_hi": null
  },
  "rookies.r4-5.rookie_regular": {
-  "mean": 0.09808856900699912,
-  "se": 0.014980309253655032,
-  "n": 4,
+  "mean": 0.10798406058617672,
+  "se": 0.013060937361347249,
+  "n": 8,
   "real": 0.09559939301972686,
   "label": "round 4-5: drafted rookies who are regulars (half the snaps) as rookies",
   "unit": "pct",
@@ -3720,9 +3720,9 @@
   "real_hi": null
  },
  "rookies.r4-5.started_as_rookie": {
-  "mean": 0.2684297606857056,
-  "se": 0.03416215609625995,
-  "n": 4,
+  "mean": 0.2875719678587102,
+  "se": 0.030255857160885552,
+  "n": 8,
   "real": 0.2423076923076923,
   "label": "round 4-5: eventual regulars (years 1-5) who already were as rookies",
   "unit": "pct",
@@ -3730,9 +3730,9 @@
   "real_hi": null
  },
  "rookies.r4-5.ever": {
-  "mean": 0.3613998933727034,
-  "se": 0.014566963807142983,
-  "n": 4,
+  "mean": 0.3712680446194226,
+  "se": 0.008441481128145934,
+  "n": 8,
   "real": 0.3945371775417299,
   "label": "round 4-5: drafted players who are regulars in years 1-5",
   "unit": "pct",
@@ -3740,9 +3740,9 @@
   "real_hi": null
  },
  "rookies.r6-7.rookie_regular": {
-  "mean": 0.04213266019756971,
-  "se": 0.01152397800284251,
-  "n": 4,
+  "mean": 0.05215593583355188,
+  "se": 0.007767775844951292,
+  "n": 8,
   "real": 0.03508771929824561,
   "label": "round 6-7: drafted rookies who are regulars (half the snaps) as rookies",
   "unit": "pct",
@@ -3750,9 +3750,9 @@
   "real_hi": null
  },
  "rookies.r6-7.started_as_rookie": {
-  "mean": 0.16935374773076387,
-  "se": 0.04571939205925731,
-  "n": 4,
+  "mean": 0.22179087993100088,
+  "se": 0.03699186008679495,
+  "n": 8,
   "real": 0.20512820512820512,
   "label": "round 6-7: eventual regulars (years 1-5) who already were as rookies",
   "unit": "pct",
@@ -3760,9 +3760,9 @@
   "real_hi": null
  },
  "rookies.r6-7.ever": {
-  "mean": 0.24901684088269455,
-  "se": 0.008742308144965759,
-  "n": 4,
+  "mean": 0.23972206611467037,
+  "se": 0.007163364106004222,
+  "n": 8,
   "real": 0.17105263157894737,
   "label": "round 6-7: drafted players who are regulars in years 1-5",
   "unit": "pct",
@@ -3770,9 +3770,9 @@
   "real_hi": null
  },
  "rookies.devl_70plus": {
-  "mean": 0.4806547619047619,
-  "se": 0.009303075066225725,
-  "n": 4,
+  "mean": 0.4763764880952381,
+  "se": 0.004798859944590635,
+  "n": 8,
   "real": null,
   "label": "draft board: drafted players shown 70%+ developed",
   "unit": "pct",
@@ -3780,9 +3780,9 @@
   "real_hi": null
  },
  "rookies.devl_80plus": {
-  "mean": 0.28385416666666663,
-  "se": 0.004354427050118915,
-  "n": 4,
+  "mean": 0.28292410714285715,
+  "se": 0.0022530817082516454,
+  "n": 8,
   "real": null,
   "label": "draft board: ...80%+ developed",
   "unit": "pct",
@@ -3800,7 +3800,7 @@
   "real_hi": null
  },
  "integration.starters_last_season": {
-  "mean": 67.4,
+  "mean": 66.6,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3820,8 +3820,8 @@
   "real_hi": null
  },
  "speed.sec_per_week_real_games": {
-  "mean": 1.1709558823529411,
-  "se": 0.06743859368250597,
+  "mean": 1.135110294117647,
+  "se": 0.06650675213325671,
   "n": 17,
   "real": null,
   "label": "seconds per regular-season week (real games, one league)",
@@ -3830,8 +3830,8 @@
   "real_hi": null
  },
  "speed.sec_per_fa_wave": {
-  "mean": 0.8080357142857143,
-  "se": 0.12297061179320821,
+  "mean": 0.7901785714285714,
+  "se": 0.12015620369570863,
   "n": 7,
   "real": null,
   "label": "seconds per free agency Next click",
@@ -3840,7 +3840,7 @@
   "real_hi": null
  },
  "speed.sec_offseason_total": {
-  "mean": 12.9375,
+  "mean": 12.734375,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3860,7 +3860,7 @@
   "real_hi": null
  },
  "speed.sec_draft_phase": {
-  "mean": 1.28125,
+  "mean": 1.265625,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3880,7 +3880,7 @@
   "real_hi": null
  },
  "_meta": {
-  "when": "2026-10-25 04:45",
+  "when": "2026-10-25 05:12",
   "suites": [
    "fa",
    "sim",
@@ -3889,7 +3889,7 @@
    "integration",
    "speed"
   ],
-  "seconds": 346.7392234802246,
+  "seconds": 399.0190894603729,
   "set": []
  }
 }
