@@ -99,6 +99,10 @@ def _fa_real():
         "gone_5_7": rm["by_experience_end_of_season"]["5-7"]["gone"],
         "gone_8p": rm["by_experience_end_of_season"]["8+"]["gone"],
         "illegal": 0, "over_cap_team_weeks": 0,
+        # nflverse weekly rosters 2022-25, regular season, elevated players left out (Oct 25,
+        # docs/research/real_short_rosters.py): 52 or fewer 4.6% (3.9-5.5 by season), 51 or fewer 0.5%
+        # (0.2-0.9), 50 or fewer 0.0% (2020-21, with COVID lists, 1.4% and 4.6%)
+        "short_53": 0.046, "short_51": 0.005, "short_50": 0.0,
         "market_new_team": kinds["new_team"], "market_resigned": kinds["re_signed"],
         "market_extensions": kinds["extension"],
         "market_deals": kinds["new_team"] + kinds["re_signed"] + kinds["extension"],
@@ -121,6 +125,9 @@ FA_LABELS = {
     "gone_5_7": ("out of the league: 5-7 seasons", "pct"), "gone_8p": ("out of the league: 8+ seasons", "pct"),
     "illegal": ("cap legality misses at offseason checkpoints + missing contracts (must be 0)", "n"),
     "over_cap_team_weeks": ("AI team-weeks over the cap during seasons (must be 0)", "n"),
+    "short_53": ("AI team-weeks with fewer than 53 on the roster", "pct"),
+    "short_51": ("...51 or fewer", "pct"), "short_50": ("...50 or fewer", "pct"),
+    "ps_size": ("AI practice squad size, regular season (average)", "n"),
     "in_season_deals": ("deals signed during a season", "n"),
     "market_deals": ("market deals (1%+ of the cap) a league year", "n"),
     "market_new_team": ("market deals with a new team", "n"), "market_resigned": ("market re-signings", "n"),

@@ -52,6 +52,15 @@ ELEVATIONS_PER_PLAYER = 3        # ...each at most 3 times a season (then he mus
 SHORT_AT_CAP = 2                 # a team with no cap room left for even a minimum deal may leave up to
                                  # this many 53-man spots open in-season (real teams often carry an open
                                  # spot; game-day minimums are met with elevations). Oct 23, judgment.
+                                 # Past that an AI team makes room first (restructure, then cut), and if
+                                 # nothing saves money it carries fewer still rather than go over the cap
+                                 # (Oct 25; Blake: "is that realistic to the league? if its the only way
+                                 # to fix it its fine"). Real rules: no minimum for the 53, game day needs
+                                 # 44 dressed (roster_rules.ACTIVE_MINIMUM). Real teams, nflverse weekly
+                                 # rosters 2022-25 (elevated players left out; docs/research/
+                                 # real_short_rosters.py): 52 on the 53 in about 4%
+                                 # of team-weeks, 51 in about 0.5%, 50 or fewer never; practice squads of
+                                 # 14-15 are as common as a full 16 (avg 15.0-15.4).
 WAIVER_EXPERIENCE = 4            # released players with fewer than 4 seasons go on waivers (others are free)
 
 # ---- How AI teams behave (judgment calls, tuned to the real counts above) ---
@@ -368,7 +377,14 @@ def fill_practice_squad(league, injuries, recovering, tid, label, prefer=(), log
     by_pos = defaultdict(list)
     for p in fas:
         by_pos[p.position].append(p)
+    # In season practice squad pay counts on the cap: an AI team without room for one more
+    # squad player's pay leaves the spot open (Oct 25; real squads often run 14-15). At final
+    # cuts squads are formed in full and cap_squeeze trims them if need be. Your squad is
+    # filled as before (your staff asks you about the cap).
+    capped = money is not None and tid != league.user_team_id and _in_season(league)
     while len(squad) < PRACTICE_SQUAD_SIZE:
+        if capped and not _room_for_ps(league, tid):
+            break
         have = _counts(squad)
         short = sorted(PS_TEMPLATE, key=lambda x: have[x] - PS_TEMPLATE[x])
         pick = None
@@ -691,7 +707,10 @@ def final_cuts(league, injuries, recovering, cal, rng, label="Final cuts"):
         if tx["team"] == user:
             tx["note"] = (tx["note"] + "; " if tx["note"] else "") + "staff move"
     ai = [t for t in league.teams if t.id != user]
-    for pid, tid in OS.fill_short_positions(league, rng, teams=ai):
+    # From here every contract counts: an AI team fills short positions only with what fits
+    # under the cap (after making room), and else starts the season with an open spot or more
+    # (Oct 25: refilled anyway, a team with heavy dead money began a season $2.5M over).
+    for pid, tid in OS.fill_short_positions(league, rng, teams=ai, within_cap=True):
         log(league, label, tid, pid, "Signed", "roster spot needed")
     if getattr(league, "contracts", None):
         from . import free_agency as FA
@@ -701,9 +720,12 @@ def final_cuts(league, injuries, recovering, cal, rng, label="Final cuts"):
             FA.sync(league, label)
             if all(len([1 for x in league.rosters.values() if x == t.id]) >= ROSTER_SIZE for t in ai):
                 break
-            for pid, tid in OS.fill_short_positions(league, rng, teams=ai):
+            signed = OS.fill_short_positions(league, rng, teams=ai, within_cap=True)
+            for pid, tid in signed:
                 log(league, label, tid, pid, "Signed", "roster spot needed")
             FA.sync(league, label)
+            if not signed:
+                break
     # Players nobody signed: the free-agent pool keeps the best (as each offseason).
     from .league import roster_value
     fas = sorted(league.free_agents(), key=roster_value, reverse=True)
@@ -720,7 +742,7 @@ def final_cuts(league, injuries, recovering, cal, rng, label="Final cuts"):
             league.vote_captains(t.id, rng=random.Random(f"captains-{league.settings.get('salt', '')}-{league.season}-{t.id}-cuts"))
     for t in ai:
         n = len([1 for x in league.rosters.values() if x == t.id])
-        assert n == ROSTER_SIZE, (t.abbrev, n)
+        assert n <= ROSTER_SIZE and (n == ROSTER_SIZE or getattr(league, "contracts", None)), (t.abbrev, n)
     return {"cuts": n_cuts, "claims": claims, "moves": len(league.transactions) - start}
 
 
@@ -808,7 +830,7 @@ def process_waivers(league, injuries, recovering, cal, label, records=None, rng=
                 break
         else:
             # Cleared waivers: his old team may bring him back on the practice squad.
-            if w["team"] != league.user_team_id:
+            if w["team"] != league.user_team_id and (not _in_season(league) or _room_for_ps(league, w["team"])):
                 squad = practice_players(league, w["team"])
                 if ps_eligible(p, squad) and squad:
                     worst = min(squad, key=lambda q: value(q, league, w["team"]))
@@ -838,9 +860,11 @@ def _thin_position(league, injuries, tid):
     return worst
 
 
-def fill_roster_spot(league, injuries, recovering, tid, label, rng, position=None):
+def fill_roster_spot(league, injuries, recovering, tid, label, rng, position=None, within_cap=False):
     """An open spot on the 53: the best healthy player at the neediest position,
-    from the team's own practice squad (preferred) or free agency."""
+    from the team's own practice squad (preferred) or free agency. within_cap:
+    only a player the team can pay (an AI team, from final cuts on); None, and
+    nothing changes, if there's none."""
     position = position or neediest_position(league, injuries, tid)
     own = [p for p in practice_players(league, tid) if p.position == position
            and injured_weeks(league, injuries, p.id) == 0 and can_afford(league, tid, p.id)]
@@ -852,7 +876,12 @@ def fill_roster_spot(league, injuries, recovering, tid, label, rng, position=Non
         return best_own
     street = best_out is None
     if street:
-        best_out = street_free_agent(position, experience=rng.choice([0, 1, 2]), season_year=league.season)
+        experience = rng.choice([0, 1, 2])
+        if within_cap and getattr(league, "contracts", None):
+            from . import contracts as C
+            if _cap_left(league, tid) < C.min_salary(league, experience) * _rest_of_season(league):
+                return None
+        best_out = street_free_agent(position, experience=experience, season_year=league.season)
         league.players.append(best_out)
     sign(league, injuries, recovering, best_out.id, tid, label)
     if street and getattr(league, "contracts", None):
@@ -901,7 +930,8 @@ def practice_squad_week(league, injuries, recovering, tid, cal, label, rng, pres
     squad = practice_players(league, tid)
     if len(squad) < PRACTICE_SQUAD_SIZE:
         fill_practice_squad(league, injuries, recovering, tid, label, rng=rng)
-    elif upgrades and not preseason and rng.random() < PS_UPGRADE_CHANCE:
+    elif (upgrades and not preseason and rng.random() < PS_UPGRADE_CHANCE
+          and (tid == league.user_team_id or not _in_season(league) or _room_for_ps(league, tid))):
         worst = min(squad, key=lambda q: value(q, league, tid))
         pool = [p for p in free_agent_pool(league, injuries, worst.position)
                 if ps_eligible(p, [x for x in squad if x.id != worst.id])]
@@ -919,14 +949,26 @@ def injury_cover(league, injuries, recovering, tid, cal, label, rng, preseason=F
     "let the staff also make short-term injury signings on my 53, like AI
     teams do"). Returns True if the 53 changed."""
     changed = False
+    ai = tid != league.user_team_id
+    # AI: from final cuts on, every contract counts. Yours (staff mode): the regular season, as before.
+    capped = _every_contract_counts(league) if ai else getattr(league, "stage", "") == "regular_season"
     while (n := sum(1 for x in league.rosters.values() if x == tid)) < ROSTER_SIZE:
-        if (n >= ROSTER_SIZE - SHORT_AT_CAP and getattr(league, "stage", "") == "regular_season"
-                and not _room_for_minimum(league, tid)):
-            break               # at the cap: an open spot or two, game-day elevations instead
-        if getattr(league, "stage", "") == "regular_season" and tid != league.user_team_id:
-            _make_room_for_minimum(league, tid)
-        fill_roster_spot(league, injuries, recovering, tid, label, rng)
+        if not (ai and capped):
+            if capped and n >= ROSTER_SIZE - SHORT_AT_CAP and not _room_for_minimum(league, tid):
+                break           # at the cap: an open spot or two, game-day elevations instead
+            fill_roster_spot(league, injuries, recovering, tid, label, rng)
+        else:
+            # Restructure first, as real teams do all season; cut to make room only past an open
+            # spot or two (Oct 25: before, a team with an open spot or two at the cap didn't even
+            # restructure, so AI teams carried fewer than 53 in about 30% of team-weeks; real 4.6%).
+            _make_room_for_minimum(league, tid, cuts=n < ROSTER_SIZE - SHORT_AT_CAP)
+            if fill_roster_spot(league, injuries, recovering, tid, label, rng, within_cap=True) is None:
+                break           # nobody it can pay and nothing left to restructure (or cut) that
+                                # saves money: the spot stays open, and it plays short rather than
+                                # sign past the cap (Oct 25; _short_handed below)
         changed = True
+    if ai and capped and getattr(league, "contracts", None):
+        changed |= _short_handed(league, injuries, recovering, tid, cal, label, rng)
     if not preseason:
         for _ in range(COVER_PER_WEEK):
             position = _thin_position(league, injuries, tid)
@@ -940,7 +982,8 @@ def injury_cover(league, injuries, recovering, tid, cal, label, rng, preseason=F
                              f"to sign a {position} while injuries leave the position thin", avoid=position)
                 break
             release(league, out.id, cal, label, "roster spot needed")
-            fill_roster_spot(league, injuries, recovering, tid, label, rng, position=position)
+            fill_roster_spot(league, injuries, recovering, tid, label, rng, position=position,
+                             within_cap=ai and capped)
             changed = True
     return changed
 
@@ -1189,20 +1232,56 @@ def elevations_for_game(league, injuries, tid, unavailable, routine=True):
     return picked
 
 
-def _room_for_minimum(league, tid):
-    """Room under the cap (counting this week's unwritten signings) for one more player at
-    the minimum for the rest of the season; always True in leagues without contracts."""
+def _every_contract_counts(league):
+    """From final cuts to the season's end every contract counts against the cap (in the
+    offseason and camp only the top 51 do)."""
+    stage = getattr(league, "stage", "")
+    return stage in ("regular_season", "playoffs") or (stage == "preseason" and not in_camp(league))
+
+
+def _cap_left(league, tid):
+    """Cap room ($K) with every contract counted, less this week's signings and releases not
+    yet on the books (free_agency.pending_hits); None in leagues without contracts."""
     if not getattr(league, "contracts", None):
-        return True
+        return None
     from . import contracts as C
     from .free_agency import pending_hits
-    rest = (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
-    return C.cap_room(league, tid, top51=False) - pending_hits(league, tid) >= C.min_salary(league, 10) * rest
+    return C.cap_room(league, tid, top51=False) - pending_hits(league, tid, full=True)
 
 
-def _make_room_for_minimum(league, tid):
-    """AI, regular season, more open spots than it can carry: if one more minimum player
-    doesn't fit under the cap, restructure (then cut) first, as real teams do, instead of
+def _in_season(league):
+    return getattr(league, "stage", "") in ("regular_season", "playoffs")
+
+
+def _room_for_ps(league, tid):
+    """Room under the cap for one more practice squad player's pay for the rest of the
+    season (a veteran's, the highest); always True in leagues without contracts."""
+    left = _cap_left(league, tid)
+    if left is None:
+        return True
+    from . import contracts as C
+    return left >= C.ps_weekly(league, 9) * (C.PAY_WEEKS - C.pay_week(league))
+
+
+def _rest_of_season(league):
+    """Share of this season's pay still to come."""
+    from . import contracts as C
+    return (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
+
+
+def _room_for_minimum(league, tid):
+    """Room under the cap (counting this week's unwritten signings and releases) for one more
+    player at the minimum for the rest of the season; always True in leagues without contracts."""
+    left = _cap_left(league, tid)
+    if left is None:
+        return True
+    from . import contracts as C
+    return left >= C.min_salary(league, 10) * _rest_of_season(league)
+
+
+def _make_room_for_minimum(league, tid, cuts=True):
+    """AI, in season, an open spot it can't pay for: if one more minimum player doesn't fit
+    under the cap, restructure (then, with cuts, cut) first, as real teams do, instead of
     signing him and going over (Oct 25: a team at the cap three or four short after
     injuries signed them all and stayed up to ~$3.7M over for the rest of the season;
     the week's cap clean-up can't win that back late in the year)."""
@@ -1210,20 +1289,121 @@ def _make_room_for_minimum(league, tid):
         return
     from . import contracts as C
     from .free_agency import _comply, pending_hits
-    rest = (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
-    need = C.min_salary(league, 10) * rest + pending_hits(league, tid)
+    need = C.min_salary(league, 10) * _rest_of_season(league) + pending_hits(league, tid, full=True)
     cap = C.cap_for(league, league.season)
     rng = random.Random(f"room-{league.settings.get('salt', '')}-{league.season}-{tid}-{len(league.transactions)}")
-    _comply(league, tid, rng, target=need / cap, top51=False)
+    _comply(league, tid, rng, target=need / cap, allow_cuts=cuts, top51=False)
 
 
 def _room_for_game_check(league, tid, n=1):
     """Room under the cap for n elevated players' game checks (the highest, a veteran's
     minimum for a week); always True in leagues without contracts."""
-    if not getattr(league, "contracts", None):
+    left = _cap_left(league, tid)
+    if left is None:
         return True
     from . import contracts as C
-    return C.cap_room(league, tid, top51=False) >= n * C.min_salary(league, 10) / C.PAY_WEEKS
+    return left >= n * C.min_salary(league, 10) / C.PAY_WEEKS
+
+
+def game_day_gaps(league, injuries, tid, without=None):
+    """What keeps a team from dressing a legal game-day roster with its healthy 53 and the
+    practice squad players it may elevate (and can pay): (positions short of the game-day
+    minimums, players short of the 44 the rules require). (set(), 0) when it can.
+    without: a player's id, as if he were gone."""
+    roster = _on_53(league, tid)
+    out = {p.id for p in roster if injured_weeks(league, injuries, p.id) > 0 or p.id == without}
+    dressed = [p for p in roster if p.id not in out]
+    dressed += elevations_for_game(league, injuries, tid, out, routine=False)
+    return _short_positions(dressed), max(0, roster_rules.ACTIVE_MINIMUM - len(dressed))
+
+
+def _spares(league, injuries, tid, avoid=()):
+    """Healthy players a team could let go without hurting game day: not starters, not just
+    added, not this year's high picks, at positions with more healthy players than game day
+    needs."""
+    roster = _on_53(league, tid)
+    chart = league.depth_charts.get(tid, {})
+    starters = depth.starter_ids(chart) if chart else set()
+    fresh = _just_added(league, tid)
+    healthy = _healthy(league, injuries, roster)
+    have = _counts(healthy)
+    return [p for p in healthy if p.id not in starters and p.id not in fresh and p.position not in avoid
+            and have[p.position] > GAME_DAY_MIN.get(p.position, 0)
+            and not (p.draft_year == league.season and 1 <= p.draft_round <= 3)]
+
+
+SHORT_HANDED = []       # (season, week, team, short positions): games an AI team played short-handed
+
+
+def _short_handed(league, injuries, recovering, tid, cal, label, rng):
+    """An AI team at the cap with open spots it can't fill (injury_cover): if it can't dress
+    a legal game day (the position minimums and 44 players, with the elevations it can pay
+    for), it shuffles the bottom of the roster instead of signing past the cap: lets go of a
+    spare player whose release saves at least a minimum replacement's pay and signs a player
+    at the short position. If no swap is possible it plays the game short-handed, players
+    filling in out of position (the game sim's out-of-position rules; real teams in a pinch:
+    Denver started a receiver, Kendall Hinton, at quarterback in 2020 with all its QBs out).
+    Returns True if the 53 changed."""
+    from . import contracts as C
+    changed = False
+    for _ in range(4):
+        short, missing = game_day_gaps(league, injuries, tid)
+        if not short:
+            break           # (fewer than 44 dressed with every position covered: a swap adds no one)
+        healthy = _counts(_healthy(league, injuries, _on_53(league, tid)))
+        exact = [pos_ for pos_ in GAME_DAY_MIN if pos_ in short and healthy[pos_] < GAME_DAY_MIN[pos_]]
+        position = (exact or sorted(short))[0]
+        cost = C.min_salary(league, 2) * _rest_of_season(league)   # at most a street free agent's minimum
+        left = _cap_left(league, tid)
+        cands = [(value(p, league, tid), p) for p in _spares(league, injuries, tid, avoid=short)
+                 if left + C.release_preview(league, p.id)["savings"] >= cost]
+        if not cands:
+            SHORT_HANDED.append((league.season, label, tid, sorted(short)))   # (for the check tools)
+            break
+        _v, out = min(cands, key=lambda c: c[0])
+        release(league, out.id, cal, label, "roster spot needed")
+        fill_roster_spot(league, injuries, recovering, tid, label, rng, position=position, within_cap=True)
+        changed = True
+    return changed
+
+
+def cap_squeeze(league, tid):
+    """An AI team still over the cap once every contract counts (final cuts on), after
+    restructures and every cut that saves money with the spot refilled
+    (free_agency._comply): it carries fewer players instead, the way real teams make do.
+    First practice squad spots are left open, least valuable player first (real squads
+    often run 14-15 of 16); then spare players on the 53 are let go and not replaced, as
+    long as it can still dress a legal game day (game_day_gaps). Your team: never (your
+    staff asks you: free_agency.request_cap_moves). Returns the moves."""
+    from . import contracts as C
+    from .season import calendar
+    if tid == league.user_team_id or not getattr(league, "contracts", None):
+        return []
+    ensure(league)
+    injuries, cal = league.injuries, calendar(league)
+    moves = []
+    while _cap_left(league, tid) < 0:
+        squad = [p for p in practice_players(league, tid) if C.release_preview(league, p.id)["savings"] > 0]
+        if not squad:
+            break           # (late in a season squad pay is mostly paid: letting them go saves nothing)
+        p = min(squad, key=lambda q: value(q, league, tid))
+        release(league, p.id, cal, "Cap", "to get under the cap")
+        moves.append(("release", p.id))
+    while _cap_left(league, tid) < 0:
+        cands = []
+        for p in _spares(league, injuries, tid):
+            saved = C.release_preview(league, p.id)["savings"]
+            if saved <= 0:
+                continue
+            short, missing = game_day_gaps(league, injuries, tid, without=p.id)
+            if not short and not missing:
+                cands.append((value(p, league, tid) / saved, p))
+        if not cands:
+            break
+        _r, p = min(cands, key=lambda c: c[0])
+        release(league, p.id, cal, "Cap", "to get under the cap")
+        moves.append(("release", p.id))
+    return moves
 
 
 def _short_positions(players):
