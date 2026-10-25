@@ -294,8 +294,8 @@ def combine(parts):
         ip = parts["integration"][0]
         out["integration.problems"] = measure([len(ip["problems"])], 0,
                                               "whole-game test (your team, save/load each stage): problems (must be 0)")
-        out["integration.starters_last_season"] = measure([ip["health"][-1][2]] if ip["health"] else [], None,
-                                                          "whole-game test: starters' average overall, last season")
+        # (Only the problem count: the test's startup draft uses fresh dice each run, so its league
+        # numbers differ every run and can't be compared with a baseline.)
     if parts.get("determinism"):
         fps = [p["fp"] for p in parts["determinism"]]
         out["determinism.mismatch"] = measure([0 if len(set(fps)) == 1 else 1], 0,

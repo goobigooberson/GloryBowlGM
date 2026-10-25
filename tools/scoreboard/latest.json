@@ -3799,16 +3799,6 @@
   "real_lo": null,
   "real_hi": null
  },
- "integration.starters_last_season": {
-  "mean": 66.6,
-  "se": 0.0,
-  "n": 1,
-  "real": null,
-  "label": "whole-game test: starters' average overall, last season",
-  "unit": "n",
-  "real_lo": null,
-  "real_hi": null
- },
  "determinism.mismatch": {
   "mean": 0,
   "se": 0.0,

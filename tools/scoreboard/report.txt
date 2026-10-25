@@ -1,14 +1,12 @@
 ==============================================================================================================
 SCOREBOARD 2026-10-25 05:12  suites: fa, sim, determinism, rookies, integration, speed  (399 s)
-Compared with the baseline of 2026-10-25 04:45. A change counts if it's more than 3x the normal run-to-run swing.
+Compared with the baseline of 2026-10-25 05:12. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: 
   BROKEN  fa.illegal: cap legality misses at offseason checkpoints + missing contracts (must be 0) = 0.1
   BROKEN  fa.over_cap_team_weeks: AI team-weeks over the cap during seasons (must be 0) = 4.7
 
-CHANGES BIGGER THAN THE NOISE (1):
-  verdict   measure                                        now   (noise)   baseline      real  why
-  CHANGED   integration.starters_last_season              66.6    +/-0.0       67.4         -  changed  (whole-game test: starters' average overall, last season)
+CHANGES BIGGER THAN THE NOISE (0):
 
 OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 20
   pass_yds>=4500 low, targets#40 low, targets>=100 low, wr_rec_yds>=1300 HIGH, te_rec_yds>=700 low, te_rec#1 low, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles#20 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, sacks>=12 HIGH, edge_sacks#10 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl>=10 HIGH, fgm>=35 HIGH, fga>=35 HIGH
