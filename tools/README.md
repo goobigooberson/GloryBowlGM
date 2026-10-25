@@ -43,6 +43,47 @@
     draft, seasons, every offseason phase, save/load at each stage); prints the problems
     found (must be 0). `python tools/integration_check.py --seasons 6` before big commits.
 
+## Screens: the standard test saves and the every-screen check (Oct 25)
+
+- `make_test_saves.py`: rebuilds 19 saves, one at each moment of a game's year, through the
+  same engine calls the screens make (New game's startup draft, Sim week, Start the
+  offseason, the offseason's Next, the Contracts tab's franchise tag and free agency offers,
+  the draft room). Your team (PIT by default) is a human team, as in a real game. The moments:
+  startup draft (you on the clock), new game (camp open), preseason, week 8, trade deadline
+  week, regular season over, playoffs, season complete, coaching carousel, re-sign, after
+  your franchise tag, free agency waves 1 and 2 (an offer of yours out), the draft is next,
+  draft day (pick 1 on the clock), the draft with you on the clock, after the draft, camp
+  next, camp open (next preseason, 90-man rosters). The same seed makes the same saves
+  (`index.json` lists each save with a fingerprint of its rosters, contracts and ratings).
+  The first season plays the real game sim, because nearly every screen shows its stats;
+  `--games fast` swaps in the lab's made-up results. Writes `data/test_saves/` (git-ignored,
+  wiped each time); never touches `saves/`.
+- `screens_check.py`: opens the game in browser mode (`app.py --browser --saves-dir=...`)
+  on copies of the test saves and clicks through the main menu screens, every section and
+  page of the green bar (`screens/nav.SECTIONS`), every view toggle and tab on them, the
+  pop-ups (player card, team window, game summary, offseason report) and their tabs, the
+  team picker (another team, the free agent pool), the draft room's views, and the Contracts
+  tab's Re-sign and Free agency lists with a player picked. It never presses Sim, Next or
+  Save. It reports every server error (a Python traceback in the game's log, a "500 Server
+  error" page), every browser console error and anything it couldn't click, with the save
+  and page, and saves a 1600x900 screenshot of every step (the Gemini package's size).
+  Exit code 1 on any problem. Writes `data/screens/` (git-ignored): a folder of screenshots
+  per save, `report.txt` (with full tracebacks), `report.json`, and the game's log.
+  The driver is Playwright with Microsoft Edge, which every Windows PC has, so there's no
+  browser to download. Playwright is a development tool only (`requirements-dev.txt`); the
+  game never imports it, so it isn't in the .exe.
+
+  ```
+  python -m pip install -r requirements-dev.txt     # once
+  python tools/make_test_saves.py                   # ~1.5 min; again after engine changes
+  python tools/screens_check.py                     # ~4 min: every save, 3 game copies side by side
+  python tools/screens_check.py --saves 12,15       # just saves 12 and 15
+  python tools/screens_check.py --no-shots          # errors only, faster
+  ```
+  One browser message is known to be harmless and isn't counted (the report gives how many):
+  Quasar's `Anchor: target "#c123" not found`, printed when a tooltip outlives the element
+  it was on after part of the page is redrawn (e.g. the green bar after picking another team).
+
 The tools below check that the game sim produces real-NFL-like stats. They were built
 during Step 6 calibration (Oct 19, 2026) and are what the sim was tuned with.
 None of them change or save your league. Run them from the project folder.
