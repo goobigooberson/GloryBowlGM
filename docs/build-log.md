@@ -997,6 +997,7 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
   - Fast games, seeds 101, 202 and 303 x 3 seasons each: all 49 checkpoints (creation, week 1, season's end, offseason start and after every offseason phase and free agency wave) **identical** on all 52 parts.
   - Real games, seed 101 x 2 seasons: all 33 checkpoints **identical**.
   - Python's hash seed: new code with PYTHONHASHSEED=777 vs the old code with 0, seed 202 x 2 seasons: **identical**.
+  - With a team of yours (lab leagues have none; seed 404, team 5, fast games): **identical** at all 35 checkpoints, every week and each offseason phase, up to where both stop for you to get under the cap ($34.8M over, the same in both).
   - Scoreboard: all 359 non-speed numbers **exactly the same** as the old code's (determinism check 0).
   - Each rewritten piece also checked on its own against the old function: 98,940 player-spot ratings, 320,000 pay-ladder prices, 3 full schedules, 32 depth charts, 48,000 staff views: identical.
 - **Results (CPU time, old and new run side by side so both see the same load from other sessions):**
