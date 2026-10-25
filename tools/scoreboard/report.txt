@@ -1,10 +1,10 @@
 ==============================================================================================================
-SCOREBOARD 2026-10-25 03:30  suites: fa, sim, determinism, rookies, integration, speed  (576 s)
-Compared with the baseline of 2026-10-25 03:09. A change counts if it's more than 3x the normal run-to-run swing.
+SCOREBOARD 2026-10-25 03:59  suites: fa, sim, determinism, rookies, integration, speed  (496 s)
+Compared with the baseline of 2026-10-25 03:59. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: 
-  BROKEN  fa.illegal: cap legality misses at offseason checkpoints + missing contracts (must be 0) = 0.3
-  BROKEN  fa.over_cap_team_weeks: AI team-weeks over the cap during seasons (must be 0) = 20.5
+  BROKEN  fa.illegal: cap legality misses at offseason checkpoints + missing contracts (must be 0) = 0.1
+  BROKEN  fa.over_cap_team_weeks: AI team-weeks over the cap during seasons (must be 0) = 4.7
 
 CHANGES BIGGER THAN THE NOISE (0):
 

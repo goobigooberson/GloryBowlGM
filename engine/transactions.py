@@ -912,6 +912,8 @@ def injury_cover(league, injuries, recovering, tid, cal, label, rng, preseason=F
         if (n >= ROSTER_SIZE - SHORT_AT_CAP and getattr(league, "stage", "") == "regular_season"
                 and not _room_for_minimum(league, tid)):
             break               # at the cap: an open spot or two, game-day elevations instead
+        if getattr(league, "stage", "") == "regular_season" and tid != league.user_team_id:
+            _make_room_for_minimum(league, tid)
         fill_roster_spot(league, injuries, recovering, tid, label, rng)
         changed = True
     if not preseason:
@@ -1185,6 +1187,23 @@ def _room_for_minimum(league, tid):
     from .free_agency import pending_hits
     rest = (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
     return C.cap_room(league, tid, top51=False) - pending_hits(league, tid) >= C.min_salary(league, 10) * rest
+
+
+def _make_room_for_minimum(league, tid):
+    """AI, regular season, more open spots than it can carry: if one more minimum player
+    doesn't fit under the cap, restructure (then cut) first, as real teams do, instead of
+    signing him and going over (Oct 25: a team at the cap three or four short after
+    injuries signed them all and stayed up to ~$3.7M over for the rest of the season;
+    the week's cap clean-up can't win that back late in the year)."""
+    if not getattr(league, "contracts", None) or _room_for_minimum(league, tid):
+        return
+    from . import contracts as C
+    from .free_agency import _comply, pending_hits
+    rest = (C.PAY_WEEKS - C.pay_week(league)) / C.PAY_WEEKS
+    need = C.min_salary(league, 10) * rest + pending_hits(league, tid)
+    cap = C.cap_for(league, league.season)
+    rng = random.Random(f"room-{league.settings.get('salt', '')}-{league.season}-{tid}-{len(league.transactions)}")
+    _comply(league, tid, rng, target=need / cap, top51=False)
 
 
 def _room_for_game_check(league, tid, n=1):

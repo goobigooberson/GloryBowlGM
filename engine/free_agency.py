@@ -1706,12 +1706,20 @@ def in_season_terms(league, pid, week=None):
     return {"apy_share": share, "week": week}
 
 
+def _deal_rng(league, pid, week):
+    """The dice for a free agent's in-season deal. The same for the check that the team can
+    afford him (asking_hit, AffordCheck) and for the contract sync writes at the week's end, so
+    the deal checked is the deal signed (Oct 25: the check used other dice, the signing bonus
+    came out different, and a team at the cap could end up a few hundred $K over)."""
+    return random.Random(f"sync-{_salt(league)}-{pid}-{week}")
+
+
 def asking_hit(league, tid, pid, week=None):
     """This season's cap hit ($K) of the deal this free agent would sign now."""
     terms = in_season_terms(league, pid, week)
     p = league.player(pid)
-    rng = random.Random(0)
-    c = make_deal(league, p, tid, terms["apy_share"], rng, years=1, week=terms["week"])
+    c = make_deal(league, p, tid, terms["apy_share"], _deal_rng(league, pid, terms["week"]), years=1,
+                  week=terms["week"])
     return C.cap_hit(league, c)
 
 
@@ -1753,8 +1761,8 @@ class AffordCheck:
     def hit(self, tid, pid):
         if pid not in self.hits:
             terms = in_season_terms(self.league, pid)
-            c = make_deal(self.league, self.league.player(pid), tid, terms["apy_share"], random.Random(0),
-                          years=1, week=terms["week"])
+            c = make_deal(self.league, self.league.player(pid), tid, terms["apy_share"],
+                          _deal_rng(self.league, pid, terms["week"]), years=1, week=terms["week"])
             self.hits[pid] = C.cap_hit(self.league, c)
         return self.hits[pid]
 
@@ -1842,8 +1850,7 @@ def sync(league, label=""):
             # minimum whoever he was, so a starter-level player could be had for the minimum.
             # Camp bodies are minimum-level players, so they still get the minimum.)
             terms = in_season_terms(league, pid, week)
-            c = make_deal(league, p, tid, terms["apy_share"], random.Random(f"sync-{_salt(league)}-{pid}-{week}"), years=1,
-                          week=week)
+            c = make_deal(league, p, tid, terms["apy_share"], _deal_rng(league, pid, week), years=1, week=week)
         else:
             c = C.minimum_contract(league, pid, tid, years=1)
         former = league.fa.get("former", {}).get(pid)

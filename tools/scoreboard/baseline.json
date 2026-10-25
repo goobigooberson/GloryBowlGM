@@ -1,7 +1,7 @@
 {
  "fa.room_w1_most": {
-  "mean": 0.2595460986795533,
-  "se": 0.023213889707540167,
+  "mean": 0.2616932167954509,
+  "se": 0.021384946656712048,
   "n": 12,
   "real": 0.26405030714995453,
   "label": "cap room after FA's first wave: most",
@@ -10,8 +10,8 @@
   "real_hi": null
  },
  "fa.room_w1_5th": {
-  "mean": 0.14651732891209684,
-  "se": 0.005946642710883357,
+  "mean": 0.14997037255243073,
+  "se": 0.010742359749195563,
   "n": 12,
   "real": 0.16307555219785963,
   "label": "cap room after the first wave: 5th most",
@@ -20,8 +20,8 @@
   "real_hi": null
  },
  "fa.room_w1_median": {
-  "mean": 0.07525051498633413,
-  "se": 0.0027874208688364443,
+  "mean": 0.0795094825145709,
+  "se": 0.002750632477180312,
   "n": 12,
   "real": 0.07968529107726594,
   "label": "cap room after the first wave: median team",
@@ -30,8 +30,8 @@
   "real_hi": null
  },
  "fa.room_w1_24th": {
-  "mean": 0.05291550072441421,
-  "se": 0.002924240128248063,
+  "mean": 0.05380804561486542,
+  "se": 0.0028034478607780436,
   "n": 12,
   "real": 0.036565838140727835,
   "label": "cap room after the first wave: 24th",
@@ -40,8 +40,8 @@
   "real_hi": null
  },
  "fa.teams_under_2pct_w1": {
-  "mean": 2.3333333333333335,
-  "se": 0.44946657497549475,
+  "mean": 1.9166666666666667,
+  "se": 0.5567537583840342,
   "n": 12,
   "real": 5.75,
   "label": "teams under 2% of the cap after the first wave",
@@ -50,8 +50,8 @@
   "real_hi": null
  },
  "fa.room_open_median": {
-  "mean": 0.13924559355630217,
-  "se": 0.010004181846286292,
+  "mean": 0.14995972739265526,
+  "se": 0.012034823231590431,
   "n": 12,
   "real": null,
   "label": "cap room when FA opens: median team",
@@ -60,8 +60,8 @@
   "real_hi": null
  },
  "fa.same_all": {
-  "mean": 0.4945922921303678,
-  "se": 0.009135631178778207,
+  "mean": 0.4902751767463815,
+  "se": 0.009449290215180478,
   "n": 12,
   "real": 0.657,
   "label": "last season's players on the same team at week 1",
@@ -70,8 +70,8 @@
   "real_hi": null
  },
  "fa.new_all": {
-  "mean": 0.3241504655788425,
-  "se": 0.00492574431178426,
+  "mean": 0.32937522166823824,
+  "se": 0.005072994169594691,
   "n": 12,
   "real": 0.238,
   "label": "...on a new team",
@@ -80,8 +80,8 @@
   "real_hi": null
  },
  "fa.gone_all": {
-  "mean": 0.1812572422907897,
-  "se": 0.004993786598434664,
+  "mean": 0.18034960158538027,
+  "se": 0.004960395325625787,
   "n": 12,
   "real": 0.105,
   "label": "...out of the league",
@@ -90,8 +90,8 @@
   "real_hi": null
  },
  "fa.gone_0_2": {
-  "mean": 0.12230436108503594,
-  "se": 0.004611198845452828,
+  "mean": 0.11322455654900274,
+  "se": 0.0037709166799987444,
   "n": 12,
   "real": 0.054,
   "label": "out of the league: 0-2 seasons",
@@ -100,8 +100,8 @@
   "real_hi": null
  },
  "fa.gone_3_4": {
-  "mean": 0.18925417824785207,
-  "se": 0.008323700800648846,
+  "mean": 0.18827085718147754,
+  "se": 0.010861565049688946,
   "n": 12,
   "real": 0.089,
   "label": "out of the league: 3-4 seasons",
@@ -110,8 +110,8 @@
   "real_hi": null
  },
  "fa.gone_5_7": {
-  "mean": 0.2193084928712479,
-  "se": 0.007693367364730242,
+  "mean": 0.2238935839014959,
+  "se": 0.006797212381646108,
   "n": 12,
   "real": 0.14,
   "label": "out of the league: 5-7 seasons",
@@ -120,8 +120,8 @@
   "real_hi": null
  },
  "fa.gone_8p": {
-  "mean": 0.3238823836766452,
-  "se": 0.009787823239126418,
+  "mean": 0.3220731064524735,
+  "se": 0.01039551885028309,
   "n": 12,
   "real": 0.283,
   "label": "out of the league: 8+ seasons",
@@ -130,8 +130,8 @@
   "real_hi": null
  },
  "fa.illegal": {
-  "mean": 0.3333333333333333,
-  "se": 0.3333333333333333,
+  "mean": 0.08333333333333333,
+  "se": 0.08333333333333333,
   "n": 12,
   "real": 0,
   "label": "cap legality misses at offseason checkpoints + missing contracts (must be 0)",
@@ -140,8 +140,8 @@
   "real_hi": null
  },
  "fa.market_deals": {
-  "mean": 283.1666666666667,
-  "se": 8.906784384995973,
+  "mean": 283.5833333333333,
+  "se": 8.803802839934823,
   "n": 12,
   "real": 299.90000000000003,
   "label": "market deals (1%+ of the cap) a league year",
@@ -150,8 +150,8 @@
   "real_hi": null
  },
  "fa.market_new_team": {
-  "mean": 101.91666666666667,
-  "se": 3.549345508027295,
+  "mean": 104.75,
+  "se": 3.9774458836765785,
   "n": 12,
   "real": 147.8,
   "label": "market deals with a new team",
@@ -160,8 +160,8 @@
   "real_hi": null
  },
  "fa.market_resigned": {
-  "mean": 134.91666666666666,
-  "se": 3.8325921549602207,
+  "mean": 134.5,
+  "se": 4.184205510915514,
   "n": 12,
   "real": 101.8,
   "label": "market re-signings",
@@ -170,8 +170,8 @@
   "real_hi": null
  },
  "fa.market_extensions": {
-  "mean": 46.333333333333336,
-  "se": 5.0547507406898955,
+  "mean": 44.333333333333336,
+  "se": 3.9968421878712546,
   "n": 12,
   "real": 50.3,
   "label": "market extensions",
@@ -180,8 +180,8 @@
   "real_hi": null
  },
  "fa.fair_good_fa_signings": {
-  "mean": 85.25,
-  "se": 3.25,
+  "mean": 88.58333333333333,
+  "se": 3.5578729032892107,
   "n": 12,
   "real": 75.6,
   "label": "good free agents changing teams (fair-price check)",
@@ -190,8 +190,8 @@
   "real_hi": null
  },
  "fa.fair_under_60pct": {
-  "mean": 0.4724600111110663,
-  "se": 0.014646949630014361,
+  "mean": 0.4792790967599328,
+  "se": 0.018371961310475124,
   "n": 12,
   "real": 0.3456,
   "label": "...signing under 60% of market value",
@@ -200,8 +200,8 @@
   "real_hi": null
  },
  "fa.fair_under_40pct": {
-  "mean": 0.32002691372465636,
-  "se": 0.016613575657873074,
+  "mean": 0.313777868745358,
+  "se": 0.018676649850893182,
   "n": 12,
   "real": 0.2206,
   "label": "...under 40%",
@@ -210,8 +210,8 @@
   "real_hi": null
  },
  "fa.fair_minimum": {
-  "mean": 0.2892440367899192,
-  "se": 0.016780346180935143,
+  "mean": 0.2782842763898184,
+  "se": 0.01663600117869884,
   "n": 12,
   "real": 0.225,
   "label": "...at about the minimum",
@@ -220,8 +220,8 @@
   "real_hi": null
  },
  "fa.camp_unsigned_good": {
-  "mean": 62,
-  "se": 5.640760748177662,
+  "mean": 66.5,
+  "se": 5.99936865365217,
   "n": 12,
   "real": null,
   "label": "good players 30 or younger unsigned at camp",
@@ -230,8 +230,8 @@
   "real_hi": null
  },
  "fa.camp_unsigned_stars": {
-  "mean": 10.333333333333334,
-  "se": 1.9436506316151,
+  "mean": 11.5,
+  "se": 1.7254775360093006,
   "n": 12,
   "real": 0.0,
   "label": "star-priced players unsigned at camp (your bargain window)",
@@ -240,8 +240,8 @@
   "real_hi": null
  },
  "fa.tags": {
-  "mean": 11.666666666666666,
-  "se": 0.9401267913629437,
+  "mean": 11.083333333333334,
+  "se": 1.1312257587111945,
   "n": 12,
   "real": 10.0,
   "label": "franchise tags",
@@ -250,8 +250,8 @@
   "real_hi": null
  },
  "fa.cap_cuts": {
-  "mean": 43.083333333333336,
-  "se": 3.527936845216817,
+  "mean": 43.25,
+  "se": 3.3690323221778073,
   "n": 12,
   "real": null,
   "label": "cap cuts",
@@ -260,8 +260,8 @@
   "real_hi": null
  },
  "fa.extensions": {
-  "mean": 46.333333333333336,
-  "se": 5.0547507406898955,
+  "mean": 44.333333333333336,
+  "se": 3.9968421878712546,
   "n": 12,
   "real": null,
   "label": "extensions",
@@ -270,8 +270,8 @@
   "real_hi": null
  },
  "fa.wk1_cap_used": {
-  "mean": 0.9784529136332221,
-  "se": 0.002924598920616481,
+  "mean": 0.979706000694025,
+  "se": 0.0020103324829045107,
   "n": 12,
   "real": null,
   "label": "cap used at week 1 (average team)",
@@ -280,8 +280,8 @@
   "real_hi": null
  },
  "fa.wk1_dead": {
-  "mean": 0.10706623108874495,
-  "se": 0.007876364007756244,
+  "mean": 0.10591817816589032,
+  "se": 0.00667222266158924,
   "n": 12,
   "real": null,
   "label": "dead money at week 1",
@@ -290,8 +290,8 @@
   "real_hi": null
  },
  "fa.in_season_deals": {
-  "mean": 1064,
-  "se": 81.2484032477133,
+  "mean": 1168.4166666666667,
+  "se": 72.4713588497922,
   "n": 12,
   "real": null,
   "label": "deals signed during a season",
@@ -300,8 +300,8 @@
   "real_hi": null
  },
  "fa.over_cap_team_weeks": {
-  "mean": 20.5,
-  "se": 4.639259345275631,
+  "mean": 4.666666666666667,
+  "se": 2.697735676039774,
   "n": 12,
   "real": 0,
   "label": "AI team-weeks over the cap during seasons (must be 0)",
@@ -3620,8 +3620,8 @@
   "real_hi": null
  },
  "rookies.r1.rookie_regular": {
-  "mean": 0.64453125,
-  "se": 0.007479899279346391,
+  "mean": 0.5703125,
+  "se": 0.018597469865997005,
   "n": 4,
   "real": 0.6097560975609756,
   "label": "round 1: drafted rookies who are regulars (half the snaps) as rookies",
@@ -3630,8 +3630,8 @@
   "real_hi": null
  },
  "rookies.r1.started_as_rookie": {
-  "mean": 0.6736779481755685,
-  "se": 0.01126366171727538,
+  "mean": 0.6345524829021707,
+  "se": 0.017323662519929974,
   "n": 4,
   "real": 0.6628787878787878,
   "label": "round 1: eventual regulars (years 1-5) who already were as rookies",
@@ -3640,8 +3640,8 @@
   "real_hi": null
  },
  "rookies.r1.ever": {
-  "mean": 0.95703125,
-  "se": 0.007479899279346391,
+  "mean": 0.8984375,
+  "se": 0.0078125,
   "n": 4,
   "real": 0.9198606271777003,
   "label": "round 1: drafted players who are regulars in years 1-5",
@@ -3651,7 +3651,7 @@
  },
  "rookies.r2.rookie_regular": {
   "mean": 0.41015625,
-  "se": 0.007479899279346391,
+  "se": 0.04956475601738094,
   "n": 4,
   "real": 0.4245614035087719,
   "label": "round 2: drafted rookies who are regulars (half the snaps) as rookies",
@@ -3660,8 +3660,8 @@
   "real_hi": null
  },
  "rookies.r2.started_as_rookie": {
-  "mean": 0.5175137362637363,
-  "se": 0.02618986581616683,
+  "mean": 0.538642329778507,
+  "se": 0.06326416440323346,
   "n": 4,
   "real": 0.568075117370892,
   "label": "round 2: eventual regulars (years 1-5) who already were as rookies",
@@ -3670,8 +3670,8 @@
   "real_hi": null
  },
  "rookies.r2.ever": {
-  "mean": 0.796875,
-  "se": 0.029919597117385566,
+  "mean": 0.76171875,
+  "se": 0.02658929408419549,
   "n": 4,
   "real": 0.7473684210526316,
   "label": "round 2: drafted players who are regulars in years 1-5",
@@ -3680,8 +3680,8 @@
   "real_hi": null
  },
  "rookies.r3.rookie_regular": {
-  "mean": 0.21484375,
-  "se": 0.025012204052472065,
+  "mean": 0.21875,
+  "se": 0.04941058844013093,
   "n": 4,
   "real": 0.21407624633431085,
   "label": "round 3: drafted rookies who are regulars (half the snaps) as rookies",
@@ -3690,8 +3690,8 @@
   "real_hi": null
  },
  "rookies.r3.started_as_rookie": {
-  "mean": 0.39908059998192824,
-  "se": 0.041950772621232334,
+  "mean": 0.36276573669474527,
+  "se": 0.07307893217485409,
   "n": 4,
   "real": 0.36683417085427134,
   "label": "round 3: eventual regulars (years 1-5) who already were as rookies",
@@ -3700,8 +3700,8 @@
   "real_hi": null
  },
  "rookies.r3.ever": {
-  "mean": 0.5390625,
-  "se": 0.04059494080239556,
+  "mean": 0.58984375,
+  "se": 0.03213271531055486,
   "n": 4,
   "real": 0.5835777126099707,
   "label": "round 3: drafted players who are regulars in years 1-5",
@@ -3710,8 +3710,8 @@
   "real_hi": null
  },
  "rookies.r4-5.rookie_regular": {
-  "mean": 0.11637949553180851,
-  "se": 0.008813091398965696,
+  "mean": 0.09808856900699912,
+  "se": 0.014980309253655032,
   "n": 4,
   "real": 0.09559939301972686,
   "label": "round 4-5: drafted rookies who are regulars (half the snaps) as rookies",
@@ -3720,8 +3720,8 @@
   "real_hi": null
  },
  "rookies.r4-5.started_as_rookie": {
-  "mean": 0.32929531160663233,
-  "se": 0.025055261654714434,
+  "mean": 0.2684297606857056,
+  "se": 0.03416215609625995,
   "n": 4,
   "real": 0.2423076923076923,
   "label": "round 4-5: eventual regulars (years 1-5) who already were as rookies",
@@ -3730,8 +3730,8 @@
   "real_hi": null
  },
  "rookies.r4-5.ever": {
-  "mean": 0.3567339727065367,
-  "se": 0.027137394031914026,
+  "mean": 0.3613998933727034,
+  "se": 0.014566963807142983,
   "n": 4,
   "real": 0.3945371775417299,
   "label": "round 4-5: drafted players who are regulars in years 1-5",
@@ -3740,8 +3740,8 @@
   "real_hi": null
  },
  "rookies.r6-7.rookie_regular": {
-  "mean": 0.02808217521196947,
-  "se": 0.008447648341675891,
+  "mean": 0.04213266019756971,
+  "se": 0.01152397800284251,
   "n": 4,
   "real": 0.03508771929824561,
   "label": "round 6-7: drafted rookies who are regulars (half the snaps) as rookies",
@@ -3750,8 +3750,8 @@
   "real_hi": null
  },
  "rookies.r6-7.started_as_rookie": {
-  "mean": 0.13623031557814166,
-  "se": 0.03656214375913583,
+  "mean": 0.16935374773076387,
+  "se": 0.04571939205925731,
   "n": 4,
   "real": 0.20512820512820512,
   "label": "round 6-7: eventual regulars (years 1-5) who already were as rookies",
@@ -3760,8 +3760,8 @@
   "real_hi": null
  },
  "rookies.r6-7.ever": {
-  "mean": 0.1998134809761683,
-  "se": 0.012854083387054528,
+  "mean": 0.24901684088269455,
+  "se": 0.008742308144965759,
   "n": 4,
   "real": 0.17105263157894737,
   "label": "round 6-7: drafted players who are regulars in years 1-5",
@@ -3770,8 +3770,8 @@
   "real_hi": null
  },
  "rookies.devl_70plus": {
-  "mean": 0.48530505952380953,
-  "se": 0.006712770788635755,
+  "mean": 0.4806547619047619,
+  "se": 0.009303075066225725,
   "n": 4,
   "real": null,
   "label": "draft board: drafted players shown 70%+ developed",
@@ -3780,8 +3780,8 @@
   "real_hi": null
  },
  "rookies.devl_80plus": {
-  "mean": 0.29017857142857145,
-  "se": 0.0073468815692453475,
+  "mean": 0.28385416666666663,
+  "se": 0.004354427050118915,
   "n": 4,
   "real": null,
   "label": "draft board: ...80%+ developed",
@@ -3800,7 +3800,7 @@
   "real_hi": null
  },
  "integration.starters_last_season": {
-  "mean": 67.1,
+  "mean": 67.0,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3820,8 +3820,8 @@
   "real_hi": null
  },
  "speed.sec_per_week_real_games": {
-  "mean": 1.5533088235294117,
-  "se": 0.09515697841991981,
+  "mean": 1.4954044117647058,
+  "se": 0.08901335300924779,
   "n": 17,
   "real": null,
   "label": "seconds per regular-season week (real games, one league)",
@@ -3830,8 +3830,8 @@
   "real_hi": null
  },
  "speed.sec_per_fa_wave": {
-  "mean": 1.53125,
-  "se": 0.1881808076532982,
+  "mean": 1.4955357142857142,
+  "se": 0.17976720171161503,
   "n": 7,
   "real": null,
   "label": "seconds per free agency Next click",
@@ -3840,7 +3840,7 @@
   "real_hi": null
  },
  "speed.sec_offseason_total": {
-  "mean": 21.28125,
+  "mean": 19.609375,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3860,7 +3860,7 @@
   "real_hi": null
  },
  "speed.sec_draft_phase": {
-  "mean": 1.46875,
+  "mean": 1.40625,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3870,7 +3870,7 @@
   "real_hi": null
  },
  "speed.sec_camp_phase": {
-  "mean": 4.5625,
+  "mean": 3.75,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -3880,7 +3880,7 @@
   "real_hi": null
  },
  "_meta": {
-  "when": "2026-10-25 03:30",
+  "when": "2026-10-25 03:59",
   "suites": [
    "fa",
    "sim",
@@ -3889,7 +3889,7 @@
    "integration",
    "speed"
   ],
-  "seconds": 575.8458077907562,
+  "seconds": 495.6828148365021,
   "set": []
  }
 }

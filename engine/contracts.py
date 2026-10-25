@@ -230,7 +230,14 @@ def pay_week(league):
     18 once the regular season is over)."""
     stage = getattr(league, "stage", "")
     if stage == "regular_season":
-        return max(0, min(PAY_WEEKS, getattr(league, "week", 1) - 1))
+        # Once this week's games are played (the roster moves after them, before the week
+        # number moves on: season.end_week), this week's check has been paid too. Oct 25:
+        # it counted one week less there, so a player signed after the last regular-season
+        # game was charged a week he's never paid, and an AI team at the cap went ~$56K over
+        # through the playoffs with nothing left to cut or restructure (the scoreboard's
+        # "AI team-weeks over the cap", ~20 a season).
+        played = 1 if getattr(league, "week_played", False) else 0
+        return max(0, min(PAY_WEEKS, getattr(league, "week", 1) - 1 + played))
     if stage in ("regular_season_done", "playoffs", "season_complete"):
         return PAY_WEEKS
     return 0

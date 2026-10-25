@@ -577,7 +577,11 @@ def play_week(league):
             game = new_game(league, g, norms).run()
             record_game(league, g, game)
             played.append(g)
-    end_week(league)
+    league.week_played = True         # contracts.pay_week: this week's check is paid now
+    try:
+        end_week(league)
+    finally:
+        league.week_played = False
     return played
 
 
@@ -826,6 +830,7 @@ def end_week(league):
         transactions.weekly(league, league.injuries, league.recovering, cal, label, rng,
                             records=records(league) if league.week >= 3 else None)   # waivers: from week 4
         league.week += 1
+        league.week_played = False    # the new week's games aren't played yet (contracts.pay_week)
         money_week(league, label)
         from . import trades           # player trades (trades.py, Oct 23): up to the deadline
         trades.step(league)
