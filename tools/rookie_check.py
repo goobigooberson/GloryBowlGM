@@ -111,7 +111,8 @@ def run_league(job):
     """One lab league (seed, seasons). Returns {"players": [(round, shares)], "devl": [%...]}."""
     seed, seasons = job
     from lab import Lab
-    from engine import draft_day, scale, season as S
+    from engine import draft_day, season as S
+    from engine.player import developed_share
     recs = {}
     devl = []
 
@@ -146,8 +147,7 @@ def run_league(job):
         lg = lab.league
         pros = sorted(draft_day.prospects(lg), key=lambda p: getattr(p, "_media", 0.0), reverse=True)
         for p in pros[:7 * len(lg.teams)]:
-            pot = scale.shown(p.overall("potential"), p.position)
-            devl.append(100.0 * scale.shown(p.overall(), p.position) / max(1, pot))
+            devl.append(developed_share(p.overall(), p.overall("potential")))
 
     lab = Lab(seed, games="fast")
     lab.seed_first_season = lab.league.season
@@ -183,7 +183,7 @@ def report(results, say=print):
     d = devl_shares([x for r in results for x in r["devl"]])
     if d:
         say(f"Draft board Developed % (drafted players, true value): 70%+ {100 * d['devl_70plus']:.0f}%, "
-            f"80%+ {100 * d['devl_80plus']:.0f}%, median {d['devl_median']:.0f}%  (Oct 25 tuning, these 4 lab leagues: 48% / 29% / 69)")
+            f"80%+ {100 * d['devl_80plus']:.0f}%, median {d['devl_median']:.0f}%  (Oct 25 yardstick from raw, lab league 101: 70%+ about 12%, median about 32)")
     return game
 
 

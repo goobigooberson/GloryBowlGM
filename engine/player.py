@@ -132,9 +132,8 @@ class Player:
 
     @property
     def developed_pct(self):
-        """How much of his potential he has reached, as a percent."""
-        pot = self.overall("potential")
-        return round(100 * self.overall("current") / pot) if pot else 100
+        """How far he has come from raw toward his potential, as a percent (developed_share)."""
+        return round(developed_share(self.overall("current"), self.overall("potential")))
 
 
 # ---------------------------------------------------------------------------
@@ -216,6 +215,24 @@ EXPERIENCE_WEIGHTS = {
 # x 10 real seasons, seasons 7+), so these moved down by the same amounts, from 0.89 / 0.935 / 0.965 / 0.985.)
 NEW_LEAGUE_READY = {0: 0.84, 1: 0.905, 2: 0.95, 3: 0.975}    # base share of the ceiling (then the usual noise)
 NEW_LEAGUE_POT_SHIFT = {0: -5.0, 1: -2.5}                     # ceiling, rating points (not Generational players)
+
+# Developed % (Oct 25; Blake, choosing to change the yardstick and not the players: in FOF8
+# "it was uncommon for someone to be 50% developed or more"). Counted from a raw starting
+# point to his ceiling, not as his current rating over his ceiling: even a raw prospect
+# already has most of his ceiling in rating points (drafted rookies sit at 72-93% of it,
+# median 82%, set by real rookies' playing time, draft.PROSPECT_READY_*), so that ratio read
+# 70-80% for nearly everyone. A player at DEVELOPED_RAW of his ceiling (internal overall)
+# counts as 0%, at his ceiling 100%. Drafted rookies: median ~28%, about 1 in 4 at 50%+,
+# 1 in 10 at 70%+; a 2nd-year player ~60%, 3rd-year ~75%, a veteran in his prime ~92%.
+DEVELOPED_RAW = 0.75
+
+
+def developed_share(current, potential):
+    """Developed %, 0-100 (unrounded), from internal overall ratings."""
+    if not potential:
+        return 100.0
+    return max(0.0, min(100.0, 100.0 * (current / potential - DEVELOPED_RAW) / (1 - DEVELOPED_RAW)))
+
 
 _next_id = 1
 
