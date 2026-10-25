@@ -2671,6 +2671,21 @@ def _draft_race(ctx, season, track, w, cal):
             teams=[x[2] for x in bottom], importance=35, key=f"draftrace-{season}-{w}")
 
 
+def _played_in_week(track, w):
+    """{team: [players whose latest game as of week w was in week w, for that team]}, in
+    track.player_games order (Oct 25, for speed: worked out once a week instead of once
+    for each of the 32 teams in the power rankings)."""
+    memo = track.__dict__.setdefault("_played_in_week", {})
+    if w not in memo:
+        by = defaultdict(list)
+        for pid, gl in track.player_games.items():
+            lw = next((x for x in reversed(gl) if x[0] <= w), None)     # his latest game as of week w
+            if lw and lw[0] == w:
+                by[lw[2]].append(pid)
+        memo[w] = by
+    return memo[w]
+
+
 def _rank_blurb(ctx, track, tid, w, rng):
     bits = []
     lg = track.last_game(tid, w)
@@ -2695,12 +2710,10 @@ def _rank_blurb(ctx, track, tid, w, rng):
         p = ctx.player(fo[0])
         extra.append(f"{SL.rec_text(fo[4])} since losing {pos_abbr(p)} {p.last_name}.")
     best = None
-    for pid, gl in track.player_games.items():
-        lw = next((x for x in reversed(gl) if x[0] <= w), None)     # his latest game as of week w
-        if lw and lw[0] == w and lw[2] == tid:
-            for s in track.streaks_for(pid, w):
-                if s[1] >= 3 and (best is None or s[1] > best[1][1]):
-                    best = (pid, s)
+    for pid in _played_in_week(track, w).get(tid, ()):
+        for s in track.streaks_for(pid, w):
+            if s[1] >= 3 and (best is None or s[1] > best[1][1]):
+                best = (pid, s)
     if best:
         extra.append(f"{ctx.player(best[0]).last_name}: {num(best[1][1])} straight {best[1][3]}.")
     if extra:

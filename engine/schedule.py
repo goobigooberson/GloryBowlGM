@@ -141,6 +141,9 @@ class _Weeks:
         self.games, self.teams, self.W, self.rng = games, team_ids, n_weeks, rng
         self.week = {}                                        # game index -> week
         self.at = {t: [None] * (n_weeks + 1) for t in team_ids}   # team -> week -> game index
+        # For team_cost (Oct 25, for speed): is a bye in this week a bad one? (Week 0 isn't a
+        # week, and the last week can't be a bye: neither counts.)
+        self._bad_bye = [0 < w < n_weeks and not (self.bye_lo <= w <= self.bye_hi) for w in range(n_weeks + 1)]
 
     def put(self, gi, w):
         h, a, _k = self.games[gi]
@@ -231,34 +234,40 @@ class _Weeks:
 
     def team_cost(self, t):
         # (Oct 25, for speed: the search asks this ~1.5 million times a schedule; one pass
-        # over the weeks with the lookups done once. The same count as before.)
-        bye_lo, bye_hi = self.bye_lo, self.bye_hi
-        at, games, W = self.at[t], self.games, self.W
-        bad_bye = 0
-        streak, last, run = 0, None, 0
-        prev_opp, rematch = None, 0
-        for w in range(1, W + 1):
-            gi = at[w]
+        # over the weeks with the lookups done once. The same count as before: byes outside
+        # weeks 5-14, games in a 3rd+ straight home or road week, the same opponent in
+        # back-to-back weeks.)
+        games = self.games
+        bad_bye = streak = rematch = run = 0
+        last = prev_opp = None            # last: True home, False road, None after a bye
+        for gi, bad in zip(self.at[t], self._bad_bye):
             if gi is None:
-                if w < W and not (bye_lo <= w <= bye_hi):
+                if bad:
                     bad_bye += 1
                 last, run, prev_opp = None, 0, None
                 continue
             h, a, _k = games[gi]
-            home = h == t
-            run = run + 1 if home is last else 1
-            last = home
+            if h == t:
+                run = run + 1 if last is True else 1
+                last = True
+                opp = a
+            else:
+                run = run + 1 if last is False else 1
+                last = False
+                opp = h
             if run >= 3:
                 streak += 1
             # Division rival twice in back-to-back weeks: the NFL spaces these out.
-            opp = a if home else h
             if opp == prev_opp:
                 rematch += 1
             prev_opp = opp
         return 3 * bad_bye + 2 * streak + 2 * rematch
 
     def bye_over(self, w):
-        byes = sum(1 for t in self.teams if self.at[t][w] is None)
+        byes = 0
+        for t in self.teams:
+            if self.at[t][w] is None:
+                byes += 1
         return 3 * max(0, byes - MAX_BYES_PER_WEEK)
 
     def polish(self, steps):

@@ -27,6 +27,7 @@
 
 import bisect
 import math
+from operator import mul as _mul
 from collections import defaultdict
 from datetime import date
 
@@ -105,7 +106,8 @@ def market_score(p, season, cur=None, pot=None):
     """How teams rate him for a new contract: projected overall over the next
     three seasons, the next one counting most (cur / pot: see project)."""
     proj = project(p, season, len(SCORE_WEIGHTS), cur, pot)
-    return sum(w * v for w, v in zip(SCORE_WEIGHTS, proj))
+    # (Oct 25, for speed: the same products in the same order through sum(), as before.)
+    return sum(map(_mul, SCORE_WEIGHTS, proj))
 
 
 _RUNGS = {}

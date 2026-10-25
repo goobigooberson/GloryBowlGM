@@ -43,6 +43,7 @@ import math
 import random
 
 from . import positions as pos
+from . import staff as _staff     # (imported once here, not in the busy functions: Oct 25, for speed)
 
 # ---- Knobs (PROVISIONAL) -----------------------------------------------------
 OWN_SD = 1.5
@@ -129,12 +130,15 @@ def team_of(league, pid):
     return t
 
 
+_NO_POOL = frozenset()      # (one shared empty set: callers only read it)
+
+
 def _pool(league):
     """This year's draft prospects (a startup draft's pool is the league's players:
     they're judged like any other team's players)."""
     d = league.draft if isinstance(league.draft, dict) else None
     if not d or d.get("kind") == "startup":
-        return set()
+        return _NO_POOL
     ids = d.get("pool", ())
     # Remembered while it's the same list at the same length (Oct 22, for speed: free
     # agency asks this ~2 million times an offseason). The list itself is kept here so
@@ -229,7 +233,7 @@ def other_sd(league, p):
 
 def _eval_z(league, tid, kind, position=None):
     """staff.eval_z, remembered until the clock moves or a staff changes."""
-    from . import staff as S
+    S = _staff
     memo = league.__dict__.setdefault("_evalz", {})
     group = S.POSITION_GROUP.get(position, "ST") if kind == "own" else None
     key = (_clock(league), len(league.staff["log"]), tid, kind, group)
@@ -242,7 +246,7 @@ def _eval_z(league, tid, kind, position=None):
 
 
 def _evaluators(league, tid, p, rel):
-    from .staff import POSITION_GROUP
+    POSITION_GROUP = _staff.POSITION_GROUP
     # The jobs it needs, looked up straight (= staff.staff_of(league, tid)[job]; Oct 22,
     # for speed: building the whole staff for each look was a big part of free agency).
     # (Oct 25, for speed: the answer remembered by the coaches' ids in those jobs; a coach's
@@ -449,7 +453,6 @@ def _seen(league, tid, p):
         out = _prospect_view(league, tid, p)
         cache[key] = out
         return out, key
-    from . import staff as S
     base = _true_view(league, p, rel)
     rookie = p.experience == 0
     salt = league.settings.get("salt", "")
@@ -495,6 +498,7 @@ def _seen(league, tid, p):
     if len(cache) > 200000:
         cache.clear()
         league.__dict__.get("_eval_quiet", {}).clear()
+        league.__dict__.get("_eval_mis", {}).clear()
     cache[key] = out
     league.__dict__.setdefault("_eval_quiet", {})[key] = quiet
     return out, key
@@ -571,10 +575,17 @@ def misjudgment(league, tid, p, which="current"):
     if tid is None or not getattr(league, "staff", None) or p.id in _pool(league):
         return 0.0
     skills, key = _seen(league, tid, p)
+    # (Oct 25, for speed: the answer remembered with _seen's cache entry it comes from, and
+    # forgotten with it.)
+    mis = league.__dict__.setdefault("_eval_mis", {})
+    v = mis.get((key, which))
+    if v is not None:
+        return v
     quiet = league.__dict__.get("_eval_quiet", {}).get(key)
     if quiet is None:
         return 0.0
-    return _overall_of(skills, p.position, which) - _overall_of(quiet, p.position, which)
+    v = mis[(key, which)] = _overall_of(skills, p.position, which) - _overall_of(quiet, p.position, which)
+    return v
 
 
 def public_skills(league, p):
@@ -654,6 +665,15 @@ def seen(league, tid, p):
 
 def overall(league, tid, p, which="current"):
     """His overall as this team's staff sees it (internal scale, unrounded)."""
+    if tid is not None and getattr(league, "staff", None):
+        # (Oct 25, for speed: remembered with _seen's cache entry it comes from, and
+        # forgotten with it, like misjudgment.)
+        skills, key = _seen(league, tid, p)
+        mis = league.__dict__.setdefault("_eval_mis", {})
+        v = mis.get((key, which, "overall"))
+        if v is None:
+            v = mis[(key, which, "overall")] = _overall_of(skills, p.position, which)
+        return v
     skills = seen_skills(league, tid, p)
     index = 0 if which == "current" else 1
     total = wsum = 0.0

@@ -34,6 +34,8 @@ from functools import lru_cache
 
 from . import cap_market as M
 from . import contracts as C
+from . import evaluation as E   # (imported once here, not in the busy functions: Oct 25, for speed)
+from . import gm as G
 from .teams import ROSTER_TEMPLATE, ROSTER_SIZE
 from .transactions import STARTER_COUNT
 
@@ -235,7 +237,6 @@ def gm_style(league, tid, key):
     """The team's general manager's habit (gm.style; 0 for your team)."""
     if tid is None or tid == league.user_team_id or not getattr(league, "staff", None):
         return 0.0
-    from . import gm as G
     return G.style(league, tid, key)
 
 
@@ -317,7 +318,6 @@ STAFF_EVAL_RANGE = (0.80, 1.25)
 def _eval(league, tid, pid):
     """How this team's staff judges this player (fixed until its view changes)."""
     if getattr(league, "staff", None):
-        from . import evaluation as E
         diff = E.misjudgment(league, tid, league.player(pid))
         return max(STAFF_EVAL_RANGE[0], min(STAFF_EVAL_RANGE[1], math.exp(STAFF_EVAL_K * diff)))
     return _eval_draw(_salt(league), league.season, tid, pid)
@@ -341,7 +341,6 @@ def team_score(league, tid, p, info, memo=None):
         return memo[key]
     if tid is None or not getattr(league, "staff", None):
         return info["score"]
-    from . import evaluation as E
     d_now = E.misjudgment(league, tid, p)
     d_pot = E.misjudgment(league, tid, p, "potential")
     if not d_now and not d_pot:

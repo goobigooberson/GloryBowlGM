@@ -31,6 +31,7 @@ from collections import defaultdict
 from . import depth
 from . import injuries as I
 from . import roster_rules
+from . import evaluation as _evaluation   # (imported once here: Oct 25, for speed)
 from .teams import ROSTER_TEMPLATE, ROSTER_SIZE
 
 
@@ -82,7 +83,7 @@ def value(p, league=None, tid=None):
     staff sees him (Oct 24, Blake: AI teams judge players through their own
     staff's eyes; evaluation.py)."""
     if tid is not None and getattr(league, "staff", None):
-        from .evaluation import overall
+        overall = _evaluation.overall
         return 0.75 * overall(league, tid, p) + 0.25 * overall(league, tid, p, "potential")
     return 0.75 * p.overall() + 0.25 * p.overall("potential")
 
