@@ -111,6 +111,16 @@ def team_of(league, pid):
     return None, None
 
 
+def _on_53(league, tid):
+    """The team's 53 in the order of league.players: what a scan of every player for
+    league.rosters.get(p.id) == tid gives, from the roster lists instead (Oct 25, for
+    speed: the scan reads every player ever, retired ones too). (tid None keeps the scan:
+    it matches everyone who isn't on a 53.)"""
+    if tid is None:
+        return [p for p in league.players if league.rosters.get(p.id) is None]
+    return league.team_players(tid)
+
+
 def practice_players(league, tid):
     return league.in_order(pid for pid, t in league.practice.items() if t == tid)
 
@@ -234,7 +244,7 @@ def _counts(players):
 def neediest_position(league, injuries, tid):
     """The position where the 53 is shortest of its roster count, healthy
     players counted first (ties: the scarcer position on game day)."""
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = _on_53(league, tid)
     healthy = _counts(_healthy(league, injuries, roster))
     total = _counts(roster)
     return max(ROSTER_TEMPLATE, key=lambda pos_: (ROSTER_TEMPLATE[pos_] - total[pos_],
@@ -250,13 +260,13 @@ def release_candidate(league, injuries, tid, protect=(), avoid=None, guard=True)
     if tid == league.user_team_id and guard:
         # Your staff never cuts an important player on its own (Blake: no FOF8-style
         # bold cuts); it asks you instead (staff_requests).
-        protect |= {p.id for p in league.players if league.rosters.get(p.id) == tid
-                    and important_reason(league, tid, p)}
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid and p.id not in protect]
+        protect |= {p.id for p in _on_53(league, tid)
+                    if important_reason(league, tid, p)}
+    roster = [p for p in _on_53(league, tid) if p.id not in protect]
     chart = league.depth_charts.get(tid, {})
     starters = depth.starter_ids(chart) if chart else set()
-    total = _counts(p for p in league.players if league.rosters.get(p.id) == tid)
-    healthy = _counts(_healthy(league, injuries, [p for p in league.players if league.rosters.get(p.id) == tid]))
+    total = _counts(_on_53(league, tid))
+    healthy = _counts(_healthy(league, injuries, _on_53(league, tid)))
     options = [p for p in _healthy(league, injuries, roster)
                if p.id not in starters and p.position != avoid
                and total[p.position] >= ROSTER_TEMPLATE.get(p.position, 0)
@@ -280,7 +290,7 @@ STARTER_COUNT = {"QB": 1, "RB": 1, "FB": 1, "WR": 3, "TE": 1, "T": 2, "G": 2, "C
 
 def important_reason(league, tid, p):
     """Why letting this player go would be a big decision ('' if it wouldn't)."""
-    roster = [x for x in league.players if league.rosters.get(x.id) == tid]
+    roster = _on_53(league, tid)
     def val(q):
         return value(q, league, tid)
     same = sorted((x for x in roster if x.position == p.position), key=val, reverse=True)
@@ -489,7 +499,7 @@ def _camp_body(league, pool, position, rng):
 def fill_camp(league, injuries, recovering, tid, label, rng, pool, log_it=True, note="camp roster"):
     """Bring a camp roster up to 90: the position furthest below its camp
     count first (roster_rules.CAMP_TEMPLATE). Returns the players signed."""
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = _on_53(league, tid)
     have = _counts(roster)
     n = len(roster)
     signed = []
@@ -517,7 +527,7 @@ def fill_camp_rosters(league, rng, label="Training camp"):
     # players go (never this year's draft picks; for your team, never an important player).
     from . import offseason as OS
     for t in league.teams:
-        roster = [p for p in league.players if league.rosters.get(p.id) == t.id]
+        roster = _on_53(league, t.id)
         over = len(roster) - roster_rules.CAMP_LIMIT
         if over <= 0:
             continue
@@ -555,7 +565,7 @@ def camp_week(league, injuries, recovering, tid, cal, label, rng, pool, fill=Tru
     worst camp body is swapped for a clearly better free agent. Returns True
     if the roster changed."""
     changed = False
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = _on_53(league, tid)
     for p in roster:
         inj = injuries.get(p.id)
         if inj and inj["weeks"] > 0 and inj.get("initial", 0) >= I.SEASON_ENDING_WEEKS and not inj.get("carryover"):
@@ -565,7 +575,7 @@ def camp_week(league, injuries, recovering, tid, cal, label, rng, pool, fill=Tru
     if fill and len([1 for x in league.rosters.values() if x == tid]) < roster_rules.CAMP_LIMIT:
         changed |= bool(fill_camp(league, injuries, recovering, tid, label, rng, pool))
     if swaps and rng.random() < CAMP_SWAP_CHANCE:
-        roster = _healthy(league, injuries, [p for p in league.players if league.rosters.get(p.id) == tid])
+        roster = _healthy(league, injuries, _on_53(league, tid))
         by_pos = defaultdict(list)
         for p in roster:
             by_pos[p.position].append(p)
@@ -597,7 +607,7 @@ def staff_cut_list(league, injuries, tid):
     bold cuts). Players out 4+ weeks go on injured reserve instead (back
     after 4 games) and don't need a spot. Returns players, first to go first."""
     from . import offseason as OS
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = _on_53(league, tid)
     pool = [p for p in roster if injured_weeks(league, injuries, p.id) < IR_AT_WEEKS]
     n_cut = len(pool) - ROSTER_SIZE
     if n_cut <= 0:
@@ -653,7 +663,7 @@ def final_cuts(league, injuries, recovering, cal, rng, label="Final cuts"):
     for t in league.teams:
         tid = t.id
         mark = len(league.transactions)
-        roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+        roster = _on_53(league, tid)
         if len(roster) > ROSTER_SIZE:
             for p in roster:
                 if injured_weeks(league, injuries, p.id) >= IR_AT_WEEKS:
@@ -816,7 +826,7 @@ GAME_DAY_MIN = {"QB": 2, "RB": 2, "TE": 2, "WR": 4, "C": 1, "G": 2, "T": 2, "DE"
 def _thin_position(league, injuries, tid):
     """The position most short of healthy players (game-day minimum plus
     COVER_EXTRA) because of injuries, or None."""
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = _on_53(league, tid)
     healthy = _counts(_healthy(league, injuries, roster))
     hurt = _counts(p for p in roster if injured_weeks(league, injuries, p.id) > 0)
     worst, gap = None, 0
@@ -941,7 +951,7 @@ def injured_reserve_week(league, injuries, tid, cal, label, preseason=False):
     the 53 changed."""
     changed = False
     if not preseason:
-        for p in [p for p in league.players if league.rosters.get(p.id) == tid]:
+        for p in _on_53(league, tid):
             if injured_weeks(league, injuries, p.id) >= IR_AT_WEEKS:
                 lst = "PUP" if injuries[p.id].get("carryover") and cal <= _first_regular_cal() else "IR"
                 place_on_reserve(league, injuries, p.id, cal, label, lst, tid)
@@ -1150,7 +1160,7 @@ def elevations_for_game(league, injuries, tid, unavailable, routine=True):
     53 can't meet the game-day position minimums, up to 2 at the short
     positions (each player at most 3 times a season); with routine, now and
     then one more for depth."""
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid and p.id not in unavailable]
+    roster = [p for p in _on_53(league, tid) if p.id not in unavailable]
     squad = [p for p in practice_players(league, tid) if injured_weeks(league, injuries, p.id) == 0
              and league.elevations.get(p.id, 0) < ELEVATIONS_PER_PLAYER]
     picked = []
@@ -1214,7 +1224,7 @@ def record_elevations(league, tid, players, label):
 def roster_warnings(league, injuries, tid):
     """Plain-language notes for your team's roster (the Roster screen)."""
     ensure(league)
-    roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+    roster = _on_53(league, tid)
     notes = []
     n = len(roster)
     if in_camp(league):
@@ -1254,7 +1264,7 @@ def staff_minimum(league, injuries, recovering, tid, cal, label, rng):
     practice squad or free agency). Returns the moves' descriptions."""
     before = len(league.transactions)
     for _ in range(8):
-        roster = [p for p in league.players if league.rosters.get(p.id) == tid]
+        roster = _on_53(league, tid)
         short = _short_positions(_healthy(league, injuries, roster))
         if not short:
             break

@@ -82,6 +82,9 @@ GROWTH_OWN = 0.7
 # ------------------------------------------------------------------------------
 
 
+_PHASE_CLOCK = {"coaching": 0, "resign": 2, "draft": 7, "drafting": 8, "camp": 12, "done": 13}
+
+
 def _clock(league):
     """A step counter through the year (offseason phases, preseason and
     regular-season weeks, playoff rounds), for how long a player has been with
@@ -98,7 +101,7 @@ def _clock(league):
         wave = st.get("wave") or 0
         if phase == "fa":
             return base + (2 + wave if wave <= 4 else 4 + wave)
-        return base + {"coaching": 0, "resign": 2, "draft": 7, "drafting": 8, "camp": 12, "done": 13}.get(phase, 0)
+        return base + _PHASE_CLOCK.get(phase, 0)
     if stage == "preseason":
         return base + 20 + league.pre_week
     if stage == "regular_season":
@@ -443,13 +446,24 @@ def seen_skills(league, tid, p):
 
 def _seen(league, tid, p):
     """seen_skills() and its cache key (misjudgment() needs both)."""
-    cache = league.__dict__.setdefault("_eval_cache", {})
+    # (Oct 25, for speed: team_of written out, and the cache fetched without making a spare
+    # empty dict on every call; the same steps in the same order.)
+    cache = league.__dict__.get("_eval_cache")
+    if cache is None:
+        cache = league.__dict__["_eval_cache"] = {}
     now = _clock(league)
-    pool = p.id in _pool(league)
-    rel = "own" if team_of(league, p.id) == tid else "other"
-    since = _known_since(league, tid, p.id) if rel == "own" else None
+    pid = p.id
+    pool = pid in _pool(league)
+    t = league.rosters.get(pid)
+    if t is None:
+        t = league.practice.get(pid)
+        if t is None:
+            r = league.reserve.get(pid)
+            t = r.get("team") if r else None
+    rel = "own" if t == tid else "other"
+    since = _known_since(league, tid, pid) if rel == "own" else None
     ev = _evaluators(league, tid, p, rel)
-    key = (tid, p.id, now, ev, since, id(p.skills), p.position)
+    key = (tid, pid, now, ev, since, id(p.skills), p.position)
     hit = cache.get(key)
     if hit is not None:
         return hit, key
