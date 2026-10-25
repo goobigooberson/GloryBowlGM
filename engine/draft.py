@@ -93,6 +93,19 @@ READY_PER_YEAR = 0.01        # per year of age above/below the average
 READY_SD = 0.05
 READY_SKILL_SD = 0.03
 READY_RANGE = (0.62, 0.98)
+# Draft prospects' own readiness (street free agents keep the three above). Oct 25 (Blake: "i dont
+# think most players in the draft should be like 70-80% plus developed"): tuned to real rookies'
+# playing time, nflverse snap counts, 2013-2021 draft classes' first 5 seasons. With 0.88 / 0.05
+# the game's rookies started too soon: 73% of 1st-rounders were regulars (half their side's snaps)
+# as rookies (real 61%), 31% of 3rd-rounders (real 21%), and of the 4th-5th-rounders who became
+# regulars, 38% already were as rookies (real 24%: most real ones bloom in year 2-4). A wider
+# spread alone changed little (teams draft partly on what a player is now); a lower average fixed
+# it: rookies regular by round 61/38/24/8/4% (real 61/42/21/10/4), eventual regulars who started
+# as rookies 66/52/44/24/19% (real 66/57/37/24/21), and as many become regulars as before
+# (92/74/55/35/24%, real 92/75/58/39/17). 4 lab leagues x 9 seasons (tools/lab.py, fast games).
+PROSPECT_READY_MEAN = 0.82
+PROSPECT_READY_SD = 0.08
+PROSPECT_READY_RANGE = (0.50, 0.99)
 # Age at the draft (real 2000-2018: round 1 averages 21.8, round 7 22.8;
 # 11% are 21 or younger, 37% 22, 41% 23, 11% 24+ by PFR's count).
 AGE_MEAN = 22.35
@@ -436,14 +449,14 @@ def _shape_prospect(p, position, pct, season, rng):
     age = max(AGE_RANGE[0], min(AGE_RANGE[1], age))
     p.birth_date = date(season, *DRAFT_DAY) - timedelta(days=round(age * 365.25))
     # Readiness: how much of his ceiling he already has.
-    ready = READY_MEAN + READY_PER_YEAR * (age - AGE_MEAN) + rng.gauss(0, READY_SD)
+    ready = PROSPECT_READY_MEAN + READY_PER_YEAR * (age - AGE_MEAN) + rng.gauss(0, PROSPECT_READY_SD)
     skills = {}
     for skill, (cur, pot) in p.skills.items():
         if position == "RB" and skill == "endurance":
             skills[skill] = (cur, pot)
             continue
         pot2 = max(1, min(99, pot + shift))
-        r = max(READY_RANGE[0], min(READY_RANGE[1], ready + rng.gauss(0, READY_SKILL_SD)))
+        r = max(PROSPECT_READY_RANGE[0], min(PROSPECT_READY_RANGE[1], ready + rng.gauss(0, READY_SKILL_SD)))
         skills[skill] = (max(1, min(pot2, round(pot2 * r))), pot2)
     p.skills = skills
     p.position_drill = max(1, min(99, round(p.overall() + rng.gauss(0, 7))))

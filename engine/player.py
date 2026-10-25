@@ -211,7 +211,10 @@ EXPERIENCE_WEIGHTS = {
 # the higher ceilings, so the league's starters climbed ~5 points over its first 5
 # seasons as they grew up (65 -> 70 internal; startup-draft leagues 62.5 -> 69),
 # then held. Now a new league's young players match a running league's:
-NEW_LEAGUE_READY = {0: 0.89, 1: 0.935, 2: 0.965, 3: 0.985}   # base share of the ceiling (then the usual noise)
+# (Oct 25, later: draft prospects were made rawer, draft.PROSPECT_READY_MEAN 0.88 -> 0.82, to match real
+# rookies' playing time; running leagues' young players then sat at 83.8% / 90.1% / 93.7% / 95.6% (3 leagues
+# x 10 real seasons, seasons 7+), so these moved down by the same amounts, from 0.89 / 0.935 / 0.965 / 0.985.)
+NEW_LEAGUE_READY = {0: 0.84, 1: 0.905, 2: 0.95, 3: 0.975}    # base share of the ceiling (then the usual noise)
 NEW_LEAGUE_POT_SHIFT = {0: -5.0, 1: -2.5}                     # ceiling, rating points (not Generational players)
 
 _next_id = 1
