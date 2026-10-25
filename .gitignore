@@ -13,3 +13,5 @@ build/
 tools/data/nflverse/
 # Per-machine Claude settings
 .claude/settings.local.json
+# Separate working copies Claude sessions make (git worktrees; each has its own branch)
+.claude/worktrees/

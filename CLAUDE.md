@@ -46,6 +46,29 @@ priorities" section overrides everything else in that document.
   record between sessions.
 - Ask Blake before design decisions that are his to make (how something should
   feel or play). Make technical calls yourself and mention them.
+- Measure every engine change: `python tools/scoreboard.py` before and after
+  (~9 min; flags only changes bigger than normal run-to-run luck); save a new
+  baseline (`--save-baseline`) when a change is kept. New check tools build on
+  `tools/lab.py` (the game's own season and offseason code). See
+  `tools/README.md`.
+
+## Several sessions at once (Oct 25)
+
+- A session that changes `engine/` or measures with the check tools works in
+  its own git worktree (a separate folder on its own branch; start it with
+  `use_worktree: true`), so other sessions' unfinished edits can't leak into its
+  measurements or be overwritten. In a new worktree run
+  `python tools/link_data.py` once (links the 643 MB real-data folder instead
+  of copying it). The main session merges finished branches.
+- Sessions sharing the main folder (reading, or screens nobody else touches):
+  say which files you're editing in the shared notes or to the session that
+  owns them, and leave other sessions' files alone.
+- Line endings are handled by `.gitattributes` (git compares text as LF); don't
+  convert files between line endings.
+- OneDrive: if removing a worktree leaves `.git/worktrees/<name>` that can't be
+  deleted ("Permission denied"), OneDrive marked it read-only; in PowerShell:
+  `Get-ChildItem -Recurse -Force .git\worktrees\<name> | % { $_.Attributes = 'Normal' }`
+  then `Remove-Item -Recurse -Force .git\worktrees\<name>`.
 
 ## Design rules
 

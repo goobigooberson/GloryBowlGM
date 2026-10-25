@@ -1,0 +1,22 @@
+# How git treats line endings (Oct 25). Windows programs save text with CRLF line endings,
+# most tools here with LF; before this file a session that re-saved a file with the other kind
+# made the whole file look changed. Now git stores every text file with LF and compares it that
+# way, so line endings no longer show up as changes. New checkouts and worktrees get LF.
+* text=auto eol=lf
+
+# Windows scripts keep Windows line endings.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files are never touched.
+*.db binary
+*.gz binary
+*.zip binary
+*.pkl binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
