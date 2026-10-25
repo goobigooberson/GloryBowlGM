@@ -94,7 +94,7 @@ HEAD_HTML = f"""
   :root {{
     --turf: {TURF}; --turf-dark: {TURF_DARK}; --chalk: {CHALK}; --paper: {PAPER};
     --ink: {INK}; --ink-soft: {INK_SOFT}; --line: {LINE}; --flag: {FLAG};
-    --team-accent: {FLAG}; --team-accent-ink: {INK};
+    --team-accent: {FLAG}; --team-accent-ink: {INK}; --team-link: {FLAG};
   }}
   body {{
     background: var(--chalk); color: var(--ink);
@@ -598,8 +598,11 @@ def team_css_vars(team_abbrev, is_user_team=True):
     None or "FA" (the free agent pool) gives the classic green. `is_user_team` is
     passed along as --team-is-user (1/0) for styles that want to tell them apart."""
     primary, accent = team_colors(team_abbrev)
+    # --team-link: small link text on the team color (Home's card headers): the accent
+    # where it reads well enough for small text (4.5:1), white where it doesn't (CIN, MIA...).
+    link = accent if _contrast(accent, primary) >= 4.5 else "#FFFFFF"
     return (f"<style>:root {{ --turf: {primary}; --turf-dark: {_darken(primary, 0.18)}; "
-            f"--team-accent: {accent}; --team-accent-ink: {_text_on(accent)}; "
+            f"--team-accent: {accent}; --team-accent-ink: {_text_on(accent)}; --team-link: {link}; "
             f"--team-is-user: {1 if is_user_team else 0}; }}</style>")
 
 
@@ -842,3 +845,301 @@ STEP2_CSS = """
 </style>
 """
 HEAD_HTML += STEP2_CSS
+
+
+# ---- Step 3: the Home dashboard (Gemini, Oct 25) ---------------------------
+# Gemini's STEP_3_HOME_CSS (plain string). Claude's changes and additions are
+# marked "(Claude)": the grid's padding and a narrow-window fallback, link-button
+# resets, the header link color per team (--team-link), a readable win green,
+# score and link styles inside the matchup, the injury row's column order, and
+# .offseason-hero (named in Gemini's plan but missing from its CSS).
+STEP3_HOME_CSS = """
+<style>
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1.1fr 0.95fr;
+    gap: 12px;
+    width: 100%;
+    align-items: start;
+    padding: 12px 16px;                 /* (Claude) */
+  }
+  .home-col { display: flex; flex-direction: column; min-width: 0; }      /* (Claude) */
+  @media (max-width: 1150px) {          /* (Claude) a narrow window: one column under another */
+    .home-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* Dashboard card container and header band */
+  body .hcard {
+    background: #FFFFFF;
+    border: 1px solid #C4CDD8;
+    border-top: none;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(15, 25, 35, 0.06);
+    overflow: hidden;
+    margin-bottom: 12px;
+    padding: 0;                          /* (Claude) the body has the padding */
+  }
+  .hcard-head {
+    background: var(--turf);
+    color: #FFFFFF;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--team-accent, var(--flag));
+  }
+  .hcard-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #FFFFFF;
+  }
+  .hcard-title .hcount { color: rgba(255,255,255,.75); }                /* (Claude) */
+  .hcard-link {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--team-link, var(--flag));                              /* (Claude: readable on every team) */
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    background: none; border: 0; padding: 0; cursor: pointer;         /* (Claude: it's a button) */
+  }
+  .hcard-link:hover {
+    text-decoration: underline;
+    filter: brightness(1.1);
+  }
+  .hcard-body {
+    padding: 10px 12px;
+  }
+
+  /* "This week" broadcast matchup hero */
+  .matchup-hero {
+    background: linear-gradient(180deg, var(--turf-dark) 0%, #101A22 100%);
+    color: #FFFFFF;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .matchup-side { display: flex; flex-direction: column; min-width: 0;
+                  align-items: flex-start; }      /* (Claude: the record pill fits its text, not the column) */
+  .matchup-side.home-side { text-align: right; align-items: flex-end; }
+  .matchup-abbrev {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+  }
+  .matchup-side.is-you .matchup-abbrev { color: var(--flag); }          /* (Claude) your team */
+  .matchup-teamname {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .matchup-teamname a { color: inherit; }                               /* (Claude) */
+  .matchup-record {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .matchup-score {                                                      /* (Claude) a played game's score */
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; line-height: 1;
+    margin-top: 4px; opacity: .65; font-variant-numeric: tabular-nums;
+  }
+  .matchup-score.won { opacity: 1; color: var(--flag); }
+  .matchup-vs-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--flag);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .matchup-vs-badge.final { width: auto; padding: 0 9px; border-radius: 17px; font-size: 13px; }   /* (Claude) */
+  .matchup-actions {
+    background: #F8FAFC;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #E2E8F0;
+    gap: 10px;
+  }
+  .last-game-strip {
+    background: #F1F5F9;
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13.5px;
+  }
+  .last-game-strip .lg-mid { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+                             white-space: nowrap; }                     /* (Claude) */
+  .last-game-pill {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    padding: 1px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .last-game-pill.is-win { background: #DEF7EC; color: #03543F; border: 1px solid #84E1BC; }
+  .last-game-pill.is-loss { background: #FDE8E8; color: #9B1C1C; border: 1px solid #F8B4B4; }
+  .last-game-pill.is-tie { background: #EEF1F4; color: #334155; border: 1px solid #CBD5E1; }   /* (Claude) */
+  .home-textlink { background: none; border: 0; padding: 0; cursor: pointer; font: inherit;      /* (Claude) */
+                   color: var(--turf); text-decoration: underline; text-align: left; }
+
+  /* (Claude) The offseason's phase card: same look as the matchup */
+  .offseason-hero {
+    background: linear-gradient(180deg, var(--turf-dark) 0%, #101A22 100%);
+    color: #FFFFFF;
+    padding: 14px 16px;
+  }
+  .offseason-hero .oh-kicker { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12.5px;
+                               text-transform: uppercase; letter-spacing: .06em; color: var(--flag); }
+  .offseason-hero .oh-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px;
+                              line-height: 1.05; margin-top: 2px; }
+  .offseason-hero .oh-text { font-size: 14px; line-height: 1.45; color: rgba(255,255,255,.85); margin-top: 6px; }
+
+  /* "Needs your attention" action rows */
+  .attn-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid var(--turf);
+    border-radius: 3px;
+    margin-bottom: 7px;
+  }
+  .attn-row:last-child { margin-bottom: 0; }
+  .attn-row.attn-urgent { background: #FEF2F2; border-color: #FECACA; border-left-color: #DC2626; }
+  .attn-row.attn-trade { background: #FFFBEB; border-color: #FDE68A; border-left-color: #D97706; }
+  .attn-badge {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: #E2E8F0;
+    color: #334155;
+    margin-bottom: 2px;
+  }
+  .attn-urgent .attn-badge { background: #FEE2E2; color: #991B1B; }
+  .attn-trade .attn-badge { background: #FEF3C7; color: #92400E; }
+  .attn-text { font-size: 13.5px; line-height: 1.3; color: var(--ink); }
+  .attn-main { min-width: 0; }                                          /* (Claude) */
+  .attn-actions { display: flex; gap: 6px; flex: none; }               /* (Claude) */
+
+  /* Division standings: last-5 streak chiclets */
+  .streak-strip { display: inline-flex; gap: 2px; align-items: center; justify-content: flex-end; }
+  .streak-box {
+    width: 17px;
+    height: 17px;
+    border-radius: 2px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    line-height: 17px;
+    text-align: center;
+    color: #FFFFFF;
+  }
+  .streak-box.w { background: #23703A; }    /* (Claude: Gemini's #2E8B47 gave white letters only 4.3:1) */
+  .streak-box.l { background: #C2423C; }
+  .streak-box.t { background: #64748B; }
+
+  /* 2x3 team leaders grid */
+  .leaders-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .leader-tile {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 3px;
+    padding: 6px 9px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .leader-cat {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-bottom: 2px;
+  }
+  .leader-main { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+  .leader-player { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .leader-stat {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--turf);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Right column: injuries and the Bitter news wire */
+  .home-inj-row {
+    display: grid;
+    grid-template-columns: 38px max-content minmax(0, 1fr) auto;   /* (Claude: name, then the description truncates) */
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #F1F5F9;
+    font-size: 13.5px;
+  }
+  .home-inj-row:last-child { border-bottom: none; }
+  .home-inj-desc { color: var(--ink-soft); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .wire-item { padding: 6px 4px; border-bottom: 1px solid #EEF2F6; transition: background 0.1s ease; }
+  .wire-item:last-child { border-bottom: none; }
+  .wire-item:hover { background: #F8FAFC; }
+  .wire-tag {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--turf);
+    background: #E8EEF5;
+    padding: 0 5px;
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+  .wire-tag.is-mine { background: #FEF3C7; color: #92400E; }
+  .wire-headline {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    background: none; border: 0; padding: 0; cursor: pointer; text-align: left;   /* (Claude: it's a button) */
+  }
+  .wire-headline:hover { color: var(--turf); text-decoration: underline; }
+</style>
+"""
+HEAD_HTML += STEP3_HOME_CSS

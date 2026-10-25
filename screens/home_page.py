@@ -2,6 +2,11 @@
 # The Home page: the overview you land on (layout research, Oct 21). This
 # week's game, what needs you, your division, team leaders, injuries and the
 # latest headlines, each linking to the full page. Fits on one screen.
+#
+# Look (Gemini's Step 3, Oct 25; styles in theme.STEP3_HOME_CSS): three columns,
+# every card with a team-colored header band and a quick link, the week's game as
+# a broadcast matchup with the last game as a strip under it, "Needs your
+# attention" as an inbox of action rows, team leaders as a 2x3 grid.
 
 import asyncio
 from html import escape
@@ -34,8 +39,10 @@ def _plink(p):
     return f'<a class="plink" href="/player/{p.id}">{escape(p.name)}</a>'
 
 
-def _wl(results):
-    return "".join(f'<span class="wl-box wl-{r}">{r}</span>' for r in results)
+def _streak(results):
+    """The last results as small colored boxes (W green, L red, T gray)."""
+    boxes = "".join(f'<span class="streak-box {r.lower()}">{r}</span>' for r in results)
+    return f'<span class="streak-strip">{boxes}</span>'
 
 
 def build_home_tab(go, watch, open_summary, on_change):
@@ -50,15 +57,36 @@ def build_home_tab(go, watch, open_summary, on_change):
     def you():
         return league.team(league.user_team_id) if league.user_team_id else None
 
-    def link_button(text, on_click):
-        ui.element("button").classes("home-link").props('type="button"').on("click", lambda _e: on_click()) \
-            ._text = text
+    def card(title_html, link=None, aria=""):
+        """A dashboard card: a team-colored header band (title, quick link) over a body.
+        Returns (card, body); full-width parts (the matchup) go straight in the card."""
+        sec = ui.element("section").classes("hcard").props(f'aria-label="{escape(aria)}"')
+        with sec:
+            with ui.element("div").classes("hcard-head"):
+                ui.html(f'<span class="hcard-title">{title_html}</span>', sanitize=False)
+                if link:
+                    text, fn = link
+                    ui.element("button").classes("hcard-link").props('type="button"') \
+                        .on("click", lambda _e: fn())._text = f"{text} →"
+        return sec
 
-    def card_head(title, link=None):
-        with ui.element("div").classes("hcard-h"):
-            ui.html(title, sanitize=False)
-            if link:
-                link_button(*link)
+    def body(sec):
+        with sec:
+            return ui.element("div").classes("hcard-body")
+
+    def text_button(text, fn, cls="home-textlink"):
+        # (title: the full text on hover, where a strip cuts it short)
+        ui.element("button").classes(cls).props(f'type="button" title="{escape(text)}"') \
+            .on("click", lambda _e: fn())._text = text
+
+    def main_button(text, fn):
+        """The card's main action, in the team's color."""
+        return ui.button(text, on_click=fn, color=None).props("no-caps unelevated dense") \
+            .style("background:var(--turf); color:#fff; padding:2px 14px")
+
+    def side_button(text, fn):
+        return ui.button(text, on_click=fn, color=None).props("no-caps outline dense") \
+            .style("color:var(--turf); padding:2px 12px")
 
     # ---- This week -------------------------------------------------------
     @ui.refreshable
@@ -67,82 +95,87 @@ def build_home_tab(go, watch, open_summary, on_change):
         if team is None:
             return
         rec = season.records(league)
-        with ui.element("section").classes("hcard").props('aria-label="This week"'):
-            if season.in_offseason(league):
-                key, title, text = season.offseason_phase(league)
-                ui.label(f"{league.season} offseason").classes("hkind hkind-turf")
-                ui.label(title).classes("home-big")
-                ui.label(text).classes("legend").style("margin-top:2px")
-                with ui.row().classes("gap-2 mt-3"):
-                    if league.offseason_report and league.offseason_report.get("season") == league.season:
-                        ui.button("Offseason report", on_click=popups.open_offseason) \
-                            .props("no-caps outline color=green-10")
+        if season.in_offseason(league):
+            key, title, text = season.offseason_phase(league)
+            sec = card(f"{league.season} offseason", ("Contracts", lambda: go("Contracts")), "This week")
+            with sec:
+                ui.html(f'<div class="offseason-hero"><div class="oh-kicker">Now</div>'
+                        f'<div class="oh-title">{escape(title)}</div><div class="oh-text">{escape(text)}</div></div>',
+                        sanitize=False)
+                with ui.element("div").classes("matchup-actions"):
                     if key in ("draft", "drafting"):
-                        ui.button("Go to the draft room" if key == "drafting" else "Scout the draft class",
-                                  on_click=lambda: go("Draft")).props("no-caps unelevated color=green-10")
+                        main_button("Go to the draft room" if key == "drafting" else "Scout the draft class",
+                                    lambda: go("Draft"))
                     elif key == "coaching":
-                        ui.button("Go to Staff", on_click=lambda: go("Staff")) \
-                            .props("no-caps unelevated color=green-10")
+                        main_button("Go to Staff", lambda: go("Staff"))
                     else:
-                        ui.button("Go to Contracts", on_click=lambda: go("Contracts")) \
-                            .props("no-caps unelevated color=green-10")
-                return
-            if season.season_over(league):
-                champ = po.champion(league)
-                ui.label(f"{league.season} season complete").classes("hkind hkind-turf")
-                ui.label(f"{team.name} finished {season.record_text(rec[team.id])}").classes("home-big")
-                if champ:
-                    ui.label(f"{po.championship_name(league)} champion: {league.team(champ).name}") \
-                        .classes("legend")
+                        main_button("Go to Contracts", lambda: go("Contracts"))
+                    if league.offseason_report and league.offseason_report.get("season") == league.season:
+                        side_button("Offseason report", popups.open_offseason)
+            return
+        if season.season_over(league):
+            champ = po.champion(league)
+            sec = card(f"{league.season} season complete", ("Standings", lambda: go("Standings")), "This week")
+            with sec:
+                champ_line = (f'{escape(po.championship_name(league))} champion: '
+                              f'{escape(league.team(champ).name)}') if champ else ""
+                ui.html(f'<div class="offseason-hero"><div class="oh-kicker">Final record</div>'
+                        f'<div class="oh-title">{escape(team.name)} finished '
+                        f'{season.record_text(rec[team.id])}</div><div class="oh-text">{champ_line}</div></div>',
+                        sanitize=False)
                 last_game(team)
-                return
-            pre, post = season.in_preseason(league), season.in_playoffs(league)
-            if pre:
-                when = f"{season.week_label(league)} · {pre_date_text(league.season, league.pre_week)}"
-            elif post:
-                d = po.round_date(league, league.playoff_round)
-                when = f"{season.week_label(league)} · {d:%A}, {d:%b} {d.day}"
+            return
+        pre, post = season.in_preseason(league), season.in_playoffs(league)
+        if pre:
+            when = f"{season.week_label(league)} · {pre_date_text(league.season, league.pre_week)}"
+        elif post:
+            d = po.round_date(league, league.playoff_round)
+            when = f"{season.week_label(league)} · {d:%a}, {d:%b} {d.day}"
+        else:
+            when = f"Week {league.week} · {date_text(league.season, league.week)}"
+        sec = card(f"This week · {escape(when)}", ("Schedule", lambda: go("Schedule")), "This week")
+        g = season.team_current_game(league, team.id)
+        with sec:
+            if g is None:
+                ui.html(f'<div class="offseason-hero"><div class="oh-kicker">No game</div>'
+                        f'<div class="oh-title">{escape(_no_game_text(team, pre, post))}</div></div>',
+                        sanitize=False)
             else:
-                when = f"Week {league.week} · {date_text(league.season, league.week)}"
-            ui.label(f"This week · {when}").classes("hkind hkind-turf")
-            g = season.team_current_game(league, team.id)
-            with ui.row().classes("w-full items-center gap-4 mt-1").style("flex-wrap:wrap"):
-                with ui.column().classes("gap-0").style("flex:1 1 260px"):
-                    if g is None:
-                        ui.label(_no_game_text(team, pre, post)).classes("home-big")
-                    else:
-                        home = g["home"] == team.id
-                        # A scoreboard: away team left, home team right (Oct 22, "spruce up the UI").
-                        def tag(tid):
-                            if pre:
-                                return ""
-                            if post:
-                                seed = po.seed_of(league, tid)
-                                return f"#{seed} seed" if seed else ""
-                            return season.record_text(rec[tid])
+                home = g["home"] == team.id
 
-                        def side(tid, score):
-                            t = league.team(tid)
-                            won = g["played"] and score == max(g["home_score"], g["away_score"]) \
-                                and g["home_score"] != g["away_score"]
-                            return (f'<div class="mt-team{" you" if tid == team.id else ""}">'
-                                    f'<span class="mt-ab">{escape(t.abbrev)}</span>'
-                                    f'<span class="mt-nm">{popups.team_link(t, t.nickname)}</span>'
-                                    f'<span class="mt-rec">{tag(tid)}</span>'
-                                    + (f'<span class="mt-pts{" won" if won else ""}">{score}</span>'
-                                       if g["played"] else "") + '</div>')
-                        mid = ("FINAL" + (" (OT)" if g["overtime"] else "")) if g["played"] else \
-                            ("VS" if g.get("neutral") else "AT")
-                        ui.html(f'<div class="matchup">{side(g["away"], g["away_score"])}'
-                                f'<div class="mt-mid">{mid}</div>{side(g["home"], g["home_score"])}</div>',
-                                sanitize=False).classes("w-full")
-                        kind = ("Hall of Fame Game" if g.get("kind") == "hof" else "Preseason game" if pre
-                                else "Playoff game" if post else "Home game" if home else "Road game")
-                        site = f" · {season.site_text(league, g)}" if g.get("neutral") else ""
-                        ui.label(kind + site).classes("legend").style("margin-top:4px")
-                if g is not None and not g["played"]:
-                    ui.button("Watch my game", on_click=watch).props("no-caps outline color=green-10") \
-                        .tooltip("Play it snap by snap. The other games sim when you press Sim week.")
+                def tag(tid):
+                    if pre:
+                        return ""
+                    if post:
+                        seed = po.seed_of(league, tid)
+                        return f"#{seed} seed" if seed else ""
+                    return season.record_text(rec[tid])
+
+                def side(tid, score, cls):
+                    t = league.team(tid)
+                    won = g["played"] and score == max(g["home_score"], g["away_score"]) \
+                        and g["home_score"] != g["away_score"]
+                    rec_pill = f'<span class="matchup-record">{tag(tid)}</span>' if tag(tid) else ""
+                    pts = (f'<div class="matchup-score{" won" if won else ""}">{score}</div>'
+                           if g["played"] else "")
+                    return (f'<div class="matchup-side {cls}{" is-you" if tid == team.id else ""}">'
+                            f'<div class="matchup-abbrev">{escape(t.abbrev)}</div>'
+                            f'<div class="matchup-teamname">{popups.team_link(t)}</div>{rec_pill}{pts}</div>')
+                # Away team on the left, home team on the right, like a TV scoreboard.
+                if g["played"]:
+                    badge = f'<div class="matchup-vs-badge final">FINAL{" OT" if g["overtime"] else ""}</div>'
+                else:
+                    badge = f'<div class="matchup-vs-badge">{"VS" if g.get("neutral") else "@"}</div>'
+                ui.html(f'<div class="matchup-hero">{side(g["away"], g["away_score"], "")}{badge}'
+                        f'{side(g["home"], g["home_score"], "home-side")}</div>', sanitize=False)
+                kind = ("Hall of Fame Game" if g.get("kind") == "hof" else "Preseason game" if pre
+                        else "Playoff game" if post else "Home game" if home else "Road game")
+                site = f" · {season.site_text(league, g)}" if g.get("neutral") else ""
+                with ui.element("div").classes("matchup-actions"):
+                    ui.label(kind + site).classes("legend")
+                    if not g["played"]:
+                        main_button("Watch my game", watch) \
+                            .tooltip("Play it snap by snap. The other games sim when you press Sim week.")
             last_game(team)
 
     def _no_game_text(team, pre, post):
@@ -162,6 +195,7 @@ def build_home_tab(go, watch, open_summary, on_change):
         return "Preseason bye" if pre else "Bye week"
 
     def last_game(team):
+        """Your last game as a strip at the bottom of the card: result, the story, the box score."""
         last = season.last_team_game(league, team.id)
         if last is None:
             return
@@ -170,12 +204,15 @@ def build_home_tab(go, watch, open_summary, on_change):
         where = "vs" if last["home"] == team.id else "at"
         head = next((s["headline"] for s in news_box["mine"] if s.get("kind") == "game"
                      and set(s.get("teams") or []) == {last["home"], last["away"]}), None)
-        with ui.element("div").classes("home-last"):
-            ui.label("Last game").classes("hkind")
-            ui.html(f'<b>{_wl([k])} {txt.split(" ", 1)[1]} {where} {popups.team_link(opp)}</b>', sanitize=False)
-            if head:
-                ui.label(head).classes("legend").style("font-style:italic")
-            link_button("Game summary", lambda gid=last["id"]: open_summary(gid))
+        with ui.element("div").classes("last-game-strip"):
+            pill = {"W": "is-win", "L": "is-loss"}.get(k, "is-tie")
+            ui.html(f'<span class="last-game-pill {pill}">{escape(txt)}</span>', sanitize=False)
+            with ui.element("div").classes("lg-mid"):
+                ui.html(f'Last game {where} {popups.team_link(opp)}{" · " if head else ""}',
+                        sanitize=False).style("display:inline")
+                if head:
+                    text_button(head, lambda: go("Bitter"))
+            text_button("Game summary", lambda gid=last["id"]: open_summary(gid))
 
     # ---- Needs your attention -------------------------------------------
     @ui.refreshable
@@ -184,31 +221,33 @@ def build_home_tab(go, watch, open_summary, on_change):
         if team is None:
             return
         items = _attention_items(team.id)
-        with ui.element("section").classes("hcard").props('aria-label="Needs your attention"'):
-            card_head(f'Needs your attention <span class="hcount">({len(items)})</span>',
-                      ("Open roster", lambda: go("Roster")))
+        sec = card(f'Needs your attention <span class="hcount">({len(items)})</span>',
+                   ("Open roster", lambda: go("Roster")), "Needs your attention")
+        with body(sec):
             if not items:
-                ui.label("Nothing needs you right now.").classes("legend").style("padding:6px 0")
+                ui.label("Nothing needs you right now.").classes("legend")
             for it in items:
-                with ui.element("div").classes("att-row"):
-                    ui.label(it["tag"]).classes("att-tag " + it["tag_class"])
-                    ui.html(it["html"], sanitize=False).classes("att-text")
-                    with ui.row().classes("gap-2 no-wrap"):
+                with ui.element("div").classes(f"attn-row {it['kind']}"):
+                    ui.html(f'<div class="attn-main"><span class="attn-badge">{escape(it["tag"])}</span>'
+                            f'<div class="attn-text">{it["html"]}</div></div>', sanitize=False) \
+                        .style("min-width:0")
+                    with ui.element("div").classes("attn-actions"):
                         for label, fn, primary in it["buttons"]:
-                            ui.button(label, on_click=fn).props(
-                                "no-caps " + ("unelevated color=green-10" if primary else "outline color=green-10"))
+                            (main_button if primary else side_button)(label, fn)
 
     def _attention_items(tid):
+        # kind: attn-urgent (game-day shortfalls), attn-trade (trade calls, staff requests),
+        # attn-info (injured reserve, activations, roster notes)
         items = []
         for i, r in enumerate(season.staff_requests(league)):
-            items.append({"tag": "Staff asks", "tag_class": "att-ask", "html": escape(r["why"]),
+            items.append({"tag": "Staff asks", "kind": "attn-trade", "html": escape(r["why"]),
                           "buttons": [("Approve", lambda i=i: answer(i, True), True),
                                       ("Decline", lambda i=i: answer(i, False), False)]})
         # AI teams' trade offers (trades.py, Oct 23): each good until the next week or phase.
         from engine import trades
         for o in trades.inbox(league):
             team_name = league.team(o["team"]).name
-            items.append({"tag": "Trade call", "tag_class": "att-ask",
+            items.append({"tag": "Trade call", "kind": "attn-trade",
                           "html": (f'The {escape(team_name)} called: they want '
                                    f'{escape(trades.side_text(league, o["give"]))} for '
                                    f'{escape(trades.side_text(league, o["get"]))}.'
@@ -225,7 +264,7 @@ def build_home_tab(go, watch, open_summary, on_change):
                     continue
                 handled.add(f"{p.position} {p.first_name} {p.last_name} ")
                 part = league.injuries[p.id].get("part", "injury")
-                items.append({"tag": "Suggestion", "tag_class": "att-sg",
+                items.append({"tag": "Suggestion", "kind": "attn-info",
                               "html": (f'{_pos(p)} {_plink(p)}: {escape(part)}, out about {weeks} more weeks.'
                                        f'<div class="legend">Injured reserve would free his roster spot (he\'d '
                                        f'miss at least {transactions.IR_MIN_GAMES} games).</div>'),
@@ -233,7 +272,7 @@ def build_home_tab(go, watch, open_summary, on_change):
             for p in transactions.reserve_players(league, tid):
                 if league.reserve[p.id]["list"] != "PSIR" and transactions.can_return(league, league.injuries, p.id):
                     handled.add(f"{p.position} {p.first_name} {p.last_name} ")
-                    items.append({"tag": "Ready", "tag_class": "att-sg",
+                    items.append({"tag": "Ready", "kind": "attn-info",
                                   "html": f'{_pos(p)} {_plink(p)} is healthy and can come off the reserve list.',
                                   "buttons": [("Activate", lambda pid=p.id: move("activate", pid), True)]})
         game_day = []
@@ -241,7 +280,7 @@ def build_home_tab(go, watch, open_summary, on_change):
             if any(w.startswith(h) for h in handled):
                 continue
             urgent = "game day needs" in w
-            item = {"tag": "Game day" if urgent else "Roster", "tag_class": "att-gd" if urgent else "att-sg",
+            item = {"tag": "Shortfall" if urgent else "Roster", "kind": "attn-urgent" if urgent else "attn-info",
                     "html": escape(w), "buttons": [("Open roster", lambda: go("Roster"), False)]}
             (game_day if urgent else items).append(item)
         return game_day + items      # game-day shortfalls first
@@ -273,9 +312,9 @@ def build_home_tab(go, watch, open_summary, on_change):
             r = rec[t]
             rows.append(f'<div class="div-row{" mine" if t == team.id else ""}"><span>{popups.team_link(league.team(t))}'
                         f'</span><span class="num">{season.record_text(r)}</span><span class="num">{r["pf"]}</span>'
-                        f'<span class="num">{r["pa"]}</span><span class="num">{_wl(r["results"][-5:])}</span></div>')
-        with ui.element("section").classes("hcard").props('aria-label="Division"'):
-            card_head(f"{escape(team.division)} Division", ("Full standings", lambda: go("Standings")))
+                        f'<span class="num">{r["pa"]}</span><span class="num">{_streak(r["results"][-5:])}</span></div>')
+        sec = card(f"{escape(team.division)} Division", ("Full standings", lambda: go("Standings")), "Division")
+        with body(sec):
             ui.html("".join(rows), sanitize=False)
 
     # ---- Team leaders --------------------------------------------------------
@@ -291,7 +330,7 @@ def build_home_tab(go, watch, open_summary, on_change):
                 ("Sacks", "sacks", lambda s: f'{s["sacks"]:.1f}'),
                 ("Tackles", "tkl", lambda s: f'{s["tkl"]}'),
                 ("Interceptions", "def_int", lambda s: f'{s["def_int"]}')]
-        rows = []
+        tiles = []
         for label, key, show in cats:
             best = max(totals.items(), key=lambda kv: kv[1].get(key, 0), default=None)
             if not best or not best[1].get(key):
@@ -299,12 +338,13 @@ def build_home_tab(go, watch, open_summary, on_change):
             p = league.player(best[0])
             vals = {k: (int(v) if isinstance(v, float) and k != "sacks" and v == int(v) else v)
                     for k, v in best[1].items()}
-            rows.append(f'<div class="lead-row"><span class="hkind">{label}</span><span>{_pos(p)} {_plink(p)}</span>'
-                        f'<span class="num" style="font-weight:600">{show(vals)}</span></div>')
-        with ui.element("section").classes("hcard").props('aria-label="Team leaders"'):
-            card_head(f"Team leaders, {league.season}", ("Team stats", lambda: go("Stats")))
-            if rows:
-                ui.html("".join(rows), sanitize=False)
+            tiles.append(f'<div class="leader-tile"><div class="leader-cat">{label}</div>'
+                         f'<div class="leader-main"><span class="leader-player">{_pos(p)} {_plink(p)}</span>'
+                         f'<span class="leader-stat">{show(vals)}</span></div></div>')
+        sec = card(f"Team leaders, {league.season}", ("Team stats", lambda: go("Stats")), "Team leaders")
+        with body(sec):
+            if tiles:
+                ui.html(f'<div class="leaders-grid">{"".join(tiles)}</div>', sanitize=False)
             else:
                 ui.label("No regular-season games yet this season.").classes("legend")
 
@@ -317,17 +357,19 @@ def build_home_tab(go, watch, open_summary, on_change):
         hurt = [(pid, inj) for pid, inj in league.injuries.items()
                 if inj.get("team") == team.id and injury_code(pid)]
         hurt.sort(key=lambda x: -x[1].get("weeks", 0))
-        with ui.element("section").classes("hcard").props('aria-label="Injuries"'):
-            card_head(f'Injuries <span class="hcount">({len(hurt)})</span>')
+        sec = card(f'Injuries <span class="hcount">({len(hurt)})</span>', ("Roster", lambda: go("Roster")),
+                   "Injuries")
+        with body(sec):
             if not hurt:
                 ui.label("Nobody on your team is hurt.").classes("legend")
             rows = []
             for pid, inj in hurt[:INJURIES_SHOWN]:
                 p = league.player(pid)
                 code = injury_code(pid)
-                rows.append(f'<div class="inj-row"><span>{_pos(p)}</span><span>{_plink(p)} <span class="legend">'
-                            f'{escape(inj.get("part", ""))}</span></span><span class="inj-tag inj-{code.lower()}" '
-                            f'title="{escape(injury_text(pid) or "")}">{code}</span></div>')
+                rows.append(f'<div class="home-inj-row"><span>{_pos(p)}</span><span>{_plink(p)}</span>'
+                            f'<span class="home-inj-desc">{escape(inj.get("part", ""))}</span>'
+                            f'<span class="inj-tag inj-{code.lower()}" title="{escape(injury_text(pid) or "")}">'
+                            f'{code}</span></div>')
             if len(hurt) > INJURIES_SHOWN:
                 rows.append(f'<div class="legend" style="padding-top:6px">and {len(hurt) - INJURIES_SHOWN} more '
                             f'(Roster page)</div>')
@@ -336,19 +378,19 @@ def build_home_tab(go, watch, open_summary, on_change):
     # ---- Around the league (Bitter) ------------------------------------------
     @ui.refreshable
     def headlines():
-        with ui.element("section").classes("hcard").props('aria-label="Around the league"'):
-            card_head("Around the league", ("Open Bitter", lambda: go("Bitter")))
+        sec = card("Around the league", ("Open Bitter", lambda: go("Bitter")), "Around the league")
+        with body(sec):
             if news_box["items"] is None:
                 ui.label("Loading headlines...").classes("legend")
                 return
             if not news_box["items"]:
                 ui.label("No stories yet.").classes("legend")
             for s, mine in news_box["items"]:
-                b = ui.element("button").classes("story-btn").props('type="button"').on("click", lambda _e: go("Bitter"))
-                with b:
-                    ui.label(("Your team · " if mine else "") + KIND_LABELS.get(s.get("kind"), "News")) \
-                        .classes("hkind")
-                    ui.label(s["headline"]).classes("story-head")
+                with ui.element("div").classes("wire-item"):
+                    ui.html(f'<span class="wire-tag{" is-mine" if mine else ""}">'
+                            f'{"Your team" if mine else KIND_LABELS.get(s.get("kind"), "News")}</span>',
+                            sanitize=False).style("display:inline")
+                    text_button(s["headline"], lambda: go("Bitter"), "wire-headline")
 
     def read_news():
         tid = league.user_team_id
@@ -382,15 +424,15 @@ def build_home_tab(go, watch, open_summary, on_change):
         if news_box["task"] is None:
             news_box["task"] = background_tasks.create(load_news())
 
-    # ---- Layout --------------------------------------------------------------
+    # ---- Layout: three columns -----------------------------------------------
     with ui.element("div").classes("home-grid"):
-        with ui.element("div").classes("home-col").style("flex: 1.35 1 440px"):
+        with ui.element("div").classes("home-col"):
             this_week()
             attention()
-        with ui.element("div").classes("home-col").style("flex: 1 1 330px"):
+        with ui.element("div").classes("home-col"):
             division()
             leaders()
-        with ui.element("div").classes("home-col").style("flex: 1 1 330px"):
+        with ui.element("div").classes("home-col"):
             injuries()
             headlines()
 
@@ -407,71 +449,17 @@ def build_home_tab(go, watch, open_summary, on_change):
     return refresh, settle
 
 
+# The cards, matchup, inbox, leaders and wire are theme.STEP3_HOME_CSS (Gemini's
+# Step 3); these are the Home-only pieces it doesn't cover.
 CSS = f"""
 <style>
-  .home-grid {{ display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; width: 100%;
-               max-width: 1560px; margin: 0 auto; padding: 14px 16px; }}
-  .home-col {{ display: flex; flex-direction: column; gap: 14px; min-width: 0; }}
-  .hcard {{ background: {theme.PAPER}; border: 1px solid {theme.LINE}; border-radius: 6px; padding: 14px 16px; }}
-  .hcard-h {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px; color: {theme.TURF};
-             display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; }}
   .hcount {{ color: {theme.INK_SOFT}; font-weight: 600; }}
-  .hkind {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12.5px; text-transform: uppercase;
-           letter-spacing: .05em; color: {theme.INK_SOFT}; }}
-  .hkind-turf {{ color: {theme.TURF}; }}
-  .home-big {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.1; }}
-  .home-big-soft {{ color: {theme.INK_SOFT}; font-weight: 600; font-size: 22px; margin-left: 6px; }}
-  .home-last {{ border-top: 1px solid #EEF1EC; margin-top: 12px; padding-top: 10px; display: flex; flex-wrap: wrap;
-               align-items: baseline; gap: 4px 14px; }}
-  .home-link {{ background: none; border: 0; padding: 0; font: 500 14px 'Barlow', sans-serif; color: {theme.TURF};
-               text-decoration: underline; cursor: pointer; }}
-  .home-link:hover {{ color: {theme.TURF_DARK}; }}
-  .att-row {{ display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center;
-             padding: 8px 0; border-top: 1px solid #EEF1EC; font-size: 14.5px; line-height: 1.35; }}
-  .att-tag {{ font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; text-transform: uppercase;
-             letter-spacing: .04em; padding: 2px 7px; border-radius: 3px; white-space: nowrap; justify-self: start; }}
-  .att-gd {{ background: #FCE3DD; color: #8E2A19; }}
-  .att-sg {{ background: #EEF1EC; color: #46515A; }}
-  .att-ask {{ background: #FFF6CF; color: #6B5300; }}
-  .wl-box {{ display: inline-flex; width: 19px; height: 19px; align-items: center; justify-content: center;
-            border-radius: 3px; font: 700 12px 'Barlow Condensed', sans-serif; color: white; margin-left: 2px;
-            vertical-align: 1px; }}
-  .wl-W {{ background: #23703A; }} .wl-L {{ background: #A3321F; }} .wl-T {{ background: #6B757D; }}
-  .div-row {{ display: grid; grid-template-columns: minmax(0, 1fr) 46px 40px 40px 112px; gap: 8px; align-items: center;
-             padding: 5px 6px; border-top: 1px solid #EEF1EC; font-size: 14.5px; font-variant-numeric: tabular-nums; }}
+  .legend a.tlink, .matchup-actions .legend {{ white-space: nowrap; }}
+  .div-row {{ display: grid; grid-template-columns: minmax(0, 1fr) 46px 40px 40px 104px; gap: 8px; align-items: center;
+             padding: 5px 6px; border-top: 1px solid #EEF1EC; font-size: 14px; font-variant-numeric: tabular-nums; }}
   .div-row .num {{ text-align: right; }}
   .div-row.mine {{ background: #FFF6CF; font-weight: 600; }}
-  .div-head {{ font: 600 14px 'Barlow Condensed', sans-serif; color: {theme.INK_SOFT}; border-top: 0; padding-top: 0; }}
-  .lead-row {{ display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 10px; align-items: center;
-              padding: 6px 0; border-top: 1px solid #EEF1EC; font-size: 14.5px; }}
-  .inj-row {{ display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center;
-             padding: 6px 0; border-top: 1px solid #EEF1EC; font-size: 14.5px; }}
-  .story-btn {{ display: block; width: 100%; text-align: left; background: transparent; border: 0;
-               border-top: 1px solid #EEF1EC; padding: 8px 0; font: inherit; color: inherit; cursor: pointer; }}
-  .story-btn:hover .story-head {{ text-decoration: underline; }}
-  .story-head {{ font-weight: 600; font-size: 15px; line-height: 1.3; }}
-  /* Card titles as a green header band, like the draft board's header row */
-  .hcard-h {{ margin: -14px -16px 8px; padding: 7px 16px 6px; background: {theme.TURF}; color: white;
-             border-radius: 3px 3px 0 0; font-size: 18px; letter-spacing: .02em; }}
-  .hcard-h .hcount {{ color: rgba(255,255,255,.75); }}
-  .hcard-h .home-link {{ color: {theme.FLAG}; font-size: 13.5px; }}
-  .hcard-h .home-link:hover {{ color: white; }}
-  /* This week's game as a scoreboard */
-  .matchup {{ display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; margin-top: 8px;
-             background: #18222B; color: white; border-radius: 4px; overflow: hidden; }}
-  .mt-team {{ display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: 10px;
-             align-items: center; padding: 10px 12px; min-width: 0; }}
-  .mt-team.you {{ box-shadow: inset 0 -3px 0 {theme.FLAG}; }}
-  .mt-ab {{ grid-row: 1 / 3; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 36px;
-           line-height: 1; }}
-  .mt-nm {{ font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-  .mt-nm a {{ color: white; }}
-  .mt-rec {{ grid-column: 2; font-size: 13px; opacity: .7; font-variant-numeric: tabular-nums; }}
-  .mt-pts {{ grid-column: 3; grid-row: 1 / 3; font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-            font-size: 38px; opacity: .6; }}
-  .mt-pts.won {{ opacity: 1; color: {theme.FLAG}; }}
-  .mt-mid {{ display: flex; align-items: center; justify-content: center; padding: 0 14px;
-            font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: .08em;
-            background: rgba(255,255,255,.07); color: {theme.FLAG}; }}
+  .div-head {{ font: 600 13.5px 'Barlow Condensed', sans-serif; color: {theme.INK_SOFT}; border-top: 0; padding-top: 0;
+              text-transform: uppercase; letter-spacing: .03em; }}
 </style>
 """
