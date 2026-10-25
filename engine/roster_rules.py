@@ -32,6 +32,8 @@ CAMP_TEMPLATE = {"QB": 4, "RB": 5, "FB": 2, "TE": 5, "WR": 12, "T": 7, "G": 6, "
                  "DE": 8, "DT": 7, "OLB": 6, "ILB": 5, "CB": 10, "S": 6, "K": 2, "P": 1, "LS": 1}
 ACTIVE_LIMIT = 48              # with 8+ offensive linemen active
 ACTIVE_LIMIT_FEW_OL = 47        # otherwise
+ACTIVE_MINIMUM = 44             # a team may dress fewer than 48, but no fewer than 44 (CBA Article 25
+                                # section 1). There's no minimum for the 53 itself (section 4(a)).
 OL_FOR_FULL_LIMIT = 8
 _OL = ("C", "G", "T")
 

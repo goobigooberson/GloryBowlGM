@@ -46,6 +46,7 @@ from engine import cap_market as M                    # noqa: E402
 from engine import free_agency as FA                  # noqa: E402
 from engine import season as SEASON                   # noqa: E402
 from engine import depth as DEPTH                     # noqa: E402
+from engine import transactions as TX                 # noqa: E402
 
 RESEARCH = ROOT / "docs" / "research"
 REAL_C = json.loads((RESEARCH / "real_contracts.json").read_text())
@@ -177,6 +178,8 @@ class Tracker:
         self.cur = None             # the offseason being measured, until the next week 1
         self.week1_log = None       # contract_log length at the last week 1 (in-season deals come after it)
         self.season_over = 0        # AI team-weeks over the cap this season
+        self.season_short = Counter()   # AI regular-season team-weeks by players on the 53
+        self.season_ps = []         # ...and their practice squad sizes
         self.long_term = []         # tagged players signed long-term, by camp phase (FA.tagged_long_term)
 
     def attach(self, lab):
@@ -193,14 +196,29 @@ class Tracker:
         self.stats["over_in_season"] += len(over)
         self.stats["over_amounts"].extend(over)
         self.season_over += len(over)
+        if label.startswith("Week"):
+            # How many AI teams carry fewer than 53 (Oct 25: a team at the cap with nothing left
+            # to restructure or cut plays short rather than go over; transactions.injury_cover).
+            for t in lg.teams:
+                if t.id != lg.user_team_id:
+                    n = sum(1 for x in lg.rosters.values() if x == t.id)
+                    self.season_short[min(53, n)] += 1
+                    self.season_ps.append(len(TX.practice_players(lg, t.id)))
 
     def season_end(self, lab):
         lg = lab.league
         if self.week1_log is not None:
             new = [d for d in lg.contract_log[self.week1_log:] if d["kind"] not in ("rookie", "udfa")]
             self.stats["in_season"].extend(new)
-            self.stats["season_units"].append({"in_season_deals": len(new), "over_cap_team_weeks": self.season_over})
+            n = sum(self.season_short.values()) or 1
+            self.stats["season_units"].append({
+                "in_season_deals": len(new), "over_cap_team_weeks": self.season_over,
+                "short_53": sum(c for k, c in self.season_short.items() if k < 53) / n,
+                "short_51": sum(c for k, c in self.season_short.items() if k <= 51) / n,
+                "short_50": sum(c for k, c in self.season_short.items() if k <= 50) / n,
+                "ps_size": st.mean(self.season_ps) if self.season_ps else None})
         self.season_over = 0
+        self.season_short, self.season_ps = Counter(), []
         before = {pid: tid for pid, tid in lg.rosters.items()}
         for pid, r in lg.reserve.items():
             before[pid] = r["team"]

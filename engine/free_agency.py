@@ -1607,9 +1607,14 @@ def final_compliance(league, full=None):
     t51 = None if not full else False
     rng = random.Random(f"fa-final-{_salt(league)}-{league.season}")
     moves = {}
+    from . import transactions as T
     for tid in ai_teams(league):
         if C.cap_room(league, tid, top51=t51) < 0:
             moves[tid] = _comply(league, tid, rng, target=0.0, top51=t51)
+            if full and C.cap_room(league, tid, top51=False) < 0:
+                # Nothing left to restructure and no cut that saves money once the spot is
+                # refilled: the team carries fewer players instead (Oct 25, transactions.cap_squeeze).
+                moves[tid] += T.cap_squeeze(league, tid)
     user = league.user_team_id
     if user is not None and C.cap_room(league, user, top51=t51) < 0:
         request_cap_moves(league, user)
@@ -1726,19 +1731,52 @@ def asking_hit(league, tid, pid, week=None):
     return C.cap_hit(league, c)
 
 
-def pending_hits(league, tid):
+def pending_hits(league, tid, full=False):
     """$K of this season's cap for players a team signed this week whose contracts aren't
-    written yet (sync writes them at the end of the week). Oct 23: each in-season signing was
-    checked as if the team's other new signings that week didn't exist, so two signings that
-    each fit could together put a team over the cap. While only the top 51 count (offseason,
-    camp) it's left out: a cheap new signing there usually isn't among the 51 biggest hits."""
-    if C.top51_in_force(league):
+    written yet (sync writes them at the end of the week), and for this week's releases
+    (pending_release_charges). Oct 23: each in-season signing was checked as if the team's
+    other new signings that week didn't exist, so two signings that each fit could together
+    put a team over the cap. While only the top 51 count (offseason, camp) it's left out: a
+    cheap new signing there usually isn't among the 51 biggest hits. full: counted anyway
+    (checks against every contract, e.g. between final cuts and week 1)."""
+    if C.top51_in_force(league) and not full:
         return 0
     total = 0
+    practice = getattr(league, "practice", {})
     for pid in C.players_with_team(league, tid):
         c = league.contracts.get(pid)
         if c is None or c["team"] != tid:
-            total += asking_hit(league, tid, pid)
+            if pid in practice:
+                # (sync writes him a practice squad deal; before Oct 25 he was priced like a
+                # free agent signed to the 53)
+                total += C.ps_weekly(league, league.player(pid).experience) * (C.PAY_WEEKS - C.pay_week(league))
+            else:
+                total += asking_hit(league, tid, pid)
+        elif c["kind"] == "practice" and pid in league.rosters:
+            # Promoted to the 53 this week: sync swaps his squad deal for a minimum one (he
+            # was counted at squad pay until then).
+            S, week = league.season, C.pay_week(league)
+            unpaid = C.cap_hit(league, c) - C.release_charges(league, c).get(S, 0)
+            minimum = C.min_salary(league, league.player(pid).experience) * (C.PAY_WEEKS - week) / C.PAY_WEEKS
+            total += max(0, int(minimum - unpaid))
+    return total + pending_release_charges(league, tid)
+
+
+def pending_release_charges(league, tid):
+    """$K of this season's cap still owed for players this team let go this week: cap_room
+    stops counting a released player's contract at once, but what stays on the cap (a vested
+    veteran's termination pay, bonus money) is charged only when sync runs at the week's end.
+    Oct 25: in between, a team at the cap that cut a vested veteran (it saves nothing in
+    season) looked as if it had his whole cap hit to spend, signed his replacement, and was
+    over once the charge was written."""
+    S = league.season
+    total = 0
+    for pid, c in league.contracts.items():
+        if c["team"] != tid or on_team(league, pid) == tid or C.last_season(c) < S:
+            continue
+        if league.player(pid).retired is not None:
+            continue                     # (retire() charges only the bonus money: left out, it's small)
+        total += C.release_charges(league, c).get(S, 0)
     return total
 
 
@@ -1746,8 +1784,20 @@ def affordable(league, tid, pid, week=None, also=0):
     """Can this team sign this free agent now and stay under the cap (also:
     $K of other signings it's making that aren't on the books yet; this week's
     unwritten signings are counted too: pending_hits)?"""
-    left = C.room_after(league, tid, asking_hit(league, tid, pid, week) + also + pending_hits(league, tid))
+    if _all_count(league):
+        left = (C.cap_room(league, tid, top51=False) - pending_hits(league, tid, full=True)
+                - asking_hit(league, tid, pid, week) - also)
+    else:
+        left = C.room_after(league, tid, asking_hit(league, tid, pid, week) + also + pending_hits(league, tid))
     return left >= (0 if tid == league.user_team_id else 0)
+
+
+def _all_count(league):
+    """Between final cuts and week 1's games: the top-51 rule is still in force, but every
+    contract is about to count (week 1), so checks count them all (Oct 25: a team that fit by
+    the top 51 at final cuts could start the season over the cap)."""
+    from .transactions import _every_contract_counts
+    return C.top51_in_force(league) and _every_contract_counts(league)
 
 
 class AffordCheck:
@@ -1773,7 +1823,10 @@ class AffordCheck:
         L = self.league
         new = self.hit(tid, pid)
         if tid not in self.teams:
-            if C.top51_in_force(L):
+            if _all_count(L):
+                self.teams[tid] = (None, None, C.cap_room(L, tid, L.season, top51=False)
+                                   - pending_hits(L, tid, full=True))
+            elif C.top51_in_force(L):
                 practice = getattr(L, "practice", {})
                 hits = sorted((C.cap_hit(L, L.contracts[x], L.season) for x in C.players_with_team(L, tid)
                                if x in L.contracts and L.contracts[x]["team"] == tid and x not in practice),

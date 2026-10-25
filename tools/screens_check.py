@@ -412,7 +412,7 @@ class Worker:
             if need not in entry["expect"]:
                 continue
             toggle = p.locator(".q-btn-toggle button", has_text=re.compile(rf"^\s*{re.escape(view)}\s*$"))
-            if toggle.count() == 0:
+            if not self._appears(toggle):
                 self.problem("missing", f"no '{view}' view on the Contracts page")
                 continue
             self.step(f"Contracts - {view}", lambda: toggle.first.click(), shot=False)
