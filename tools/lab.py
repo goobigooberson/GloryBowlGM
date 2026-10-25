@@ -317,6 +317,23 @@ def _feed(h, x, path=()):
         h.update(repr(x).encode())
 
 
+def _news_contents(archive):
+    """The news archive with its packed text unpacked (news._unpack): it writes sets down in
+    Python's hash order, which changes from run to run (PYTHONHASHSEED) while the contents
+    stay the same, so it's compared by what it holds."""
+    from engine import news
+    if isinstance(archive, dict):
+        return {k: _news_contents(v) for k, v in archive.items()}
+    if isinstance(archive, list):
+        return [_news_contents(v) for v in archive]
+    if isinstance(archive, str) and len(archive) > 40:
+        try:
+            return news._unpack(archive)
+        except Exception:
+            return archive
+    return archive
+
+
 def fingerprint_parts(league):
     """One short code per part of the league: every field of the League (rosters, depth
     charts, contracts, cap numbers, transactions, draft picks, injuries, awards, history,
@@ -329,6 +346,8 @@ def fingerprint_parts(league):
     for name, value in league.__dict__.items():
         if name.startswith("_"):
             continue
+        if name == "news_archive" and value:
+            value = _news_contents(value)
         h = hashlib.md5()
         _feed(h, value)
         parts[name] = h.hexdigest()[:12]

@@ -1,7 +1,3587 @@
 {
+ "fa.room_w1_most": {
+  "mean": 0.2595460986795533,
+  "se": 0.023213889707540167,
+  "n": 12,
+  "real": 0.26405030714995453,
+  "label": "cap room after FA's first wave: most",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.room_w1_5th": {
+  "mean": 0.14651732891209684,
+  "se": 0.005946642710883357,
+  "n": 12,
+  "real": 0.16307555219785963,
+  "label": "cap room after the first wave: 5th most",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.room_w1_median": {
+  "mean": 0.07525051498633413,
+  "se": 0.0027874208688364443,
+  "n": 12,
+  "real": 0.07968529107726594,
+  "label": "cap room after the first wave: median team",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.room_w1_24th": {
+  "mean": 0.05291550072441421,
+  "se": 0.002924240128248063,
+  "n": 12,
+  "real": 0.036565838140727835,
+  "label": "cap room after the first wave: 24th",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.teams_under_2pct_w1": {
+  "mean": 2.3333333333333335,
+  "se": 0.44946657497549475,
+  "n": 12,
+  "real": 5.75,
+  "label": "teams under 2% of the cap after the first wave",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.room_open_median": {
+  "mean": 0.13924559355630217,
+  "se": 0.010004181846286292,
+  "n": 12,
+  "real": null,
+  "label": "cap room when FA opens: median team",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.same_all": {
+  "mean": 0.4945922921303678,
+  "se": 0.009135631178778207,
+  "n": 12,
+  "real": 0.657,
+  "label": "last season's players on the same team at week 1",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.new_all": {
+  "mean": 0.3241504655788425,
+  "se": 0.00492574431178426,
+  "n": 12,
+  "real": 0.238,
+  "label": "...on a new team",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.gone_all": {
+  "mean": 0.1812572422907897,
+  "se": 0.004993786598434664,
+  "n": 12,
+  "real": 0.105,
+  "label": "...out of the league",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.gone_0_2": {
+  "mean": 0.12230436108503594,
+  "se": 0.004611198845452828,
+  "n": 12,
+  "real": 0.054,
+  "label": "out of the league: 0-2 seasons",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.gone_3_4": {
+  "mean": 0.18925417824785207,
+  "se": 0.008323700800648846,
+  "n": 12,
+  "real": 0.089,
+  "label": "out of the league: 3-4 seasons",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.gone_5_7": {
+  "mean": 0.2193084928712479,
+  "se": 0.007693367364730242,
+  "n": 12,
+  "real": 0.14,
+  "label": "out of the league: 5-7 seasons",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.gone_8p": {
+  "mean": 0.3238823836766452,
+  "se": 0.009787823239126418,
+  "n": 12,
+  "real": 0.283,
+  "label": "out of the league: 8+ seasons",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.illegal": {
+  "mean": 0.3333333333333333,
+  "se": 0.3333333333333333,
+  "n": 12,
+  "real": 0,
+  "label": "cap legality misses at offseason checkpoints + missing contracts (must be 0)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.market_deals": {
+  "mean": 283.1666666666667,
+  "se": 8.906784384995973,
+  "n": 12,
+  "real": 299.90000000000003,
+  "label": "market deals (1%+ of the cap) a league year",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.market_new_team": {
+  "mean": 101.91666666666667,
+  "se": 3.549345508027295,
+  "n": 12,
+  "real": 147.8,
+  "label": "market deals with a new team",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.market_resigned": {
+  "mean": 134.91666666666666,
+  "se": 3.8325921549602207,
+  "n": 12,
+  "real": 101.8,
+  "label": "market re-signings",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.market_extensions": {
+  "mean": 46.333333333333336,
+  "se": 5.0547507406898955,
+  "n": 12,
+  "real": 50.3,
+  "label": "market extensions",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.fair_good_fa_signings": {
+  "mean": 85.25,
+  "se": 3.25,
+  "n": 12,
+  "real": 75.6,
+  "label": "good free agents changing teams (fair-price check)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.fair_under_60pct": {
+  "mean": 0.4724600111110663,
+  "se": 0.014646949630014361,
+  "n": 12,
+  "real": 0.3456,
+  "label": "...signing under 60% of market value",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.fair_under_40pct": {
+  "mean": 0.32002691372465636,
+  "se": 0.016613575657873074,
+  "n": 12,
+  "real": 0.2206,
+  "label": "...under 40%",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.fair_minimum": {
+  "mean": 0.2892440367899192,
+  "se": 0.016780346180935143,
+  "n": 12,
+  "real": 0.225,
+  "label": "...at about the minimum",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.camp_unsigned_good": {
+  "mean": 62,
+  "se": 5.640760748177662,
+  "n": 12,
+  "real": null,
+  "label": "good players 30 or younger unsigned at camp",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.camp_unsigned_stars": {
+  "mean": 10.333333333333334,
+  "se": 1.9436506316151,
+  "n": 12,
+  "real": 0.0,
+  "label": "star-priced players unsigned at camp (your bargain window)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.tags": {
+  "mean": 11.666666666666666,
+  "se": 0.9401267913629437,
+  "n": 12,
+  "real": 10.0,
+  "label": "franchise tags",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.cap_cuts": {
+  "mean": 43.083333333333336,
+  "se": 3.527936845216817,
+  "n": 12,
+  "real": null,
+  "label": "cap cuts",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.extensions": {
+  "mean": 46.333333333333336,
+  "se": 5.0547507406898955,
+  "n": 12,
+  "real": null,
+  "label": "extensions",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.wk1_cap_used": {
+  "mean": 0.9784529136332221,
+  "se": 0.002924598920616481,
+  "n": 12,
+  "real": null,
+  "label": "cap used at week 1 (average team)",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.wk1_dead": {
+  "mean": 0.10706623108874495,
+  "se": 0.007876364007756244,
+  "n": 12,
+  "real": null,
+  "label": "dead money at week 1",
+  "unit": "pct",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.in_season_deals": {
+  "mean": 1064,
+  "se": 81.2484032477133,
+  "n": 12,
+  "real": null,
+  "label": "deals signed during a season",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "fa.over_cap_team_weeks": {
+  "mean": 20.5,
+  "se": 4.639259345275631,
+  "n": 12,
+  "real": 0,
+  "label": "AI team-weeks over the cap during seasons (must be 0)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.points": {
+  "mean": 22.8984375,
+  "se": 0.12100914825200695,
+  "n": 16,
+  "real": 22.6,
+  "label": "league average per team-game: Points",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.total_yds": {
+  "mean": 332.63752297794116,
+  "se": 0.9919168749531971,
+  "n": 16,
+  "real": 333,
+  "label": "league average per team-game: Total yards",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.plays": {
+  "mean": 61.807789522058826,
+  "se": 0.10962084753839134,
+  "n": 16,
+  "real": 62.4,
+  "label": "league average per team-game: Offensive plays",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.pass_att": {
+  "mean": 32.750114889705884,
+  "se": 0.1693972696282383,
+  "n": 16,
+  "real": 33.0,
+  "label": "league average per team-game: Pass attempts",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.cmp_pct": {
+  "mean": 65.50568604834851,
+  "se": 0.1060941358988354,
+  "n": 16,
+  "real": 64.4,
+  "label": "league average per team-game: Completion %",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.pass_yds": {
+  "mean": 232.74839154411765,
+  "se": 1.2974187664872994,
+  "n": 16,
+  "real": 231.6,
+  "label": "league average per team-game: Passing yards (gross)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.ypa": {
+  "mean": 7.138983365589567,
+  "se": 0.017929618934194404,
+  "n": 16,
+  "real": 7.02,
+  "label": "league average per team-game: Yards per attempt",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.pass_td": {
+  "mean": 1.4711626838235294,
+  "se": 0.018854774087506687,
+  "n": 16,
+  "real": 1.45,
+  "label": "league average per team-game: Passing TDs",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.int_thrown": {
+  "mean": 0.7366727941176471,
+  "se": 0.011232429931154904,
+  "n": 16,
+  "real": 0.73,
+  "label": "league average per team-game: Interceptions thrown",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.sacked": {
+  "mean": 2.3832720588235294,
+  "se": 0.037115741406637155,
+  "n": 16,
+  "real": 2.46,
+  "label": "league average per team-game: Sacks allowed",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.rush_att": {
+  "mean": 25.827320772058822,
+  "se": 0.08839399738162008,
+  "n": 16,
+  "real": 26.2,
+  "label": "league average per team-game: Rushes (incl. scrambles)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.rush_yds": {
+  "mean": 115.45932904411765,
+  "se": 0.6491369891189657,
+  "n": 16,
+  "real": 117,
+  "label": "league average per team-game: Rushing yards",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.ypc": {
+  "mean": 4.503200828060418,
+  "se": 0.019236255896308098,
+  "n": 16,
+  "real": 4.48,
+  "label": "league average per team-game: Yards per carry",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.rush_td": {
+  "mean": 0.962890625,
+  "se": 0.008734388669563208,
+  "n": 16,
+  "real": 0.91,
+  "label": "league average per team-game: Rushing TDs",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.fd": {
+  "mean": 19.670955882352942,
+  "se": 0.05093354939888356,
+  "n": 16,
+  "real": 19.2,
+  "label": "league average per team-game: First downs",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.third_pct": {
+  "mean": 40.02618757104186,
+  "se": 0.18128690384425533,
+  "n": 16,
+  "real": 39.3,
+  "label": "league average per team-game: 3rd down conversion %",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.fum_lost": {
+  "mean": 0.5022977941176471,
+  "se": 0.009919801908475922,
+  "n": 16,
+  "real": 0.5,
+  "label": "league average per team-game: Fumbles lost",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.penalties": {
+  "mean": 6.100068933823529,
+  "se": 0.03652802521066136,
+  "n": 16,
+  "real": 6.17,
+  "label": "league average per team-game: Penalties",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.penalty_yds": {
+  "mean": 53.10305606617647,
+  "se": 0.3905529225871557,
+  "n": 16,
+  "real": 50.1,
+  "label": "league average per team-game: Penalty yards",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.punts": {
+  "mean": 3.794921875,
+  "se": 0.02697990949506032,
+  "n": 16,
+  "real": 3.8,
+  "label": "league average per team-game: Punts",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.fga": {
+  "mean": 2.045266544117647,
+  "se": 0.015104391938919859,
+  "n": 16,
+  "real": 2.0,
+  "label": "league average per team-game: Field goal attempts",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.fg_pct": {
+  "mean": 85.49629817441648,
+  "se": 0.23050626464936055,
+  "n": 16,
+  "real": 85.2,
+  "label": "league average per team-game: Field goal %",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.avg.xp_pct": {
+  "mean": 95.50926683338447,
+  "se": 0.13596874212873414,
+  "n": 16,
+  "real": 95.9,
+  "label": "league average per team-game: Extra point %",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
+ "sim.common.pass_yds#1": {
+  "mean": 4738.5625,
+  "se": 64.15436908673225,
+  "n": 16,
+  "real": 4963.0,
+  "label": "pass_yds#1",
+  "unit": "n",
+  "real_lo": 4624.0,
+  "real_hi": 5316.0
+ },
+ "sim.common.pass_yds#3": {
+  "mean": 4400.25,
+  "se": 41.46610061242798,
+  "n": 16,
+  "real": 4629.6,
+  "label": "pass_yds#3",
+  "unit": "n",
+  "real_lo": 4500.0,
+  "real_hi": 4886.0
+ },
+ "sim.common.pass_yds#5": {
+  "mean": 4251.5625,
+  "se": 42.51195603886041,
+  "n": 16,
+  "real": 4385.2,
+  "label": "pass_yds#5",
+  "unit": "n",
+  "real_lo": 4048.0,
+  "real_hi": 4804.0
+ },
+ "sim.common.pass_yds#10": {
+  "mean": 3943.8125,
+  "se": 41.117638018859985,
+  "n": 16,
+  "real": 3877.8,
+  "label": "pass_yds#10",
+  "unit": "n",
+  "real_lo": 3693.0,
+  "real_hi": 4115.0
+ },
+ "sim.common.pass_yds#15": {
+  "mean": 3691.125,
+  "se": 42.65324088897974,
+  "n": 16,
+  "real": 3534.4,
+  "label": "pass_yds#15",
+  "unit": "n",
+  "real_lo": 3205.0,
+  "real_hi": 3740.0
+ },
+ "sim.common.pass_yds#20": {
+  "mean": 3373.5,
+  "se": 44.69824754208305,
+  "n": 16,
+  "real": 2982.0,
+  "label": "pass_yds#20",
+  "unit": "n",
+  "real_lo": 2860.0,
+  "real_hi": 3245.0
+ },
+ "sim.common.pass_yds#25": {
+  "mean": 2925.6875,
+  "se": 49.75629932899619,
+  "n": 16,
+  "real": 2417.6,
+  "label": "pass_yds#25",
+  "unit": "n",
+  "real_lo": 2145.0,
+  "real_hi": 2882.0
+ },
+ "sim.common.pass_yds#32": {
+  "mean": 1951.8125,
+  "se": 49.403375285331805,
+  "n": 16,
+  "real": 1721.6,
+  "label": "pass_yds#32",
+  "unit": "n",
+  "real_lo": 1515.0,
+  "real_hi": 1844.0
+ },
+ "sim.common.pass_yds>=3000": {
+  "mean": 23.875,
+  "se": 0.5072392597844401,
+  "n": 16,
+  "real": 20.0,
+  "label": "pass_yds>=3000",
+  "unit": "n",
+  "real_lo": 17.0,
+  "real_hi": 24.0
+ },
+ "sim.common.pass_yds>=3500": {
+  "mean": 17.6875,
+  "se": 0.7286903205980805,
+  "n": 16,
+  "real": 15.6,
+  "label": "pass_yds>=3500",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 18.0
+ },
+ "sim.common.pass_yds>=4000": {
+  "mean": 8.375,
+  "se": 0.7951676971976833,
+  "n": 16,
+  "real": 8.2,
+  "label": "pass_yds>=4000",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 10.0
+ },
+ "sim.common.pass_yds>=4500": {
+  "mean": 1.875,
+  "se": 0.3520771695712935,
+  "n": 16,
+  "real": 3.8,
+  "label": "pass_yds>=4500",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 6.0
+ },
+ "sim.common.pass_yds>=5000": {
+  "mean": 0.125,
+  "se": 0.08539125638299665,
+  "n": 16,
+  "real": 0.6,
+  "label": "pass_yds>=5000",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.pass_td#1": {
+  "mean": 39.0,
+  "se": 1.052774113156917,
+  "n": 16,
+  "real": 41.8,
+  "label": "pass_td#1",
+  "unit": "n",
+  "real_lo": 36.0,
+  "real_hi": 46.0
+ },
+ "sim.common.pass_td#3": {
+  "mean": 32.6875,
+  "se": 0.5966486263566969,
+  "n": 16,
+  "real": 35.2,
+  "label": "pass_td#3",
+  "unit": "n",
+  "real_lo": 31.0,
+  "real_hi": 41.0
+ },
+ "sim.common.pass_td#5": {
+  "mean": 29.875,
+  "se": 0.5313112709765027,
+  "n": 16,
+  "real": 31.8,
+  "label": "pass_td#5",
+  "unit": "n",
+  "real_lo": 29.0,
+  "real_hi": 37.0
+ },
+ "sim.common.pass_td#10": {
+  "mean": 26.0625,
+  "se": 0.3923088706618804,
+  "n": 16,
+  "real": 25.4,
+  "label": "pass_td#10",
+  "unit": "n",
+  "real_lo": 25.0,
+  "real_hi": 27.0
+ },
+ "sim.common.pass_td#20": {
+  "mean": 20.1875,
+  "se": 0.40019526483955303,
+  "n": 16,
+  "real": 17.8,
+  "label": "pass_td#20",
+  "unit": "n",
+  "real_lo": 16.0,
+  "real_hi": 20.0
+ },
+ "sim.common.pass_td#32": {
+  "mean": 10.375,
+  "se": 0.34003676271838607,
+  "n": 16,
+  "real": 9.2,
+  "label": "pass_td#32",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 10.0
+ },
+ "sim.common.pass_td>=20": {
+  "mean": 20.6875,
+  "se": 0.6239574638279974,
+  "n": 16,
+  "real": 17.8,
+  "label": "pass_td>=20",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 20.0
+ },
+ "sim.common.pass_td>=25": {
+  "mean": 11.5,
+  "se": 0.6582805886043833,
+  "n": 16,
+  "real": 11.0,
+  "label": "pass_td>=25",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 12.0
+ },
+ "sim.common.pass_td>=30": {
+  "mean": 4.9375,
+  "se": 0.4870724620971025,
+  "n": 16,
+  "real": 5.2,
+  "label": "pass_td>=30",
+  "unit": "n",
+  "real_lo": 4.0,
+  "real_hi": 9.0
+ },
+ "sim.common.pass_td>=35": {
+  "mean": 1.75,
+  "se": 0.26614532371118854,
+  "n": 16,
+  "real": 3.4,
+  "label": "pass_td>=35",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 7.0
+ },
+ "sim.common.pass_td>=40": {
+  "mean": 0.375,
+  "se": 0.125,
+  "n": 16,
+  "real": 1.4,
+  "label": "pass_td>=40",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 3.0
+ },
+ "sim.common.pass_int#1": {
+  "mean": 20.3125,
+  "se": 0.5753169416359415,
+  "n": 16,
+  "real": 17.2,
+  "label": "pass_int#1",
+  "unit": "n",
+  "real_lo": 15.0,
+  "real_hi": 21.0
+ },
+ "sim.common.pass_int#5": {
+  "mean": 15.4375,
+  "se": 0.3760402239122831,
+  "n": 16,
+  "real": 13.4,
+  "label": "pass_int#5",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 15.0
+ },
+ "sim.common.pass_int#10": {
+  "mean": 12.9375,
+  "se": 0.26565563548825133,
+  "n": 16,
+  "real": 11.6,
+  "label": "pass_int#10",
+  "unit": "n",
+  "real_lo": 11.0,
+  "real_hi": 13.0
+ },
+ "sim.common.pass_int#20": {
+  "mean": 9.5,
+  "se": 0.27386127875258304,
+  "n": 16,
+  "real": 8.8,
+  "label": "pass_int#20",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 10.0
+ },
+ "sim.common.pass_int>=10": {
+  "mean": 19.0625,
+  "se": 0.7157091471633804,
+  "n": 16,
+  "real": 17.0,
+  "label": "pass_int>=10",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 24.0
+ },
+ "sim.common.pass_int>=15": {
+  "mean": 5.6875,
+  "se": 0.5141234449688777,
+  "n": 16,
+  "real": 3.0,
+  "label": "pass_int>=15",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 5.0
+ },
+ "sim.common.rush_yds#1": {
+  "mean": 1759.875,
+  "se": 46.30927507890113,
+  "n": 16,
+  "real": 1709.8,
+  "label": "rush_yds#1",
+  "unit": "n",
+  "real_lo": 1459.0,
+  "real_hi": 2005.0
+ },
+ "sim.common.rush_yds#3": {
+  "mean": 1451.5,
+  "se": 34.10205272413964,
+  "n": 16,
+  "real": 1383.0,
+  "label": "rush_yds#3",
+  "unit": "n",
+  "real_lo": 1144.0,
+  "real_hi": 1585.0
+ },
+ "sim.common.rush_yds#5": {
+  "mean": 1338.375,
+  "se": 33.14197678171898,
+  "n": 16,
+  "real": 1247.8,
+  "label": "rush_yds#5",
+  "unit": "n",
+  "real_lo": 1049.0,
+  "real_hi": 1412.0
+ },
+ "sim.common.rush_yds#10": {
+  "mean": 1133.0,
+  "se": 25.977875201794316,
+  "n": 16,
+  "real": 1064.8,
+  "label": "rush_yds#10",
+  "unit": "n",
+  "real_lo": 929.0,
+  "real_hi": 1140.0
+ },
+ "sim.common.rush_yds#15": {
+  "mean": 983.8125,
+  "se": 16.817208138788477,
+  "n": 16,
+  "real": 992.6,
+  "label": "rush_yds#15",
+  "unit": "n",
+  "real_lo": 872.0,
+  "real_hi": 1065.0
+ },
+ "sim.common.rush_yds#20": {
+  "mean": 875.1875,
+  "se": 14.08492656175388,
+  "n": 16,
+  "real": 889.2,
+  "label": "rush_yds#20",
+  "unit": "n",
+  "real_lo": 803.0,
+  "real_hi": 929.0
+ },
+ "sim.common.rush_yds#30": {
+  "mean": 716.125,
+  "se": 11.454575141255422,
+  "n": 16,
+  "real": 739.4,
+  "label": "rush_yds#30",
+  "unit": "n",
+  "real_lo": 688.0,
+  "real_hi": 786.0
+ },
+ "sim.common.rush_yds#40": {
+  "mean": 584.875,
+  "se": 6.201394332459972,
+  "n": 16,
+  "real": 590.2,
+  "label": "rush_yds#40",
+  "unit": "n",
+  "real_lo": 538.0,
+  "real_hi": 668.0
+ },
+ "sim.common.rush_yds>=500": {
+  "mean": 47.75,
+  "se": 0.7664854858377946,
+  "n": 16,
+  "real": 45.0,
+  "label": "rush_yds>=500",
+  "unit": "n",
+  "real_lo": 43.0,
+  "real_hi": 48.0
+ },
+ "sim.common.rush_yds>=750": {
+  "mean": 26.5,
+  "se": 0.9128709291752769,
+  "n": 16,
+  "real": 29.6,
+  "label": "rush_yds>=750",
+  "unit": "n",
+  "real_lo": 26.0,
+  "real_hi": 36.0
+ },
+ "sim.common.rush_yds>=1000": {
+  "mean": 13.4375,
+  "se": 0.7690294207636013,
+  "n": 16,
+  "real": 13.6,
+  "label": "rush_yds>=1000",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 17.0
+ },
+ "sim.common.rush_yds>=1250": {
+  "mean": 5.875,
+  "se": 0.7180703308172536,
+  "n": 16,
+  "real": 4.2,
+  "label": "rush_yds>=1250",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 7.0
+ },
+ "sim.common.rush_yds>=1500": {
+  "mean": 2.375,
+  "se": 0.42695628191498325,
+  "n": 16,
+  "real": 1.8,
+  "label": "rush_yds>=1500",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 3.0
+ },
+ "sim.common.rush_att#1": {
+  "mean": 354.5,
+  "se": 6.699502469089278,
+  "n": 16,
+  "real": 325.8,
+  "label": "rush_att#1",
+  "unit": "n",
+  "real_lo": 280.0,
+  "real_hi": 349.0
+ },
+ "sim.common.rush_att#5": {
+  "mean": 290.6875,
+  "se": 5.48613308715711,
+  "n": 16,
+  "real": 273.6,
+  "label": "rush_att#5",
+  "unit": "n",
+  "real_lo": 249.0,
+  "real_hi": 303.0
+ },
+ "sim.common.rush_att#10": {
+  "mean": 247.875,
+  "se": 4.6240990113390374,
+  "n": 16,
+  "real": 238.4,
+  "label": "rush_att#10",
+  "unit": "n",
+  "real_lo": 219.0,
+  "real_hi": 253.0
+ },
+ "sim.common.rush_att#20": {
+  "mean": 192.125,
+  "se": 2.6122707235915144,
+  "n": 16,
+  "real": 205.6,
+  "label": "rush_att#20",
+  "unit": "n",
+  "real_lo": 187.0,
+  "real_hi": 221.0
+ },
+ "sim.common.rush_att#30": {
+  "mean": 157.4375,
+  "se": 2.3839196539872454,
+  "n": 16,
+  "real": 164.0,
+  "label": "rush_att#30",
+  "unit": "n",
+  "real_lo": 151.0,
+  "real_hi": 180.0
+ },
+ "sim.common.rush_att>=150": {
+  "mean": 32.375,
+  "se": 0.8605957239029253,
+  "n": 16,
+  "real": 33.2,
+  "label": "rush_att>=150",
+  "unit": "n",
+  "real_lo": 30.0,
+  "real_hi": 36.0
+ },
+ "sim.common.rush_att>=200": {
+  "mean": 17.4375,
+  "se": 0.8112169356384682,
+  "n": 16,
+  "real": 21.4,
+  "label": "rush_att>=200",
+  "unit": "n",
+  "real_lo": 18.0,
+  "real_hi": 23.0
+ },
+ "sim.common.rush_att>=250": {
+  "mean": 9.25,
+  "se": 0.7216878364870322,
+  "n": 16,
+  "real": 8.2,
+  "label": "rush_att>=250",
+  "unit": "n",
+  "real_lo": 4.0,
+  "real_hi": 12.0
+ },
+ "sim.common.rush_att>=300": {
+  "mean": 3.875,
+  "se": 0.3966001344763598,
+  "n": 16,
+  "real": 3.0,
+  "label": "rush_att>=300",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 6.0
+ },
+ "sim.common.rush_td#1": {
+  "mean": 18.4375,
+  "se": 0.6121597694502092,
+  "n": 16,
+  "real": 17.4,
+  "label": "rush_td#1",
+  "unit": "n",
+  "real_lo": 16.0,
+  "real_hi": 18.0
+ },
+ "sim.common.rush_td#3": {
+  "mean": 14.3125,
+  "se": 0.2695482331605978,
+  "n": 16,
+  "real": 14.6,
+  "label": "rush_td#3",
+  "unit": "n",
+  "real_lo": 13.0,
+  "real_hi": 16.0
+ },
+ "sim.common.rush_td#5": {
+  "mean": 12.4375,
+  "se": 0.34118360159890454,
+  "n": 16,
+  "real": 12.8,
+  "label": "rush_td#5",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 14.0
+ },
+ "sim.common.rush_td#10": {
+  "mean": 10.3125,
+  "se": 0.21830311495716226,
+  "n": 16,
+  "real": 9.8,
+  "label": "rush_td#10",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 12.0
+ },
+ "sim.common.rush_td#20": {
+  "mean": 7.6875,
+  "se": 0.11967838846954226,
+  "n": 16,
+  "real": 7.0,
+  "label": "rush_td#20",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 8.0
+ },
+ "sim.common.rush_td>=5": {
+  "mean": 44.0,
+  "se": 0.8062257748298549,
+  "n": 16,
+  "real": 38.2,
+  "label": "rush_td>=5",
+  "unit": "n",
+  "real_lo": 34.0,
+  "real_hi": 44.0
+ },
+ "sim.common.rush_td>=8": {
+  "mean": 21.0,
+  "se": 0.724568837309472,
+  "n": 16,
+  "real": 16.4,
+  "label": "rush_td>=8",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 20.0
+ },
+ "sim.common.rush_td>=10": {
+  "mean": 12.1875,
+  "se": 0.6965315857877517,
+  "n": 16,
+  "real": 10.0,
+  "label": "rush_td>=10",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 13.0
+ },
+ "sim.common.rush_td>=12": {
+  "mean": 6.4375,
+  "se": 0.5320459723244474,
+  "n": 16,
+  "real": 7.4,
+  "label": "rush_td>=12",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 10.0
+ },
+ "sim.common.rush_td>=15": {
+  "mean": 2.3125,
+  "se": 0.2988693973404883,
+  "n": 16,
+  "real": 2.6,
+  "label": "rush_td>=15",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 4.0
+ },
+ "sim.common.qb_rush_yds#1": {
+  "mean": 927.5,
+  "se": 34.787330069054356,
+  "n": 16,
+  "real": 848.4,
+  "label": "qb_rush_yds#1",
+  "unit": "n",
+  "real_lo": 579.0,
+  "real_hi": 1143.0
+ },
+ "sim.common.qb_rush_yds#3": {
+  "mean": 651.0625,
+  "se": 28.986702231368092,
+  "n": 16,
+  "real": 649.4,
+  "label": "qb_rush_yds#3",
+  "unit": "n",
+  "real_lo": 487.0,
+  "real_hi": 763.0
+ },
+ "sim.common.qb_rush_yds#5": {
+  "mean": 523.8125,
+  "se": 22.03732038119275,
+  "n": 16,
+  "real": 500.4,
+  "label": "qb_rush_yds#5",
+  "unit": "n",
+  "real_lo": 420.0,
+  "real_hi": 708.0
+ },
+ "sim.common.qb_rush_yds#10": {
+  "mean": 334.5625,
+  "se": 16.4344578934019,
+  "n": 16,
+  "real": 315.8,
+  "label": "qb_rush_yds#10",
+  "unit": "n",
+  "real_lo": 253.0,
+  "real_hi": 378.0
+ },
+ "sim.common.qb_rush_yds>=400": {
+  "mean": 7.125,
+  "se": 0.5467708234108083,
+  "n": 16,
+  "real": 6.4,
+  "label": "qb_rush_yds>=400",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 9.0
+ },
+ "sim.common.qb_rush_yds>=600": {
+  "mean": 3.1875,
+  "se": 0.38964460302520126,
+  "n": 16,
+  "real": 2.8,
+  "label": "qb_rush_yds>=600",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 5.0
+ },
+ "sim.common.qb_rush_yds>=800": {
+  "mean": 1.25,
+  "se": 0.25,
+  "n": 16,
+  "real": 0.8,
+  "label": "qb_rush_yds>=800",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.rec_yds#1": {
+  "mean": 1832.1875,
+  "se": 32.02579933298569,
+  "n": 16,
+  "real": 1811.2,
+  "label": "rec_yds#1",
+  "unit": "n",
+  "real_lo": 1708.0,
+  "real_hi": 1947.0
+ },
+ "sim.common.rec_yds#3": {
+  "mean": 1533.9375,
+  "se": 24.329075326653907,
+  "n": 16,
+  "real": 1459.0,
+  "label": "rec_yds#3",
+  "unit": "n",
+  "real_lo": 1282.0,
+  "real_hi": 1553.0
+ },
+ "sim.common.rec_yds#5": {
+  "mean": 1379.125,
+  "se": 23.94696831890556,
+  "n": 16,
+  "real": 1390.8,
+  "label": "rec_yds#5",
+  "unit": "n",
+  "real_lo": 1263.0,
+  "real_hi": 1456.0
+ },
+ "sim.common.rec_yds#10": {
+  "mean": 1230.25,
+  "se": 19.34414209349521,
+  "n": 16,
+  "real": 1173.6,
+  "label": "rec_yds#10",
+  "unit": "n",
+  "real_lo": 1117.0,
+  "real_hi": 1250.0
+ },
+ "sim.common.rec_yds#20": {
+  "mean": 1035.3125,
+  "se": 16.860140062190073,
+  "n": 16,
+  "real": 1035.6,
+  "label": "rec_yds#20",
+  "unit": "n",
+  "real_lo": 1003.0,
+  "real_hi": 1066.0
+ },
+ "sim.common.rec_yds#30": {
+  "mean": 888.5625,
+  "se": 12.933473608560591,
+  "n": 16,
+  "real": 909.2,
+  "label": "rec_yds#30",
+  "unit": "n",
+  "real_lo": 846.0,
+  "real_hi": 963.0
+ },
+ "sim.common.rec_yds#40": {
+  "mean": 772.8125,
+  "se": 8.207323330416562,
+  "n": 16,
+  "real": 795.2,
+  "label": "rec_yds#40",
+  "unit": "n",
+  "real_lo": 735.0,
+  "real_hi": 826.0
+ },
+ "sim.common.rec_yds#50": {
+  "mean": 685.3125,
+  "se": 7.852663428204896,
+  "n": 16,
+  "real": 713.6,
+  "label": "rec_yds#50",
+  "unit": "n",
+  "real_lo": 682.0,
+  "real_hi": 737.0
+ },
+ "sim.common.rec_yds>=800": {
+  "mean": 36.25,
+  "se": 1.1086778913041726,
+  "n": 16,
+  "real": 39.6,
+  "label": "rec_yds>=800",
+  "unit": "n",
+  "real_lo": 33.0,
+  "real_hi": 44.0
+ },
+ "sim.common.rec_yds>=1000": {
+  "mean": 21.8125,
+  "se": 0.8327602195910497,
+  "n": 16,
+  "real": 24.0,
+  "label": "rec_yds>=1000",
+  "unit": "n",
+  "real_lo": 20.0,
+  "real_hi": 28.0
+ },
+ "sim.common.rec_yds>=1200": {
+  "mean": 11.125,
+  "se": 0.7685213074469699,
+  "n": 16,
+  "real": 8.4,
+  "label": "rec_yds>=1200",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 12.0
+ },
+ "sim.common.rec_yds>=1400": {
+  "mean": 4.5,
+  "se": 0.408248290463863,
+  "n": 16,
+  "real": 4.4,
+  "label": "rec_yds>=1400",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 5.0
+ },
+ "sim.common.rec_yds>=1600": {
+  "mean": 2.0,
+  "se": 0.25819888974716115,
+  "n": 16,
+  "real": 1.8,
+  "label": "rec_yds>=1600",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 2.0
+ },
+ "sim.common.rec#1": {
+  "mean": 128.625,
+  "se": 2.2114757516192665,
+  "n": 16,
+  "real": 132.8,
+  "label": "rec#1",
+  "unit": "n",
+  "real_lo": 127.0,
+  "real_hi": 145.0
+ },
+ "sim.common.rec#3": {
+  "mean": 113.8125,
+  "se": 2.1855944080882588,
+  "n": 16,
+  "real": 115.4,
+  "label": "rec#3",
+  "unit": "n",
+  "real_lo": 110.0,
+  "real_hi": 125.0
+ },
+ "sim.common.rec#5": {
+  "mean": 107.4375,
+  "se": 1.8119251962116611,
+  "n": 16,
+  "real": 109.8,
+  "label": "rec#5",
+  "unit": "n",
+  "real_lo": 107.0,
+  "real_hi": 117.0
+ },
+ "sim.common.rec#10": {
+  "mean": 95.875,
+  "se": 1.087332362558324,
+  "n": 16,
+  "real": 98.6,
+  "label": "rec#10",
+  "unit": "n",
+  "real_lo": 88.0,
+  "real_hi": 103.0
+ },
+ "sim.common.rec#20": {
+  "mean": 81.9375,
+  "se": 0.8389912097274917,
+  "n": 16,
+  "real": 81.0,
+  "label": "rec#20",
+  "unit": "n",
+  "real_lo": 78.0,
+  "real_hi": 83.0
+ },
+ "sim.common.rec#30": {
+  "mean": 72.5,
+  "se": 0.6645800679125629,
+  "n": 16,
+  "real": 73.6,
+  "label": "rec#30",
+  "unit": "n",
+  "real_lo": 72.0,
+  "real_hi": 76.0
+ },
+ "sim.common.rec#50": {
+  "mean": 59.9375,
+  "se": 0.5281157543569402,
+  "n": 16,
+  "real": 61.2,
+  "label": "rec#50",
+  "unit": "n",
+  "real_lo": 59.0,
+  "real_hi": 63.0
+ },
+ "sim.common.rec>=70": {
+  "mean": 34.625,
+  "se": 1.1827756902022182,
+  "n": 16,
+  "real": 36.0,
+  "label": "rec>=70",
+  "unit": "n",
+  "real_lo": 32.0,
+  "real_hi": 40.0
+ },
+ "sim.common.rec>=80": {
+  "mean": 21.75,
+  "se": 0.7444237144709098,
+  "n": 16,
+  "real": 20.8,
+  "label": "rec>=80",
+  "unit": "n",
+  "real_lo": 17.0,
+  "real_hi": 23.0
+ },
+ "sim.common.rec>=90": {
+  "mean": 13.3125,
+  "se": 0.7229496870460627,
+  "n": 16,
+  "real": 13.4,
+  "label": "rec>=90",
+  "unit": "n",
+  "real_lo": 9.0,
+  "real_hi": 16.0
+ },
+ "sim.common.rec>=100": {
+  "mean": 7.5625,
+  "se": 0.6053150006401625,
+  "n": 16,
+  "real": 9.6,
+  "label": "rec>=100",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 12.0
+ },
+ "sim.common.rec>=110": {
+  "mean": 3.5625,
+  "se": 0.4827762594273528,
+  "n": 16,
+  "real": 3.8,
+  "label": "rec>=110",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 5.0
+ },
+ "sim.common.rec>=120": {
+  "mean": 1.875,
+  "se": 0.3966001344763598,
+  "n": 16,
+  "real": 1.6,
+  "label": "rec>=120",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 3.0
+ },
+ "sim.common.rec_td#1": {
+  "mean": 15.3125,
+  "se": 0.4445854810944685,
+  "n": 16,
+  "real": 14.8,
+  "label": "rec_td#1",
+  "unit": "n",
+  "real_lo": 13.0,
+  "real_hi": 17.0
+ },
+ "sim.common.rec_td#3": {
+  "mean": 12.125,
+  "se": 0.375,
+  "n": 16,
+  "real": 11.8,
+  "label": "rec_td#3",
+  "unit": "n",
+  "real_lo": 11.0,
+  "real_hi": 13.0
+ },
+ "sim.common.rec_td#5": {
+  "mean": 11.1875,
+  "se": 0.31909703330909656,
+  "n": 16,
+  "real": 10.8,
+  "label": "rec_td#5",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 11.0
+ },
+ "sim.common.rec_td#10": {
+  "mean": 9.4375,
+  "se": 0.24098322901535424,
+  "n": 16,
+  "real": 8.8,
+  "label": "rec_td#10",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 9.0
+ },
+ "sim.common.rec_td#20": {
+  "mean": 7.625,
+  "se": 0.1796988221070652,
+  "n": 16,
+  "real": 7.4,
+  "label": "rec_td#20",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 8.0
+ },
+ "sim.common.rec_td#30": {
+  "mean": 6.1875,
+  "se": 0.13597640726733934,
+  "n": 16,
+  "real": 6.2,
+  "label": "rec_td#30",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 7.0
+ },
+ "sim.common.rec_td>=6": {
+  "mean": 37.625,
+  "se": 1.396050978056795,
+  "n": 16,
+  "real": 40.0,
+  "label": "rec_td>=6",
+  "unit": "n",
+  "real_lo": 33.0,
+  "real_hi": 49.0
+ },
+ "sim.common.rec_td>=8": {
+  "mean": 19.375,
+  "se": 0.9077215064838627,
+  "n": 16,
+  "real": 17.4,
+  "label": "rec_td>=8",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 22.0
+ },
+ "sim.common.rec_td>=10": {
+  "mean": 9.0625,
+  "se": 0.755362771565204,
+  "n": 16,
+  "real": 7.0,
+  "label": "rec_td>=10",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 8.0
+ },
+ "sim.common.rec_td>=12": {
+  "mean": 4.0,
+  "se": 0.48304589153964794,
+  "n": 16,
+  "real": 2.6,
+  "label": "rec_td>=12",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 4.0
+ },
+ "sim.common.rec_td>=14": {
+  "mean": 1.625,
+  "se": 0.3145764348029479,
+  "n": 16,
+  "real": 1.0,
+  "label": "rec_td>=14",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.targets#1": {
+  "mean": 185.625,
+  "se": 3.6774934851517185,
+  "n": 16,
+  "real": 183.2,
+  "label": "targets#1",
+  "unit": "n",
+  "real_lo": 175.0,
+  "real_hi": 191.0
+ },
+ "sim.common.targets#5": {
+  "mean": 157.1875,
+  "se": 2.7021885420278626,
+  "n": 16,
+  "real": 159.8,
+  "label": "targets#5",
+  "unit": "n",
+  "real_lo": 154.0,
+  "real_hi": 164.0
+ },
+ "sim.common.targets#10": {
+  "mean": 140.0625,
+  "se": 1.6619986712790518,
+  "n": 16,
+  "real": 142.2,
+  "label": "targets#10",
+  "unit": "n",
+  "real_lo": 129.0,
+  "real_hi": 150.0
+ },
+ "sim.common.targets#20": {
+  "mean": 120.3125,
+  "se": 1.0790379588627392,
+  "n": 16,
+  "real": 124.6,
+  "label": "targets#20",
+  "unit": "n",
+  "real_lo": 117.0,
+  "real_hi": 130.0
+ },
+ "sim.common.targets#40": {
+  "mean": 94.625,
+  "se": 0.773923984208613,
+  "n": 16,
+  "real": 100.2,
+  "label": "targets#40",
+  "unit": "n",
+  "real_lo": 98.0,
+  "real_hi": 103.0
+ },
+ "sim.common.targets>=100": {
+  "mean": 34.6875,
+  "se": 0.8837361502922314,
+  "n": 16,
+  "real": 39.8,
+  "label": "targets>=100",
+  "unit": "n",
+  "real_lo": 38.0,
+  "real_hi": 42.0
+ },
+ "sim.common.targets>=120": {
+  "mean": 20.375,
+  "se": 0.5390964663211956,
+  "n": 16,
+  "real": 22.2,
+  "label": "targets>=120",
+  "unit": "n",
+  "real_lo": 17.0,
+  "real_hi": 26.0
+ },
+ "sim.common.targets>=140": {
+  "mean": 9.75,
+  "se": 0.6487166818676188,
+  "n": 16,
+  "real": 11.6,
+  "label": "targets>=140",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 13.0
+ },
+ "sim.common.targets>=160": {
+  "mean": 3.75,
+  "se": 0.4699290726623895,
+  "n": 16,
+  "real": 4.6,
+  "label": "targets>=160",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 7.0
+ },
+ "sim.common.wr_rec_yds#1": {
+  "mean": 1832.1875,
+  "se": 32.02579933298569,
+  "n": 16,
+  "real": 1811.2,
+  "label": "wr_rec_yds#1",
+  "unit": "n",
+  "real_lo": 1708.0,
+  "real_hi": 1947.0
+ },
+ "sim.common.wr_rec_yds#5": {
+  "mean": 1379.125,
+  "se": 23.94696831890556,
+  "n": 16,
+  "real": 1390.8,
+  "label": "wr_rec_yds#5",
+  "unit": "n",
+  "real_lo": 1263.0,
+  "real_hi": 1456.0
+ },
+ "sim.common.wr_rec_yds#10": {
+  "mean": 1224.5,
+  "se": 20.01624340379583,
+  "n": 16,
+  "real": 1155.0,
+  "label": "wr_rec_yds#10",
+  "unit": "n",
+  "real_lo": 1077.0,
+  "real_hi": 1250.0
+ },
+ "sim.common.wr_rec_yds#20": {
+  "mean": 1023.9375,
+  "se": 16.296080497571598,
+  "n": 16,
+  "real": 1013.6,
+  "label": "wr_rec_yds#20",
+  "unit": "n",
+  "real_lo": 938.0,
+  "real_hi": 1066.0
+ },
+ "sim.common.wr_rec_yds#30": {
+  "mean": 852.8125,
+  "se": 14.840883495151719,
+  "n": 16,
+  "real": 853.6,
+  "label": "wr_rec_yds#30",
+  "unit": "n",
+  "real_lo": 777.0,
+  "real_hi": 905.0
+ },
+ "sim.common.wr_rec_yds>=1000": {
+  "mean": 21.0625,
+  "se": 0.8634656430146289,
+  "n": 16,
+  "real": 22.2,
+  "label": "wr_rec_yds>=1000",
+  "unit": "n",
+  "real_lo": 19.0,
+  "real_hi": 27.0
+ },
+ "sim.common.wr_rec_yds>=1300": {
+  "mean": 7.125,
+  "se": 0.5691733772176395,
+  "n": 16,
+  "real": 5.2,
+  "label": "wr_rec_yds>=1300",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 7.0
+ },
+ "sim.common.te_rec_yds#1": {
+  "mean": 1086.1875,
+  "se": 43.56357602688283,
+  "n": 16,
+  "real": 1230.4,
+  "label": "te_rec_yds#1",
+  "unit": "n",
+  "real_lo": 1020.0,
+  "real_hi": 1361.0
+ },
+ "sim.common.te_rec_yds#3": {
+  "mean": 823.625,
+  "se": 21.954854246840263,
+  "n": 16,
+  "real": 966.2,
+  "label": "te_rec_yds#3",
+  "unit": "n",
+  "real_lo": 847.0,
+  "real_hi": 1106.0
+ },
+ "sim.common.te_rec_yds#5": {
+  "mean": 731.25,
+  "se": 13.921356495207881,
+  "n": 16,
+  "real": 824.8,
+  "label": "te_rec_yds#5",
+  "unit": "n",
+  "real_lo": 765.0,
+  "real_hi": 889.0
+ },
+ "sim.common.te_rec_yds#10": {
+  "mean": 604.125,
+  "se": 12.477271002373342,
+  "n": 16,
+  "real": 653.0,
+  "label": "te_rec_yds#10",
+  "unit": "n",
+  "real_lo": 577.0,
+  "real_hi": 680.0
+ },
+ "sim.common.te_rec_yds>=700": {
+  "mean": 5.5625,
+  "se": 0.5320459723244474,
+  "n": 16,
+  "real": 8.2,
+  "label": "te_rec_yds>=700",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 9.0
+ },
+ "sim.common.te_rec_yds>=900": {
+  "mean": 1.5625,
+  "se": 0.2576941016011038,
+  "n": 16,
+  "real": 3.0,
+  "label": "te_rec_yds>=900",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 4.0
+ },
+ "sim.common.te_rec_yds>=1000": {
+  "mean": 0.75,
+  "se": 0.14433756729740643,
+  "n": 16,
+  "real": 1.8,
+  "label": "te_rec_yds>=1000",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 3.0
+ },
+ "sim.common.te_rec#1": {
+  "mean": 98.5,
+  "se": 2.148642982597776,
+  "n": 16,
+  "real": 113.8,
+  "label": "te_rec#1",
+  "unit": "n",
+  "real_lo": 107.0,
+  "real_hi": 126.0
+ },
+ "sim.common.te_rec#3": {
+  "mean": 80.6875,
+  "se": 1.4852574131554885,
+  "n": 16,
+  "real": 84.6,
+  "label": "te_rec#3",
+  "unit": "n",
+  "real_lo": 73.0,
+  "real_hi": 97.0
+ },
+ "sim.common.te_rec#5": {
+  "mean": 72.125,
+  "se": 1.186293246489529,
+  "n": 16,
+  "real": 76.2,
+  "label": "te_rec#5",
+  "unit": "n",
+  "real_lo": 72.0,
+  "real_hi": 81.0
+ },
+ "sim.common.te_rec#10": {
+  "mean": 60.4375,
+  "se": 1.3101168840985142,
+  "n": 16,
+  "real": 61.6,
+  "label": "te_rec#10",
+  "unit": "n",
+  "real_lo": 58.0,
+  "real_hi": 65.0
+ },
+ "sim.common.te_rec>=60": {
+  "mean": 9.875,
+  "se": 0.729583214353693,
+  "n": 16,
+  "real": 10.6,
+  "label": "te_rec>=60",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 13.0
+ },
+ "sim.common.te_rec>=80": {
+  "mean": 2.75,
+  "se": 0.2813657169355689,
+  "n": 16,
+  "real": 3.6,
+  "label": "te_rec>=80",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 6.0
+ },
+ "sim.common.te_rec>=100": {
+  "mean": 0.375,
+  "se": 0.125,
+  "n": 16,
+  "real": 1.2,
+  "label": "te_rec>=100",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 2.0
+ },
+ "sim.common.rb_rec#1": {
+  "mean": 88.25,
+  "se": 3.285701345730213,
+  "n": 16,
+  "real": 87.4,
+  "label": "rb_rec#1",
+  "unit": "n",
+  "real_lo": 74.0,
+  "real_hi": 107.0
+ },
+ "sim.common.rb_rec#3": {
+  "mean": 70.125,
+  "se": 1.7341544529443353,
+  "n": 16,
+  "real": 69.4,
+  "label": "rb_rec#3",
+  "unit": "n",
+  "real_lo": 61.0,
+  "real_hi": 77.0
+ },
+ "sim.common.rb_rec#5": {
+  "mean": 61.125,
+  "se": 1.157853617690941,
+  "n": 16,
+  "real": 59.6,
+  "label": "rb_rec#5",
+  "unit": "n",
+  "real_lo": 54.0,
+  "real_hi": 69.0
+ },
+ "sim.common.rb_rec#10": {
+  "mean": 50.25,
+  "se": 0.9287087810503355,
+  "n": 16,
+  "real": 48.8,
+  "label": "rb_rec#10",
+  "unit": "n",
+  "real_lo": 45.0,
+  "real_hi": 53.0
+ },
+ "sim.common.rb_rec#20": {
+  "mean": 36.5,
+  "se": 0.5244044240850758,
+  "n": 16,
+  "real": 38.8,
+  "label": "rb_rec#20",
+  "unit": "n",
+  "real_lo": 35.0,
+  "real_hi": 41.0
+ },
+ "sim.common.rb_rec>=40": {
+  "mean": 16.625,
+  "se": 0.5313112709765027,
+  "n": 16,
+  "real": 18.0,
+  "label": "rb_rec>=40",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 24.0
+ },
+ "sim.common.rb_rec>=50": {
+  "mean": 9.625,
+  "se": 0.5977387946809766,
+  "n": 16,
+  "real": 9.6,
+  "label": "rb_rec>=50",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 14.0
+ },
+ "sim.common.rb_rec>=60": {
+  "mean": 5.0625,
+  "se": 0.42297310789221576,
+  "n": 16,
+  "real": 4.6,
+  "label": "rb_rec>=60",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 6.0
+ },
+ "sim.common.rb_rec>=80": {
+  "mean": 1.0625,
+  "se": 0.21347814095749162,
+  "n": 16,
+  "real": 0.6,
+  "label": "rb_rec>=80",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.rb_rec_yds#1": {
+  "mean": 675.5625,
+  "se": 22.730847020073845,
+  "n": 16,
+  "real": 699.0,
+  "label": "rb_rec_yds#1",
+  "unit": "n",
+  "real_lo": 591.0,
+  "real_hi": 924.0
+ },
+ "sim.common.rb_rec_yds#3": {
+  "mean": 541.9375,
+  "se": 16.222276029686256,
+  "n": 16,
+  "real": 534.4,
+  "label": "rb_rec_yds#3",
+  "unit": "n",
+  "real_lo": 467.0,
+  "real_hi": 616.0
+ },
+ "sim.common.rb_rec_yds#5": {
+  "mean": 473.5,
+  "se": 13.316343341923863,
+  "n": 16,
+  "real": 467.0,
+  "label": "rb_rec_yds#5",
+  "unit": "n",
+  "real_lo": 431.0,
+  "real_hi": 490.0
+ },
+ "sim.common.rb_rec_yds#10": {
+  "mean": 377.8125,
+  "se": 7.800223688031859,
+  "n": 16,
+  "real": 381.4,
+  "label": "rb_rec_yds#10",
+  "unit": "n",
+  "real_lo": 346.0,
+  "real_hi": 395.0
+ },
+ "sim.common.rb_rec_yds>=400": {
+  "mean": 7.875,
+  "se": 0.5543389456520863,
+  "n": 16,
+  "real": 7.6,
+  "label": "rb_rec_yds>=400",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 9.0
+ },
+ "sim.common.rb_rec_yds>=600": {
+  "mean": 1.375,
+  "se": 0.34003676271838607,
+  "n": 16,
+  "real": 1.2,
+  "label": "rb_rec_yds>=600",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 3.0
+ },
+ "sim.common.tackles#1": {
+  "mean": 184.875,
+  "se": 3.2734729264192794,
+  "n": 16,
+  "real": 183.0,
+  "label": "tackles#1",
+  "unit": "n",
+  "real_lo": 173.0,
+  "real_hi": 192.0
+ },
+ "sim.common.tackles#3": {
+  "mean": 169.375,
+  "se": 2.402906226496018,
+  "n": 16,
+  "real": 169.6,
+  "label": "tackles#3",
+  "unit": "n",
+  "real_lo": 158.0,
+  "real_hi": 177.0
+ },
+ "sim.common.tackles#5": {
+  "mean": 156.9375,
+  "se": 1.8740970047821253,
+  "n": 16,
+  "real": 161.0,
+  "label": "tackles#5",
+  "unit": "n",
+  "real_lo": 154.0,
+  "real_hi": 163.0
+ },
+ "sim.common.tackles#10": {
+  "mean": 144.1875,
+  "se": 2.18368715326471,
+  "n": 16,
+  "real": 145.4,
+  "label": "tackles#10",
+  "unit": "n",
+  "real_lo": 142.0,
+  "real_hi": 151.0
+ },
+ "sim.common.tackles#20": {
+  "mean": 122.125,
+  "se": 1.0483121354507603,
+  "n": 16,
+  "real": 126.8,
+  "label": "tackles#20",
+  "unit": "n",
+  "real_lo": 121.0,
+  "real_hi": 131.0
+ },
+ "sim.common.tackles#30": {
+  "mean": 111.9375,
+  "se": 0.9851765916152629,
+  "n": 16,
+  "real": 117.2,
+  "label": "tackles#30",
+  "unit": "n",
+  "real_lo": 110.0,
+  "real_hi": 121.0
+ },
+ "sim.common.tackles#50": {
+  "mean": 98.875,
+  "se": 0.5618051263561058,
+  "n": 16,
+  "real": 102.8,
+  "label": "tackles#50",
+  "unit": "n",
+  "real_lo": 98.0,
+  "real_hi": 106.0
+ },
+ "sim.common.tackles#75": {
+  "mean": 89.125,
+  "se": 0.6316314853879067,
+  "n": 16,
+  "real": 89.6,
+  "label": "tackles#75",
+  "unit": "n",
+  "real_lo": 88.0,
+  "real_hi": 92.0
+ },
+ "sim.common.tackles#100": {
+  "mean": 82.75,
+  "se": 0.47871355387816905,
+  "n": 16,
+  "real": 80.0,
+  "label": "tackles#100",
+  "unit": "n",
+  "real_lo": 77.0,
+  "real_hi": 82.0
+ },
+ "sim.common.tackles>=80": {
+  "mean": 110.5,
+  "se": 1.449137674618944,
+  "n": 16,
+  "real": 102.2,
+  "label": "tackles>=80",
+  "unit": "n",
+  "real_lo": 91.0,
+  "real_hi": 110.0
+ },
+ "sim.common.tackles>=100": {
+  "mean": 48.5625,
+  "se": 1.0761379635839758,
+  "n": 16,
+  "real": 54.4,
+  "label": "tackles>=100",
+  "unit": "n",
+  "real_lo": 45.0,
+  "real_hi": 62.0
+ },
+ "sim.common.tackles>=120": {
+  "mean": 21.9375,
+  "se": 0.9419339591146151,
+  "n": 16,
+  "real": 27.0,
+  "label": "tackles>=120",
+  "unit": "n",
+  "real_lo": 20.0,
+  "real_hi": 30.0
+ },
+ "sim.common.tackles>=140": {
+  "mean": 11.0,
+  "se": 0.816496580927726,
+  "n": 16,
+  "real": 11.8,
+  "label": "tackles>=140",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 13.0
+ },
+ "sim.common.lb_tackles#1": {
+  "mean": 184.875,
+  "se": 3.2734729264192794,
+  "n": 16,
+  "real": 183.0,
+  "label": "lb_tackles#1",
+  "unit": "n",
+  "real_lo": 173.0,
+  "real_hi": 192.0
+ },
+ "sim.common.lb_tackles#5": {
+  "mean": 156.9375,
+  "se": 1.8740970047821253,
+  "n": 16,
+  "real": 160.4,
+  "label": "lb_tackles#5",
+  "unit": "n",
+  "real_lo": 151.0,
+  "real_hi": 163.0
+ },
+ "sim.common.lb_tackles#10": {
+  "mean": 143.875,
+  "se": 2.1715489863228967,
+  "n": 16,
+  "real": 145.2,
+  "label": "lb_tackles#10",
+  "unit": "n",
+  "real_lo": 142.0,
+  "real_hi": 151.0
+ },
+ "sim.common.lb_tackles#20": {
+  "mean": 120.5,
+  "se": 1.1438239957848992,
+  "n": 16,
+  "real": 123.6,
+  "label": "lb_tackles#20",
+  "unit": "n",
+  "real_lo": 113.0,
+  "real_hi": 129.0
+ },
+ "sim.common.lb_tackles#30": {
+  "mean": 107.25,
+  "se": 1.2058883309273154,
+  "n": 16,
+  "real": 110.0,
+  "label": "lb_tackles#30",
+  "unit": "n",
+  "real_lo": 104.0,
+  "real_hi": 114.0
+ },
+ "sim.common.lb_tackles>=100": {
+  "mean": 34.5625,
+  "se": 0.8801929239282337,
+  "n": 16,
+  "real": 38.6,
+  "label": "lb_tackles>=100",
+  "unit": "n",
+  "real_lo": 32.0,
+  "real_hi": 45.0
+ },
+ "sim.common.lb_tackles>=120": {
+  "mean": 20.5625,
+  "se": 0.9485460364860175,
+  "n": 16,
+  "real": 23.0,
+  "label": "lb_tackles>=120",
+  "unit": "n",
+  "real_lo": 18.0,
+  "real_hi": 26.0
+ },
+ "sim.common.db_tackles#1": {
+  "mean": 127.75,
+  "se": 3.2615180514600866,
+  "n": 16,
+  "real": 139.4,
+  "label": "db_tackles#1",
+  "unit": "n",
+  "real_lo": 124.0,
+  "real_hi": 164.0
+ },
+ "sim.common.db_tackles#5": {
+  "mean": 110.6875,
+  "se": 1.1019632102146908,
+  "n": 16,
+  "real": 118.2,
+  "label": "db_tackles#5",
+  "unit": "n",
+  "real_lo": 116.0,
+  "real_hi": 122.0
+ },
+ "sim.common.db_tackles#10": {
+  "mean": 103.0625,
+  "se": 0.6798820363366966,
+  "n": 16,
+  "real": 108.6,
+  "label": "db_tackles#10",
+  "unit": "n",
+  "real_lo": 106.0,
+  "real_hi": 113.0
+ },
+ "sim.common.db_tackles#20": {
+  "mean": 94.9375,
+  "se": 0.622285773044293,
+  "n": 16,
+  "real": 95.6,
+  "label": "db_tackles#20",
+  "unit": "n",
+  "real_lo": 93.0,
+  "real_hi": 98.0
+ },
+ "sim.common.db_tackles#30": {
+  "mean": 89.0,
+  "se": 0.695221787153807,
+  "n": 16,
+  "real": 88.2,
+  "label": "db_tackles#30",
+  "unit": "n",
+  "real_lo": 86.0,
+  "real_hi": 90.0
+ },
+ "sim.common.db_tackles>=80": {
+  "mean": 55.6875,
+  "se": 1.1391471590624278,
+  "n": 16,
+  "real": 46.0,
+  "label": "db_tackles>=80",
+  "unit": "n",
+  "real_lo": 36.0,
+  "real_hi": 52.0
+ },
+ "sim.common.db_tackles>=100": {
+  "mean": 13.875,
+  "se": 0.5543389456520863,
+  "n": 16,
+  "real": 15.6,
+  "label": "db_tackles>=100",
+  "unit": "n",
+  "real_lo": 13.0,
+  "real_hi": 17.0
+ },
+ "sim.common.dl_tackles#1": {
+  "mean": 89.375,
+  "se": 2.045065198634671,
+  "n": 16,
+  "real": 89.6,
+  "label": "dl_tackles#1",
+  "unit": "n",
+  "real_lo": 78.0,
+  "real_hi": 103.0
+ },
+ "sim.common.dl_tackles#5": {
+  "mean": 75.25,
+  "se": 0.6422616289332564,
+  "n": 16,
+  "real": 71.6,
+  "label": "dl_tackles#5",
+  "unit": "n",
+  "real_lo": 67.0,
+  "real_hi": 81.0
+ },
+ "sim.common.dl_tackles#10": {
+  "mean": 68.25,
+  "se": 0.68617296167463,
+  "n": 16,
+  "real": 63.4,
+  "label": "dl_tackles#10",
+  "unit": "n",
+  "real_lo": 62.0,
+  "real_hi": 65.0
+ },
+ "sim.common.dl_tackles#20": {
+  "mean": 60.875,
+  "se": 0.49053542175871456,
+  "n": 16,
+  "real": 56.0,
+  "label": "dl_tackles#20",
+  "unit": "n",
+  "real_lo": 53.0,
+  "real_hi": 59.0
+ },
+ "sim.common.dl_tackles>=50": {
+  "mean": 53.8125,
+  "se": 1.2819865768928056,
+  "n": 16,
+  "real": 33.6,
+  "label": "dl_tackles>=50",
+  "unit": "n",
+  "real_lo": 26.0,
+  "real_hi": 41.0
+ },
+ "sim.common.dl_tackles>=70": {
+  "mean": 8.8125,
+  "se": 0.6272874806126242,
+  "n": 16,
+  "real": 5.4,
+  "label": "dl_tackles>=70",
+  "unit": "n",
+  "real_lo": 4.0,
+  "real_hi": 7.0
+ },
+ "sim.common.solo#1": {
+  "mean": 96.875,
+  "se": 2.2227516730395234,
+  "n": 16,
+  "real": 93.0,
+  "label": "solo#1",
+  "unit": "n",
+  "real_lo": 85.0,
+  "real_hi": 99.0
+ },
+ "sim.common.solo#5": {
+  "mean": 81.0,
+  "se": 1.118033988749895,
+  "n": 16,
+  "real": 79.4,
+  "label": "solo#5",
+  "unit": "n",
+  "real_lo": 75.0,
+  "real_hi": 84.0
+ },
+ "sim.common.solo#10": {
+  "mean": 74.5625,
+  "se": 0.7956587941238799,
+  "n": 16,
+  "real": 74.2,
+  "label": "solo#10",
+  "unit": "n",
+  "real_lo": 73.0,
+  "real_hi": 76.0
+ },
+ "sim.common.solo#20": {
+  "mean": 67.125,
+  "se": 0.5764474535173754,
+  "n": 16,
+  "real": 66.0,
+  "label": "solo#20",
+  "unit": "n",
+  "real_lo": 63.0,
+  "real_hi": 67.0
+ },
+ "sim.common.solo>=60": {
+  "mean": 37.4375,
+  "se": 1.5219744577357401,
+  "n": 16,
+  "real": 38.2,
+  "label": "solo>=60",
+  "unit": "n",
+  "real_lo": 33.0,
+  "real_hi": 47.0
+ },
+ "sim.common.solo>=80": {
+  "mean": 5.5625,
+  "se": 0.6950344715671782,
+  "n": 16,
+  "real": 5.4,
+  "label": "solo>=80",
+  "unit": "n",
+  "real_lo": 4.0,
+  "real_hi": 8.0
+ },
+ "sim.common.solo>=100": {
+  "mean": 0.5,
+  "se": 0.15811388300841897,
+  "n": 16,
+  "real": 0.0,
+  "label": "solo>=100",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 0.0
+ },
+ "sim.common.sacks#1": {
+  "mean": 19.40625,
+  "se": 0.5759389977824619,
+  "n": 16,
+  "real": 20.1,
+  "label": "sacks#1",
+  "unit": "n",
+  "real_lo": 17.5,
+  "real_hi": 23.0
+ },
+ "sim.common.sacks#3": {
+  "mean": 15.84375,
+  "se": 0.30522788617686947,
+  "n": 16,
+  "real": 15.6,
+  "label": "sacks#3",
+  "unit": "n",
+  "real_lo": 13.5,
+  "real_hi": 17.5
+ },
+ "sim.common.sacks#5": {
+  "mean": 14.59375,
+  "se": 0.32021721143623744,
+  "n": 16,
+  "real": 14.4,
+  "label": "sacks#5",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 16.5
+ },
+ "sim.common.sacks#10": {
+  "mean": 12.3125,
+  "se": 0.1983000672381799,
+  "n": 16,
+  "real": 12.0,
+  "label": "sacks#10",
+  "unit": "n",
+  "real_lo": 11.0,
+  "real_hi": 12.5
+ },
+ "sim.common.sacks#15": {
+  "mean": 10.90625,
+  "se": 0.1721115796026907,
+  "n": 16,
+  "real": 10.5,
+  "label": "sacks#15",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 11.0
+ },
+ "sim.common.sacks#20": {
+  "mean": 10.15625,
+  "se": 0.1627802071301463,
+  "n": 16,
+  "real": 9.4,
+  "label": "sacks#20",
+  "unit": "n",
+  "real_lo": 8.5,
+  "real_hi": 10.5
+ },
+ "sim.common.sacks#30": {
+  "mean": 9.0,
+  "se": 0.1707825127659933,
+  "n": 16,
+  "real": 8.2,
+  "label": "sacks#30",
+  "unit": "n",
+  "real_lo": 7.5,
+  "real_hi": 9.0
+ },
+ "sim.common.sacks#50": {
+  "mean": 7.09375,
+  "se": 0.16594897559189692,
+  "n": 16,
+  "real": 6.5,
+  "label": "sacks#50",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 7.5
+ },
+ "sim.common.sacks>=5": {
+  "mean": 97.6875,
+  "se": 2.406101185874498,
+  "n": 16,
+  "real": 87.4,
+  "label": "sacks>=5",
+  "unit": "n",
+  "real_lo": 78.0,
+  "real_hi": 98.0
+ },
+ "sim.common.sacks>=8": {
+  "mean": 43.5,
+  "se": 1.7583135859870578,
+  "n": 16,
+  "real": 36.2,
+  "label": "sacks>=8",
+  "unit": "n",
+  "real_lo": 28.0,
+  "real_hi": 45.0
+ },
+ "sim.common.sacks>=10": {
+  "mean": 24.5,
+  "se": 1.284523257866513,
+  "n": 16,
+  "real": 18.8,
+  "label": "sacks>=10",
+  "unit": "n",
+  "real_lo": 17.0,
+  "real_hi": 24.0
+ },
+ "sim.common.sacks>=12": {
+  "mean": 11.375,
+  "se": 0.763080380213426,
+  "n": 16,
+  "real": 9.8,
+  "label": "sacks>=12",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 11.0
+ },
+ "sim.common.sacks>=15": {
+  "mean": 4.625,
+  "se": 0.5153882032022076,
+  "n": 16,
+  "real": 3.6,
+  "label": "sacks>=15",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 5.0
+ },
+ "sim.common.dt_sacks#1": {
+  "mean": 9.5,
+  "se": 0.39264063297965823,
+  "n": 16,
+  "real": 10.8,
+  "label": "dt_sacks#1",
+  "unit": "n",
+  "real_lo": 9.0,
+  "real_hi": 13.0
+ },
+ "sim.common.dt_sacks#3": {
+  "mean": 7.5625,
+  "se": 0.2617051457907034,
+  "n": 16,
+  "real": 7.7,
+  "label": "dt_sacks#3",
+  "unit": "n",
+  "real_lo": 6.5,
+  "real_hi": 9.5
+ },
+ "sim.common.dt_sacks#5": {
+  "mean": 6.59375,
+  "se": 0.20523741333717235,
+  "n": 16,
+  "real": 7.0,
+  "label": "dt_sacks#5",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 8.5
+ },
+ "sim.common.dt_sacks#10": {
+  "mean": 5.34375,
+  "se": 0.20775962673243326,
+  "n": 16,
+  "real": 5.0,
+  "label": "dt_sacks#10",
+  "unit": "n",
+  "real_lo": 4.5,
+  "real_hi": 5.5
+ },
+ "sim.common.dt_sacks>=6": {
+  "mean": 8.875,
+  "se": 0.7792892060504025,
+  "n": 16,
+  "real": 7.2,
+  "label": "dt_sacks>=6",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 9.0
+ },
+ "sim.common.dt_sacks>=8": {
+  "mean": 2.3125,
+  "se": 0.3255604142602926,
+  "n": 16,
+  "real": 2.8,
+  "label": "dt_sacks>=8",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 6.0
+ },
+ "sim.common.dt_sacks>=10": {
+  "mean": 0.625,
+  "se": 0.1796988221070652,
+  "n": 16,
+  "real": 0.8,
+  "label": "dt_sacks>=10",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.edge_sacks#1": {
+  "mean": 19.40625,
+  "se": 0.5759389977824619,
+  "n": 16,
+  "real": 19.4,
+  "label": "edge_sacks#1",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 23.0
+ },
+ "sim.common.edge_sacks#5": {
+  "mean": 14.59375,
+  "se": 0.32021721143623744,
+  "n": 16,
+  "real": 12.8,
+  "label": "edge_sacks#5",
+  "unit": "n",
+  "real_lo": 10.5,
+  "real_hi": 15.5
+ },
+ "sim.common.edge_sacks#10": {
+  "mean": 12.3125,
+  "se": 0.1983000672381799,
+  "n": 16,
+  "real": 10.0,
+  "label": "edge_sacks#10",
+  "unit": "n",
+  "real_lo": 8.5,
+  "real_hi": 11.0
+ },
+ "sim.common.edge_sacks#20": {
+  "mean": 10.125,
+  "se": 0.17380544678845175,
+  "n": 16,
+  "real": 7.9,
+  "label": "edge_sacks#20",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 9.0
+ },
+ "sim.common.edge_sacks>=10": {
+  "mean": 23.875,
+  "se": 1.2644992421244599,
+  "n": 16,
+  "real": 11.2,
+  "label": "edge_sacks>=10",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 17.0
+ },
+ "sim.common.edge_sacks>=12": {
+  "mean": 11.3125,
+  "se": 0.7456470903405533,
+  "n": 16,
+  "real": 5.0,
+  "label": "edge_sacks>=12",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 7.0
+ },
+ "sim.common.int#1": {
+  "mean": 8.375,
+  "se": 0.4552929459882578,
+  "n": 16,
+  "real": 8.4,
+  "label": "int#1",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 11.0
+ },
+ "sim.common.int#3": {
+  "mean": 6.125,
+  "se": 0.2212653007891959,
+  "n": 16,
+  "real": 5.8,
+  "label": "int#3",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 6.0
+ },
+ "sim.common.int#5": {
+  "mean": 5.625,
+  "se": 0.125,
+  "n": 16,
+  "real": 5.2,
+  "label": "int#5",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 6.0
+ },
+ "sim.common.int#10": {
+  "mean": 4.6875,
+  "se": 0.11967838846954226,
+  "n": 16,
+  "real": 4.4,
+  "label": "int#10",
+  "unit": "n",
+  "real_lo": 4.0,
+  "real_hi": 5.0
+ },
+ "sim.common.int#20": {
+  "mean": 3.875,
+  "se": 0.125,
+  "n": 16,
+  "real": 3.8,
+  "label": "int#20",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 4.0
+ },
+ "sim.common.int#30": {
+  "mean": 3.125,
+  "se": 0.08539125638299665,
+  "n": 16,
+  "real": 3.0,
+  "label": "int#30",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 3.0
+ },
+ "sim.common.int>=3": {
+  "mean": 47.4375,
+  "se": 1.032669477616144,
+  "n": 16,
+  "real": 44.0,
+  "label": "int>=3",
+  "unit": "n",
+  "real_lo": 37.0,
+  "real_hi": 54.0
+ },
+ "sim.common.int>=4": {
+  "mean": 23.625,
+  "se": 1.087332362558324,
+  "n": 16,
+  "real": 22.4,
+  "label": "int>=4",
+  "unit": "n",
+  "real_lo": 18.0,
+  "real_hi": 27.0
+ },
+ "sim.common.int>=5": {
+  "mean": 11.375,
+  "se": 0.773923984208613,
+  "n": 16,
+  "real": 8.6,
+  "label": "int>=5",
+  "unit": "n",
+  "real_lo": 6.0,
+  "real_hi": 11.0
+ },
+ "sim.common.int>=6": {
+  "mean": 5.125,
+  "se": 0.6446898479113813,
+  "n": 16,
+  "real": 3.2,
+  "label": "int>=6",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 5.0
+ },
+ "sim.common.int>=7": {
+  "mean": 2.0,
+  "se": 0.27386127875258304,
+  "n": 16,
+  "real": 1.4,
+  "label": "int>=7",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.pd#1": {
+  "mean": 23.0,
+  "se": 0.6191391873668903,
+  "n": 16,
+  "real": 20.8,
+  "label": "pd#1",
+  "unit": "n",
+  "real_lo": 19.0,
+  "real_hi": 23.0
+ },
+ "sim.common.pd#5": {
+  "mean": 17.375,
+  "se": 0.34003676271838607,
+  "n": 16,
+  "real": 16.6,
+  "label": "pd#5",
+  "unit": "n",
+  "real_lo": 16.0,
+  "real_hi": 18.0
+ },
+ "sim.common.pd#10": {
+  "mean": 15.625,
+  "se": 0.23935677693908453,
+  "n": 16,
+  "real": 15.0,
+  "label": "pd#10",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 16.0
+ },
+ "sim.common.pd#20": {
+  "mean": 13.25,
+  "se": 0.19364916731037085,
+  "n": 16,
+  "real": 12.2,
+  "label": "pd#20",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 13.0
+ },
+ "sim.common.pd#40": {
+  "mean": 10.75,
+  "se": 0.14433756729740643,
+  "n": 16,
+  "real": 10.4,
+  "label": "pd#40",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 11.0
+ },
+ "sim.common.pd>=10": {
+  "mean": 53.75,
+  "se": 1.4244882121894398,
+  "n": 16,
+  "real": 49.6,
+  "label": "pd>=10",
+  "unit": "n",
+  "real_lo": 41.0,
+  "real_hi": 55.0
+ },
+ "sim.common.pd>=15": {
+  "mean": 12.9375,
+  "se": 0.9724057366483739,
+  "n": 16,
+  "real": 9.8,
+  "label": "pd>=15",
+  "unit": "n",
+  "real_lo": 8.0,
+  "real_hi": 11.0
+ },
+ "sim.common.pd>=20": {
+  "mean": 2.0625,
+  "se": 0.3091486966924924,
+  "n": 16,
+  "real": 0.8,
+  "label": "pd>=20",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.ff#1": {
+  "mean": 8.125,
+  "se": 0.5467708234108083,
+  "n": 16,
+  "real": 6.0,
+  "label": "ff#1",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 8.0
+ },
+ "sim.common.ff#5": {
+  "mean": 4.875,
+  "se": 0.15478479684172258,
+  "n": 16,
+  "real": 4.2,
+  "label": "ff#5",
+  "unit": "n",
+  "real_lo": 4.0,
+  "real_hi": 5.0
+ },
+ "sim.common.ff#10": {
+  "mean": 3.6875,
+  "se": 0.11967838846954226,
+  "n": 16,
+  "real": 3.4,
+  "label": "ff#10",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 4.0
+ },
+ "sim.common.ff#20": {
+  "mean": 2.8125,
+  "se": 0.10077822185373186,
+  "n": 16,
+  "real": 3.0,
+  "label": "ff#20",
+  "unit": "n",
+  "real_lo": 3.0,
+  "real_hi": 3.0
+ },
+ "sim.common.ff>=3": {
+  "mean": 23.8125,
+  "se": 1.4119099062381189,
+  "n": 16,
+  "real": 24.6,
+  "label": "ff>=3",
+  "unit": "n",
+  "real_lo": 20.0,
+  "real_hi": 31.0
+ },
+ "sim.common.ff>=4": {
+  "mean": 11.75,
+  "se": 0.7388053419767168,
+  "n": 16,
+  "real": 8.4,
+  "label": "ff>=4",
+  "unit": "n",
+  "real_lo": 5.0,
+  "real_hi": 12.0
+ },
+ "sim.common.ff>=5": {
+  "mean": 5.5625,
+  "se": 0.4827762594273528,
+  "n": 16,
+  "real": 3.2,
+  "label": "ff>=5",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 6.0
+ },
+ "sim.common.tfl#1": {
+  "mean": 22.9375,
+  "se": 0.543666181279162,
+  "n": 16,
+  "real": 27.5,
+  "label": "tfl#1",
+  "unit": "n",
+  "real_lo": 22.0,
+  "real_hi": 33.0
+ },
+ "sim.common.tfl#5": {
+  "mean": 17.4375,
+  "se": 0.3023346655611956,
+  "n": 16,
+  "real": 19.0,
+  "label": "tfl#5",
+  "unit": "n",
+  "real_lo": 18.0,
+  "real_hi": 20.0
+ },
+ "sim.common.tfl#10": {
+  "mean": 15.875,
+  "se": 0.28686524130097507,
+  "n": 16,
+  "real": 15.5,
+  "label": "tfl#10",
+  "unit": "n",
+  "real_lo": 15.0,
+  "real_hi": 16.0
+ },
+ "sim.common.tfl#20": {
+  "mean": 13.125,
+  "se": 0.1796988221070652,
+  "n": 16,
+  "real": 12.5,
+  "label": "tfl#20",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 13.0
+ },
+ "sim.common.tfl#40": {
+  "mean": 11.1875,
+  "se": 0.13597640726733934,
+  "n": 16,
+  "real": 10.5,
+  "label": "tfl#40",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 11.0
+ },
+ "sim.common.tfl>=10": {
+  "mean": 64.75,
+  "se": 1.358614490329517,
+  "n": 16,
+  "real": 53.0,
+  "label": "tfl>=10",
+  "unit": "n",
+  "real_lo": 50.0,
+  "real_hi": 56.0
+ },
+ "sim.common.tfl>=15": {
+  "mean": 13.375,
+  "se": 0.7352720584926371,
+  "n": 16,
+  "real": 12.5,
+  "label": "tfl>=15",
+  "unit": "n",
+  "real_lo": 10.0,
+  "real_hi": 15.0
+ },
+ "sim.common.tfl>=20": {
+  "mean": 1.75,
+  "se": 0.21408720964441882,
+  "n": 16,
+  "real": 3.0,
+  "label": "tfl>=20",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 5.0
+ },
+ "sim.common.qb_hits#1": {
+  "mean": 37.625,
+  "se": 0.9698582370635411,
+  "n": 16,
+  "real": 42.0,
+  "label": "qb_hits#1",
+  "unit": "n",
+  "real_lo": 36.0,
+  "real_hi": 48.0
+ },
+ "sim.common.qb_hits#5": {
+  "mean": 29.75,
+  "se": 0.39264063297965823,
+  "n": 16,
+  "real": 29.6,
+  "label": "qb_hits#5",
+  "unit": "n",
+  "real_lo": 28.0,
+  "real_hi": 33.0
+ },
+ "sim.common.qb_hits#10": {
+  "mean": 26.625,
+  "se": 0.34003676271838607,
+  "n": 16,
+  "real": 25.0,
+  "label": "qb_hits#10",
+  "unit": "n",
+  "real_lo": 24.0,
+  "real_hi": 26.0
+ },
+ "sim.common.qb_hits#20": {
+  "mean": 22.9375,
+  "se": 0.34723611083334444,
+  "n": 16,
+  "real": 21.0,
+  "label": "qb_hits#20",
+  "unit": "n",
+  "real_lo": 19.0,
+  "real_hi": 22.0
+ },
+ "sim.common.qb_hits>=15": {
+  "mean": 66.4375,
+  "se": 1.4887599705795425,
+  "n": 16,
+  "real": 53.8,
+  "label": "qb_hits>=15",
+  "unit": "n",
+  "real_lo": 47.0,
+  "real_hi": 65.0
+ },
+ "sim.common.qb_hits>=20": {
+  "mean": 35.0,
+  "se": 1.2616127245183708,
+  "n": 16,
+  "real": 26.8,
+  "label": "qb_hits>=20",
+  "unit": "n",
+  "real_lo": 19.0,
+  "real_hi": 33.0
+ },
+ "sim.common.qb_hits>=30": {
+  "mean": 4.6875,
+  "se": 0.4445854810944685,
+  "n": 16,
+  "real": 4.4,
+  "label": "qb_hits>=30",
+  "unit": "n",
+  "real_lo": 2.0,
+  "real_hi": 8.0
+ },
+ "sim.common.fgm#1": {
+  "mean": 42.125,
+  "se": 0.8938446919534363,
+  "n": 16,
+  "real": 39.6,
+  "label": "fgm#1",
+  "unit": "n",
+  "real_lo": 36.0,
+  "real_hi": 44.0
+ },
+ "sim.common.fgm#5": {
+  "mean": 35.3125,
+  "se": 0.3125,
+  "n": 16,
+  "real": 33.4,
+  "label": "fgm#5",
+  "unit": "n",
+  "real_lo": 32.0,
+  "real_hi": 36.0
+ },
+ "sim.common.fgm#10": {
+  "mean": 32.375,
+  "se": 0.32755406678389243,
+  "n": 16,
+  "real": 29.6,
+  "label": "fgm#10",
+  "unit": "n",
+  "real_lo": 29.0,
+  "real_hi": 31.0
+ },
+ "sim.common.fgm#20": {
+  "mean": 27.75,
+  "se": 0.2813657169355689,
+  "n": 16,
+  "real": 25.2,
+  "label": "fgm#20",
+  "unit": "n",
+  "real_lo": 24.0,
+  "real_hi": 27.0
+ },
+ "sim.common.fgm#32": {
+  "mean": 16.875,
+  "se": 0.8209496533486894,
+  "n": 16,
+  "real": 14.4,
+  "label": "fgm#32",
+  "unit": "n",
+  "real_lo": 12.0,
+  "real_hi": 17.0
+ },
+ "sim.common.fgm>=30": {
+  "mean": 15.875,
+  "se": 0.7063698275926947,
+  "n": 16,
+  "real": 10.2,
+  "label": "fgm>=30",
+  "unit": "n",
+  "real_lo": 9.0,
+  "real_hi": 14.0
+ },
+ "sim.common.fgm>=35": {
+  "mean": 5.8125,
+  "se": 0.47625929562231817,
+  "n": 16,
+  "real": 3.6,
+  "label": "fgm>=35",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 5.0
+ },
+ "sim.common.fgm>=40": {
+  "mean": 1.625,
+  "se": 0.3145764348029479,
+  "n": 16,
+  "real": 1.0,
+  "label": "fgm>=40",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.fga#1": {
+  "mean": 47.3125,
+  "se": 0.8402318628410455,
+  "n": 16,
+  "real": 44.6,
+  "label": "fga#1",
+  "unit": "n",
+  "real_lo": 42.0,
+  "real_hi": 48.0
+ },
+ "sim.common.fga#5": {
+  "mean": 40.3125,
+  "se": 0.28458668860881975,
+  "n": 16,
+  "real": 38.2,
+  "label": "fga#5",
+  "unit": "n",
+  "real_lo": 37.0,
+  "real_hi": 41.0
+ },
+ "sim.common.fga#10": {
+  "mean": 37.25,
+  "se": 0.3593976442141304,
+  "n": 16,
+  "real": 34.6,
+  "label": "fga#10",
+  "unit": "n",
+  "real_lo": 34.0,
+  "real_hi": 36.0
+ },
+ "sim.common.fga#20": {
+  "mean": 33.25,
+  "se": 0.2958039891549808,
+  "n": 16,
+  "real": 29.8,
+  "label": "fga#20",
+  "unit": "n",
+  "real_lo": 29.0,
+  "real_hi": 31.0
+ },
+ "sim.common.fga#32": {
+  "mean": 21.375,
+  "se": 1.0363196096443092,
+  "n": 16,
+  "real": 17.0,
+  "label": "fga#32",
+  "unit": "n",
+  "real_lo": 14.0,
+  "real_hi": 20.0
+ },
+ "sim.common.fga>=35": {
+  "mean": 16.0,
+  "se": 0.7691987172809551,
+  "n": 16,
+  "real": 9.2,
+  "label": "fga>=35",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 11.0
+ },
+ "sim.common.fga>=40": {
+  "mean": 6.625,
+  "se": 0.5907269532815761,
+  "n": 16,
+  "real": 3.0,
+  "label": "fga>=40",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 6.0
+ },
+ "sim.common.fga>=45": {
+  "mean": 1.75,
+  "se": 0.3227486121839514,
+  "n": 16,
+  "real": 0.6,
+  "label": "fga>=45",
+  "unit": "n",
+  "real_lo": 0.0,
+  "real_hi": 2.0
+ },
+ "sim.common.punts#1": {
+  "mean": 85.125,
+  "se": 1.1898004034290794,
+  "n": 16,
+  "real": 92.6,
+  "label": "punts#1",
+  "unit": "n",
+  "real_lo": 88.0,
+  "real_hi": 99.0
+ },
+ "sim.common.punts#5": {
+  "mean": 74.875,
+  "se": 0.836037279870541,
+  "n": 16,
+  "real": 78.2,
+  "label": "punts#5",
+  "unit": "n",
+  "real_lo": 72.0,
+  "real_hi": 83.0
+ },
+ "sim.common.punts#10": {
+  "mean": 69.25,
+  "se": 0.5951190357119042,
+  "n": 16,
+  "real": 69.6,
+  "label": "punts#10",
+  "unit": "n",
+  "real_lo": 64.0,
+  "real_hi": 75.0
+ },
+ "sim.common.punts#20": {
+  "mean": 61.5625,
+  "se": 0.5625,
+  "n": 16,
+  "real": 58.2,
+  "label": "punts#20",
+  "unit": "n",
+  "real_lo": 55.0,
+  "real_hi": 63.0
+ },
+ "sim.common.punts#32": {
+  "mean": 43.0625,
+  "se": 1.0934225700371594,
+  "n": 16,
+  "real": 33.6,
+  "label": "punts#32",
+  "unit": "n",
+  "real_lo": 24.0,
+  "real_hi": 44.0
+ },
+ "sim.common.punts>=60": {
+  "mean": 22.125,
+  "se": 0.5234102915814068,
+  "n": 16,
+  "real": 18.4,
+  "label": "punts>=60",
+  "unit": "n",
+  "real_lo": 16.0,
+  "real_hi": 22.0
+ },
+ "sim.common.punts>=70": {
+  "mean": 9.1875,
+  "se": 0.7428478422036822,
+  "n": 16,
+  "real": 10.4,
+  "label": "punts>=70",
+  "unit": "n",
+  "real_lo": 7.0,
+  "real_hi": 14.0
+ },
+ "sim.common.punts>=80": {
+  "mean": 2.0625,
+  "se": 0.3923088706618804,
+  "n": 16,
+  "real": 3.4,
+  "label": "punts>=80",
+  "unit": "n",
+  "real_lo": 1.0,
+  "real_hi": 6.0
+ },
+ "sim.common.pass_rating#1": {
+  "mean": 110.77361957462774,
+  "se": 1.0984850559918635,
+  "n": 16,
+  "real": 112.70358053905838,
+  "label": "pass_rating#1",
+  "unit": "n",
+  "real_lo": 105.5,
+  "real_hi": 119.62904360056257
+ },
+ "sim.common.pass_rating#3": {
+  "mean": 105.80097188299484,
+  "se": 0.9032449631042461,
+  "n": 16,
+  "real": 104.99736067270025,
+  "label": "pass_rating#3",
+  "unit": "n",
+  "real_lo": 102.96266233766234,
+  "real_hi": 108.53783231083847
+ },
+ "sim.common.pass_rating#5": {
+  "mean": 103.04205204061722,
+  "se": 0.6285221843948909,
+  "n": 16,
+  "real": 102.16822160210619,
+  "label": "pass_rating#5",
+  "unit": "n",
+  "real_lo": 100.87412587412588,
+  "real_hi": 103.68767313019391
+ },
+ "sim.common.pass_rating#10": {
+  "mean": 97.34352449317927,
+  "se": 0.33380667054332974,
+  "n": 16,
+  "real": 98.38745654418429,
+  "label": "pass_rating#10",
+  "unit": "n",
+  "real_lo": 95.21261415525115,
+  "real_hi": 101.02299880525688
+ },
+ "sim.common.pass_rating#20": {
+  "mean": 90.3901153256029,
+  "se": 0.45776186599571483,
+  "n": 16,
+  "real": 89.82540183190399,
+  "label": "pass_rating#20",
+  "unit": "n",
+  "real_lo": 88.89453477868113,
+  "real_hi": 90.9747023809524
+ },
+ "sim.common.cmp_pct#1": {
+  "mean": 71.31502235731416,
+  "se": 0.3718417370067016,
+  "n": 16,
+  "real": 71.07875616989865,
+  "label": "cmp_pct#1",
+  "unit": "n",
+  "real_lo": 69.75524475524476,
+  "real_hi": 72.93233082706767
+ },
+ "sim.common.cmp_pct#3": {
+  "mean": 69.69558241442255,
+  "se": 0.2661352864118264,
+  "n": 16,
+  "real": 69.4779958361544,
+  "label": "cmp_pct#3",
+  "unit": "n",
+  "real_lo": 68.24034334763948,
+  "real_hi": 71.40350877192982
+ },
+ "sim.common.cmp_pct#5": {
+  "mean": 68.74020860425009,
+  "se": 0.21028855070907376,
+  "n": 16,
+  "real": 68.65448360410608,
+  "label": "cmp_pct#5",
+  "unit": "n",
+  "real_lo": 67.20779220779221,
+  "real_hi": 70.41522491349481
+ },
+ "sim.common.cmp_pct#10": {
+  "mean": 66.95240230159449,
+  "se": 0.20439547805826994,
+  "n": 16,
+  "real": 67.16031950612769,
+  "label": "cmp_pct#10",
+  "unit": "n",
+  "real_lo": 66.66666666666667,
+  "real_hi": 67.58409785932722
+ },
+ "sim.common.ypa_q#1": {
+  "mean": 8.5281190525168,
+  "se": 0.07942122571885565,
+  "n": 16,
+  "real": 9.0219058809207,
+  "label": "ypa_q#1",
+  "unit": "n",
+  "real_lo": 8.80168776371308,
+  "real_hi": 9.63963963963964
+ },
+ "sim.common.ypa_q#3": {
+  "mean": 8.089565696971745,
+  "se": 0.05055583812380666,
+  "n": 16,
+  "real": 8.268121168183486,
+  "label": "ypa_q#3",
+  "unit": "n",
+  "real_lo": 8.045652173913043,
+  "real_hi": 8.492307692307692
+ },
+ "sim.common.ypa_q#5": {
+  "mean": 7.880523373117635,
+  "se": 0.04561267546359187,
+  "n": 16,
+  "real": 7.900137160582884,
+  "label": "ypa_q#5",
+  "unit": "n",
+  "real_lo": 7.7825,
+  "real_hi": 7.974117647058823
+ },
+ "sim.common.ypa_q#10": {
+  "mean": 7.509629045488108,
+  "se": 0.032236766689854056,
+  "n": 16,
+  "real": 7.514646150670748,
+  "label": "ypa_q#10",
+  "unit": "n",
+  "real_lo": 7.3966666666666665,
+  "real_hi": 7.688172043010753
+ },
+ "sim.common.td_pct#1": {
+  "mean": 7.381101848083926,
+  "se": 0.17956452145880264,
+  "n": 16,
+  "real": 7.3264218138494765,
+  "label": "td_pct#1",
+  "unit": "n",
+  "real_lo": 6.327160493827161,
+  "real_hi": 8.649789029535865
+ },
+ "sim.common.td_pct#3": {
+  "mean": 6.4232992980053805,
+  "se": 0.1292839710065805,
+  "n": 16,
+  "real": 6.469212449200978,
+  "label": "td_pct#3",
+  "unit": "n",
+  "real_lo": 5.8165548098434,
+  "real_hi": 6.953642384105961
+ },
+ "sim.common.td_pct#5": {
+  "mean": 5.916417542262026,
+  "se": 0.08235624132496486,
+  "n": 16,
+  "real": 6.04664657987891,
+  "label": "td_pct#5",
+  "unit": "n",
+  "real_lo": 5.526770293609672,
+  "real_hi": 6.422018348623853
+ },
+ "sim.common.td_pct#10": {
+  "mean": 5.240548413429612,
+  "se": 0.05469075098989354,
+  "n": 16,
+  "real": 5.174714057360289,
+  "label": "td_pct#10",
+  "unit": "n",
+  "real_lo": 4.946996466431095,
+  "real_hi": 5.572755417956657
+ },
+ "sim.common.int_pct_low#1": {
+  "mean": 0.8036636341854937,
+  "se": 0.07239162401037005,
+  "n": 16,
+  "real": 0.8993632654882937,
+  "label": "int_pct_low#1",
+  "unit": "n",
+  "real_lo": 0.5952380952380952,
+  "real_hi": 1.0869565217391304
+ },
+ "sim.common.int_pct_low#3": {
+  "mean": 1.2098302326480495,
+  "se": 0.04399182169662693,
+  "n": 16,
+  "real": 1.2816371897482202,
+  "label": "int_pct_low#3",
+  "unit": "n",
+  "real_lo": 1.0676156583629892,
+  "real_hi": 1.4598540145985401
+ },
+ "sim.common.int_pct_low#5": {
+  "mean": 1.4160598927119072,
+  "se": 0.047681135485474264,
+  "n": 16,
+  "real": 1.4351822577344862,
+  "label": "int_pct_low#5",
+  "unit": "n",
+  "real_lo": 1.3043478260869565,
+  "real_hi": 1.6194331983805668
+ },
+ "sim.common.int_pct_low#10": {
+  "mean": 1.7958544433243624,
+  "se": 0.03396709257155201,
+  "n": 16,
+  "real": 1.7648206530675687,
+  "label": "int_pct_low#10",
+  "unit": "n",
+  "real_lo": 1.6260162601626016,
+  "real_hi": 1.9390581717451523
+ },
+ "determinism.mismatch": {
+  "mean": 0,
+  "se": 0.0,
+  "n": 1,
+  "real": 0,
+  "label": "same league twice in separate processes differs (must be 0)",
+  "unit": "n",
+  "real_lo": null,
+  "real_hi": null
+ },
  "speed.sec_per_week_real_games": {
-  "mean": 2.5128676470588234,
-  "se": 0.16760356642046692,
+  "mean": 1.3088235294117647,
+  "se": 0.06996094470725611,
   "n": 17,
   "real": null,
   "label": "seconds per regular-season week (real games, one league)",
@@ -10,8 +3590,8 @@
   "real_hi": null
  },
  "speed.sec_per_fa_wave": {
-  "mean": 2.5736607142857144,
-  "se": 0.38157240048413416,
+  "mean": 1.0379464285714286,
+  "se": 0.13803236458696702,
   "n": 7,
   "real": null,
   "label": "seconds per free agency Next click",
@@ -20,7 +3600,7 @@
   "real_hi": null
  },
  "speed.sec_offseason_total": {
-  "mean": 34.90625,
+  "mean": 15.78125,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -30,7 +3610,7 @@
   "real_hi": null
  },
  "speed.sec_resign_phase": {
-  "mean": 0.40625,
+  "mean": 0.21875,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -40,7 +3620,7 @@
   "real_hi": null
  },
  "speed.sec_draft_phase": {
-  "mean": 2.078125,
+  "mean": 1.359375,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -50,7 +3630,7 @@
   "real_hi": null
  },
  "speed.sec_camp_phase": {
-  "mean": 8.71875,
+  "mean": 3.203125,
   "se": 0.0,
   "n": 1,
   "real": null,
@@ -60,11 +3640,14 @@
   "real_hi": null
  },
  "_meta": {
-  "when": "2026-10-25 02:22",
+  "when": "2026-10-25 04:31",
   "suites": [
+   "fa",
+   "sim",
+   "determinism",
    "speed"
   ],
-  "seconds": 218.54349732398987,
+  "seconds": 290.6136016845703,
   "set": []
  }
 }

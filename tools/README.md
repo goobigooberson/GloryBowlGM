@@ -22,13 +22,26 @@
   final cuts, injuries, roster moves, waivers, trades, awards, money), then the offseason
   phase by phase through `season.begin_offseason` / `advance_offseason`, exactly as the Next
   button plays it. `games="fast"` swaps each game for a quick made-up result (everything
-  around the games is real; about a minute a season + offseason); `games="real"` plays the
-  sim. Checks attach to moments with `lab.on(event, fn)`: season_start, week_end,
+  around the games is real; about 40 seconds a season + offseason since Oct 25); `games="real"`
+  plays the sim. Checks attach to moments with `lab.on(event, fn)`: season_start, week_end,
   regular_season (week 1, after final cuts), season_end, offseason_start, phase_before /
   phase_after (each offseason phase or free agency wave). `python tools/lab.py 101 fast 2`
   plays one league two seasons and prints its progress. `free_agency_check.py` runs on it.
+  `lab.fingerprint(league)` is a short code for the league's whole state (every League field,
+  every player with his hidden values, the shared dice); `lab.fingerprint_parts` gives one
+  code per field, to see what differs.
   (Older harnesses: `simlab.py` plays games from fixed rosters for the sim's stats;
   `draft_lab.py` runs the draft's 22-season careers without contracts.)
+- `same_results.py`: proves a change plays out exactly as before (speed work, clean-ups). It
+  plays the same lab leagues on an earlier commit (`--ref`, default main) and on this folder
+  side by side, compares the whole league at every checkpoint (creation, week 1, season's
+  end, every offseason phase) and prints each side's CPU time.
+
+  ```
+  python tools/same_results.py                                   # seeds 101 202 303, 1 season, fast games
+  python tools/same_results.py --ref 8e2eea9 --seasons 3
+  python tools/same_results.py --games real --seeds 101 --seasons 2
+  ```
 
 The tools below check that the game sim produces real-NFL-like stats. They were built
 during Step 6 calibration (Oct 19, 2026) and are what the sim was tuned with.
