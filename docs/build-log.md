@@ -979,3 +979,15 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
   - Integration test, 6 seasons, startup draft, save and load: 0 problems.
   - Realism check, 16 seasons: 22 of 303 outside the real range (last committed report 35; other changes since then are in that comparison too).
 - **For Blake to judge:** how the Developed % column reads now (first-rounders mostly 70-90%, late-rounders often 40-60%), and whether late-round rookies' current ratings feel too low on screen (rounds 6-7 show ~18-20 now, ceilings ~40).
+
+### Today's one-off checks made permanent, in the scoreboard (Oct 25, night; Blake: "lets do it in your order just make sure it wont compromise development accuracy", item 3 of Claude's list)
+- **New tools (measure only; nothing in `engine/` changed):**
+  - `tools/rookie_check.py`: drafted rookies' playing time by round vs real (regulars as rookies, regular in years 2-5, ever regular, eventual regulars who started as rookies; real from nflverse snap counts, 2013-2021 classes, saved in `tools/real_rookie_bloom.json`) and the draft board's Developed % (share of drafted players at 70%+ / 80%+). On lab leagues (fast games).
+  - `tools/qb_style_check.py`: efficient low-volume passers (100+ rating on under a 3,600-yard pace), 600+ yard rushing QBs, starting QBs' pass attempts per game (10th / 50th / 90th percentile) vs real 2010-2024 (`tools/real_qb_styles.json`).
+  - `tools/integration_check.py`: the whole-game test the main session ran from its scratchpad before big commits (startup draft with a team of yours, seasons, every offseason phase with you in it, save/load at each stage); problems must be 0.
+- **Scoreboard:** default suites now `fa, sim, determinism, rookies, integration, speed` (~10 minutes). The sim suite also reports the QB styles. `integration.problems` is a must-be-zero number. Baseline re-saved from the committed code in a clean worktree. Old measures unchanged (0 changes beyond the noise).
+- **What the new numbers show (game / real):**
+  - Rookies: round 1 regulars as rookies 64.5% / 61.0%, eventual regulars who started as rookies 67.4% / 66.3%; rounds 4-5 11.6% / 9.6% and 32.9% / 24.2%. Draft board: 48% of drafted players show 70%+ developed, 29% 80%+.
+  - QBs: efficient low-volume seasons 0.31 / 0.33 a season (fine). **Running QBs (600+ rushing) 3.2 / 1.8 a season**, and **pass-happy teams throw less than real: 90th percentile 36.3 / 39.1 attempts a game** (median 32.8 / 33.9, 10th 28.7 / 28.6). Both are open; for Blake to decide whether to tune.
+  - Whole-game test (3 seasons): 0 problems.
+- **Still flagged BROKEN (known, not new):** AI teams slightly over the cap ~20 team-weeks a season ($56K-$166K), and cap legality misses 0.3 an offseason.

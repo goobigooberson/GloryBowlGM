@@ -1,0 +1,45 @@
+{
+ "source": "nflverse snap counts and draft picks, 2013-2021 classes, first 5 seasons (K/P/LS out)",
+ "by_round": {
+  "1": {
+   "rookie_regular": 0.6097560975609756,
+   "regular_later": 0.8710801393728222,
+   "ever": 0.9198606271777003,
+   "started_as_rookie": 0.6628787878787878,
+   "n": 287,
+   "n_ever": 264.0
+  },
+  "2": {
+   "rookie_regular": 0.4245614035087719,
+   "regular_later": 0.7157894736842105,
+   "ever": 0.7473684210526316,
+   "started_as_rookie": 0.568075117370892,
+   "n": 285,
+   "n_ever": 213.0
+  },
+  "3": {
+   "rookie_regular": 0.21407624633431085,
+   "regular_later": 0.5601173020527859,
+   "ever": 0.5835777126099707,
+   "started_as_rookie": 0.36683417085427134,
+   "n": 341,
+   "n_ever": 199.0
+  },
+  "4-5": {
+   "rookie_regular": 0.09559939301972686,
+   "regular_later": 0.37632776934749623,
+   "ever": 0.3945371775417299,
+   "started_as_rookie": 0.2423076923076923,
+   "n": 659,
+   "n_ever": 260.0
+  },
+  "6-7": {
+   "rookie_regular": 0.03508771929824561,
+   "regular_later": 0.15789473684210525,
+   "ever": 0.17105263157894737,
+   "started_as_rookie": 0.20512820512820512,
+   "n": 684,
+   "n_ever": 117.0
+  }
+ }
+}

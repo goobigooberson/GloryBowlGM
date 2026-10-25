@@ -3,7 +3,8 @@
 ## Start here: the scoreboard and the league lab (Oct 25)
 
 - `scoreboard.py`: one command runs the checks side by side (free agency on the lab, the
-  sim's stats, determinism, speed; `--full` adds the draft), boils them down to about 360
+  sim's stats with QB season styles, determinism, drafted rookies' playing time, the
+  whole-game test, speed; `--full` adds the draft), boils them down to about 380
   headline numbers next to the real NFL, and compares them with the saved baseline
   (`scoreboard/baseline.json`). It flags only changes bigger than the numbers' normal
   run-to-run swing (3x), as IMPROVED / REGRESSED (toward / away from the real NFL) or
@@ -29,6 +30,18 @@
   plays one league two seasons and prints its progress. `free_agency_check.py` runs on it.
   (Older harnesses: `simlab.py` plays games from fixed rosters for the sim's stats;
   `draft_lab.py` runs the draft's 22-season careers without contracts.)
+
+- Checks the scoreboard also runs, each usable alone (Oct 25):
+  - `rookie_check.py`: drafted rookies' playing time by round vs real (regulars as
+    rookies, late bloomers, ever regular; nflverse snap counts, 2013-2021 classes) and the
+    draft board's Developed %. `python tools/rookie_check.py real` rebuilds
+    `real_rookie_bloom.json`.
+  - `qb_style_check.py`: efficient low-volume passers, running QBs and pass attempts per
+    game vs real (2010-2024). `python tools/qb_style_check.py real` rebuilds
+    `real_qb_styles.json`.
+  - `integration_check.py`: the whole game with a team of yours, start to finish (startup
+    draft, seasons, every offseason phase, save/load at each stage); prints the problems
+    found (must be 0). `python tools/integration_check.py --seasons 6` before big commits.
 
 The tools below check that the game sim produces real-NFL-like stats. They were built
 during Step 6 calibration (Oct 19, 2026) and are what the sim was tuned with.
