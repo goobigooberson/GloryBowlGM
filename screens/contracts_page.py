@@ -48,19 +48,21 @@ def _cap_line(league, tid):
     dead_pct = min(used_pct, 100.0 * max(0, cap["dead"]) / total)
     offer_pct = min(100.0 - used_pct, 100.0 * tied / total)
 
+    # (Oct 25, Gemini's Step 2: the numbers sit in bordered ledger cells above the bar.)
     def tile(label, value, cls="", tip=""):
-        return (f'<div class="cap-tile {cls}" title="{escape(tip)}"><span class="cap-k">{label}</span>'
-                f'<span class="cap-v">{value}</span></div>')
+        return (f'<div class="cap-kpi" title="{escape(tip)}"><div class="cap-kpi-label">{label}</div>'
+                f'<div class="cap-kpi-val {cls}">{value}</div></div>')
     tiles = (tile(f"{league.season} salary cap", _m(cap["cap"]))
              + tile("Used" + (" (top 51)" if top51 else ""), _m(cap["used"]), "",
                     "In the offseason only your 51 biggest cap hits count (the NFL's rule)" if top51 else "")
-             + tile("Cap room", _m(cap["room"]), "good" if cap["room"] >= 0 else "bad")
+             + tile("Cap room", _m(cap["room"]), "room-pos" if cap["room"] >= 0 else "room-neg")
              + (tile("Standing offers", _m(tied), "", "Free agent offers you've made that are still out")
                 if tied else "")
-             + tile("Dead money", _m(cap["dead"]), "", "Cap charges for players no longer on your team")
+             + tile("Dead money", _m(cap["dead"]), "dead-val" if cap["dead"] else "",
+                    "Cap charges for players no longer on your team")
              + tile(f"{league.season + 1} committed", f'{_m(nxt)} <small>of {_m(nxt_cap)}</small>', "",
                     f"Already promised for {league.season + 1}, of a projected {_m(nxt_cap)} cap"))
-    bar = (f'<div class="cap-bar" title="{used_pct:.0f}% of the cap used">'
+    bar = (f'<div class="cap-bar-track" title="{used_pct:.0f}% of the cap used">'
            f'<div class="cap-dead" style="width:{dead_pct:.1f}%"></div>'
            f'<div class="cap-used" style="width:{used_pct - dead_pct:.1f}%"></div>'
            f'<div class="cap-offer" style="width:{offer_pct:.1f}%"></div></div>'
@@ -68,7 +70,7 @@ def _cap_line(league, tid):
            '<span><i class="cap-dead"></i>Dead money</span>'
            + ('<span><i class="cap-offer"></i>Standing offers</span>' if tied else "")
            + '<span><i class="cap-free"></i>Room</span></div>')
-    return (f'<div class="cap-strip"><div class="cap-tiles">{tiles}</div>{bar}'
+    return (f'<div class="cap-ledger"><div class="cap-kpi-grid">{tiles}</div>{bar}'
             f'<div class="legend" style="margin-top:2px">{_league_money_line(league)}</div></div>')
 
 
@@ -92,7 +94,7 @@ CAP_CSS = """
   .cap-used { background: var(--turf); }
   .cap-dead { background: #8B5A2B; }
   .cap-offer { background: #E3C13B; }
-  .cap-free { background: #E3E8E1; }
+  .cap-free { background: #E2E8F0; }
 </style>
 """
 
@@ -239,17 +241,22 @@ def build_contracts_tab(on_change=None):
                         f'is declined.</div>', sanitize=False)
         header()
 
-    with ui.row().classes("w-full px-8 pt-3 items-center gap-4"):
-        toggle = ui.toggle(VIEWS, value=view["v"], on_change=lambda e: set_view(e.value)) \
-            .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9") \
-            .tooltip("Payroll: every contract on your team. Re-sign: your expiring players, at the start of "
-                     "the league year. Free agency: the free-agent board during the offseason's waves.")
-        pos_select = ui.select(["All positions"] + POSITION_ORDER, value="All positions",
-                               on_change=lambda e: set_pos(e.value)) \
-            .props("dense outlined options-dense").classes("w-44")
-        ui.label("Click a player for his details and your options.").classes("legend")
+    # The views and position filter in one toolbar strip (Gemini's Step 2, Oct 25).
+    with ui.element("div").classes("w-full px-8 pt-1"):
+        with ui.element("div").classes("page-toolbar"):
+            with ui.element("div").classes("toolbar-group"):
+                with ui.toggle(VIEWS, value=view["v"], on_change=lambda e: set_view(e.value)) \
+                        .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9") as toggle:
+                    # (A short wait before the tip shows, so it doesn't sit over the table after a click.)
+                    ui.tooltip("Payroll: every contract on your team. Re-sign: your expiring players, at the "
+                               "start of the league year. Free agency: the free-agent board during the "
+                               "offseason's waves.").props("delay=700")
+                pos_select = ui.select(["All positions"] + POSITION_ORDER, value="All positions",
+                                       on_change=lambda e: set_pos(e.value)) \
+                    .props("dense outlined options-dense").classes("w-44")
+            ui.label("Click a player for his details and your options.").classes("legend")
 
-    with ui.row().classes("w-full px-8 py-4 gap-5 no-wrap items-start"):
+    with ui.row().classes("w-full px-8 pb-4 pt-1 gap-5 no-wrap items-start"):
         table = ui.table(rows=[], columns=PAY_COLS, row_key="id",
                          pagination={"rowsPerPage": 0, "sortBy": "pos"}) \
             .props("flat dense virtual-scroll hide-bottom") \
@@ -264,8 +271,9 @@ def build_contracts_tab(on_change=None):
                 <q-td :props="props" class="num">{{{{ props.row.{txt} }}}}</q-td>""")
         table.on("rowClick", lambda e: select(e.args[1]["id"]))
 
-        with ui.element("div").classes("report px-6 py-5") \
-                .style("flex: 0 0 440px; height: calc(100vh - 372px); overflow-y: auto"):
+        # (390 px, was 440: at 1600 wide the Payroll table's last column, "Saves if cut", was cut off.)
+        with ui.element("div").classes("report inspector px-6 py-5") \
+                .style("flex: 0 0 390px; height: calc(100vh - 372px); overflow-y: auto"):
             # (Defined before panel() is first drawn: opening a save during free agency
             # draws the Free agency view right away, and it uses this.)
             def offers_box():
@@ -279,14 +287,17 @@ def build_contracts_tab(on_change=None):
             @ui.refreshable
             def panel():
                 pid = view["pid"]
+                ui.label({"Payroll": "Contract", "Re-sign": "Contract negotiation",
+                          "Free agency": "Free agent"}[view["v"]]).classes("inspector-header")
                 if pid is None:
-                    ui.label("No player selected").classes("condensed text-2xl")
-                    ui.label({"Payroll": "Click a contract to see it year by year, and to extend, restructure or "
-                                         "release him (the cap effect is shown before anything happens).",
-                              "Re-sign": "Click one of your expiring players to negotiate, tag or tender him, or "
-                                         "a first-rounder to decide his fifth-year option.",
-                              "Free agency": "Click a free agent to see what he's asking and make an offer."}
-                             [view["v"]]).classes("legend")
+                    with ui.element("div").classes("inspector-empty"):
+                        ui.label("No player selected").classes("inspector-empty-title")
+                        ui.label({"Payroll": "Click a contract to see it year by year, and to extend, restructure "
+                                             "or release him (the cap effect is shown before anything happens).",
+                                  "Re-sign": "Click one of your expiring players to negotiate, tag or tender him, "
+                                             "or a first-rounder to decide his fifth-year option.",
+                                  "Free agency": "Click a free agent to see what he's asking and make an offer."}
+                                 [view["v"]])
                     if view["v"] == "Free agency":
                         offers_box()
                     return

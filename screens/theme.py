@@ -738,3 +738,107 @@ TOPBAR_CSS = """
 </style>
 """
 HEAD_HTML += TOPBAR_CSS
+
+
+# ---- Step 2: toolbars, the cap ledger, docked inspector panels (Gemini, Oct 25) ----
+# Gemini's STEP_2_CSS, added after DESKTOP_CSS (a plain string, so its braces needn't
+# be doubled). Changed by Claude, marked below: the side-panel rules apply only to
+# panels with the "inspector" class (Gemini's "body .report" would have stretched
+# every .report box in the game, ~25 of them, to 460 px), and the panel header's
+# negative margins match those panels' padding (px-6 py-5 = 24 px / 20 px).
+STEP2_CSS = """
+<style>
+  /* Unified control toolbar above tables (Roster, Contracts, Trades, Staff) */
+  .page-toolbar {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid #C6CFD9;
+    border-left: 4px solid var(--turf);
+    border-radius: 3px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(15, 25, 35, 0.04);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 14px;
+  }
+  .page-toolbar .toolbar-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+
+  /* Compact KPI stat pills for roster counts and staff budgets */
+  .stat-pill-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .stat-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #F1F4F8; border: 1px solid #D0D8E2; border-radius: 3px;
+    padding: 2px 9px; font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+  }
+  .stat-pill b { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .stat-pill.is-good { background: #EBF5EC; border-color: #B7DFB9; color: #1E6B34; }
+  .stat-pill.is-warn { background: #FFF6CF; border-color: #E6CE6A; color: #7A5C00; }
+
+  /* Contracts: the salary cap ledger */
+  .cap-ledger {
+    width: 100%; background: #FFFFFF; border: 1px solid #C6CFD9; border-top: 3px solid var(--turf);
+    border-radius: 3px; box-shadow: 0 1px 3px rgba(15, 25, 35, 0.06); padding: 10px 14px; margin-bottom: 8px;
+  }
+  .cap-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 0;
+    border: 1px solid #DCE2EA; border-radius: 3px; background: #F8FAFC; margin-bottom: 8px;
+  }
+  .cap-kpi { padding: 6px 12px; border-right: 1px solid #DCE2EA; }
+  .cap-kpi:last-child { border-right: none; }
+  .cap-kpi-label {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft);
+  }
+  .cap-kpi-val {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; line-height: 1.05;
+    color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  .cap-kpi-val small { font-size: 14px; font-weight: 600; color: var(--ink-soft); }   /* (Claude: "of $348M") */
+  .cap-kpi-val.room-pos { color: #1E7E3E; }
+  .cap-kpi-val.room-neg { color: #B23A2A; }
+  .cap-kpi-val.dead-val { color: #B85D19; }
+  .cap-bar-track {
+    width: 100%; height: 12px; background: #E2E8F0; border-radius: 3px; overflow: hidden;
+    display: flex; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Split view and the docked right-hand inspector panel */
+  .split-workspace { display: flex; align-items: flex-start; gap: 12px; width: 100%; }
+  .split-main-table { flex: 1 1 0%; min-width: 0; width: 100%; }
+  body .report.inspector { min-height: 460px; display: flex; flex-direction: column; }   /* (Claude: scoped) */
+  .inspector-header {
+    background: var(--turf); color: #FFFFFF;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 6px 12px;
+    margin: -20px -24px 12px -24px;        /* (Claude: matches the panels' px-6 py-5) */
+    border-radius: 2px 2px 0 0;
+    border-bottom: 2px solid var(--team-accent, var(--flag));
+  }
+  .inspector-empty {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 36px 20px; color: var(--ink-soft);
+    background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 3px; margin-top: 4px;
+  }
+  .inspector-empty-title {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px; color: var(--ink);
+    margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.02em;
+  }
+
+  /* (Claude) One-line ledger tables: the Roster's Moves view and the Staff page's coaching moves */
+  .ledger-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #FFFFFF; }
+  .ledger-table th {
+    background: var(--turf); color: #FFFFFF; text-align: left; padding: 5px 10px;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px;
+    text-transform: uppercase; letter-spacing: .035em; position: sticky; top: 0; z-index: 1;
+  }
+  .ledger-table td { padding: 4px 10px; border-bottom: 1px solid #E6EAE4; white-space: nowrap; }
+  .ledger-table td.wrap { white-space: normal; }
+  .ledger-table tbody tr:nth-child(even) td { background: #F7F9F6; }
+  .ledger-table tbody tr:hover td { background: #E6F0E2; }
+</style>
+"""
+HEAD_HTML += STEP2_CSS

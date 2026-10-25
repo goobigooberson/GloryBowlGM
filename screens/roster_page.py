@@ -279,32 +279,50 @@ def report_html(p, with_stats=True, part="all"):
 # Roster moves: counts and warnings, and the list of moves
 # ---------------------------------------------------------------------------
 
-def roster_notice_html():
-    """Above the table: the team's roster counts; for your team, anything that
-    needs a move and any moves your staff made when you simmed ahead."""
+def _pill(value, label, tip="", kind=""):
+    t = f' title="{escape(tip)}"' if tip else ""
+    return f'<span class="stat-pill{" " + kind if kind else ""}"{t}><b>{value}</b> {escape(label)}</span>'
+
+
+def roster_counts_html():
+    """The team's roster counts as stat pills, for the toolbar (Gemini's Step 2, Oct 25)."""
     league = state.league
     tid = state.team_id
     if tid == FREE_AGENTS:
         waived = len(league.waivers)
-        return (f'<div class="legend">{len(league.free_agents())} free agents'
-                + (f'; {waived} players on waivers this week (they become free agents if nobody claims them)'
-                   if waived else '') + '. Free agents with a red tag are hurt: nobody signs them until they heal.</div>')
+        pills = _pill(len(league.free_agents()), "Free agents",
+                      "Free agents with a red tag are hurt: nobody signs them until they heal.")
+        if waived:
+            pills += _pill(waived, "On waivers", "Waived this week: they become free agents if nobody claims them.")
+        return f'<div class="stat-pill-row">{pills}</div>'
     n53 = len(league.team_players(tid))
     nps = len(transactions.practice_players(league, tid))
     nres = len(transactions.reserve_players(league, tid))
     if transactions.in_camp(league):
-        counts = (f'Training camp roster: <b>{n53}</b> of {transactions.roster_rules.CAMP_LIMIT} &nbsp;·&nbsp; '
-                  f'Injured reserve: <b>{nres}</b> &nbsp;·&nbsp; Final cuts after the last preseason game: '
-                  f'{transactions.ROSTER_SIZE} make the team, then practice squads ({transactions.PRACTICE_SQUAD_SIZE}) '
-                  f'are signed')
+        limit = transactions.roster_rules.CAMP_LIMIT
+        pills = (_pill(f"{n53}/{limit}", "Camp roster",
+                       f"Final cuts come after the last preseason game: {transactions.ROSTER_SIZE} make the team, "
+                       f"then practice squads ({transactions.PRACTICE_SQUAD_SIZE}) are signed.")
+                 + _pill(nres, "Injured reserve"))
     else:
-        counts = (f'53-man roster: <b>{n53}</b> of {transactions.ROSTER_SIZE} &nbsp;·&nbsp; Practice squad: '
-                  f'<b>{nps}</b> of {transactions.PRACTICE_SQUAD_SIZE} &nbsp;·&nbsp; Reserve lists: <b>{nres}</b> '
-                  f'&nbsp;·&nbsp; Back from injured reserve this season: <b>{league.ir_returns.get(tid, 0)}</b> of '
-                  f'{transactions.IR_RETURNS}')
-    if tid != league.user_team_id:
-        return f'<div class="legend">{counts}</div>'
-    parts = [f'<div class="legend" style="margin-bottom:6px">{counts}</div>']
+        size = transactions.ROSTER_SIZE
+        pills = (_pill(f"{n53}/{size}", "Active roster", "The 53-man roster",
+                       "is-good" if n53 == size else "is-warn")
+                 + _pill(f"{nps}/{transactions.PRACTICE_SQUAD_SIZE}", "Practice squad")
+                 + _pill(nres, "Reserve lists", "Injured reserve and PUP")
+                 + _pill(f"{league.ir_returns.get(tid, 0)}/{transactions.IR_RETURNS}", "IR returns used",
+                         "Players brought back from injured reserve this season (the NFL allows 8)"))
+    return f'<div class="stat-pill-row">{pills}</div>'
+
+
+def roster_notice_html():
+    """Under the toolbar, for your team: anything that needs a move and any
+    moves your staff made when you simmed ahead."""
+    league = state.league
+    tid = state.team_id
+    if tid == FREE_AGENTS or tid != league.user_team_id:
+        return ""
+    parts = []
     staff = getattr(league, "staff_moves", None) or []
     if staff:
         items = "".join(f"<li>{escape(_move_text(t))}</li>" for t in staff)
@@ -315,7 +333,7 @@ def roster_notice_html():
         # Folded to one line so the table gets the screen; the Home page lists the
         # same items with buttons (layout research, Oct 21).
         items = "".join(f"<li>{escape(w)}</li>" for w in warnings)
-        parts.append(f'<details class="notice"><summary style="cursor:pointer"><b>Roster to-do ({len(warnings)})'
+        parts.append(f'<details class="notice" style="margin-bottom:6px"><summary style="cursor:pointer"><b>Roster to-do ({len(warnings)})'
                      f'</b>: click to show (also on the Home page, with buttons). Click a player for his moves.'
                      f'</summary><ul style="margin:4px 0 0 18px">{items}</ul></details>')
     return "".join(parts)
@@ -345,11 +363,11 @@ def moves_html():
         lines.append(f'<tr><td>{escape(t["when"])}</td><td>{team}</td><td>{escape(t["move"])}</td>'
                      f'<td><span class="pos-tag" style="{theme.position_style(p.position)}">{p.position}</span> '
                      f'<a class="plink" href="/player/{p.id}">{escape(p.name)}</a></td>'
-                     f'<td class="legend">{escape(t.get("note") or "")}</td></tr>')
+                     f'<td class="legend wrap">{escape(t.get("note") or "")}</td></tr>')
     title = "Every team's roster moves" if tid == FREE_AGENTS else f"{league.team(tid).name}: roster moves"
     return (f'<h3 style="margin-top:0">{escape(title)}, {league.season}</h3>'
-            f'<table class="move-list"><thead><tr><th class="l">When</th><th class="l">Team</th>'
-            f'<th class="l">Move</th><th class="l">Player</th><th class="l">Note</th></tr></thead>'
+            f'<table class="ledger-table"><thead><tr><th>When</th><th>Team</th>'
+            f'<th>Move</th><th>Player</th><th>Note</th></tr></thead>'
             f'<tbody>{"".join(lines)}</tbody></table>')
 
 
@@ -365,8 +383,47 @@ def build_roster_tab():
     if not hasattr(state, "roster_group"):
         state.roster_group = GROUPS[0]
 
-    # ---- Your roster: counts, warnings, moves your staff made -----------
+    # ---- Toolbar: the counts as stat pills, then the filters (Gemini's Step 2,
+    # Oct 25: one white strip instead of loose rows on the background) ---------
+    group_tip = ("Roster: the 53 who can play (up to 90 in training camp, until final cuts after the "
+                 "preseason). Practice squad: 16 who practice and can be promoted or elevated for a game. "
+                 "Reserve lists: injured reserve and PUP. Moves: every signing, release and injured "
+                 "reserve move this season.")
     with ui.element("div").classes("w-full px-8 pt-3"):
+        with ui.element("div").classes("page-toolbar"):
+            @ui.refreshable
+            def counts():
+                ui.html(roster_counts_html(), sanitize=False)
+            counts()
+            with ui.element("div").classes("toolbar-group"):
+                with ui.toggle(GROUPS, value=state.roster_group, on_change=lambda e: set_filter(group=e.value)) \
+                        .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9"):
+                    # (A short wait before the tip shows, so it doesn't sit over the table after a click.)
+                    ui.tooltip(group_tip).props("delay=700")
+                ui.toggle(["All", "Offense", "Defense", "Special teams"], value=state.unit,
+                          on_change=lambda e: set_filter(unit=e.value)) \
+                    .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9")
+                position_select = ui.select(["All positions"] + POSITION_ORDER, value=state.position,
+                                            on_change=lambda e: set_filter(position=e.value)) \
+                    .props("dense outlined options-dense").classes("w-44")
+                ui.html('<span class="key"><span class="starter-dot">●</span> Starter on the depth chart '
+                        '<span class="captain-star">★</span> Captain</span>', sanitize=False)
+                if state.team_id == league.user_team_id:
+                    with ui.toggle({False: "I run my practice squad", True: "Staff runs it"},
+                                   value=transactions.staff_runs_practice_squad(league),
+                                   on_change=lambda e: set_ps_staff(e.value)) \
+                            .props("no-caps unelevated dense toggle-color=green-10 color=white text-color=grey-9"):
+                        ui.tooltip(
+                            "You: your moves are never overridden, but whatever you leave undone your staff "
+                            "finishes when the week is simmed (fills empty spots, moves injured players to the "
+                            "practice squad injured list, calls players up when you're short on game day). "
+                            "Staff: your staff also swaps in better young players now and then, elevates "
+                            "players for depth, fills open spots on your 53, and when injuries leave a position "
+                            "thin signs or promotes a player for now and lets a spare player at another position "
+                            "go, like an AI team. Injured reserve, activations and other cuts stay yours.") \
+                            .props("delay=700")
+
+        # ---- Your roster: staff requests, the to-do, moves your staff made ----
         @ui.refreshable
         def notices():
             requests = season.staff_requests(league) if state.team_id == league.user_team_id else []
@@ -387,38 +444,8 @@ def build_roster_tab():
                 ui.html(html, sanitize=False)
         notices()
 
-    # ---- Filters --------------------------------------------------------
-    with ui.row().classes("w-full px-8 pt-3 items-center gap-3"):
-        ui.toggle(GROUPS, value=state.roster_group, on_change=lambda e: set_filter(group=e.value)) \
-            .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9") \
-            .tooltip("Roster: the 53 who can play (up to 90 in training camp, until final cuts after the "
-                     "preseason). Practice squad: 16 who practice and can be promoted or elevated for a game. "
-                     "Reserve lists: injured reserve and PUP. Moves: every signing, release and injured "
-                     "reserve move this season.")
-        ui.toggle(["All", "Offense", "Defense", "Special teams"], value=state.unit,
-                  on_change=lambda e: set_filter(unit=e.value)) \
-            .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9")
-        position_select = ui.select(["All positions"] + POSITION_ORDER, value=state.position,
-                                    on_change=lambda e: set_filter(position=e.value)) \
-            .props("dense outlined options-dense").classes("w-44")
-        ui.html('<span class="key"><span class="starter-dot">●</span> Starter on the depth chart '
-                '<span class="captain-star">★</span> Captain</span>', sanitize=False)
-        if state.team_id == league.user_team_id:
-            ui.element("div").style("flex:1")
-            ui.toggle({False: "I run my practice squad", True: "Staff runs it"},
-                      value=transactions.staff_runs_practice_squad(league),
-                      on_change=lambda e: set_ps_staff(e.value)) \
-                .props("no-caps unelevated dense toggle-color=green-10 color=white text-color=grey-9") \
-                .tooltip("You: your moves are never overridden, but whatever you leave undone your staff "
-                         "finishes when the week is simmed (fills empty spots, moves injured players to the "
-                         "practice squad injured list, calls players up when you're short on game day). "
-                         "Staff: your staff also swaps in better young players now and then, elevates "
-                         "players for depth, fills open spots on your 53, and when injuries leave a position "
-                         "thin signs or promotes a player for now and lets a spare player at another position "
-                         "go, like an AI team. Injured reserve, activations and other cuts stay yours.")
-
     # ---- Table and report ----------------------------------------------
-    with ui.row().classes("w-full px-8 py-3 gap-5 no-wrap items-start"):
+    with ui.row().classes("w-full px-8 pb-3 gap-5 no-wrap items-start"):
         table = ui.table(rows=[], columns=COLUMNS, row_key="id",
                          pagination={"rowsPerPage": 0, "sortBy": "pos"}) \
             .props("flat dense virtual-scroll hide-bottom") \
@@ -433,15 +460,20 @@ def build_roster_tab():
                 ui.html(moves_html(), sanitize=False)
             moves_view()
 
-        with ui.element("div").classes("report px-6 py-5") \
-                .style("flex: 0 0 470px; height: calc(100vh - 230px); overflow-y: auto"):
+        # The docked player report (Gemini's Step 2: a header band, and a framed prompt when empty).
+        # Hidden on the Moves view, which then takes the full width.
+        report_box = ui.element("div").classes("report inspector px-6 py-5") \
+            .style("flex: 0 0 470px; height: calc(100vh - 230px); overflow-y: auto")
+        with report_box:
             @ui.refreshable
             def report():
                 p = next((x for x in league.players if x.id == state.selected_id), None)
+                ui.label("Player report").classes("inspector-header")
                 if p is None:
-                    ui.label("No player selected").classes("panel-heading").style("margin-top:0")
-                    ui.label("Click a player's row for his report and your moves here (release, injured "
-                             "reserve, practice squad...). Click his name for his full player card.")                         .classes("legend")
+                    with ui.element("div").classes("inspector-empty"):
+                        ui.label("No player selected").classes("inspector-empty-title")
+                        ui.label("Click a player's row for his report and your moves here (release, injured "
+                                 "reserve, practice squad...). Click his name for his full player card.")
                 else:
                     ui.button("Open player card", icon="badge",
                               on_click=lambda pid=p.id: popups.show_player(pid)) \
@@ -461,8 +493,10 @@ def build_roster_tab():
         moves = state.roster_group == "Moves"
         table.set_visibility(not moves)
         moves_box.set_visibility(moves)
+        report_box.set_visibility(not moves)        # the Moves list gets the full width
         if moves:
             moves_view.refresh()
+        counts.refresh()
         players = current_players()
         starters = team_starter_ids(state.team_id)
         captains = set(league.captains.get(state.team_id, {}).values())
