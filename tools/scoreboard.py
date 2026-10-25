@@ -72,7 +72,8 @@ SIM_SEASONS = 4
 DRAFT_SEEDS = (101, 102, 104, 105, 106, 107)
 DRAFT_SEASONS = 22
 DET_SEED = 211
-ROOKIE_SEEDS = (301, 302, 303, 304)
+ROOKIE_SEEDS = (301, 302, 303, 304, 305, 306, 307, 308)   # 8: with 4 the per-round shares' noise bands were
+                             # too tight to trust (they flagged luck from small changes; tools/sweep.py check)
 ROOKIE_SEASONS = 7            # classes from the 2nd and 3rd league years followed 5 seasons
 INTEGRATION_SEASONS = 3
 SPEED_SEED = 212

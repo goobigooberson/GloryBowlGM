@@ -18,3 +18,5 @@ tools/data/nflverse/
 # Test saves and screenshots the check tools make (tools/make_test_saves.py, tools/screens_check.py)
 tools/data/test_saves/
 tools/data/screens/
+# Knob sweep runs (tools/sweep.py)
+tools/sweep/

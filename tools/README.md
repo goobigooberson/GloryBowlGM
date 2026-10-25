@@ -56,6 +56,24 @@
     draft, seasons, every offseason phase, save/load at each stage); prints the problems
     found (must be 0). `python tools/integration_check.py --seasons 6` before big commits.
 
+## Tuning: the knob sweep (Oct 25)
+
+- `sweep.py`: tries several values of engine settings side by side on the scoreboard's
+  suites and ranks them against the real NFL. Every combination of the `--try` values (or
+  `--variant` lists of knobs set together) plus the code as it is ("current"), all in one
+  pool. Score = the average gap to real over the target measures, in noise units (lower is
+  closer; under ~1 apart is luck). It also lists side effects: other measures that moved
+  from current beyond 3x the noise. It never writes a setting into the code.
+
+  ```
+  python tools/sweep.py --suites rookies --try "draft.PROSPECT_READY_MEAN=0.80,0.82,0.85" --try "draft.PROSPECT_READY_SD=0.05,0.08"
+  python tools/sweep.py --suites rookies --variant "draft.PROSPECT_READY_MEAN=0.88;draft.PROSPECT_READY_SD=0.05" --leagues 8
+  python tools/sweep.py --suites sim --try "sim.tuning.SOME_K=0.9,1.1" --targets sim.common.edge_sacks>=10
+  ```
+  Writes `sweep/last_sweep.txt` and `.json` (git-ignored). Time: 3 variants x 8 rookie
+  leagues took ~11 minutes. A knob another module copied with `from x import NAME` isn't
+  reached; set it in the module that reads it.
+
 ## Screens: the standard test saves and the every-screen check (Oct 25)
 
 - `make_test_saves.py`: rebuilds 19 saves, one at each moment of a game's year, through the
