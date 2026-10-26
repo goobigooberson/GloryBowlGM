@@ -1,5 +1,5 @@
 # tools/run_tables.py
-# Rebuilds engine/sim/data.py's designed-run yards tables (Oct 25) from real NFL regular seasons
+# Rebuilds engine/sim/data.py's designed-run (Oct 25) and passing (Oct 26) yards tables from real NFL regular seasons
 # 2023-2025 (nflverse play-by-play), at fine quantile points (data.Q_FINE_STEPS: every 1%, plus
 # the rare ends). The other tables use 27 points, and straight lines between them blur whole-yard
 # outcomes: between the 85th percentile of open runs (8 yards) and the 90th (11 yards) they spread
@@ -11,6 +11,19 @@
 #                        (1 to go up the middle: the sim's own play)
 # Inside the 20 the sim shortens runs itself (tuning.RUN_FIELD). Botched snaps and handoffs
 # ("aborted" plays) are left out: the sim plays those separately (tuning.FUMBLE_EXCHANGE).
+# The passing tables too (Oct 26, from the tackles-for-loss check: the coarse tables put too many
+# throws behind the line, receivers 9.6% of targets 3+ yards behind vs real 6.3%, and too few at
+# 1-4 yards, 14.4% vs 17.5%, so catches dropped for a loss ran 0.67 a team game vs real 0.41):
+#   Q_AIR_WR / Q_AIR_TE / Q_AIR_RB   targeted air yards by position on routes that aren't screens
+#                                    (FTN charting marks screens), the whole field. Until Oct 26 these
+#                                    were all targets, screens included, so regular routes went behind
+#                                    the line 3x as often as real (receivers 8.5% vs 2.5%) and the
+#                                    screen play added its own on top.
+#   Q_SCREEN_AIR_RB / _WR            air yards on real screens: to backs / to receivers and tight ends
+#   Q_YAC_SCREEN                     yards after the catch on real screens (blockers set up), outside the 20
+#   Q_YAC_BEHIND / _SHORT / _INTER   yards after the catch by air yards (0 or less / 1-9 / 10-19) on
+#                                    other passes, outside the 20. Until Oct 26 screens were in
+#                                    Q_YAC_BEHIND. Q_YAC_DEEP stays as it is.
 #
 #   python tools/run_tables.py          # prints the tables
 #   python tools/run_tables.py --write  # writes them into engine/sim/data.py
@@ -54,6 +67,39 @@ def runs():
     return out
 
 
+def screens(yr):
+    """FTN charting: {(nflverse game id, play id): is it a screen pass}."""
+    with gzip.open(DATA / "ftn_charting" / f"ftn_charting_{yr}.csv.gz", "rt", encoding="utf-8") as f:
+        return {(r["nflverse_game_id"], r["nflverse_play_id"]): r["is_screen_pass"].lower() in ("true", "1")
+                for r in csv.DictReader(f)}
+
+
+def passes():
+    out = {k: [] for k in ("Q_AIR_WR", "Q_AIR_TE", "Q_AIR_RB", "Q_SCREEN_AIR_RB", "Q_SCREEN_AIR_WR",
+                           "Q_YAC_SCREEN", "Q_YAC_BEHIND", "Q_YAC_SHORT", "Q_YAC_INTER")}
+    for yr in YEARS:
+        with gzip.open(DATA / "stats_player" / f"stats_player_reg_{yr}.csv.gz", "rt", encoding="utf-8") as f:
+            pos = {r["player_id"]: r["position"] for r in csv.DictReader(f)}
+        scr = screens(yr)
+        with gzip.open(DATA / "pbp" / f"play_by_play_{yr}.csv.gz", "rt", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                if r["season_type"] != "REG" or r["play_type"] != "pass" or not r["air_yards"] or not r["receiver_player_id"]:
+                    continue
+                air = float(r["air_yards"])
+                p = {"FB": "RB"}.get(pos.get(r["receiver_player_id"]), pos.get(r["receiver_player_id"]))
+                screen = scr.get((r["game_id"], str(int(float(r["play_id"])))))
+                if p in ("WR", "TE", "RB") and screen is not None:
+                    if screen:
+                        out["Q_SCREEN_AIR_RB" if p == "RB" else "Q_SCREEN_AIR_WR"].append(air)
+                    else:
+                        out["Q_AIR_" + p].append(air)
+                if r["complete_pass"] == "1" and float(r["yardline_100"] or 50) > OPEN_FROM and air <= 19                         and screen is not None:
+                    k = "Q_YAC_SCREEN" if screen else (
+                        "Q_YAC_BEHIND" if air <= 0 else ("Q_YAC_SHORT" if air <= 9 else "Q_YAC_INTER"))
+                    out[k].append(float(r["yards_after_catch"] or 0))
+    return out
+
+
 def table(v):
     v = sorted(v)
     n = len(v)
@@ -67,9 +113,9 @@ def table(v):
 
 def main():
     lines = {"Q_FINE_STEPS": f"Q_FINE_STEPS = {STEPS}"}
-    for name, v in runs().items():
+    for name, v in list(runs().items()) + list(passes().items()):
         lines[name] = f"{name} = {table(v)}"
-        print(f"# {name}: {len(v)} runs, {sum(v) / len(v):.2f} yards each")
+        print(f"# {name}: {len(v)} plays, {sum(v) / len(v):.2f} yards each")
     for s in lines.values():
         print(s)
     if "--write" in sys.argv:
