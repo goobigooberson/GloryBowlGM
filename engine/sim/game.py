@@ -547,6 +547,7 @@ class Game:
                 return
 
         res = self._resolve(call, dcall, off, deff)
+        P.marked_short(st, res, rng)
         res.on_field_off = {p.id for p in call.lineup.values() if p}
         res.on_field_def = {p.id for p in dcall.lineup.values() if p}
         live = None

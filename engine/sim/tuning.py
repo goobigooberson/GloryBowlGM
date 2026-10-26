@@ -31,6 +31,28 @@ CLEANUP_WEIGHT = {"DE": 0.4, "DT": 0.25}  # who finishes a clean-up sack (blitze
                              # too many second ends reached 10 sacks: 23.5 10+ sack seasons and 12.6 12+
                              # vs real 18.8 / 9.8 on settled leagues; team #2 sacker 7.4 vs real 6.8;
                              # sacks from players with under 3 just 20% vs real 26%.)
+# 3rd/4th down: QBs look for routes past the sticks and away from ones well short of them.
+STICKS_TARGET_K = 0.35       # tested Oct 25: 0.8 (real QBs throw past the sticks on 3rd down: 8.3 air yards on 3rd & 3-6
+                             # and 10.1 on 3rd & 7-10, the game 6.9 / 8.9)
+SHORT_OF_STICKS_K = 0.30
+STICKS_TARGET_MAX = 99       # tested: 10 (beyond it, only STICKS_LONG_SCALE of the pull)...
+STICKS_LONG_SCALE = 1.0      # tested: 0.4 (on 3rd and very long QBs mostly take what's there: real 8.1 air yards)
+STICKS_SHORT = 0.0           # chance a run or catch that ends exactly at the line to gain is marked a yard short
+                             # (plays.marked_short); tested: 0.5
+# Obvious passing downs (plays.pass_down): how sure the defense is that a pass is coming. Built Oct 25 and
+# switched OFF (all strengths 0 = the game as before) for Blake to decide: see docs/build-log.md, "The
+# follow-ups". Real defenses play early downs and passing downs differently and the sim doesn't: real sacks
+# 4.8% of dropbacks on 1st & 10 vs 10.1-10.6% on 3rd & 3-10, completions 69% vs 57-59% (nflverse 2023-25,
+# neutral score); the game has sacks flat at ~6% and completions 66.5% vs 62-66%. Tested values below.
+PASS_DOWN_SHORT = 0.4        # 3rd/4th and 1-2 (the run is still a threat) vs 1.0 for 3rd/4th and 3+
+PASS_DOWN_CATCHUP = 0.4      # 4th quarter down 9+, or the hurry-up
+PASS_DOWN_CENTER = 0.36      # the level the rush is measured from, so league sacks don't move (dropbacks average 0.32)
+PASS_DOWN_RUSH = 0.0         # log of how much faster the rush gets home per level; tested: 0.5
+PASS_DOWN_COVER = 0.0        # completion logit per level; tested: 0.2
+PASS_DOWN_INT = 0.0          # interception log-odds per level; tested: 0 (0.3 ran interception leaders high)
+PASS_DOWN_SACK = 0.0         # sack-given-pressure logit per level (the QB holds it for routes past the sticks); tested: 0.4
+PASS_DOWN_LONG_COVER = 0.4   # coverage's level on 3rd/4th and 11+ (soft: it gives up the underneath throw)
+PASS_DOWN_CENTER_COVER = 0.28 # the coverage level's league average over pass attempts (measured)
 SACK_CLEANUP = 0.45          # share of sacks finished by someone other than the man who won first
                              # (Oct 19: 0.55 -> 0.45; sacks were spread too evenly: leader 17.3 vs real 20.1, too many 10-12 sack rushers)
 
@@ -157,6 +179,9 @@ QB_RUN_MOBILITY_K = 1.5      # logit per z of QB scrambling
                              # truly mobile QB: real top QBs 86/64/44/23/13 designed carries a season
                              # (#1/#3/#5/#10/#20, sneaks included) vs the game's 55/38/34/25/17, so the game's
                              # 600-yard rushers got there almost all on scrambles. League QB runs unchanged.)
+QB_RUN_FIELD_SCALE = 0.4     # how much of the goal-line squeeze (RUN_FIELD) a QB keeper feels, vs a back's 1.0
+                             # (Oct 25: the defense has to account for him, so keepers lose less near the goal line:
+                             # real inside the 10 3.09 yards vs 5.16 in the open field; the game had 1.84 at 1.0)
 QB_KEEP_SKILL_K = 3.2        # how much the QB's mobility (scrambling) moves a designed QB run, vs 1.0 for a back's skills
                              # (Oct 25: was 0.8, built into plays.run_play. Real defenses have to respect a running
                              # QB on a keeper: the most mobile QBs gain 6.2 yards a keeper in the open field vs 4.7
