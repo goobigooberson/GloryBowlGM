@@ -13,6 +13,7 @@ from html import escape
 from nicegui import ui
 
 from engine import awards as AW
+from engine import hall_of_fame as HOF
 from engine import stats as ST
 from engine.scale import shown
 from .state import state, injury_text
@@ -78,7 +79,15 @@ def card_header(league, p):
         ui.html(f'<span class="pos-tag" style="{theme.position_style(p.position)};font-size:28px;'
                 f'padding:4px 12px">{p.position}</span>', sanitize=False)
         with ui.column().classes("gap-0"):
-            ui.label(p.name).classes("team-name")
+            with ui.row().classes("items-center gap-3"):
+                ui.label(p.name).classes("team-name")
+                m = HOF.member(league, p.id)
+                if m:
+                    from .history_page import CSS as HIST_CSS
+                    ui.add_head_html(HIST_CSS)
+                    ui.html(f'<span class="hof-badge" title="Elected by {m["votes"]} of {HOF.VOTERS} voters'
+                            f'{", first ballot" if m["ballot"] == 1 else ""}">Hall of Fame · Class of '
+                            f'{m["class_of"]}</span>', sanitize=False)
             inj = injury_text(p.id)
             ui.label(team + (f"   ·   {inj}" if inj else "")).classes("opacity-80")
 
@@ -111,9 +120,14 @@ def card_body(league, p):
             ui.html(report_html(p, with_stats=False, part="ratings"), sanitize=False)
         with ui.element("div").classes("report px-5 py-4").style("flex: 1 1 560px; min-width: 0; overflow-x: auto"):
             honors = AW.player_honors(league, p.id)
+            hof = HOF.member(league, p.id)
+            if hof:
+                honors = [(hof["season"], -1, f"{HOF.summary_text(league, p.id)}: elected by {hof['votes']} of "
+                                              f"{HOF.VOTERS} voters")] + honors
             if honors:
                 ui.label("Awards and honors").classes("condensed").style("font-size:30px;font-weight:700;line-height:1.1")
-                ui.label(AW.honors_summary(league, p.id)).classes("legend")
+                ui.label(" · ".join(x for x in (HOF.summary_text(league, p.id), AW.honors_summary(league, p.id))
+                                    if x)).classes("legend")
                 rows = "".join(f"<tr><td class='l'>{season}</td><td class='l'>{escape(text)}</td></tr>"
                                for season, _sort, text in honors)
                 ui.html(f'<table class="box-table" style="max-width:720px;margin-bottom:14px"><thead><tr>'

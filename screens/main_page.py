@@ -33,6 +33,7 @@ from .playoffs_page import build_playoffs_tab
 from .game_page import build_game_tab
 from .news_page import build_news_tab
 from .awards_page import build_awards_tab
+from .history_page import build_history_tab, build_records_tab, build_hof_tab
 
 
 class _NoGame:
@@ -65,7 +66,8 @@ def build_page():
     # Draft page: no rosters, games or contracts yet), and the one to open on.
     startup = draft_day.in_startup(league)
     pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Trades", "Staff", "Draft", "Depth chart", "Position counts",
-                                        "Schedule", "Standings", "Stats", "Playoffs", "Bitter", "Awards", "Game"]
+                                        "Schedule", "Standings", "Stats", "Playoffs", "Bitter", "Awards", "History",
+                                        "Records", "Hall of Fame", "Game"]
     if not startup and not season.in_offseason(league):
         pages.remove("Draft")    # Blake: the Draft section shows only in the offseason (scouting is offseason-only)
     phase = season.offseason_phase(league)
@@ -418,6 +420,9 @@ def build_page():
             playoffs_tab = ui.tab("Playoffs")
             news_tab = ui.tab("Bitter")      # the league's social media site (Blake's name, Oct 23)
             awards_tab = ui.tab("Awards")
+            history_tab = ui.tab("History")          # league history, the record book, the Hall of Fame
+            records_tab = ui.tab("Records")          # (history_page.py, Oct 25)
+            hof_tab = ui.tab("Hall of Fame")
             game_tab = ui.tab("Game")
     # Come back to the tab you were on (e.g. after opening a player card). Bitter is
     # rebuilt only while you're looking at it (it rebuilds the whole season's news, ~1 s
@@ -430,6 +435,21 @@ def build_page():
         v = tabs.value
         return v is news_tab or v == "Bitter" or getattr(v, "props", {}).get("name") == "Bitter"
 
+    # History, Records and Hall of Fame are drawn only while you're looking at them (the record
+    # book adds up every career); otherwise they catch up when you open them.
+    lazy_pages = {}           # page -> [draw it now, out of date?]
+
+    def lazy(page, refresh_now):
+        lazy_pages[page] = [refresh_now, True]
+
+        def refresh(*_a, **_k):
+            if showing["page"] == page:
+                lazy_pages[page][1] = False
+                refresh_now()
+            else:
+                lazy_pages[page][1] = True
+        return refresh
+
     # Home is redrawn only while you're looking at it, like Bitter (it reads the news).
     home_stale = {"yes": False}
 
@@ -441,6 +461,10 @@ def build_page():
         if news_stale["yes"] and news_showing():
             news_stale["yes"] = False
             refresh_news_now()
+        entry = lazy_pages.get(showing["page"])
+        if entry and entry[1]:
+            entry[1] = False
+            entry[0]()
         if home_stale["yes"] and showing["page"] == "Home":
             home_stale["yes"] = False
             refresh_home_now()
@@ -453,6 +477,7 @@ def build_page():
     refresh_staff = noop
     refresh_trades = noop
     refresh_standings = refresh_stats = refresh_playoffs = refresh_news = refresh_awards = noop
+    refresh_history = refresh_records = refresh_hof = noop
     refresh_home = noop
 
     async def home_settle():
@@ -521,9 +546,18 @@ def build_page():
                         news_stale["yes"] = True
             with ui.tab_panel(awards_tab).classes("p-0"):
                 refresh_awards = build_awards_tab()
+            with ui.tab_panel(history_tab).classes("p-0"):
+                refresh_history = lazy("History", build_history_tab())
+            with ui.tab_panel(records_tab).classes("p-0"):
+                refresh_records = lazy("Records", build_records_tab())
+            with ui.tab_panel(hof_tab).classes("p-0"):
+                refresh_hof = lazy("Hall of Fame", build_hof_tab())
             with ui.tab_panel(game_tab).classes("p-0"):
                 game_ctrl = build_game_tab(on_season_game_done=lambda: after_games(follow_week=False),
                                            on_open_summary=lambda gid: open_summary(gid))
+    if first_page in lazy_pages:          # opening straight onto one of the drawn-when-shown pages
+        lazy_pages[first_page][1] = False
+        lazy_pages[first_page][0]()
 
     # ---- Simming (one small window that shows progress) ----------------
     with ui.dialog().props("persistent") as sim_dialog, ui.card().classes("p-6").style("min-width:420px"):
@@ -746,6 +780,9 @@ def build_page():
         refresh_playoffs()
         refresh_news()
         refresh_awards()
+        refresh_history()
+        refresh_records()
+        refresh_hof()
         refresh_home()
         game_ctrl.refresh()
 

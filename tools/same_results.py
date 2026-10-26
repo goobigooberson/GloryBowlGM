@@ -76,9 +76,12 @@ def worker(root, seed, seasons, games, out):
     Path(out).write_text(json.dumps({"cps": cps, "cpu": cpu}))
 
 
-def compare(a, b):
-    """(first differing checkpoint and parts, or None; checkpoints compared)."""
+def compare(a, b, ignore=()):
+    """(first differing checkpoint and parts, or None; checkpoints compared). ignore: League fields
+    left out (a new field the earlier version doesn't have)."""
     for (la, pa), (lb, pb) in zip(a["cps"], b["cps"]):
+        pa = {k: v for k, v in pa.items() if k not in ignore}
+        pb = {k: v for k, v in pb.items() if k not in ignore}
         if la != lb or pa != pb:
             return f"{la}: {sorted(k for k in set(pa) | set(pb) if pa.get(k) != pb.get(k))}", len(a["cps"])
     if len(a["cps"]) != len(b["cps"]):
@@ -93,6 +96,7 @@ def main():
     ap.add_argument("--seeds", type=int, nargs="+", default=[101, 202, 303])
     ap.add_argument("--seasons", type=int, default=1)
     ap.add_argument("--games", choices=("fast", "real"), default="fast")
+    ap.add_argument("--ignore", nargs="*", default=[], help="League fields to leave out (new ones main lacks)")
     ap.add_argument("--worker", nargs=5, help=argparse.SUPPRESS)
     a = ap.parse_args()
     if a.worker:
@@ -120,7 +124,7 @@ def main():
         bad = 0
         for seed in a.seeds:
             res = {side: json.loads(out.read_text()) for s, side, out, _p in procs if s == seed}
-            diff, n = compare(res["old"], res["new"])
+            diff, n = compare(res["old"], res["new"], a.ignore)
             cpu = {side: sum(v for k, v in r["cpu"].items() if k != "fingerprint") for side, r in res.items()}
             parts = len(res["new"]["cps"][0][1])
             print(f"  seed {seed}: {'IDENTICAL' if diff is None else 'DIFFERENT at ' + diff} "

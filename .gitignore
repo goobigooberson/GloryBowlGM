@@ -20,3 +20,5 @@ tools/data/test_saves/
 tools/data/screens/
 # Knob sweep runs (tools/sweep.py)
 tools/sweep/
+# Hall of Fame lab leagues (tools/hof_check.py run)
+tools/data/hof/

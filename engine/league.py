@@ -131,6 +131,8 @@ class League:
     news_archive: dict = None                        # finished seasons' news, kept as it was (news.py)
     trades: dict = None                              # player trades: traded picks, the log, GMs' moods,
                                                      # offers to you (trades.py)
+    history: dict = None                             # the record book's best single games (history.py);
+                                                     # the Hall of Fame is kept with the awards
 
     def team_players(self, team_id):
         """The team's 53-man roster (the players who can play)."""

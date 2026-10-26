@@ -42,6 +42,7 @@
   python tools/same_results.py                                   # seeds 101 202 303, 1 season, fast games
   python tools/same_results.py --ref 8e2eea9 --seasons 3
   python tools/same_results.py --games real --seeds 101 --seasons 2
+  python tools/same_results.py --ignore history awards           # leave out League fields main doesn't have yet
   ```
 
 - Checks the scoreboard also runs, each usable alone (Oct 25):
@@ -185,6 +186,14 @@ python tools/recenter.py --write      # then write the new centers into engine/s
   the fan personality boost, replacements) and Players of the Week. Seasons are cached in
   your temp folder (`fof_awards_cache`, safe to delete); `--report-only --rescore` re-votes them with the current knobs
   in `engine/awards.py`. Writes `awards_report.txt`.
+- `hof_check.py` - the Hall of Fame (`engine/hall_of_fame.py`) against the real one. `real`
+  rebuilds `real_hof.json` from nflverse `draft_picks` (1980-2005 classes, careers over by 2015:
+  who got in by first-team All-Pros, Pro Bowls and position, and the logistic fit of what voters
+  weigh, which is where `hall_of_fame.CASE_*` come from). `run --leagues 4 --seasons 22` plays lab
+  leagues with the real sim (about an hour, in parallel) and keeps each as
+  `data/hof/<seed>.db` (a save file) and `.json`; `report` re-reads them: each whole-career retiree's odds of
+  getting in someday (played through the Hall's vote) by All-Pros, Pro Bowls and position vs real,
+  inductees a year, first-ballot share, and the leagues' own classes.
 - `real_awards.py` - the real AP award winners 2000-2025 with their stats and team records (from
   the nflverse files in `data/`); run it alone to print the real profiles
 - `game_extremes_check.py` - how often one-game spikes happen per season (400-yard and 5-TD passing

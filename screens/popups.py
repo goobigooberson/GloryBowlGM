@@ -272,6 +272,7 @@ def open_team(tid):
                 .classes("fof-tabs w-full") as tabs:
             t_sum = ui.tab("Team summary")
             t_roster = ui.tab("Roster")
+            t_hist = ui.tab("History")       # year by year, best players, franchise records (history_page.py)
             t_front = ui.tab("Front office") if getattr(league, "staff", None) else None
         with ui.tab_panels(tabs, value=t_sum, animated=False).classes("w-full") \
                 .style("background:transparent"):
@@ -293,6 +294,9 @@ def open_team(tid):
                     .props("flat dense hide-bottom").classes("roster-table w-full")
                 RP.add_table_slots(table)
                 table.on("rowClick", lambda e: open_player(e.args[1]["id"]))
+            with ui.tab_panel(t_hist).classes("px-6 py-4"):
+                from . import history_page as HP
+                ui.html(HP.franchise_html(league, tid), sanitize=False).classes("w-full")
             if t_front is not None:
                 with ui.tab_panel(t_front).classes("px-6 py-4"):
                     _front_office(league, tid)

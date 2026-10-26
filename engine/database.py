@@ -203,6 +203,8 @@ def save_league(league: League, path, created=None):
         "trades": json.dumps(getattr(league, "trades", None) or {}, separators=(",", ":")),
         # Finished seasons' news, kept as it was (news.freeze_season, Oct 22; compressed text).
         "news_archive": json.dumps(getattr(league, "news_archive", None) or {}, separators=(",", ":")),
+        # The record book's best single games (history.py, Oct 25).
+        "history": json.dumps(getattr(league, "history", None) or {}, separators=(",", ":")),
     }
     db = sqlite3.connect(tmp)
     try:
@@ -536,6 +538,9 @@ def load_league(path):
         league.trades = json.loads(info.get("trades") or "{}")
         # Finished seasons' news (saves from before Oct 22 have none: news writes every season).
         league.news_archive = json.loads(info.get("news_archive") or "{}") or None
+        # The record book's best single games (saves from before Oct 25 have none: the Records
+        # page fills them in once from the history file, history.backfill_games).
+        league.history = _int_keys(json.loads(info.get("history") or "{}")) or None
         from . import staff
         if not league.staff:
             staff.ensure(league)
