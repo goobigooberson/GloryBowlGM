@@ -281,8 +281,8 @@ def main():
               "read def = the opposing offense's edge from reading the bot's defense)."]
     text = "\n".join(lines)
     print(text)
-    Path(a.out).write_text(text + "\n", encoding="utf-8")
-    Path(a.out).with_suffix(".json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
+    Path(a.out).write_text(text + "\n", encoding="utf-8", newline="\n")
+    Path(a.out).with_suffix(".json").write_text(json.dumps(summary, indent=1), encoding="utf-8", newline="\n")
 
 
 if __name__ == "__main__":
