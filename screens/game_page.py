@@ -5,8 +5,17 @@
 # every play; the box score fills in as you go. (The old "any two teams"
 # exhibition picker is gone: preseason games are scheduled, as in the NFL.)
 #
+# Take over play calling (Oct 25; Blake: "one very important thing in fof8
+# was the ability to call plays while watching the game of your team"): a
+# box next to the speed buttons, like FOF8's. While it's ticked the game
+# stops on each of your snaps, offense or defense, and shows the menu with
+# your coordinator's suggestion; untick it and the call on screen goes to
+# the staff and the game runs on by itself again. Tick and untick as often
+# as you like, at any speed.
+#
 # This screen only SHOWS the game. Every football decision is made by the
-# game engine (engine/sim), so it can be tuned without touching this file.
+# game engine (engine/sim), so it can be tuned without touching this file;
+# what the menu offers and how calls are read is engine/sim/playcalling.py.
 
 from html import escape
 
@@ -15,6 +24,8 @@ from nicegui import ui
 from engine import season
 from engine.sim.norms import build_norms
 from engine.sim import text as T
+from engine.sim import playcalling
+from engine.sim.game import ASK
 from engine.sim.stats import passer_rating
 from .state import state, mark_changed
 
@@ -52,6 +63,9 @@ class Viewer:
         self.last_drive = None
         self.shown = 0              # how many log events are on screen
         self.finished = False
+        self.take_over = False      # "Take over play calling" is ticked
+        self.my_idx = None          # your team's index in the game (0 home, 1 away), if it's in it
+        self.your_call = None       # the label of the call you just made, tagged on the next play
 
 
 _norms_cache = {}
@@ -396,6 +410,30 @@ TALE_CSS = """
 """
 
 
+# The call panel (Take over play calling).
+CALL_CSS = """
+<style>
+  .call-panel { max-width: 1180px; background: var(--paper); border: 1px solid var(--line);
+                border-left: 4px solid var(--flag); border-radius: 3px; padding: 10px 14px;
+                box-shadow: 0 1px 3px rgba(20, 40, 30, .10); }
+  .call-head { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px;
+               letter-spacing: .03em; color: var(--ink); }
+  .call-head .side { background: var(--turf); color: white; border-radius: 3px; padding: 1px 8px;
+                     margin-right: 8px; font-size: 15px; letter-spacing: .08em; }
+  .call-head .side.def { background: #9B2C2C; }
+  .call-staff { font-size: 14px; color: var(--ink-soft); }
+  .call-staff b { color: var(--ink); }
+  .call-warn { font-size: 13.5px; color: #8A5A00; background: #FFF6D6; border: 1px solid #F0D98A;
+               border-radius: 3px; padding: 2px 8px; }
+  .call-btn.suggested { box-shadow: inset 0 0 0 2px var(--flag); }
+  .call-legend { font-size: 12.5px; color: var(--ink-soft); }
+  .pbp-yourcall { display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: .05em;
+                  background: var(--flag); color: var(--ink); border-radius: 2px; padding: 0 5px;
+                  margin-right: 6px; text-transform: uppercase; }
+</style>
+"""
+
+
 def _unit_avg(league, tid, starters, unit):
     from engine.scale import seen
     from . import theme
@@ -528,7 +566,17 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
             speed_toggle = ui.toggle(list(SPEEDS), value=viewer.speed, on_change=lambda e: set_speed(e.value)) \
                 .props("no-caps dense toggle-color=green-10")
             end_btn = ui.button("Sim to the end", on_click=lambda: sim_to_end()).props("no-caps flat color=green-10")
+            take_box = ui.checkbox("Take over play calling", value=False, on_change=lambda e: set_take_over(e.value)) \
+                .props("color=green-10").classes("ml-4")
+            with take_box:
+                ui.tooltip("Call your team's plays, offense and defense, from the next snap. Untick to hand "
+                           "play calling back to your staff; tick and untick as often as you like.") \
+                    .props("delay=900")
         controls.set_visibility(False)
+
+        ui.add_head_html(CALL_CSS)
+        call_box = ui.column().classes("w-full gap-1 call-panel")
+        call_box.set_visibility(False)
 
         with ui.row().classes("w-full gap-6 items-start no-wrap") as main:
             with ui.column().classes("gap-1").style("flex: 1 1 58%; min-width: 0"):
@@ -570,8 +618,17 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
         begin(season.new_game(league, g, norms_for(league)))
         this_week.refresh()
 
+    def caller(game, idx, kind, suggested):
+        """Your team's play caller: ask the screen while the box is ticked, else the staff calls it."""
+        return ASK if viewer.take_over else None
+
     def begin(game):
         viewer.game = game
+        viewer.my_idx = next((i for i, t in enumerate(game.teams) if t.id == league.user_team_id), None)
+        if viewer.my_idx is not None:
+            game.callers[viewer.my_idx] = caller
+        take_box.set_visibility(viewer.my_idx is not None)
+        viewer.your_call = None
         viewer.gen = viewer.game.events()
         viewer.last_drive = None
         viewer.shown = 0
@@ -591,12 +648,77 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
         timer.activate()
         refresh_all()
 
+    def set_take_over(on):
+        viewer.take_over = bool(on)
+        game = viewer.game
+        if not on and game is not None and game.awaiting:
+            answer(None)            # the call on screen goes to the staff; the game runs on
+
+    def show_call():
+        """The menu for the call the game is waiting for."""
+        game = viewer.game
+        p = playcalling.prompt(game)
+        call_box.clear()
+        if p is None:
+            call_box.set_visibility(False)
+            return
+        st = game.state
+        me, them = game.teams[p["team"]], game.teams[1 - p["team"]]
+        off, deff = game.teams[st.poss], game.teams[1 - st.poss]
+        defense = p["kind"] == "defense"
+        if p["kind"] == "pat":
+            where = "Try after touchdown"
+        else:
+            where = f"{T.down_text(st.down, st.togo, st.yl)} at {T.spot(st.yl, off.abbrev, deff.abbrev)}"
+        period = f"Q{st.qtr}" if st.qtr <= 4 else "OT"
+        score = f"{me.abbrev} {st.score[p['team']]}, {them.abbrev} {st.score[1 - p['team']]}"
+        who = f'{escape(p["staff_title"])} <b>{escape(p["staff_name"])}</b>' if p["staff_name"] else "Your staff"
+        with call_box:
+            ui.html(f'<div class="call-head"><span class="side{" def" if defense else ""}">'
+                    f'{"DEFENSE" if defense else "OFFENSE"}</span>Your call: {escape(where)} &middot; {period} '
+                    f'{T.clock_text(st.clock)} &middot; {escape(score)}</div>')
+            with ui.row().classes("items-center gap-3"):
+                ui.html(f'<div class="call-staff">{who} suggests: <b>{escape(p["suggested_label"])}</b></div>')
+                ui.button("Coach's call", on_click=lambda: answer(None)) \
+                    .props("no-caps unelevated dense color=green-10").classes("px-3") \
+                    .tooltip("Run the play your staff suggests")
+            if p["keying"]:
+                ui.html(f'<div class="call-warn">{who}: "They\'re keying on {escape(", ".join(p["keying"]))}. '
+                        f'Mix it up."</div>')
+            with ui.row().classes("gap-2 flex-wrap"):
+                for key, label in p["options"]:
+                    b = ui.button(label + (" ★" if key in p["fits"] else ""), on_click=lambda k=key: answer(k)) \
+                        .props("no-caps outline dense color=green-10").classes("call-btn px-3")
+                    if key == p["suggested"]:
+                        b.classes("suggested")
+                        b.tooltip("Your staff's suggestion")
+                    elif key in p["fits"]:
+                        b.tooltip("Fits your coordinator's scheme: runs a little better")
+            ui.label("★ fits your coordinator's scheme. The other side reads your calls: call something "
+                     "more often than your staff would and they start to expect it.").classes("call-legend")
+        call_box.set_visibility(True)
+
+    def answer(key):
+        game = viewer.game
+        if game is None or not game.awaiting:
+            return
+        p = playcalling.prompt(game)
+        viewer.your_call = None if key is None else dict(p["options"]).get(key, key)
+        game.answer = key
+        call_box.set_visibility(False)
+        with log_box:               # (the clicked button is about to be cleared away with the menu)
+            step(force=True, answered=True)     # the play you called
+            if not game.awaiting:
+                call_box.clear()
+        if viewer.running and not viewer.finished and viewer.game is not None and not viewer.game.awaiting:
+            timer.activate()
+
     def toggle():
         if viewer.finished:
             return
         viewer.running = not viewer.running
         play_btn.text = "Pause" if viewer.running else "Resume"
-        if viewer.running:
+        if viewer.running and not viewer.game.awaiting:
             timer.activate()
         else:
             timer.deactivate()
@@ -621,15 +743,23 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
                 if ev.kind in ("play", "penalty", "punt", "fg") and ev.drive != viewer.last_drive:
                     viewer.last_drive = ev.drive
                     ui.html(drive_header_html(game, ev)).classes("w-full")
-                ui.html(event_html(game, ev)).classes("w-full")
+                html = event_html(game, ev)
+                if viewer.your_call and ev.kind in ("play", "punt", "fg", "two_point", "xp", "penalty"):
+                    # Tag the play you called.
+                    html = html.replace('<div class="pbp-text">', '<div class="pbp-text"><span class="pbp-yourcall">'
+                                        f'Your call: {escape(viewer.your_call)}</span>', 1)
+                    viewer.your_call = None
+                ui.html(html).classes("w-full")
         viewer.shown = len(game.log)
         # Follow the newest play, unless you've scrolled up to read earlier plays.
         ui.run_javascript(FOLLOW_JS)
 
-    def step(force=False):
+    def step(force=False, answered=False):
         if viewer.game is None or viewer.finished:
             timer.deactivate()
             return
+        if viewer.game.awaiting and not answered:
+            return                  # waiting for your call
         if not viewer.running and not force:
             return
         # Skip ahead through events that don't need their own beat (the try
@@ -641,13 +771,26 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
         refresh_all()
         if not more or viewer.game.finished:
             finish()
+            return
+        if viewer.game.awaiting:
+            timer.deactivate()      # the game waits for your call
+            step_btn.disable()
+            show_call()
+        else:
+            step_btn.enable()
 
     def sim_to_end():
         if viewer.game is None or viewer.finished:
             return
         timer.deactivate()
+        viewer.take_over = False
+        take_box.value = False
+        call_box.set_visibility(False)
+        if viewer.game.awaiting:
+            viewer.game.answer = None
         while advance():
-            pass
+            if viewer.game.awaiting:
+                viewer.game.answer = None
         render_new_events()
         refresh_all()
         finish()
@@ -660,6 +803,7 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
         play_btn.disable()
         step_btn.disable()
         end_btn.disable()
+        call_box.set_visibility(False)
         g = viewer.season_game
         if g is not None and viewer.game.finished and not g["played"]:
             season.record_game(league, g, viewer.game)
@@ -693,6 +837,8 @@ def build_game_tab(on_season_game_done=None, on_open_summary=None):
         log_box.clear()
         board.content = ""
         field.content = ""
+        call_box.set_visibility(False)
+        call_box.clear()
         controls.set_visibility(False)
         main.set_visibility(False)
 

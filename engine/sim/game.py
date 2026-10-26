@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 
 from .. import injuries
 from . import coach
+from . import playcalling
 from . import plays as P
 from . import penalties as PEN
 from . import text
@@ -23,6 +24,7 @@ from .stats import BoxScore
 from .weather import generate as generate_weather
 
 OL = ("LT", "LG", "C", "RG", "RT")
+ASK = object()       # a caller's answer: wait for the screen (see Game.callers)
 
 
 @dataclass
@@ -112,6 +114,17 @@ class Game:
         self._ot_first = None
         self._last_play_inbounds = False
         self._detail = ""
+        # Calling your own plays: {team index: caller}. A caller is called as caller(game, team
+        # index, kind, suggested) where kind is "offense", "fourth" (4th down: also "punt" and
+        # "field_goal"), "pat" ("kick", "two_point" or a play to go for two) or "defense", and
+        # suggested is the staff's own call as a menu key (coach.PLAY_MENU / DEF_MENU). It
+        # returns a menu key, None for the staff's call, or ASK to have the game wait:
+        # events() then yields a "call" event (not in the log) with self.awaiting set, and
+        # the snap goes on with self.answer once the screen has filled it in.
+        self.callers = {}
+        self.awaiting = None
+        self.answer = None
+        self.books = {}             # {team index: playcalling.Book} once that team's calls aren't the staff's
 
     # ------------------------------------------------------------------
     # Public
@@ -401,10 +414,25 @@ class Game:
         if self.overtime and self._ot_over() and st.score[off_idx] > st.score[1 - off_idx]:
             yield from self._final()          # the touchdown already won it: no try
             return
-        if coach.go_for_two(rng, st, off_idx):
+        two = coach.go_for_two(rng, st, off_idx)
+        play = None
+        caller = self.callers.get(off_idx)
+        if caller is not None:
+            # Your call: kick, go for two with the coordinator's play, or go for two with your play.
+            suggested = "two_point" if two else "kick"
+            choice = caller(self, off_idx, "pat", suggested)
+            if choice is ASK:
+                choice = yield from self._ask(off_idx, "pat", suggested)
+            if choice in ("kick", "two_point"):
+                two = choice == "two_point"
+            elif choice in coach.PLAY_MENU:
+                two, play = True, ("run_inside" if choice == "sneak" else choice)
+        if two:
             st.yl, st.down, st.togo = 2, 1, 2
             try_state = st.copy()
             call = coach.call_offense(rng, st, off_idx, off, deff)
+            if play is not None and play != coach.choice_of(call):
+                call = coach.call_for_choice(rng, st, off_idx, off, play)
             if call.kind in ("kneel", "spike", "sneak"):
                 call.kind = "pass"
                 call.concept = "quick"
@@ -506,6 +534,23 @@ class Game:
 
         # What are we doing on this snap?
         decision = self._special_decision(off_idx, off, deff)
+        call = None
+        caller = self.callers.get(off_idx)
+        if caller is not None and (decision in (None, "go") or (st.down == 4 and decision in ("punt", "field_goal"))):
+            # Your call (Take over play calling): the coordinator's call is the suggestion.
+            if decision in (None, "go"):
+                call = coach.call_offense(rng, st, off_idx, off, deff)
+            suggested = coach.choice_of(call) if call is not None else decision
+            kind = "fourth" if st.down == 4 else "offense"
+            choice = caller(self, off_idx, kind, suggested)
+            if choice is ASK:
+                choice = yield from self._ask(off_idx, kind, suggested)
+            if choice in ("punt", "field_goal"):
+                decision = choice
+            elif choice is not None and choice != suggested:
+                decision = "go"
+                call = coach.call_for_choice(rng, st, off_idx, off, choice)
+                self._book(off_idx).active_off = True
         if decision == "punt":
             yield from self._punt(off_idx)
             return
@@ -519,7 +564,7 @@ class Game:
             call = coach.OffCall(kind="spike", package="11 personnel", tempo="hurry")
         elif decision == "hail_mary":
             call = coach.OffCall(kind="pass", package="10 personnel", concept="hail_mary", tempo="hurry")
-        else:
+        elif call is None:
             call = coach.call_offense(rng, st, off_idx, off, deff)
         dcall = coach.call_defense(rng, st, def_idx, deff, call)
         short = st.yl <= 3 or (st.togo <= 1 and st.down >= 3)
@@ -534,6 +579,8 @@ class Game:
         if call.lineup.get("QB") is None:
             call.lineup["QB"] = off.special("QB", set(p.id for p in call.lineup.values() if p))
         dcall.loaded = coach.load_box(rng, st, off, call, dcall, getattr(self, "box", None))
+        if self.callers or self.books:
+            yield from self._called_plays(off_idx, def_idx, off, deff, call, dcall)
         before = st.copy()
         if self._drive is None:
             self._open_drive(off_idx, "Start")
@@ -555,6 +602,50 @@ class Game:
         self._detail = text.detail(res, call, dcall, shotgun)
         yield from self._apply_play(res, live, off_idx, before, call, shotgun)
         self._detail = ""
+
+    # ------------------------------------------------------------------
+    # Calling your own plays (playcalling.py)
+    # ------------------------------------------------------------------
+    def _ask(self, team_idx, kind, suggested):
+        """Wait for the screen's answer: yields a "call" event (not in the log)."""
+        st = self.state
+        self.awaiting = {"team": team_idx, "kind": kind, "suggested": suggested}
+        self.answer = None
+        yield Event("call", "", st.qtr, st.clock, st.poss, st.down, st.togo, st.yl, tuple(st.score))
+        choice, self.awaiting = self.answer, None
+        return choice
+
+    def _book(self, team_idx):
+        b = self.books.get(team_idx)
+        if b is None:
+            b = self.books[team_idx] = playcalling.Book(self.teams[team_idx])
+        return b
+
+    def _called_plays(self, off_idx, def_idx, off, deff, call, dcall):
+        """Your defensive call, then how each side's called plays are read (call.read: the
+        offense's edge). Teams nobody has called plays for are untouched."""
+        st = self.state
+        if call.kind not in ("run", "pass", "sneak") or call.concept == "hail_mary":
+            return
+        caller = self.callers.get(def_idx)
+        db = self.books.get(def_idx)
+        dodds = None
+        if caller is not None or db is not None:
+            # The defensive coordinator's normal mix here, before your call changes his.
+            dodds = playcalling.odds_defense(st, def_idx, deff, call, dcall, off, getattr(self, "box", None))
+        if caller is not None:
+            suggested = coach.def_choice_of(dcall)
+            choice = caller(self, def_idx, "defense", suggested)
+            if choice is ASK:
+                choice = yield from self._ask(def_idx, "defense", suggested)
+            if choice is not None and choice != suggested:
+                coach.apply_def_choice(self.rng, dcall, choice)
+                self._book(def_idx).active_def = True
+        ob, db = self.books.get(off_idx), self.books.get(def_idx)
+        if ob is not None and ob.active_off:
+            call.read += ob.offense_edge(st, playcalling.odds_offense(st, off_idx, off), coach.choice_of(call))
+        if db is not None and db.active_def:
+            call.read += db.defense_edge(st, dodds, coach.def_choice_of(dcall))
 
     def _resolve(self, call, dcall, off, deff):
         rng = self.rng

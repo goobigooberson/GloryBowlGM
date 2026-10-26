@@ -679,6 +679,8 @@ def pass_play(g, off, deff, call, dcall, rng):
             if helper and depth >= 16 and ld.get(helper) is not None:
                 cover += 0.25 + 0.15 * deff.z(ld[helper], helper, "zone_cover")
         sep = rec - cover - cls + rng.gauss(0, T.SEPARATION_NOISE)
+        if call.read:
+            sep += T.READ_PASS_SEP * call.read      # a called play the defense was (or wasn't) expecting
         if shaded is not None:
             sep += -T.SHADE_COVER if r is shaded else T.SHADE_OTHERS
         # A receiver who's been fed all game draws tighter coverage.
@@ -1106,6 +1108,8 @@ def run_play(g, off, deff, call, dcall, rng):
         m -= 0.05
     m = soft_cap(T.RUN_CAP, centered("qb_run" if cslot == "QB" else "run", m))
     m += T.UNTRAINED_K * below      # players out of position below every real player's level: not capped
+    if call.read:
+        m += T.READ_RUN_TILT * call.read     # a called play the defense was (or wasn't) expecting
     if cslot == "QB":
         table = data.Q_QB_RUN
     elif st.togo <= 2 and st.yl > 3:
@@ -1164,7 +1168,8 @@ def sneak_play(g, off, deff, call, dcall, rng):
     inner_d = [(s, ld[s]) for s in ("LDT", "RDT", "MLB") if ld.get(s) is not None]
     bo = sum(_run_block_score(off, p, s) for s, p in inner_o) / max(1, len(inner_o))
     bd = sum(_run_def_score(deff, p, s) for s, p in inner_d) / max(1, len(inner_d))
-    p = sigmoid(logit(T.SNEAK_SUCCESS) + centered("sneak", 0.45 * (bo - bd)) - (0.25 if st.togo >= 2 else 0.0))
+    p = sigmoid(logit(T.SNEAK_SUCCESS) + centered("sneak", 0.45 * (bo - bd)) - (0.25 if st.togo >= 2 else 0.0)
+                + T.READ_SNEAK_LOGIT * call.read)
     if rng.random() < p:
         y = st.togo + (1 if rng.random() < 0.3 else 0)
     else:

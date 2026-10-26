@@ -57,6 +57,26 @@
     draft, seasons, every offseason phase, save/load at each stage); prints the problems
     found (must be 0). `python tools/integration_check.py --seasons 6` before big commits.
 
+## Calling your own plays: the balance check (Oct 25)
+
+- `playcall_check.py`: is "Take over play calling" balanced? A bot calls one team's plays in
+  every regular-season game of lab leagues (real games), with a fixed strategy: always run,
+  always throw deep, always play action, random, pass more on early downs, a plausible human,
+  the coordinator's best-fit play every time, going for it on 4th and short, and on defense
+  always blitz, always man, always prevent, always stop the run, random; plus one call of its
+  own each game and then always "Coach's call" (being read must cost it nothing). The bot's side
+  alternates home/away; its point margin a game is compared with "coach" (the staff's own
+  calls: exactly the games nobody calls plays in). `probe:X` gives every offensive play of the
+  bot's side a fixed read X, to see what a read is worth in yards (for the `READ_*` knobs in
+  `engine/sim/tuning.py`).
+
+  ```
+  python tools/playcall_check.py                                  # every strategy, 6 leagues (~20 min)
+  python tools/playcall_check.py --strategies coach,always_deep,probe:-0.2 --leagues 4
+  python tools/playcall_check.py --set READ_PASS_SEP=1.5          # try a knob without editing code
+  ```
+  Writes `tools/playcall_report.txt` and `.json`.
+
 ## Tuning: the knob sweep (Oct 25)
 
 - `sweep.py`: tries several values of engine settings side by side on the scoreboard's
