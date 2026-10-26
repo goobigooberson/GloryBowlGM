@@ -181,6 +181,9 @@ class Tracker:
         self.season_short = Counter()   # AI regular-season team-weeks by players on the 53
         self.season_ps = []         # ...and their practice squad sizes
         self.long_term = []         # tagged players signed long-term, by camp phase (FA.tagged_long_term)
+        self.year_started = False   # a league year begun in this run (the new league's first one is set up, not played)
+        self.dead20 = Counter()     # each team's run of seasons ending with 20%+ of its cap in dead money
+        self.open2 = Counter()      # ...and of league years opening free agency under 2% of the cap
 
     def attach(self, lab):
         for event, fn in (("season_end", self.season_end), ("offseason_start", self.offseason_start),
@@ -217,6 +220,8 @@ class Tracker:
                 "short_51": sum(c for k, c in self.season_short.items() if k <= 51) / n,
                 "short_50": sum(c for k, c in self.season_short.items() if k <= 50) / n,
                 "ps_size": st.mean(self.season_ps) if self.season_ps else None})
+            if self.year_started:
+                self.stats["season_units"][-1].update(self._money_unit(lg))
         self.season_over = 0
         self.season_short, self.season_ps = Counter(), []
         before = {pid: tid for pid, tid in lg.rosters.items()}
@@ -230,9 +235,37 @@ class Tracker:
                     "fair0": len(self.stats["fair"]), "camp0": len(self.stats["camp_unsigned"]),
                     "lt0": len(self.long_term), "sign1": [], "sign2": [], "n_signed": 0}
 
+    def _money_unit(self, lg):
+        """Dead money, restructures and void years over the league year just played (Oct 26),
+        measured at the season's end like Spotrac's team cap tables."""
+        S = lg.season
+        cap = C.cap_for(lg, S)
+        teams = [t.id for t in lg.teams if t.id != lg.user_team_id]
+        dead = sorted(C.charges(lg, t, S) / cap for t in teams)
+        for t in teams:
+            self.dead20[t] = self.dead20[t] + 1 if C.charges(lg, t, S) >= 0.20 * cap else 0
+        rs = lg.fa.get("restructures", {})
+        conv = {t: rs.get(t, (0, 0))[0] / cap for t in teams}
+        ways = lg.fa.get("approach", {})
+
+        def by(way):
+            v = [conv[t] for t in teams if ways.get(t, "normal") == way]
+            return st.mean(v) if v else None
+        n = len(teams)
+        return {"dead_end_mean": st.mean(dead), "dead_end_p90": dead[min(n - 1, int(0.9 * n))],
+                "dead_end_20": sum(x >= 0.20 for x in dead), "dead20_streak_max": max(self.dead20.values()),
+                "restr_none": sum(conv[t] == 0 for t in teams) / n,
+                "restr_mid": sum(0.036 <= conv[t] < 0.082 for t in teams) / n,
+                "restr_big": sum(conv[t] >= 0.082 for t in teams) / n,
+                "restr_mean": st.mean(conv.values()),
+                "restr_allin": by("all_in"), "restr_rebuild": by("rebuild"),
+                "restr_void_years": sum(v[1] for v in rs.values()),
+                "void_deals_open": sum(1 for c in lg.contracts.values() if C.void_list(c))}
+
     def offseason_start(self, lab):
         lg, cur, stats = lab.league, self.cur, self.stats
         cur["S"] = lg.season
+        self.year_started = True
         cur["retired"] = {pid for pid, _t in lg.offseason_report["retired"]}
         cur["rep"] = dict(lg.offseason_report.get("free_agency") or {})
         stats["legal"].append(("league year", [t for t, _ in C.audit(lg)]))
@@ -241,6 +274,17 @@ class Tracker:
         cur["open"] = sorted((C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id),
                              reverse=True)
         stats["fa_open"].append(cur["open"])
+        # Void years that just voided (Oct 26): their money is this league year's dead money.
+        teams = [t.id for t in lg.teams if t.id != lg.user_team_id]
+        vd = lg.fa.get("voided", {})
+        vshare = sorted((vd.get(t, (0, 0))[1] / cap for t in teams), reverse=True)
+        cur["void"] = {"voided": sum(vd.get(t, (0, 0))[0] for t in teams), "voided_teams": sum(t in vd for t in teams),
+                       "void_dead_mean": st.mean(vshare), "void_dead_max": vshare[0],
+                       "void_dead_10": sum(x >= 0.10 for x in vshare)}
+        room = {t.id: C.cap_room(lg, t.id) / cap for t in lg.teams if t.id != lg.user_team_id}
+        for t, r in room.items():
+            self.open2[t] = self.open2[t] + 1 if r < 0.02 else 0
+        cur["void"]["open2_streak_max"] = max(self.open2.values())
 
     def phase_before(self, lab, phase, wave):
         if phase == "fa":
@@ -329,7 +373,9 @@ class Tracker:
         d1 = cur.get("day1") or [0.0] * 32
         u = {"room_w1_most": d1[0], "room_w1_5th": d1[4], "room_w1_median": st.median(d1),
              "room_w1_24th": d1[23], "teams_under_2pct_w1": sum(x < 0.02 for x in d1),
-             "room_open_median": st.median(cur["open"])}
+             "room_open_median": st.median(cur["open"]), "room_open_24th": cur["open"][23],
+             "teams_under_2pct_open": sum(x < 0.02 for x in cur["open"])}
+        u.update(cur.get("void") or {})
         n = sum(move.values()) or 1
         u.update(same_all=move["same"] / n, new_all=move["new"] / n, gone_all=move["gone"] / n)
         for g, _lo, _hi in EXP_GROUPS:

@@ -23,7 +23,8 @@
 #    "bonus" (this year's share of signing/restructure bonuses), "gtd" (the
 #    guaranteed part of this year's base)}, ...], "apy", "value", "guaranteed",
 #    "signing_bonus", "vsb" (veteran salary benefit), "tags" (franchise tags in a
-#    row), "option" (a first-rounder's fifth-year option), "exp_at_signing"}
+#    row), "option" (a first-rounder's fifth-year option), "exp_at_signing",
+#    "void": [{"season", "bonus"}, ...] (void years, below; older saves have none)}
 # kinds: rookie, udfa, veteran, minimum, futures, tag, tender, option,
 #        practice (practice squad, paid by the week), extension
 #
@@ -48,6 +49,17 @@
 #   - Rookie wage scale by draft slot; 4-year deals; first-rounders have a
 #     fifth-year option. Undrafted rookies sign 3-year minimum deals.
 #   - Franchise tag; restricted free agent tenders.
+#   - Void years (Oct 26; docs/research/void_years.md): placeholder seasons after
+#     the last real one, never played, there only so a bonus spreads over more
+#     seasons (still at most 5, void years included). They're kept apart from
+#     "years" (c["void"]: each one's bonus share), so everything that reads the
+#     real years is unchanged. When the real years run out the deal voids before
+#     the new league year and every void-year share speeds onto that league
+#     year's cap at once (dead money). Cut, traded or retired before then, the
+#     void-year shares count as bonus still to come, like any other. Extended
+#     before it voids, the shares stay in their seasons on the new deal. A
+#     restructure may add void years, so even a player in his last season can
+#     be restructured.
 
 import math
 import random
@@ -286,14 +298,44 @@ def years_left(c, season):
     return sum(1 for y in c["years"] if y["season"] >= season)
 
 
+def void_list(c):
+    """The contract's void years [{"season", "bonus"}] (deals from older saves have none)."""
+    return c.get("void") or []
+
+
+def void_bonus(c, season=None):
+    """Bonus money ($K) parked in void years (from `season` on): all of it speeds onto
+    the cap when the deal voids, or counts as bonus still to come if he's cut first."""
+    return sum(v["bonus"] for v in void_list(c) if season is None or v["season"] >= season)
+
+
+def void_room(c, season):
+    """Void years a restructure could still add: the spread runs at most 5 seasons
+    from this one, real and void years together."""
+    voids = sum(1 for v in void_list(c) if v["season"] >= season)
+    return max(0, MAX_PRORATION_YEARS - years_left(c, season) - voids)
+
+
+def void_due(league, tid, season):
+    """Void-year money ($K) that lands on this team's cap in `season` from deals whose
+    real years end the season before (for planning: it's dead money once they void)."""
+    total = 0
+    for pid in players_with_team(league, tid):
+        c = league.contracts.get(pid)
+        if c and c["team"] == tid and c.get("void") and last_season(c) == season - 1:
+            total += void_bonus(c)
+    return total
+
+
 def build(league, pid, tid, kind, start, n_years, apy, guaranteed=0, signing_bonus=None, rise=0.06,
-          week=0, experience=None, note="", bases=None):
+          week=0, experience=None, note="", bases=None, void_years=0):
     """Make a contract (not yet attached to anyone; see sign()).
     apy: average per year ($K); guaranteed: total guaranteed ($K), which is
     the signing bonus plus the earliest base salaries; signing_bonus: $K
     (default: about half the guarantee on multi-year deals); rise: how much
     base salaries climb each year (real deals are back-loaded); bases: exact
-    base salaries (rookie deals)."""
+    base salaries (rookie deals); void_years: placeholder seasons added after
+    the real ones so the signing bonus spreads further (at most 5 in all)."""
     p = league.player(pid)
     exp = p.experience if experience is None else experience
     n_years = max(1, int(n_years))
@@ -323,21 +365,23 @@ def build(league, pid, tid, kind, start, n_years, apy, guaranteed=0, signing_bon
         bases = [int(round(b)) for b in bases]
     else:
         signing_bonus = max(0, total - sum(bases)) if signing_bonus is None else signing_bonus
-    pro_years = min(n_years, MAX_PRORATION_YEARS)
+    void_years = max(0, min(int(void_years), MAX_PRORATION_YEARS - n_years)) if signing_bonus else 0
+    pro_years = min(n_years + void_years, MAX_PRORATION_YEARS)
     pro = [signing_bonus // pro_years + (1 if i < signing_bonus % pro_years else 0) if i < pro_years else 0
-           for i in range(n_years)]
+           for i in range(max(n_years, pro_years))]
     gtd_base = max(0, guaranteed - signing_bonus)
     years = []
     for i in range(n_years):
         g = min(bases[i], gtd_base)
         gtd_base -= g
         years.append({"season": start + i, "base": bases[i], "bonus": pro[i], "gtd": g})
-    value = sum(y["base"] + y["bonus"] for y in years)
+    void = [{"season": start + i, "bonus": pro[i]} for i in range(n_years, pro_years)]
+    value = sum(y["base"] + y["bonus"] for y in years) + sum(v["bonus"] for v in void)
     c = {"pid": pid, "team": tid, "kind": kind, "signed": league.season, "week": week, "years": years,
          "apy": int(round(value / n_years)), "value": value,
          "guaranteed": signing_bonus + sum(y["gtd"] for y in years),
          "signing_bonus": signing_bonus, "vsb": False, "tags": 0, "option": None,
-         "exp_at_signing": exp, "note": note}
+         "exp_at_signing": exp, "note": note, "void": void}
     if kind in ("minimum", "futures") and n_years == 1 and exp >= VSB_EXPERIENCE:
         c["vsb"] = True
     return c
@@ -453,8 +497,9 @@ def room_after(league, tid, new_hit, season=None):
 
 def commitments(league, tid, season):
     """Money already committed to a future season ($K): contracts running into
-    it plus dead money already charged to it (for planning)."""
-    total = charges(league, tid, season)
+    it, dead money already charged to it, and void-year money that will land
+    on it when deals ending the season before void (for planning)."""
+    total = charges(league, tid, season) + void_due(league, tid, season)
     for pid in players_with_team(league, tid):
         c = league.contracts.get(pid)
         if c and c["team"] == tid and c["kind"] != "practice":
@@ -498,7 +543,8 @@ def release_charges(league, c, week=None, june1=False):
             now += base if vested else max(earned, gtd)
         else:
             now += min(base, cur["gtd"])
-    later = sum(y["bonus"] + y["gtd"] for y in future)
+    # Void-year shares are bonus still to come too: they speed up with the rest.
+    later = sum(y["bonus"] + y["gtd"] for y in future) + void_bonus(c)
     if week > 0 or june1 or after_june1(league):
         out[season] = int(round(now))
         if later:
@@ -583,81 +629,115 @@ def retire(league, pid):
                    if c["kind"] != "practice" else cur["base"] * max(0, week - start) / PAY_WEEKS)
     if c["kind"] == "practice":
         return {}
-    rest = sum(y["bonus"] for y in c["years"] if y["season"] >= S)
+    rest = sum(y["bonus"] for y in c["years"] if y["season"] >= S) + void_bonus(c)
     if rest:
         add_charge(league, c["team"], S, rest)
     return {S: rest} if rest else {}
 
 
-def restructure_room(league, c, season=None):
+def restructure_room(league, c, season=None, void=0):
     """Most base salary ($K) that could be turned into bonus this season. During
     the season only the checks still to come can be converted (weeks already
-    paid are paid); once the regular season is over there's nothing left."""
+    paid are paid); once the regular season is over there's nothing left. The
+    money needs a later season to spread into: a later real year, a void year
+    the deal already has, or `void` new void years (so with void years even a
+    player in his last season can be restructured, as real teams do)."""
     season = league.season if season is None else season
     y = _year(c, season)
     if y is None or c["kind"] in ("practice", "rookie", "udfa", "minimum", "futures", "tag", "tender"):
         return 0
-    if years_left(c, season) < 2:
+    spread = years_left(c, season) + sum(1 for v in void_list(c) if v["season"] >= season)
+    if min(MAX_PRORATION_YEARS, spread + max(0, void)) < 2:
         return 0
     p = league.player(c["pid"])
     unpaid = (PAY_WEEKS - pay_week(league)) / PAY_WEEKS if season == league.season else 1.0
     return max(0, int((y["base"] - min_salary(league, p.experience, season)) * unpaid))
 
 
-def _apply_restructure(c, amount, season):
+def restructure_spread(c, season, void=0):
+    """Seasons a restructure now would spread over: the real years left, the void
+    years the deal has, and up to `void` new ones (at most 5 in all)."""
+    spread = years_left(c, season) + sum(1 for v in void_list(c) if v["season"] >= season)
+    return min(MAX_PRORATION_YEARS, spread + max(0, min(void, void_room(c, season))))
+
+
+def _apply_restructure(c, amount, season, void=0):
     """Move `amount` of this season's base into bonus spread over the remaining
-    seasons (at most 5). Returns {season: bonus added}."""
+    seasons, void years included (at most 5), adding up to `void` void years
+    first. Returns {season: bonus added}."""
     rest = [y for y in c["years"] if y["season"] >= season]
-    n = min(len(rest), MAX_PRORATION_YEARS)
+    voids = [v for v in void_list(c) if v["season"] >= season]
+    add = max(0, min(void, void_room(c, season)))
+    if add:
+        last = voids[-1]["season"] if voids else rest[-1]["season"]
+        new = [{"season": last + 1 + i, "bonus": 0} for i in range(add)]
+        c["void"] = void_list(c) + new
+        voids += new
+        c["void_added"] = c.get("void_added", 0) + add
+    slots = (rest + voids)[:MAX_PRORATION_YEARS]
+    n = len(slots)
     rest[0]["base"] -= amount
     rest[0]["gtd"] = min(rest[0]["gtd"], rest[0]["base"])
     added = {}
     for i in range(n):
         share = amount // n + (1 if i < amount % n else 0)
-        rest[i]["bonus"] += share
-        added[rest[i]["season"]] = share
+        slots[i]["bonus"] += share
+        added[slots[i]["season"]] = share
     c["guaranteed"] += amount
     return added
 
 
-def restructure(league, pid, amount=None):
+def restructure(league, pid, amount=None, void=0):
     """Turn some of this season's base salary into a bonus spread over the
     contract's remaining seasons (at most 5): the classic way teams make cap
-    room now at the cost of later years. Returns this season's savings ($K)."""
+    room now at the cost of later years. void: void years to add so it
+    spreads further. Returns this season's savings ($K)."""
     c = league.contracts.get(pid)
     if c is None:
         return 0
     season = league.season
-    room = restructure_room(league, c, season)
+    room = restructure_room(league, c, season, void)
     amount = room if amount is None else max(0, min(room, int(amount)))
     if amount <= 0:
         return 0
-    added = _apply_restructure(c, amount, season)
+    voids_before = len(void_list(c))
+    added = _apply_restructure(c, amount, season, void)
     c["restructured"] = c.get("restructured", 0) + 1
+    # This league year's restructures, by team, for the checks: [$K converted, void years added].
+    fa = getattr(league, "fa", None)
+    if isinstance(fa, dict):
+        rec = fa.setdefault("restructures", {}).setdefault(c["team"], [0, 0])
+        rec[0] += amount
+        rec[1] += len(void_list(c)) - voids_before
     return amount - added[season]
 
 
-def restructure_preview(league, pid, amount=None):
+def restructure_preview(league, pid, amount=None, void=0):
     """What a restructure would do, without doing it: {'max': most that can be
     converted, 'amount', 'savings': cap room this season, 'added': {later
     season: cap hit added}, 'hits': {season: (cap hit before, after)},
     'dead_before' / 'dead_after': dead money if he were cut right after
-    (all seasons)}. None if he has no contract."""
+    (all seasons), 'void_room': void years that could be added, 'void_added',
+    'void_dead': {season: $K} the void years' money when the deal voids}.
+    None if he has no contract."""
     import copy
     c = league.contracts.get(pid)
     if c is None:
         return None
     season = league.season
-    room = restructure_room(league, c, season)
+    room = restructure_room(league, c, season, void)
     amount = room if amount is None else max(0, min(room, int(amount)))
     after = copy.deepcopy(c)
-    added = _apply_restructure(after, amount, season) if amount > 0 else {}
+    added = _apply_restructure(after, amount, season, void) if amount > 0 else {}
     hits = {y["season"]: (cap_hit(league, c, y["season"]), cap_hit(league, after, y["season"]))
             for y in c["years"] if y["season"] >= season}
+    vd = void_bonus(after)
     return {"max": room, "amount": amount, "savings": amount - added.get(season, 0),
             "added": {s: v for s, v in added.items() if s != season}, "hits": hits,
             "dead_before": sum(release_charges(league, c).values()),
-            "dead_after": sum(release_charges(league, after).values())}
+            "dead_after": sum(release_charges(league, after).values()),
+            "void_room": void_room(c, season), "void_added": len(void_list(after)) - len(void_list(c)),
+            "void_dead": {last_season(c) + 1: vd} if vd else {}}
 
 
 # ---------------------------------------------------------------------------
@@ -805,7 +885,10 @@ def option_contract(league, c, salary):
 def start_league_year(league):
     """A new league year (league.season already advanced): set the cap, carry
     over last year's unused space, and return the contracts that ran out
-    {player id: old contract} (they're removed). Practice squad deals end too."""
+    {player id: old contract} (they're removed). Practice squad deals end too.
+    Deals with void years void now: their void-year money all lands on this
+    league year's cap (dead money), unless he was extended before (the
+    extension keeps those shares in their seasons)."""
     ensure(league)
     season = league.season
     set_cap(league, season)
@@ -819,6 +902,7 @@ def start_league_year(league):
     for pid, c in list(league.contracts.items()):
         if last_season(c) is None or last_season(c) < season:
             expired[pid] = league.contracts.pop(pid)
+            add_charge(league, c["team"], season, void_bonus(c))
     return expired
 
 

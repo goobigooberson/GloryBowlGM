@@ -816,7 +816,7 @@ def trade_charges(league, c):
     if cur and week:
         start = c["week"] if c["signed"] == S else 0
         now += C.base_counted(league, c, cur) * max(0, week - start) / C.PAY_WEEKS
-    later = sum(y["bonus"] for y in c["years"] if y["season"] > S)
+    later = sum(y["bonus"] for y in c["years"] if y["season"] > S) + C.void_bonus(c)   # (void years too)
     if week > 0 or C.after_june1(league):
         out = {S: int(round(now))}
         if later:
@@ -834,6 +834,7 @@ def _acquired_contract(league, c, tid):
     new = dict(c)
     years = [dict(y, bonus=0) for y in c["years"] if y["season"] >= S]
     new["years"] = years
+    new["void"] = []           # (its void-year money stayed behind with the bonus)
     new["team"] = tid
     new["signed"] = S
     new["week"] = week if week else 0
@@ -949,6 +950,11 @@ def check_deal(league, a, b, deal, ai_fix=True, release=()):
     exact = _dry_run_room(league, a, b, deal)
     for tid in (a, b):
         after = min(cap[tid]["room_after"], exact[tid])
+        if after < 0 and _ai(league, tid):
+            # An all-in AI team (or a money-pushing GM's) restructures to fit him, with void years
+            # if it leans on them (Oct 26; real deadline deals: the Bills, the Dolphins).
+            from . import free_agency as FA
+            after += FA._restructure_left(league, tid)
         if after < 0 and after < cap[tid]["room_before"]:
             who = "You" if tid == league.user_team_id else league.team(tid).name
             return False, (f"{who} would be {C.fmt_money(-after)} over the salary cap "
@@ -1011,6 +1017,13 @@ def execute(league, a, b, deal, user=False, note=""):
              "picks": {k: {"num": pick_number(league, k), "label": pick_label(league, k)}
                        for k in deal["a"]["picks"] + deal["b"]["picks"]}}
     t["log"].append(entry)
+    for tid in (a, b):
+        if _ai(league, tid) and C.cap_room(league, tid) < 0:
+            # (the restructure check_deal counted on: Oct 26)
+            from . import free_agency as FA
+            rng = random.Random(f"trade-room-{_salt(league)}-{S}-{t['step']}-{tid}")
+            if not FA._make_room(league, tid, 0, rng):
+                FA._comply(league, tid, rng, target=0.0, allow_cuts=False)    # (a little short: any restructure)
     _after(league, a, b, deal)
     room = (league.__dict__.get("_draft_day") or {}).get("room")
     if room is not None:

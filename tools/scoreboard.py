@@ -109,7 +109,18 @@ def _fa_real():
         "fair_good_fa_signings": rf["n_per_season"], "fair_under_60pct": rf["under_60"],
         "fair_under_40pct": rf["under_40"], "fair_minimum": rf["minimum_level"],
         "camp_unsigned_stars": 0.0, "tags": 10.0,
+        # Free agency's opening day, March 2024 (OverTheCap via CBS; teams over the cap counted as 0).
+        "room_open_24th": sorted((x / F.REAL_CAP_2024 for x in F.REAL_FA_OPEN_2024), reverse=True)[23],
+        "teams_under_2pct_open": sum(x / F.REAL_CAP_2024 < 0.02 for x in F.REAL_FA_OPEN_2024),
+        **{k: v for k, v in VOID_REAL.items()},
     }
+
+
+# Void years, restructures and dead money (Oct 26; docs/research/void_years.md, real_void_years.json):
+# Spotrac team cap tables 2022-25 (dead money over the whole league year, share of the cap), OverTheCap
+# void-year tables (2024-25) and restructure study (2013-20, at a $182M cap: $6.5M = 3.6%, $15M = 8.2%).
+VOID_REAL = {k: v["real"] for k, v in json.loads(
+    (ROOT / "docs" / "research" / "real_void_years.json").read_text())["targets"].items()}
 
 
 FA_LABELS = {
@@ -139,6 +150,25 @@ FA_LABELS = {
     "camp_unsigned_stars": ("star-priced players unsigned at camp (your bargain window)", "n"),
     "tags": ("franchise tags", "n"), "cap_cuts": ("cap cuts", "n"), "extensions": ("extensions", "n"),
     "wk1_cap_used": ("cap used at week 1 (average team)", "pct"), "wk1_dead": ("dead money at week 1", "pct"),
+    "room_open_24th": ("cap room when FA opens: 24th", "pct"),
+    "teams_under_2pct_open": ("teams under 2% of the cap when FA opens", "n"),
+    "dead_end_mean": ("dead money over the league year (average team, at season's end)", "pct"),
+    "dead_end_p90": ("...the 90th percentile team", "pct"),
+    "dead_end_20": ("teams with 20%+ of the cap in dead money", "n"),
+    "dead20_streak_max": ("longest run of seasons a team ends with 20%+ dead money", "n"),
+    "open2_streak_max": ("longest run of league years a team opens FA under 2% of the cap", "n"),
+    "restr_none": ("team-years with no restructure", "pct"),
+    "restr_mid": ("team-years restructuring 3.6-8.2% of the cap", "pct"),
+    "restr_big": ("team-years restructuring 8.2%+ of the cap", "pct"),
+    "restr_mean": ("salary restructured a team-year (share of the cap)", "pct"),
+    "restr_allin": ("...all-in teams", "pct"), "restr_rebuild": ("...rebuilding teams", "pct"),
+    "restr_void_years": ("void years added by restructures a league year", "n"),
+    "void_deals_open": ("deals carrying void years at season's end", "n"),
+    "voided": ("deals that void as the league year turns", "n"),
+    "voided_teams": ("teams with a deal voiding", "n"),
+    "void_dead_mean": ("void-year dead money (average team)", "pct"),
+    "void_dead_max": ("void-year dead money: the most of any team", "pct"),
+    "void_dead_10": ("teams with 10%+ of the cap in void-year dead money", "n"),
 }
 MUST_BE_ZERO = {"fa.illegal", "fa.over_cap_team_weeks", "determinism.mismatch", "integration.problems"}
 

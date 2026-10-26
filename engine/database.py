@@ -525,6 +525,8 @@ def load_league(path):
         if "contracts" in tables:
             league.contracts = {r["player_id"]: _int_keys(json.loads(r["data"]))
                                 for r in db.execute("SELECT * FROM contracts")}
+            for c in league.contracts.values():
+                c.setdefault("void", [])      # void years (Oct 26): deals in older saves have none
         if "contract_log" in tables:
             league.contract_log = [json.loads(r["data"]) for r in db.execute("SELECT * FROM contract_log ORDER BY rowid")]
         # Awards (saves from before Oct 23 have none: they start empty).

@@ -1,0 +1,169 @@
+{
+ "source": "Real NFL void years, restructures and dead money: the targets for the game's void years\n(Oct 26, 2026; engine/contracts.py, engine/free_agency.py VOID_*; tools/free_agency_check.py and\ntools/scoreboard.py read real_void_years.json). Write-up: void_years.md.",
+ "dead_by_year": {
+  "2013": {
+   "mean": 0.11,
+   "median": 0.0997,
+   "p90": 0.1446,
+   "max": 0.4304,
+   "teams_20pct": 2
+  },
+  "2014": {
+   "mean": 0.1071,
+   "median": 0.113,
+   "p90": 0.1561,
+   "max": 0.2114,
+   "teams_20pct": 1
+  },
+  "2015": {
+   "mean": 0.1163,
+   "median": 0.1189,
+   "p90": 0.1941,
+   "max": 0.2402,
+   "teams_20pct": 1
+  },
+  "2016": {
+   "mean": 0.0962,
+   "median": 0.0917,
+   "p90": 0.1567,
+   "max": 0.2708,
+   "teams_20pct": 1
+  },
+  "2017": {
+   "mean": 0.0886,
+   "median": 0.0703,
+   "p90": 0.158,
+   "max": 0.2135,
+   "teams_20pct": 1
+  },
+  "2018": {
+   "mean": 0.1122,
+   "median": 0.0927,
+   "p90": 0.1759,
+   "max": 0.3726,
+   "teams_20pct": 3
+  },
+  "2019": {
+   "mean": 0.1201,
+   "median": 0.1103,
+   "p90": 0.1822,
+   "max": 0.3394,
+   "teams_20pct": 3
+  },
+  "2020": {
+   "mean": 0.1192,
+   "median": 0.1081,
+   "p90": 0.1887,
+   "max": 0.2594,
+   "teams_20pct": 3
+  },
+  "2021": {
+   "mean": 0.1474,
+   "median": 0.1365,
+   "p90": 0.2647,
+   "max": 0.3394,
+   "teams_20pct": 6
+  },
+  "2022": {
+   "mean": 0.1687,
+   "median": 0.1339,
+   "p90": 0.2874,
+   "max": 0.4444,
+   "teams_20pct": 9
+  },
+  "2023": {
+   "mean": 0.1676,
+   "median": 0.143,
+   "p90": 0.2965,
+   "max": 0.3587,
+   "teams_20pct": 13
+  },
+  "2024": {
+   "mean": 0.1859,
+   "median": 0.1994,
+   "p90": 0.2812,
+   "max": 0.345,
+   "teams_20pct": 15
+  },
+  "2025": {
+   "mean": 0.1806,
+   "median": 0.1615,
+   "p90": 0.3035,
+   "max": 0.3854,
+   "teams_20pct": 13
+  }
+ },
+ "targets": {
+  "dead_end_mean": {
+   "real": 0.1757,
+   "note": "Spotrac 2022-25 average of team dead money / cap (2013-25: 0.1323)"
+  },
+  "dead_end_p90": {
+   "real": 0.2922,
+   "note": "Spotrac 2022-25, 90th percentile team"
+  },
+  "dead_end_20": {
+   "real": 12.5,
+   "note": "Spotrac 2022-25: teams at 20%+ (9, 13, 15, 13)"
+  },
+  "restr_none": {
+   "real": 0.45,
+   "note": "OTC 2013-20: 45% of team-years without a restructure (2017-19 58%, 2020-21 ~27%)"
+  },
+  "restr_mid": {
+   "real": 0.17,
+   "note": "OTC 2013-20: 3.6-8.2% of the cap"
+  },
+  "restr_big": {
+   "real": 0.2,
+   "note": "OTC 2013-20: 8.2%+ of the cap (2021: 53% by June)"
+  },
+  "voided": {
+   "real": 73,
+   "note": "OTC Jan 2024: 73 deals set to void in 2024 (over 80% do; the rest are extended)"
+  },
+  "voided_teams": {
+   "real": 23,
+   "note": "OTC Jan 2024: 9 teams had none"
+  },
+  "void_dead_mean": {
+   "real": 0.04,
+   "note": "OTC Apr 2023 snapshots: 2024 3.4%, 2025 4.5% of the cap a team on average, a year or more ahead (more get added): about 4%, judgment from snapshots"
+  },
+  "void_dead_max": {
+   "real": 0.22,
+   "note": "OTC Apr 2023: the most 23.0% (2024), 21.1% (2025)"
+  },
+  "void_dead_10": {
+   "real": 3.5,
+   "note": "OTC Apr 2023: teams at 10%+ 2 (2024), 5 (2025)"
+  }
+ },
+ "restructures_by_prior_wins": {
+  "10+": [
+   0.375,
+   0.193,
+   0.216,
+   0.216
+  ],
+  "8-10": [
+   0.408,
+   0.163,
+   0.204,
+   0.224
+  ],
+  "5-8": [
+   0.475,
+   0.2,
+   0.138,
+   0.188
+  ],
+  "0-5": [
+   0.59,
+   0.154,
+   0.154,
+   0.103
+  ],
+  "buckets": "none / up to 3.6% / 3.6-8.2% / 8.2%+ of the cap"
+ }
+}

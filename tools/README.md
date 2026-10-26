@@ -222,7 +222,12 @@ python tools/recenter.py --write      # then write the new centers into engine/s
 - `free_agency_check.py` - contracts, the cap and free agency vs the real NFL (`free_agency_report.txt`), playing the
   game's own offseason phase by phase (as the Next button does), then camp and the cut to 53; incl. the
   "fair price" check against FOF8's cheap-star exploit: do good free agents sign far below their worth while teams
-  have room (real yardstick: `docs/research/fair_price.py`)? `--leagues 101,102,103 --seasons 4` (~5 min)
+  have room (real yardstick: `docs/research/fair_price.py`)? `--leagues 101,102,103 --seasons 4` (~5 min).
+  Since Oct 26 its headline numbers (the scoreboard's `fa.*`) also cover void years, restructures and dead
+  money: deals voiding a league year and their dead money by team, restructures a team-year by size and by
+  approach, dead money over the league year at the season's end (Spotrac's measure), room when free agency
+  opens (24th team, teams under 2%), and cap health (the longest run of seasons a team ends with 20%+ dead
+  money or opens free agency under 2%). Real values: `docs/research/real_void_years.json` (`void_years.py`).
 - `draft_check.py` - the draft vs the real NFL (`draft_report.txt`), incl. sections 14-15, the tight end checks
   against FOF8's "elite TEs fall past pick 8" exploit (rookie draft by true grade, public board and hindsight;
   startup draft vs real contract ranks; real data: `docs/research/te_draft.py`). ~10 min; `--startup-only` ~20 s

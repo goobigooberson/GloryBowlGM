@@ -157,7 +157,8 @@ def payroll_rows(league, tid):
             "ovr": seen(league, p),
             "kind": {"practice": "Practice squad", "futures": "Reserve/future", "tag": "Franchise tag",
                      "tender": "Tender", "rookie": "Rookie", "udfa": "Undrafted rookie", "minimum": "Minimum",
-                     "extension": "Extension", "veteran": "Veteran"}.get(c["kind"], c["kind"].title()),
+                     "extension": "Extension", "veteran": "Veteran"}.get(c["kind"], c["kind"].title())
+                    + (f" + {len(C.void_list(c))} void" if C.void_list(c) else ""),
             "through": C.last_season(c), "left": C.years_left(c, league.season),
             "apy": c["apy"], "apy_t": _m(c["apy"]),
             "hit": C.cap_hit(league, c), "hit_t": _m(C.cap_hit(league, c)),
@@ -355,6 +356,15 @@ def build_contracts_tab(on_change=None):
             f'<tr><td class="l">{y["season"]}</td><td>{_m(y["base"])}</td><td>{_m(y["bonus"])}</td>'
             f'<td>{_m(C.cap_hit(league, c, y["season"]))}</td><td>{_m(y["gtd"])}</td></tr>'
             for y in c["years"] if y["season"] >= league.season)
+        voids = C.void_list(c)
+        rows += "".join(f'<tr><td class="l">{v["season"]} (void)</td><td>-</td><td>{_m(v["bonus"])}</td>'
+                        f'<td>-</td><td>-</td></tr>' for v in voids)
+        void_line = ""
+        if voids:
+            void_line = (f' {len(voids)} void year{"s" if len(voids) != 1 else ""} ({voids[0]["season"]}'
+                         f'{"-" + str(voids[-1]["season"]) if len(voids) > 1 else ""}): never played, there to spread '
+                         f'the bonus; when the deal voids after {C.last_season(c)}, {_m(C.void_bonus(c))} lands on '
+                         f'the {C.last_season(c) + 1} cap as dead money (unless he is extended first).')
         opt = c.get("option") or {}
         opt_line = ""
         if opt.get("exercised") is True:
@@ -365,7 +375,7 @@ def build_contracts_tab(on_change=None):
             opt_line = f' Fifth-year option for {opt["season"]} not decided yet.'
         ui.html(f'<h3>Contract</h3><div class="legend">{escape(c["kind"].title())} deal signed in {c.get("signed", "?")}: '
                 f'{len(c["years"])} years, {_m(c["value"])} in all, {_m(c["guaranteed"])} guaranteed.'
-                f'{" Restructured." if c.get("restructured") else ""}{opt_line}</div>'
+                f'{" Restructured." if c.get("restructured") else ""}{opt_line}{void_line}</div>'
                 f'<table class="box-table" style="margin-top:6px"><thead><tr><th class="l">Season</th><th>Base</th>'
                 f'<th>Bonus</th><th>Cap hit</th><th>Guaranteed</th></tr></thead><tbody>{rows}</tbody></table>',
                 sanitize=False)
@@ -403,6 +413,9 @@ def build_contracts_tab(on_change=None):
             new = prev["contract"]
             yrs = "".join(f'<tr><td class="l">{y["season"]}</td><td>{_m(y["base"])}</td><td>{_m(y["bonus"])}</td>'
                           f'<td>{_m(C.cap_hit(league, new, y["season"]))}</td></tr>' for y in new["years"])
+            # (his old deal's void-year money stays in its seasons: Oct 26)
+            yrs += "".join(f'<tr><td class="l">{v["season"]} (void)</td><td>-</td><td>{_m(v["bonus"])}</td>'
+                           f'<td>-</td></tr>' for v in C.void_list(new))
             body = (f'<div class="legend">{years} new year{"s" if years != 1 else ""} at {_m(apy)} a year, '
                     f'{_m(gtd)} guaranteed: signed through {prev["through"]}.</div>'
                     f'<div class="facts" style="margin-top:6px"><span class="k">Cap hit this season</span>'
@@ -431,23 +444,44 @@ def build_contracts_tab(on_change=None):
         if not ok:
             ui.label(why).classes("legend")
             return
-        first = C.restructure_preview(league, pid)
+        S = league.season
+        can_void = C.void_room(c, S)
+        plain_ok = C.restructure_spread(c, S) >= 2      # (a last-year deal needs void years)
+        st = {"void": 0 if plain_ok else can_void}
+        first = C.restructure_preview(league, pid, None, st["void"])
         amt = ui.number("Salary to turn into bonus ($ millions)", value=round(first["max"] / 1000, 2), step=0.1,
-                        min=0, max=round(first["max"] / 1000, 2), format="%.2f") \
-            .props("dense outlined").classes("w-full mt-1")
+                        min=0, max=round(first["max"] / 1000, 2), format="%.2f")             .props("dense outlined").classes("w-full mt-1")
+        if can_void:
+            lo = 0 if plain_ok else 1
+            opts = {n: (f"{n} void year{'s' if n != 1 else ''}" if n else "No void years") for n in range(lo, can_void + 1)}
+            ui.select(opts, value=st["void"], label="Void years to add (spread it further)",
+                      on_change=lambda e: set_void(e.value)).props("dense outlined").classes("w-full mt-1")
         effect = ui.html("", sanitize=False)
+
+        def set_void(n):
+            st["void"] = int(n or 0)
+            mx = C.restructure_preview(league, pid, None, st["void"])["max"]
+            amt.props(f"max={round(mx / 1000, 2)}")
+            if (amt.value or 0) * 1000 > mx:
+                amt.value = round(mx / 1000, 2)
+            show()
 
         def preview():
             k = int(round((amt.value or 0) * 1000))
-            return C.restructure_preview(league, pid, k)
+            return C.restructure_preview(league, pid, k, st["void"])
 
         def effect_html(pr):
             later = "".join(f'<tr><td class="l">{s}</td><td>{_m(pr["hits"][s][0])}</td><td>{_m(pr["hits"][s][1])}</td></tr>'
                             for s in sorted(pr["hits"]))
+            voids = ""
+            if pr["void_dead"]:
+                vs, vk = next(iter(pr["void_dead"].items()))
+                voids = (f'<span class="k">When the deal voids</span><span>{_m(vk)} of dead money on the {vs} cap '
+                         f'(unless he is extended first)</span>')
             return (f'<div class="facts" style="margin-top:6px"><span class="k">Cap room this season</span>'
                     f'<span>+{_m(pr["savings"])}</span>'
                     f'<span class="k">Dead money if cut after</span><span>{_m(pr["dead_after"])} '
-                    f'(now {_m(pr["dead_before"])})</span></div>'
+                    f'(now {_m(pr["dead_before"])})</span>{voids}</div>'
                     f'<table class="box-table" style="margin-top:6px"><thead><tr><th class="l">Season</th>'
                     f'<th>Cap hit now</th><th>After</th></tr></thead><tbody>{later}</tbody></table>')
 
@@ -457,23 +491,29 @@ def build_contracts_tab(on_change=None):
         show()
         ui.label(f"Up to {_m(first['max'])}: his salary this season above the minimum"
                  + (" still to be paid" if C.pay_week(league) else "")
-                 + ". The money is guaranteed once it's a bonus; it comes back as cap hits in later years.") \
-            .classes("legend mt-1")
+                 + ". The money is guaranteed once it's a bonus; it comes back as cap hits in later years."
+                 + (" Void years are seasons he'll never play, added only to spread the bonus (5 seasons at most); "
+                    "whatever sits in them all lands on the cap as dead money the year after his deal ends."
+                    if can_void else ""))             .classes("legend mt-1")
 
         def ask_it():
             pr = preview()
             if pr["amount"] <= 0:
                 ui.notify("Pick an amount to restructure.", type="warning", position="top")
                 return
+            n_void = st["void"]
 
             def go():
-                done, msg = FA.your_restructure(league, pid, pr["amount"])
+                done, msg = FA.your_restructure(league, pid, pr["amount"], n_void)
                 ui.notify(msg, type="positive" if done else "negative", position="top", multi_line=True)
                 if done:
                     changed()
+            spread = len(pr["added"]) + 1
+            vtxt = (f' ({pr["void_added"]} of them void year{"s" if pr["void_added"] != 1 else ""})'
+                    if pr["void_added"] else "")
             ask_confirm(f"Restructure {league.player(pid).name}'s contract?",
                         f'<div class="legend">{_m(pr["amount"])} of his {league.season} salary becomes a signing '
-                        f'bonus spread over {len(pr["added"]) + 1} seasons.</div>{effect_html(pr)}',
+                        f'bonus spread over {spread} seasons{vtxt}.</div>{effect_html(pr)}',
                         "Restructure", go)
         ui.button("Restructure...", on_click=ask_it).props("no-caps outline color=green-10 dense").classes("mt-2")
 
