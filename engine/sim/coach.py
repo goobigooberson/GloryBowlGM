@@ -199,14 +199,16 @@ def choose_personnel(rng, state, is_pass, team, tempo):
 
 
 def pass_concepts(state, tempo):
-    """The coordinator's mix of pass concepts in this situation."""
+    """The coordinator's mix of pass concepts in this situation. Screens as often as real ones
+    (FTN charting 2023-25, share of dropbacks): 11-12% on early downs and 2nd and long, 8% on
+    3rd and 6+, 3% on 3rd and short, 5% in the hurry-up (Oct 26; were 7 / 7 / 5 / 4%)."""
     if tempo == "hurry":
-        return [("dropback", .60), ("quick", .27), ("deep", .09), ("screen", .04)]
+        return [("dropback", .60), ("quick", .27), ("deep", .09), ("screen", .052)]
     if state.down >= 3 and state.togo >= 6:
-        return [("dropback", .58), ("quick", .20), ("deep", .11), ("screen", .07), ("play_action", .04)]
+        return [("dropback", .58), ("quick", .20), ("deep", .11), ("screen", .083), ("play_action", .04)]
     if state.down >= 3:
-        return [("quick", .45), ("dropback", .40), ("screen", .05), ("play_action", .07), ("deep", .03)]
-    return [("dropback", .36), ("quick", .27), ("play_action", .24), ("screen", .07), ("deep", .06)]
+        return [("quick", .45), ("dropback", .40), ("screen", .028), ("play_action", .07), ("deep", .03)]
+    return [("dropback", .36), ("quick", .27), ("play_action", .24), ("screen", .12), ("deep", .06)]
 
 
 def must_pass(state, off_idx):
