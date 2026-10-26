@@ -17,7 +17,7 @@ SECTIONS = [
     ("Home", ["Home"]),
     ("Team", ["Roster", "Depth chart", "Position counts", "Contracts", "Trades", "Staff"]),
     ("Schedule", ["Schedule", "Game", "Playoffs"]),
-    ("League", ["Standings", "Stats", "Awards"]),
+    ("League", ["Standings", "Stats", "Awards", "History", "Records", "Hall of Fame"]),
     ("Draft", ["Draft"]),
     ("Bitter", ["Bitter"]),
 ]

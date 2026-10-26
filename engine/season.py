@@ -706,6 +706,8 @@ def begin_offseason(league, rng=None):
     champ = po.champion(league)
     if champ:
         league.champions[league.season] = champ
+    from . import history
+    history.archive_season(league)     # the record book's best single games, before the box scores go
     finished = [{"season": league.season, "phase": phase, "game": dict(g), "box": league.boxes.get(g["id"])}
                 for phase, games in (("preseason", league.preseason), ("regular", league.schedule),
                                      ("playoffs", league.playoffs))
@@ -794,6 +796,8 @@ def awards_week(league):
     the Glory Bowl MVP). Runs before the week counter moves on."""
     from . import awards
     awards.after_week(league)
+    from . import hall_of_fame
+    hall_of_fame.after_week(league)    # the Hall of Fame vote, once the season awards are out (Oct 25)
 
 
 def end_week(league):
