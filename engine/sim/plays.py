@@ -1079,7 +1079,7 @@ def run_play(g, off, deff, call, dcall, rng):
     res.block_edge = block_edge
 
     if cslot == "QB":
-        rk, rw = 0.8, {"scrambling": 1.0}
+        rk, rw = T.QB_KEEP_SKILL_K, {"scrambling": 1.0}
     elif cslot.startswith("WR"):
         rk, rw = 0.8, {"after_catch": .5, "breakaway": .5}
     elif call.gap == "end":

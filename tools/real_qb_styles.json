@@ -1,23 +1,23 @@
 {
- "source": "nflverse weekly player stats, regular seasons 2010-2024",
- "seasons": 15,
+ "source": "nflverse season stats, regular seasons 2021-2025",
+ "seasons": 5,
  "qb_efficient_low_volume": {
-  "mean": 0.3333333333333333,
+  "mean": 0.6,
   "min": 0,
   "max": 2
  },
  "qb_600_rush": {
-  "mean": 1.8,
+  "mean": 2.8,
   "min": 0,
   "max": 5
  },
  "qb_att_pg_p10": {
-  "mean": 28.5625
+  "mean": 27.491205801073573
  },
  "qb_att_pg_p50": {
-  "mean": 33.86666666666667
+  "mean": 32.53355129185256
  },
  "qb_att_pg_p90": {
-  "mean": 39.0625
+  "mean": 37.086618415692065
  }
 }

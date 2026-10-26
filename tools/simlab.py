@@ -84,7 +84,8 @@ def _restore(league, snap):
 
 def play_season(league, seed, norms=None, weeks=17, moves=True):
     """Play a season. Returns a dict:
-       players: list of player-season dicts (stats + pid, pos, grp, team)
+       players: list of player-season dicts (stats + pid, pos, grp, team; gp = games
+                played on offense)
        team_tot: summed team box-score totals over all team-games
        team_games: number of team-games
        missed_by_team: {team id: player-games missed to injury}
@@ -132,6 +133,8 @@ def play_season(league, seed, norms=None, weeks=17, moves=True):
                         season[pid][k] = max(season[pid][k], v)
                     else:
                         season[pid][k] += v
+                if line.get("off_snaps"):
+                    season[pid]["gp"] += 1          # games he played on offense (as the real stats count games)
             for idx in (0, 1):
                 team_games += 1
                 team_tot["points"] += g.state.score[idx]
