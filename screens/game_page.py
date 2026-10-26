@@ -473,7 +473,9 @@ def tale_html(league, g, you):
         return f'<div class="tale-row"><span class="{ea}">{ta}</span><span>{label}</span><span class="{eh}">{th}</span></div>'
 
     def wl(res):
-        return "".join(f'<span class="wl-box wl-{x}">{x}</span>' for x in res) or "-"
+        # (the streak boxes are theme.STEP3_HOME_CSS's since Oct 25, shared with Home's division table)
+        boxes = "".join(f'<span class="streak-box {x.lower()}">{x}</span>' for x in res)
+        return f'<span class="streak-strip">{boxes}</span>' if boxes else "-"
 
     def side(s, cls):
         recs = "" if pre else season.record_text(s["r"])
