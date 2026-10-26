@@ -734,7 +734,7 @@ def deal_delta(league, tid, gets_players=(), gives_players=(), gets_picks=(), gi
                 total += sign * w[t] * v
                 parts["money"] += sign * w[t] * v
             if sign == 1:
-                fut = sum(b for s, _x, b in _contract_years(league, c, ctx.S + 1)) / ctx.cap
+                fut = (sum(b for s, _x, b in _contract_years(league, c, ctx.S + 1)) + C.void_bonus(c)) / ctx.cap
                 total -= DEAD_TIMING_K * fut
                 parts["dead"] -= DEAD_TIMING_K * fut
     # Rights to re-sign young players (and a first-rounder's fifth-year option).
@@ -908,6 +908,24 @@ def _dry_run_room(league, a, b, deal):
     return out
 
 
+def _next_year_fits(league, tid, give, get):
+    """AI: the bonus money (void years' too) a trade leaves on next season's cap (in camp,
+    the preseason and the season, all of it) mustn't push next season's commitments past
+    next season's cap (Oct 26: an all-in team that traded away its restructured veterans in
+    camp opened the next league year with 26% of its cap dead, $31M over, and no way back)."""
+    S = league.season
+    later = sum(trade_charges(league, league.contracts[pid]).get(S + 1, 0) for pid in give["players"]
+                if pid in league.contracts)
+    if later <= 0:
+        return True
+    out_next = sum(C.cap_hit(league, c, S + 1, full=True) + (C.void_bonus(c) if C.last_season(c) == S else 0)
+                   for pid in give["players"] for c in (league.contracts.get(pid),) if c)   # (void money counted once)
+    in_next = sum(C.cap_hit(league, _acquired_contract(league, league.contracts[pid], tid), S + 1, full=True)
+                  for pid in get["players"] if pid in league.contracts)
+    nxt = C.commitments(league, tid, S + 1) - out_next + later + in_next
+    return nxt <= C.cap_for(league, S + 1) or later <= out_next - in_next
+
+
 def room_needed(league, give, get):
     """How many of your players you'd have to release for this deal to fit your roster."""
     from . import transactions as TR
@@ -959,6 +977,9 @@ def check_deal(league, a, b, deal, ai_fix=True, release=()):
             who = "You" if tid == league.user_team_id else league.team(tid).name
             return False, (f"{who} would be {C.fmt_money(-after)} over the salary cap "
                            f"after this trade.")
+    for tid, give, get in ((a, ga, gb), (b, gb, ga)):
+        if _ai(league, tid) and not _next_year_fits(league, tid, give, get):
+            return False, f"{league.team(tid).name} can't carry that much dead money into next season."
     limit = TR.roster_limit(league)
     for tid, n_in, n_out in ((a, len(gb["players"]), len(ga["players"])), (b, len(ga["players"]), len(gb["players"]))):
         n = roster_after(league, tid, n_in, n_out)
