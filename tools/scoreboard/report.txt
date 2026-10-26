@@ -1,18 +1,25 @@
 ==============================================================================================================
-SCOREBOARD 2026-10-25 23:21  suites: fa, sim, determinism, rookies, integration, speed  (648 s)
-Compared with the baseline of 2026-10-25 19:48. A change counts if it's more than 3x the normal run-to-run swing.
+SCOREBOARD 2026-10-26 00:41  suites: fa, sim, determinism, rookies, integration, speed  (1126 s)
+Compared with the baseline of 2026-10-25 23:21. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: all fine
 
-CHANGES BIGGER THAN THE NOISE (5):
+CHANGES BIGGER THAN THE NOISE (12):
   verdict   measure                                        now   (noise)   baseline      real  why
-  FASTER    speed.sec_camp_phase                         2.84s  +/-0.00s      4.08s         -  -30%  (seconds: training camp phase)
-  FASTER    speed.sec_draft_phase                        1.27s  +/-0.00s      2.16s         -  -41%  (seconds: the draft (no picks of yours))
-  FASTER    speed.sec_offseason_total                   15.16s  +/-0.00s     21.86s         -  -31%  (seconds for a whole offseason)
-  FASTER    speed.sec_per_fa_wave                        1.01s  +/-0.76s      1.55s         -  -35%  (seconds per free agency Next click)
-  FASTER    speed.sec_per_week_real_games                1.22s  +/-0.29s      1.78s         -  -31%  (seconds per regular-season week (real games, one league))
+  REGRESSED sim.avg.punts                                  3.9    +/-0.1        3.8       3.8  +3.2 x noise  (league average per team-game: Punts)
+  REGRESSED sim.avg.third_pct                             38.6    +/-0.6       39.5      39.3  -4.2 x noise  (league average per team-game: 3rd down conversion %)
+  REGRESSED sim.common.tfl>=10                            71.7    +/-5.6       62.2      53.0  +5.1 x noise
+  SLOWER    speed.sec_camp_phase                         4.56s  +/-0.00s      2.84s         -  +60%  (seconds: training camp phase)
+  SLOWER    speed.sec_draft_phase                        2.11s  +/-0.00s      1.27s         -  +67%  (seconds: the draft (no picks of yours))
+  SLOWER    speed.sec_offseason_total                   24.48s  +/-0.00s     15.16s         -  +62%  (seconds for a whole offseason)
+  SLOWER    speed.sec_per_fa_wave                        1.56s  +/-0.70s      1.01s         -  +55%  (seconds per free agency Next click)
+  SLOWER    speed.sec_per_week_real_games                2.00s  +/-0.32s      1.22s         -  +63%  (seconds per regular-season week (real games, one league))
+  SLOWER    speed.sec_resign_phase                       0.34s  +/-0.00s      0.22s         -  +57%  (seconds: start of league year phase)
+  IMPROVED  sim.avg.fd                                    19.1    +/-0.2       19.6      19.2  -7.0 x noise  (league average per team-game: First downs)
+  IMPROVED  sim.common.punts>=80                           3.2    +/-1.5        1.7       3.4  +3.1 x noise
+  IMPROVED  sim.common.tackles#100                        81.9    +/-1.5       83.4      80.0  -3.1 x noise
 
-OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 26
-  pass_yds>=4500 low, rush_td>=8 HIGH, rush_td>=10 HIGH, targets>=100 low, tackles>=80 HIGH, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles#20 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, solo>=100 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl#5 low, tfl>=10 HIGH, fgm#10 HIGH, fgm>=30 HIGH, fgm>=35 HIGH, fga#10 HIGH, fga#20 HIGH, fga#32 HIGH, fga>=35 HIGH, fga>=40 HIGH, punts#1 low
+OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 14
+  pass_yds>=4500 low, targets>=100 low, db_tackles>=80 HIGH, dl_tackles>=50 HIGH, edge_sacks#10 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl>=10 HIGH, fgm>=35 HIGH, fga#20 HIGH, fga>=35 HIGH, punts>=60 HIGH
 
-Everything else (386 measures) is within the noise of the baseline.
+Everything else (379 measures) is within the noise of the baseline.
