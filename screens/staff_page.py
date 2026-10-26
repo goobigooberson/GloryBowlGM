@@ -277,6 +277,10 @@ def build_staff_tab(on_change=None):
     ui.add_head_html(CSS)
     if not hasattr(state, "staff_selected"):
         state.staff_selected = None
+    # Which view: your staff, or the coaching moves around the league at full width
+    # (Gemini's Step 2, Oct 25: they used to stack under the staff table).
+    if not hasattr(state, "staff_view"):
+        state.staff_view = "My staff"
 
     def viewing():
         return league.user_team_id if state.team_id == FREE_AGENTS else state.team_id
@@ -290,7 +294,19 @@ def build_staff_tab(on_change=None):
         if on_change:
             on_change()
 
-    # ---- Budget and carousel status ------------------------------------
+    def staff_moves():
+        """This season's hires, firings and retirements around the league (GMs first)."""
+        moves = [e for e in league.staff["log"] if e["season"] == league.season
+                 and e["move"] in ("hired", "fired", "retired", "interim")]
+        # General managers first: owners change them before the coaches (gm.py, Oct 22).
+        return [{**e, "job": "GM"} for e in G.log(league, league.season)
+                if e["move"] in ("hired", "fired", "retired") and not e.get("quiet")] + moves
+
+    def set_view(v):
+        state.staff_view = v
+        refresh()
+
+    # ---- Toolbar: budget pills, the view, General managers; then your job and the carousel ----
     with ui.element("div").classes("w-full px-8 pt-3"):
         @ui.refreshable
         def banner():
@@ -298,18 +314,32 @@ def build_staff_tab(on_change=None):
             team = next(t for t in league.teams if t.id == tid)
             bud, pay = S.budget(league, tid), S.payroll(league, tid)
             dead = S.dead_money(league, tid)
-            with ui.element("div").classes("staff-banner"):
-                ui.html(f'<span class="big">{escape(team.name)} staff</span>', sanitize=False)
-                ui.html(f'Owner\'s staff budget <b>{fmt_money(bud)}</b> · paid <b>{fmt_money(pay)}</b> · '
-                        f'room <b>{fmt_money(bud - pay)}</b>', sanitize=False) \
-                    .tooltip("Each owner sets a yearly budget for the 8 jobs (some spend, some are cheap). "
-                             "Coaches' pay is outside the player salary cap.")
-                if dead:
-                    ui.html(f'<span class="legend">Still owed to fired coaches: {fmt_money(dead)} this season '
-                            f'(paid by the owner, not from your staff budget)</span>', sanitize=False)
-                ui.button("General managers", icon="groups", on_click=open_league_gms) \
-                    .props("no-caps flat dense color=green-10") \
-                    .tooltip("Every team's general manager and head coach")
+            room = bud - pay
+            budget_tip = ("Each owner sets a yearly budget for the 8 jobs (some spend, some are cheap). "
+                          "Coaches' pay is outside the player salary cap.")
+            with ui.element("div").classes("page-toolbar"):
+                with ui.element("div").classes("toolbar-group"):
+                    ui.html(f'<span class="staff-banner"><span class="big">{escape(team.name)} staff</span></span>',
+                            sanitize=False)
+                    pills = (f'<span class="stat-pill" title="{escape(budget_tip)}"><b>{fmt_money(bud)}</b> '
+                             f'Staff budget</span>'
+                             f'<span class="stat-pill"><b>{fmt_money(pay)}</b> Paid</span>'
+                             f'<span class="stat-pill {"is-good" if room >= 0 else "is-warn"}">'
+                             f'<b>{fmt_money(room)}</b> Room</span>')
+                    if dead:
+                        pills += (f'<span class="stat-pill is-warn" title="Paid by the owner, not from your staff '
+                                  f'budget"><b>{fmt_money(dead)}</b> Owed to fired coaches</span>')
+                    ui.html(f'<div class="stat-pill-row">{pills}</div>', sanitize=False)
+                with ui.element("div").classes("toolbar-group"):
+                    if mine():
+                        n_moves = len(staff_moves())
+                        ui.toggle({"My staff": f"My staff ({len(S.JOB_SHORT)})",
+                                   "League moves": f"League coaching moves ({n_moves})"},
+                                  value=state.staff_view, on_change=lambda e: set_view(e.value)) \
+                            .props("no-caps unelevated toggle-color=green-10 color=white text-color=grey-9")
+                    ui.button("General managers", icon="groups", on_click=open_league_gms) \
+                        .props("no-caps outline dense color=green-10") \
+                        .tooltip("Every team's general manager and head coach")
             if not mine():
                 ui.label("Another team's staff: view only.").classes("legend")
                 with ui.element("div").classes("report px-5 py-3").style("margin-top:6px; max-width:900px"):
@@ -354,14 +384,41 @@ def build_staff_tab(on_change=None):
                          "the season.").classes("legend")
         banner()
 
-    # ---- Staff table, carousel, report ---------------------------------
-    with ui.row().classes("w-full px-8 py-3 gap-5 no-wrap items-start"):
+    # ---- League coaching moves: the full width, one line each (the "League moves" view) ----
+    moves_box = ui.element("div").classes("w-full px-8 py-3")
+    with moves_box:
+        @ui.refreshable
+        def moves_view():
+            moves = staff_moves()
+            with ui.element("div").classes("report px-5 py-4 w-full"):
+                ui.label(f"Coaching moves around the league, {league.season}").classes("panel-heading") \
+                    .style("margin-top:0")
+                if not moves:
+                    ui.label("No coaching moves yet this season.").classes("legend")
+                    return
+                teams = {t.id: t for t in league.teams}
+                verbs = {"hired": "hired", "fired": "fired", "retired": "retired", "interim": "named interim"}
+                lines = "".join(
+                    f'<tr><td>{escape(teams[e["team"]].abbrev) if e["team"] in teams else ""}</td>'
+                    f'<td>{escape(verbs[e["move"]])}</td>'
+                    f'<td>{escape("General manager" if e["job"] == "GM" else S.JOB_SHORT.get(e["job"], ""))}</td>'
+                    f'<td>{escape(e["name"])}</td><td class="legend">{escape(e.get("note") or "")}</td></tr>'
+                    for e in reversed(moves))
+                ui.html('<table class="ledger-table"><thead><tr><th>Team</th><th>Move</th><th>Job</th><th>Name</th>'
+                        f'<th>Details</th></tr></thead><tbody>{lines}</tbody></table>', sanitize=False)
+        moves_view()
+
+    # ---- Staff table, carousel, report (the "My staff" view) ------------
+    staff_box = ui.row().classes("w-full px-8 py-3 gap-5 no-wrap items-start")
+    with staff_box:
         with ui.column().classes("gap-3").style("flex: 1 1 0; min-width: 0"):
             table = ui.table(rows=[], columns=COLUMNS, row_key="id").props("flat dense hide-bottom") \
                 .classes("roster-table w-full")
             for col in ("dev", "eval", "other"):
+                # (nowrap: a rating word and its number never break across two lines)
                 table.add_slot(f"body-cell-{col}",
-                               f'<q-td :props="props"><span :style="{{color: props.row.{col}_c, fontWeight: 600}}">'
+                               f'<q-td :props="props" style="white-space:nowrap">'
+                               f'<span :style="{{color: props.row.{col}_c, fontWeight: 600}}">'
                                '{{ props.value }}</span></q-td>')
             for col in COLUMNS:
                 col["tip"] = COLUMN_TIPS.get(col["label"], "")
@@ -404,37 +461,20 @@ def build_staff_tab(on_change=None):
                             for r in mine_results:
                                 ui.label(f"{r['name']} turned down your offer" if r.get("declined") else
                                          f"Hired {r['name']} as {S.JOB_NAMES[r['job']].lower()}")
-                moves = [e for e in league.staff["log"] if e["season"] == league.season
-                         and e["move"] in ("hired", "fired", "retired", "interim")]
-                # General managers first: owners change them before the coaches (gm.py, Oct 22).
-                moves = [{**e, "job": "GM"} for e in G.log(league, league.season)
-                         if e["move"] in ("hired", "fired", "retired") and not e.get("quiet")] + moves
-                if moves:
-                    teams = {t.id: t for t in league.teams}
-                    with ui.element("div").classes("report px-5 py-4 w-full"):
-                        ui.label(f"Coaching moves around the league, {league.season}").classes("panel-heading") \
-                            .style("margin-top:0")
-                        verbs = {"hired": "hired", "fired": "fired", "retired": "retired", "interim": "named interim"}
-                        lines = "".join(
-                            f'<tr><td>{escape(teams[e["team"]].abbrev) if e["team"] in teams else ""}</td>'
-                            f'<td>{escape(verbs[e["move"]])}</td>'
-                            f'<td>{escape("General manager" if e["job"] == "GM" else S.JOB_SHORT.get(e["job"], ""))}</td>'
-                            f'<td>{escape(e["name"])}</td><td class="legend">{escape(e.get("note") or "")}</td></tr>'
-                            for e in reversed(moves[-60:]))
-                        ui.html('<table class="staff-mini"><tr><th>Team</th><th>Move</th><th>Job</th><th>Coach</th>'
-                                f'<th></th></tr>{lines}</table>', sanitize=False)
+                # (The league's coaching moves are their own view now: "League coaching moves".)
             carousel_view()
 
-        with ui.element("div").classes("report px-6 py-5") \
+        with ui.element("div").classes("report inspector px-6 py-5") \
                 .style("flex: 0 0 470px; height: calc(100vh - 230px); overflow-y: auto"):
             @ui.refreshable
             def report():
                 cid = state.staff_selected
                 c = S.coach(league, cid) if cid is not None else None
+                ui.label("Coach dossier").classes("inspector-header")
                 if c is None or c["team"] != viewing():
-                    ui.label("No coach selected").classes("panel-heading").style("margin-top:0")
-                    ui.label("Click a row for his reputation, style, record and your options (extend, fire).") \
-                        .classes("legend")
+                    with ui.element("div").classes("inspector-empty"):
+                        ui.label("No coach selected").classes("inspector-empty-title")
+                        ui.label("Click a row for his reputation, style, record and your options (extend, fire).")
                     return
                 job = c["job"]
                 if mine():
@@ -588,11 +628,16 @@ def build_staff_tab(on_change=None):
 
     def refresh():
         tid = viewing()
+        league_moves = mine() and state.staff_view == "League moves"      # another team's staff: always its staff
+        staff_box.set_visibility(not league_moves)
+        moves_box.set_visibility(league_moves)
         table.rows = [_row(league, job, c) for job, c in S.staff_of(league, tid).items()]
         mark_selected()
         banner.refresh()
         carousel_view.refresh()
         report.refresh()
+        if league_moves:
+            moves_view.refresh()
 
     refresh()
     return refresh

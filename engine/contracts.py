@@ -491,7 +491,11 @@ def release_charges(league, c, week=None, june1=False):
             start = c["week"] if c["signed"] == season else 0
             earned = base * max(0, week - start) / PAY_WEEKS
             vested = p.experience >= VESTED and start == 0 and week >= 1
-            now += base if vested else max(earned, min(base, cur["gtd"]))
+            # Signed during the season, he's paid (and counts) only from the week he signed, so
+            # what's guaranteed is that share too (Oct 25: the full year's guarantee was charged,
+            # more than his cap hit, so cutting a week-17 pickup put a team at the cap over).
+            gtd = min(base, cur["gtd"]) * (PAY_WEEKS - start) / PAY_WEEKS
+            now += base if vested else max(earned, gtd)
         else:
             now += min(base, cur["gtd"])
     later = sum(y["bonus"] + y["gtd"] for y in future)

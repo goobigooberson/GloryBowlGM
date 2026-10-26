@@ -230,8 +230,8 @@ PROSPECT_COLS = [
     _col("pot_cloud", "Potential", "pot_mid", "Your staff's view of how good he can become: where the cloud sits "
                                               "is their best guess, how wide and blurry it is is how unsure they are "
                                               "(scouting tightens it). Sort to rank by their best guess."),
-    _col("devl", "Devl", "devl", "Developed %: how much of his potential he arrives with, your staff's estimate "
-                                 "(it sharpens as you scout)", align="right", **{":format": 'v => v + "%"'}),
+    _col("devl", "Devl", "devl", "Developed %: how far he has come from raw toward his potential (0% = a raw "
+                                 "project, 100% = finished), your staff's estimate (it sharpens as you scout)", align="right", **{":format": 'v => v + "%"'}),
     _col("take", "Staff take", "take_sort", "Your staff's impression vs his buzz, once your scouts have watched his "
                                             "film: Hidden gem, Sleeper, Fair value, Wild card, Overhyped, Fool's "
                                             "gold. It's their opinion: better staffs are wrong less."),
@@ -566,7 +566,7 @@ def prospect_html(league, p, prev_store=None):
     <div style="font-size:14px;margin-top:6px">{proj_line}</div>
     <div style="opacity:.85;font-size:13px;margin-top:4px">Your staff's read. Scouted: {escape(scouted)}. The clouds
       are how good he can become (where one sits is their best guess, how wide and blurry it is is how unsure they
-      are); Developed % is how much of that he arrives with. Both sharpen as you scout him, and some doubt always
+      are); Developed % is how far he has come toward that from raw (0% = a raw project). Both sharpen as you scout him, and some doubt always
       stays.</div>"""
     left_col = f"""
     <h3 style="margin-top:0">Bio</h3>{fact_grid(facts)}

@@ -300,7 +300,7 @@ class Worker:
         self.close_popups()                         # e.g. the draft room opens by itself while drafting
         for section, pages in nav.SECTIONS:
             btn = p.locator(".nav-hub-btn", has_text=re.compile(rf"^\s*{re.escape(section)}\s*$"))
-            if btn.count() == 0:
+            if not self._appears(btn, timeout=1500):
                 continue                            # not shown at this time of year (e.g. Draft in season)
             if section == "Draft" and p.locator(".subnav-btn").filter(has_text="Draft").count() == 0 \
                     and p.locator(".dviews, .dtop").count() == 0:
@@ -310,7 +310,7 @@ class Worker:
             for page_name in pages:
                 label = nav.PAGE_LABELS.get(page_name, page_name)
                 pb = p.locator(".subnav-btn", has_text=re.compile(rf"^\s*{re.escape(label)}\s*\d*\s*$"))
-                if pb.count() == 0:
+                if not self._appears(pb, timeout=1500):
                     continue
                 name = f"{section} - {label}" if len(pages) > 1 else section
                 if len(pages) > 1:
@@ -378,16 +378,26 @@ class Worker:
             self.step(f"{name} - back to {texts[0]}", lambda: views.nth(0).click(), shot=False)
 
     # ---- Contracts with a player picked ----
+    def _appears(self, locator, timeout=5000):
+        """True once the element is on the page (waits: the page strip is rebuilt on every page
+        change, and under a heavy CPU load a single look could catch it mid-rebuild and report
+        a page as missing; Oct 25, the layout session's finding)."""
+        try:
+            locator.first.wait_for(state="attached", timeout=timeout)
+            return True
+        except Exception:
+            return False
+
     def go(self, section, page_label=None):
         p = self.page
         btn = p.locator(".nav-hub-btn", has_text=re.compile(rf"^\s*{re.escape(section)}\s*$"))
-        if btn.count() == 0:
+        if not self._appears(btn):
             return False
         btn.first.click()
         self.settle()
         if page_label:
             pb = p.locator(".subnav-btn", has_text=re.compile(rf"^\s*{re.escape(page_label)}\s*\d*\s*$"))
-            if pb.count() == 0:
+            if not self._appears(pb):
                 return False
             pb.first.click()
             self.settle()
@@ -402,7 +412,7 @@ class Worker:
             if need not in entry["expect"]:
                 continue
             toggle = p.locator(".q-btn-toggle button", has_text=re.compile(rf"^\s*{re.escape(view)}\s*$"))
-            if toggle.count() == 0:
+            if not self._appears(toggle):
                 self.problem("missing", f"no '{view}' view on the Contracts page")
                 continue
             self.step(f"Contracts - {view}", lambda: toggle.first.click(), shot=False)

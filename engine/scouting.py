@@ -636,15 +636,17 @@ def notes(league, team_id, p, stats=None, combine=None):
 # rating at", like FOF8). Your staff's estimate of how much of his potential he already
 # has, with a fixed mistake that shrinks as you scout (better staffs err less).
 # ---------------------------------------------------------------------------
-DEVELOPED_MISS = {"none": 6.0, "film": 4.0, "cross": 3.0, "visit": 2.0}   # percentage points (1 spread)
+# Oct 25: Developed % is now counted from a raw starting point (player.developed_share), which
+# spreads a class about twice as wide (drafted rookies' spread ~27 points, was ~13), so the
+# staff's mistake is twice as many points: the same share of the spread as before.
+DEVELOPED_MISS = {"none": 12.0, "film": 8.0, "cross": 6.0, "visit": 4.0}   # percentage points (1 spread)
 
 
 def developed(league, team_id, p):
-    """Your staff's estimate of his Developed % (his ability now as a share of his
-    potential, on the screen scale, so it matches what you'll see once he's yours), a
-    whole number. (On the internal scale prospects were 80-97% developed, most near 90:
-    on screen that read as nearly finished players.)"""
-    true = 100.0 * scale.shown(p.overall(), p.position) / max(1, scale.shown(p.overall("potential"), p.position))
+    """Your staff's estimate of his Developed % (how far he has come from raw toward his
+    potential: player.developed_share), a whole number."""
+    from .player import developed_share
+    true = developed_share(p.overall(), p.overall("potential"))
     e = _entry(league, p.id)
     level = "visit" if e.get("visit") else "cross" if e.get("cross") else "film" if e.get("film") else "none"
     z = random.Random(f"devl-{league.settings.get('salt', '')}-{team_id}-{p.id}").gauss(0, 1)
