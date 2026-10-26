@@ -262,6 +262,9 @@ READ_RUN_TILT = 0.8          # run tilt per 1.0 of over-use. At 1.4, -0.2 cost 0
 READ_SNEAK_LOGIT = 1.0       # sneak success log-odds per 1.0 of over-use
 READ_DEF_K = 0.5             # your defense's over-use, in the same units, as an edge for the offense. At 1.0
                              # always zone cost 6.3 points a game, though zone-heavy defenses are a real style
+READ_FILM_GAMES = 3          # film: the other side starts from your called plays in your last 3 games
+READ_FILM_W = 0.4            # ... each earlier snap counting this much of a snap in this game
+READ_FILM_FADE = 0.6         # ... and each older game this much of the one after it
 SCHEME_FIT_K = 0.08          # scheme fit: over-use units per 1.0 of fit above the coordinator's own mix
 
 # ---- Game-to-game form, home field, fatigue --------------------------------

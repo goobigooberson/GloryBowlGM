@@ -205,6 +205,8 @@ def save_league(league: League, path, created=None):
         "news_archive": json.dumps(getattr(league, "news_archive", None) or {}, separators=(",", ":")),
         # The record book's best single games (history.py, Oct 25).
         "history": json.dumps(getattr(league, "history", None) or {}, separators=(",", ":")),
+        # Film of the plays you called in your last few games (sim/playcalling.py, Oct 25).
+        "playcall_film": json.dumps(getattr(league, "playcall_film", None) or {}, separators=(",", ":")),
     }
     db = sqlite3.connect(tmp)
     try:
@@ -541,6 +543,8 @@ def load_league(path):
         # The record book's best single games (saves from before Oct 25 have none: the Records
         # page fills them in once from the history file, history.backfill_games).
         league.history = _int_keys(json.loads(info.get("history") or "{}")) or None
+        # Film of the plays you called (saves from before Oct 25, or if you never called any: none).
+        league.playcall_film = json.loads(info.get("playcall_film") or "{}") or None
         from . import staff
         if not league.staff:
             staff.ensure(league)

@@ -102,9 +102,16 @@ def make_strategy(name, seed):
         menu = tuple(coach.DEF_MENU) if side == "def" else RUNS + PASSES
         return _pick(rng, tuple(k for k in menu if k != sug))
 
+    def switch_spam(g, sug):
+        # One call every snap, a different one each week (deep, short, play action, screen, inside
+        # run, outside run): fresh each game for a defense with no film, read from film otherwise.
+        order = ("pass_long", "pass_short", "play_action", "screen", "run_inside", "run_outside")
+        return order[g.week % len(order)]
+
     table = {
         "coach": lambda g, i, kind, sug: None,
         "coach_after_one": coach_after_one,
+        "switch_spam": offense(switch_spam),
         "always_run": offense(lambda g, sug: _pick(rng, RUNS)),
         "always_pass": offense(lambda g, sug: sug if sug in PASSES
                                else _pick(rng, ("pass_short", "pass_medium", "pass_medium", "play_action"))),
@@ -129,7 +136,7 @@ def make_strategy(name, seed):
     return table[name]
 
 
-STRATEGIES = ("coach", "coach_after_one", "always_run", "always_pass", "always_deep", "always_short", "always_pa",
+STRATEGIES = ("coach", "coach_after_one", "switch_spam", "always_run", "always_pass", "always_deep", "always_short", "always_pa",
               "always_screen", "random", "pass_early", "run_more", "situational", "best_fit", "fourth_go",
               "d_zone", "d_man", "d_blitz", "d_all_out", "d_run_stop", "d_prevent", "d_random")
 
