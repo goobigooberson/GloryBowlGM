@@ -57,17 +57,19 @@ def centered(site, m):
     return m - T.CENTER.get(site, 0.0)
 
 
-def qvalue(table, u, rng=None, tail=0.0):
-    """Value at random point u in a real-NFL quantile table. Beyond the last
-    point, extend with an exponential tail (for the rare very long play)."""
-    if u <= Q[0]:
+def qvalue(table, u, rng=None, tail=0.0, steps=None):
+    """Value at random point u in a real-NFL quantile table (at data.Q_STEPS, or the
+    table's own steps). Beyond the last point, extend with an exponential tail (for the
+    rare very long play)."""
+    q = steps or Q
+    if u <= q[0]:
         return table[0]
-    if u >= Q[-1]:
+    if u >= q[-1]:
         if tail and rng is not None:
             return table[-1] + rng.expovariate(1.0 / tail)
         return table[-1]
-    i = bisect_right(Q, u) - 1
-    lo, hi = Q[i], Q[i + 1]
+    i = bisect_right(q, u) - 1
+    lo, hi = q[i], q[i + 1]
     f = (u - lo) / (hi - lo)
     return table[i] + f * (table[i + 1] - table[i])
 
@@ -129,12 +131,15 @@ def marked_short(st, res, rng):
     yard short. Real NFL (nflverse 2023-25): runs with 4-6 to go end 1 yard short 15.3% of the
     time, exactly at the sticks 3.7%, 1 past 7.1%; catches with 7-9 to go 10.4 / 3.3 / 7.4%.
     The sim's yards didn't know where the sticks were (10.8 / 8.2 / 6.1 and 5.9 / 5.6 / 5.9),
-    so 2nd and 3rd & 1 came up too rarely (3rd & 1: 7.8% of 3rd downs vs real 12.1%)."""
-    if not T.STICKS_SHORT or res.td or res.fumble or res.safety or res.yards != st.togo or st.togo >= st.yl:
+    so 2nd and 3rd & 1 came up too rarely (3rd & 1: 7.8% of 3rd downs vs real 12.1%). On 3rd and
+    4th down the ball carrier fights for the marker: real 1-short : exactly-at 3.2 : 1 for runs
+    and 2.1 : 1 for catches, vs 4.0 : 1 and 2.7 : 1 on early downs."""
+    p = T.STICKS_SHORT if st.down <= 2 else T.STICKS_SHORT_LATE
+    if not p or res.td or res.fumble or res.safety or res.yards != st.togo or st.togo >= st.yl:
         return
     if not (res.kind in ("run", "scramble") or (res.kind == "pass" and res.complete)):
         return
-    if rng.random() < T.STICKS_SHORT:
+    if rng.random() < p:
         res.yards -= 1
         if res.kind == "pass":
             if res.yac >= 1:
@@ -1164,7 +1169,7 @@ def run_play(g, off, deff, call, dcall, rng):
         sz = (sum(deff.z(p, _slot_of(ld, p), "pursuit") for p in safeties) / len(safeties)) if safeties else -0.5
         speed = off.z(carrier, cslot, "breakaway") if cslot != "QB" else off.z(carrier, "QB", "scrambling")
         u = tilt(u, centered("breakaway", T.RUN_BREAKAWAY_K * (speed - sz)))
-    y = int(round(qvalue(table, u, rng, tail=15)))
+    y = int(round(qvalue(table, u, rng, tail=15, steps=data.Q_FINE_STEPS)))
     y = min(y, st.yl)
     if st.yl - y >= 100:
         if rng.random() < T.SAFETY_ESCAPE:
