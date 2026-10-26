@@ -74,7 +74,13 @@
     {
       "name": "gemini-shots",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["app.py", "--browser", "--no-show", "--port=8105", "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\f3047749-5221-429f-bc26-fe5da6fd4733\\scratchpad\\gemsaves"],
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8105",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\f3047749-5221-429f-bc26-fe5da6fd4733\\scratchpad\\gemsaves"
+      ],
       "port": 8105
     },
     {
@@ -173,6 +179,18 @@
         "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project\\29c78fa4-772f-4d10-9c11-2632bf2b537f\\scratchpad\\saves"
       ],
       "port": 8143
+    },
+    {
+      "name": "void-years-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8151",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project--claude-worktrees-void-years-d64f4e\\643141fa-58c7-4521-8a37-5bc7ca146b0f\\scratchpad\\voidsaves"
+      ],
+      "port": 8151
     }
   ]
 }

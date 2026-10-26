@@ -117,7 +117,7 @@ GM_CAP_CUT_K = 0.3              # ...and a cap cut may leave dead money up to CU
 # seasons; the odds come from its approach this league year and its GM's cap style. Rebuilding teams
 # don't; all-in teams and the money pushers among GMs do most.
 VOID_YEARS = True               # AI teams use void years at all (False: as before Oct 26; for the checks)
-VOID_USE = {"all_in": 0.70, "normal": 0.15, "rebuild": 0.0}   # chance a deal or restructure gets void years
+VOID_USE = {"all_in": 0.90, "normal": 0.35, "rebuild": 0.0}   # chance a deal or restructure gets void years
 VOID_CAP_K = 1.0                # ...odds x e^(k x its GM's cap style)
 VOID_MIN_SHARE = 0.01           # ...on deals worth at least this share of the cap a year (market deals)
 VOID_BONUS = 1.0                # ...whose guaranteed money is mostly signing bonus (this share of the guarantee)
@@ -2549,7 +2549,7 @@ def your_restructure(league, pid, amount=None, void=0):
         f"{C.fmt_money(prev['amount'])} of salary into bonus; {C.fmt_money(saved)} of cap room this season{vtxt}")
     _drop_cap_requests(league, pid)
     later = ", ".join(f"{s} +{C.fmt_money(v)}" for s, v in sorted(prev["added"].items()) if s in prev["hits"])
-    msg = f"Restructured: {C.fmt_money(saved)} of cap room this season (later cap hits: {later})."
+    msg = f"Restructured: {C.fmt_money(saved)} of cap room this season" + (f" (later cap hits: {later})." if later else ".")
     if prev["void_dead"]:
         s_, v_ = next(iter(prev["void_dead"].items()))
         msg += f" When his deal voids, {C.fmt_money(v_)} lands on your {s_} cap as dead money."
