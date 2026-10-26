@@ -413,6 +413,10 @@ def record_game(league, g, game):
                    for d in box.drives],
         "weather": (site + ". " if site else "") + game.weather.text(),
     }
+    if getattr(game, "books", None) or getattr(league, "playcall_film", None):
+        # Plays you called go on film for your next opponents (engine/sim/playcalling.py).
+        from .sim import playcalling
+        playcalling.save_film(league, game)
     cal = game_calendar(league, g)
     played_ids = {int(k) for k in league.boxes[g["id"]]["players"]}
     label = game_label(league, g)

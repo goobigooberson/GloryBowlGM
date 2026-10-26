@@ -45,6 +45,9 @@ STICKS_LONG_SCALE = 0.4      # ...and this much of the pull beyond (on 3rd and v
 STICKS_SHORT = 0.7           # 1st/2nd down: chance a run or catch that ends exactly at the line to gain is marked
                              # a yard short (plays.marked_short)
 STICKS_SHORT_LATE = 0.35     # the same on 3rd and 4th down (the carrier fights for the marker)
+SCREEN_TO_RB = 0.40          # who a screen is for (FTN charting 2023-25): backs 40%, tight ends 14%,
+SCREEN_TO_TE = 0.14          # receivers the rest (was backs 60%, receivers 40%)
+SCREEN_TARGET_K = 4.0        # a screen goes to the man it's set up for (was 2.0: a third of screen calls went elsewhere)
 # Obvious passing downs (plays.pass_down): how sure the defense is that a pass is coming.
 PASS_DOWN_SHORT = 0.4        # 3rd/4th and 1-2 (the run is still a threat) vs 1.0 for 3rd/4th and 3+
 PASS_DOWN_CATCHUP = 0.4      # 4th quarter down 9+, or the hurry-up
@@ -289,7 +292,15 @@ READ_RUN_TILT = 0.8          # run tilt per 1.0 of over-use. At 1.4, -0.2 cost 0
 READ_SNEAK_LOGIT = 1.0       # sneak success log-odds per 1.0 of over-use
 READ_DEF_K = 0.5             # your defense's over-use, in the same units, as an edge for the offense. At 1.0
                              # always zone cost 6.3 points a game, though zone-heavy defenses are a real style
-SCHEME_FIT_K = 0.08          # scheme fit: over-use units per 1.0 of fit above the coordinator's own mix
+READ_FILM_GAMES = 3          # film: the other side starts from your called plays in your last 3 games
+READ_FILM_W = 0.4            # ... read at this share of the same over-use seen today (only over-use:
+                             # film never makes a call a surprise), in a book of its own
+READ_FILM_FADE = 0.6         # ... and each older game this much of the one after it
+SCHEME_FIT_K = 0.20          # scheme fit: over-use units per 1.0 of fit above the coordinator's own mix.
+                             # Oct 26 (Blake: "balanced but satisfying"): swept 0.08 / 0.12 / 0.16 / 0.20;
+                             # at every value the best-fit call every snap stayed below the coach's own
+                             # calls (~-0.8 a game) and a plausible human about +0.6. A ★ call (fit 0.72
+                             # above his mix on average) is worth ~+0.26 yards a carry, +0.14 a dropback
 
 # ---- Game-to-game form, home field, fatigue --------------------------------
 # Coordinator style (persistent for a team all season; placeholder for coaches)
@@ -418,13 +429,14 @@ INJURY_QB_MULT = 0.65        # rules protect quarterbacks
 # Measured Oct 19, 2026 over 1,500 games in three different leagues.
 # Oct 25: only "scramble" and "qb_run" re-measured (tools/recenter.py) after the scramble and
 # designed QB run retune changed which QBs carry the ball; the rest left as they were.
+# Oct 26: "comp0" and "int0" re-measured after screens became their own play (behind-the-line throws).
 CENTER = {
     "breakaway": 0.011,
-    "comp0": 0.061,
+    "comp0": 0.106,
     "comp1": 0.05,
     "comp2": 0.046,
     "comp3": -0.063,
-    "int0": -0.112,
+    "int0": -0.181,
     "int1": -0.017,
     "int2": 0.045,
     "int3": 0.259,

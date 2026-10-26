@@ -124,6 +124,29 @@ class Tendencies:
         self.dev = defaultdict(float)      # (scope, key): sum of (called - expected)
         self.var = defaultdict(float)      # (scope, key): sum of chance variance
         self.n = defaultdict(float)        # scope: snaps
+        self.game = {"dev": defaultdict(float), "var": defaultdict(float), "n": defaultdict(float)}
+                                           # this game's calls alone, not faded: what goes on film
+        self.film = {"dev": defaultdict(float), "var": defaultdict(float), "n": defaultdict(float)}
+                                           # your last games' calls (film), older games counted less
+
+    def add_film(self, snap, weight):
+        """An earlier game's film (snapshot()), counted at `weight` per snap. Kept apart from this
+        game's book: film only adds pressure on what you leaned on, it never dilutes what the
+        other side sees today or makes something else a surprise (Oct 26: merged into one book,
+        film made switching the spammed call each game cheaper, not dearer)."""
+        for name in ("dev", "var"):
+            for k, v in snap.get(name, {}).items():
+                scope, key = k.split("|")
+                self.film[name][(scope, key)] += weight * v
+        for scope, v in snap.get("n", {}).items():
+            self.film["n"][scope] += weight * v
+
+    def snapshot(self):
+        """This game's calls, for the film (JSON-ready)."""
+        g = self.game
+        return {"dev": {f"{s}|{k}": round(v, 3) for (s, k), v in g["dev"].items()},
+                "var": {f"{s}|{k}": round(v, 3) for (s, k), v in g["var"].items()},
+                "n": {s: v for s, v in g["n"].items()}}
 
     def read(self, sit, choice):
         total = self.part(sit, self.groups[choice], T.READ_GROUP_W) + self.part(sit, choice, T.READ_KIND_W)
@@ -134,11 +157,16 @@ class Tendencies:
         total = 0.0
         for scope, n0 in (("game", T.READ_N0_GAME), (sit, T.READ_N0_SITUATION)):
             n = self.n[scope]
-            if n <= 0:
-                continue
-            d = self.dev[(scope, key)]
-            beyond = max(0.0, abs(d) - T.READ_CHANCE_Z * math.sqrt(self.var[(scope, key)]) - T.READ_ALLOW)
-            total += w * math.copysign(beyond, d) / (n + n0)
+            if n > 0:
+                d = self.dev[(scope, key)]
+                beyond = max(0.0, abs(d) - T.READ_CHANCE_Z * math.sqrt(self.var[(scope, key)]) - T.READ_ALLOW)
+                total += w * math.copysign(beyond, d) / (n + n0)
+            fn = self.film["n"][scope]
+            fd = self.film["dev"][(scope, key)]
+            if fn > 0 and fd > 0:
+                # Film: only what you leaned on, at READ_FILM_W of this game's weight.
+                beyond = max(0.0, fd - T.READ_CHANCE_Z * math.sqrt(self.film["var"][(scope, key)]) - T.READ_ALLOW)
+                total += T.READ_FILM_W * w * beyond / (fn + n0)
         return total
 
     def record(self, sit, odds, choice):
@@ -148,6 +176,7 @@ class Tendencies:
                     self.dev[k] *= T.READ_DECAY
                     self.var[k] *= T.READ_DECAY
             self.n[scope] = self.n[scope] * T.READ_DECAY + 1.0
+            self.game["n"][scope] += 1.0
             group_odds = defaultdict(float)
             for k, q in odds.items():
                 group_odds[self.groups[k]] += q
@@ -155,6 +184,8 @@ class Tendencies:
                 hit = 1.0 if (k == choice or k == self.groups[choice]) else 0.0
                 self.dev[(scope, k)] += hit - q
                 self.var[(scope, k)] += q * (1 - q)
+                self.game["dev"][(scope, k)] += hit - q
+                self.game["var"][(scope, k)] += q * (1 - q)
 
 
 # ---------------------------------------------------------------------------
@@ -252,9 +283,14 @@ def prompt(game):
     book = game.books.get(idx)
     keying, fits = [], []
     sit = situation(st)
+    # Before your first call of the game, what they'd bring from film of your last games.
+    film = None
+    if (getattr(lg, "playcall_film", None) or {}).get(str(team.id)):
+        film = Book(team)
     if kind in ("offense", "fourth"):
-        if book is not None and book.active_off:
-            keying = _keying(book.offense, sit, {"run": "the run", "pass": "the pass"},
+        src = book.offense if (book is not None and book.active_off) else (film.offense if film else None)
+        if src is not None:
+            keying = _keying(src, sit, {"run": "the run", "pass": "the pass"},
                              [(k, coach.PLAY_MENU[k]) for k in plays])
         fit = book.fit_off if book is not None else fit_offense(team)
         if fit:
@@ -262,8 +298,9 @@ def prompt(game):
             mix = sum(q * fit.get(k, 0.0) for k, q in odds.items()) / (sum(odds.values()) or 1.0)
             fits = [k for k in plays if fit.get(k, 0.0) - mix >= FITS_FROM]
     elif kind == "defense":
-        if book is not None and book.active_def:
-            keying = _keying(book.defense, sit, {"blitz": "the blitz"}, list(coach.DEF_MENU.items()))
+        src = book.defense if (book is not None and book.active_def) else (film.defense if film else None)
+        if src is not None:
+            keying = _keying(src, sit, {"blitz": "the blitz"}, list(coach.DEF_MENU.items()))
         fit = book.fit_def if book is not None else fit_defense(team)
         if fit:
             vals = sorted(fit.values())
@@ -278,11 +315,21 @@ def prompt(game):
 
 class Book:
     """Everything the game keeps about one team's called plays (both sides of the ball).
-    Made the first time that team's call isn't its coordinator's."""
+    Made the first time that team's call isn't its coordinator's. The other side starts from
+    the film of your last few games (league.playcall_film): your called plays there count as
+    lighter evidence than this game's, older games lighter still."""
 
     def __init__(self, game_team):
         self.offense = Tendencies(OFF_GROUP)
         self.defense = Tendencies(DEF_GROUP)
+        film = (getattr(game_team.league, "playcall_film", None) or {}).get(str(game_team.id), [])
+        for age, entry in enumerate(film[:T.READ_FILM_GAMES]):
+            w = T.READ_FILM_FADE ** age
+            for side, tend in (("off", self.offense), ("def", self.defense)):
+                if entry.get(side):
+                    tend.add_film(entry[side], w)
+                else:
+                    tend.film["n"]["game"] += w * entry.get("n_" + side, 0)   # a game the staff called: all normal
         self.fit_off = fit_offense(game_team)
         self.fit_def = fit_defense(game_team)
         self.active_off = False
@@ -301,3 +348,28 @@ class Book:
         e = T.READ_DEF_K * self.defense.read(sit, choice) - fit_edge(self.fit_def, odds, choice)
         self.defense.record(sit, odds, choice)
         return e
+
+
+def save_film(league, game):
+    """After a game: put each team's called plays on film (league.playcall_film, newest first,
+    the last READ_FILM_GAMES games). A team only has film once you've called its plays; its
+    games where the staff called everything go on film as normal games, and a team whose film
+    is all normal games drops off (it's back to being untouched)."""
+    film = getattr(league, "playcall_film", None)
+    for idx, team in enumerate(game.teams):
+        key = str(team.id)
+        book = game.books.get(idx) if getattr(game, "books", None) else None
+        if book is None and not (film and key in film):
+            continue
+        if film is None:
+            film = league.playcall_film = {}
+        bx = game.box.team
+        entry = {"n_off": bx[idx]["plays"], "n_def": bx[1 - idx]["plays"],
+                 "off": book.offense.snapshot() if book is not None and book.active_off else None,
+                 "def": book.defense.snapshot() if book is not None and book.active_def else None}
+        games = [entry] + film.get(key, [])
+        games = games[:T.READ_FILM_GAMES]
+        if any(e["off"] or e["def"] for e in games):
+            film[key] = games
+        else:
+            film.pop(key, None)

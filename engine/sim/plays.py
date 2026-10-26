@@ -188,6 +188,7 @@ class PlayResult:
         self.sackers = []
         self.qb_hit_by = None
         self.tfl = False
+        self.screen = False         # a completed screen to the man it was set up for
         self.interceptor = None
         self.pd_by = None
         self.batted = False         # pass knocked down at the line
@@ -465,8 +466,10 @@ def protection(g, off, deff, call, dcall, rng):
 
 
 # How each pass concept shifts route depths (log-odds tilt on the real
-# distribution of targeted air yards for that position).
-CONCEPT_DEPTH = {"screen": -0.5, "quick": -1.2, "dropback": 0.25, "play_action": 0.6, "deep": 1.4}
+# distribution of targeted air yards for that position, screens left out). Oct 26: 0.6x of the
+# old tilts (-0.5 / -1.2 / 0.25 / 0.6 / 1.4): mixing the tilts widens the real distribution, and at
+# full strength regular routes went 3+ yards behind the line 3.5% of receiver targets vs real 2.5%.
+CONCEPT_DEPTH = {"screen": -0.3, "quick": -0.72, "dropback": 0.15, "play_action": 0.36, "deep": 0.84}
 SLOT_DEPTH = {"WR1": 0.02, "WR2": 0.12, "WR3": -0.22}
 
 
@@ -480,11 +483,11 @@ def _route_depth(rng, slot, concept, yl, player=None):
         m += T.DEEP_SPEED_K * (player.athletic.get("speed", 57.5) - 57.5) / 13.0
     u = tilt(rng.random(), m)
     if slot.startswith("WR"):
-        d = qvalue(data.Q_AIR_WR, u)
+        d = qvalue(data.Q_AIR_WR, u, steps=data.Q_FINE_STEPS)
     elif slot.startswith("TE"):
-        d = qvalue(data.Q_AIR_TE, u)
+        d = qvalue(data.Q_AIR_TE, u, steps=data.Q_FINE_STEPS)
     else:
-        d = qvalue(data.Q_AIR_RB, u)
+        d = qvalue(data.Q_AIR_RB, u, steps=data.Q_FINE_STEPS)
     d = int(round(d + rng.random() - 0.5))
     # Near the goal line routes get squeezed: nothing deeper than the back of the end zone.
     return max(-8, min(d, yl + 9))
@@ -698,10 +701,19 @@ def pass_play(g, off, deff, call, dcall, rng):
             continue
         routes.append({"slot": slot, "p": p, "depth": _route_depth(rng, slot, call.concept, st.yl, p)})
     if call.concept == "screen":
-        screen_slot = "RB" if (lo.get("RB") and rng.random() < 0.6) else ("WR3" if lo.get("WR3") else "WR1")
+        # Who the screen is for, as real offenses spread them (FTN charting 2023-25: backs 40%,
+        # receivers 46%, tight ends 14%), and how far behind the line, from real screens.
+        u = rng.random()
+        if u < T.SCREEN_TO_RB and lo.get("RB"):
+            screen_slot = "RB"
+        elif u > 1.0 - T.SCREEN_TO_TE and lo.get("TE1"):
+            screen_slot = "TE1"
+        else:
+            screen_slot = pick(rng, [s for s in ("WR1", "WR2", "WR3") if lo.get(s)] or ["WR1"])
+        table = data.Q_SCREEN_AIR_RB if screen_slot == "RB" else data.Q_SCREEN_AIR_WR
         for r in routes:
             if r["slot"] == screen_slot:
-                r["depth"] = min(r["depth"], -1 - int(rng.random() * 4))
+                r["depth"] = max(-8, min(int(round(qvalue(table, rng.random(), steps=data.Q_FINE_STEPS))), st.yl + 9))
     else:
         screen_slot = None
     assignment, helper = _assign_coverage(rng, routes, dcall, rushing)
@@ -803,7 +815,7 @@ def pass_play(g, off, deff, call, dcall, rng):
         if hurry_mode and depth >= 8:
             s += 0.15
         if r["slot"] == screen_slot:
-            s += 2.0
+            s += T.SCREEN_TARGET_K
         scores.append(s)
     mx = max(scores)
     weights = [math.exp(s - mx) for s in scores]
@@ -871,6 +883,7 @@ def pass_play(g, off, deff, call, dcall, rng):
     res.elapsed = 6
     if u < p_comp:
         res.complete = True
+        res.screen = slot == screen_slot
         return _completion(g, off, deff, call, dcall, res, rec, slot, depth, sep, d, dslot, rng)
     if u < p_comp + p_int:
         return _interception(g, off, deff, res, rec, depth, d, dslot, dcall, rng)
@@ -891,7 +904,9 @@ def pass_play(g, off, deff, call, dcall, rng):
 
 def _completion(g, off, deff, call, dcall, res, rec, slot, depth, sep, d, dslot, rng):
     st = g.state
-    if depth <= 0:
+    if getattr(res, "screen", False):
+        table = data.Q_YAC_SCREEN      # blockers set up in front of him
+    elif depth <= 0:
         table = data.Q_YAC_BEHIND
     elif depth <= 9:
         table = data.Q_YAC_SHORT
@@ -921,7 +936,8 @@ def _completion(g, off, deff, call, dcall, res, rec, slot, depth, sep, d, dslot,
         m += T.RB_YAC_BONUS
     if dcall.prevent:
         m -= 0.1
-    yac = int(round(qvalue(table, tilt(rng.random(), m), rng, tail=12)))
+    yac = int(round(qvalue(table, tilt(rng.random(), m), rng, tail=12,
+                           steps=None if table is data.Q_YAC_DEEP else data.Q_FINE_STEPS)))
     if depth + yac > st.yl:
         yac = st.yl - depth
     gain = depth + yac

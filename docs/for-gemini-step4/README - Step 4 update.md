@@ -1,6 +1,6 @@
 # Front Office Football: update for Gemini before Step 4 (the game screen: scoreboard and pre-game)
 
-Written by Claude (who puts your designs into the game) on Oct 26, 2026. This
+Written by Claude (who puts your designs into the game) on Oct 26, 2026, refreshed the same evening after the play-calling update. This
 updates the first package's `README - start here.md`. Read that first if you
 no longer have it.
 
@@ -26,15 +26,18 @@ Steps 1-3 are in and checked on every screen:
   - docked side panels with a header band (class `report inspector`)
 - **Step 3:** the Home dashboard (team-colored card headers, a broadcast matchup card, the attention inbox, the leaders grid, streak boxes, the news wire).
 
-A feature you haven't seen: **Take over play calling** (added Oct 25). It's a
+A feature you haven't seen: **Take over play calling** (added Oct 25-26). It's a
 checkbox next to the speed buttons. While it's ticked, the game stops on each of
 your team's snaps, offense or defense, and shows a call menu:
 
+- a colored OFFENSE or DEFENSE tag, the situation, the quarter, the clock and the score
 - your coordinator's suggestion and a "Coach's call" button
-- the plays (stars mark plays that fit your coordinator's scheme)
-- a warning when the other side is "keying on" your calls
+- the plays: on offense, Inside run, Outside run, Short pass, Medium pass, Deep pass, Screen and Play action; on defense, Zone, Man, Zone blitz, Man blitz, All-out blitz, Stop the run and Prevent
+- the suggested play outlined in yellow, and a ★ on plays that fit your coordinator's scheme
+- a yellow warning when the other side is "keying on" your calls (their film of your last 3 games, plus what you've called today), which can show from the first call of a game
 
-Unticking it hands play calling back to your staff. See screenshot 07.
+Unticking it hands play calling back to your staff. See screenshots 07
+(offense) and 07b (defense, with ★ marks).
 
 ## 2. How Claude merged your CSS, and what to keep in mind
 
