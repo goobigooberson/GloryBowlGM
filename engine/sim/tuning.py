@@ -237,6 +237,33 @@ RETURN_K = 0.30              # tilt per z of returner vs coverage
 # ---- Penalties ------------------------------------------------------------
 PENALTY_SCALE = 1.07         # overall multiplier on real penalty rates
 
+# ---- Calling your own plays (engine/sim/playcalling.py) ---------------------
+# Only for a team whose plays you've called (from the first call that isn't the coordinator's):
+# AI teams' games never use these. The other side reads your calls against your coordinator's
+# film: a call you make more than he would, beyond what chance explains, gets worse; one you
+# make less gets a little better. "Over-use" = (your share - his share) of that kind of play,
+# shrunk toward 0 early in the game (READ_N0) and minus READ_CHANCE_Z chance spreads.
+# Real yardstick (nflverse 2021-25, quarters 1-4 outside the 2-minute drill, win chance 10-90%):
+# a team running ~20% more than its own season mix in a game gains ~0.3 yards a run less than
+# usual; passing ~20% more, ~0.3 yards a pass play less; the under-used kind gains little.
+READ_N0_GAME = 8.0           # plays of shrinkage for the whole game's tendencies
+READ_N0_SITUATION = 6.0      # ... and for this down-and-distance's tendencies
+READ_CHANCE_Z = 0.5          # deviation within half a chance spread doesn't count (his own mix reads ~0)
+READ_ALLOW = 1.0             # ... nor the first extra call: one surprise deep shot isn't a tendency
+READ_DECAY = 0.98            # each snap, older calls count a little less (half-life ~35 snaps)
+READ_GROUP_W = 1.0           # weight of run vs pass (offense) / blitz vs not (defense)
+READ_KIND_W = 0.5            # weight of the exact call (deep pass, screen, man blitz...). Oct 25: at 1.0
+                             # spamming one call was counted about twice over (always deep: -11.5 points a game)
+READ_UNDERUSED = 0.35        # an under-used call's bonus, as a share of the same over-use penalty
+READ_PASS_SEP = 1.6          # receivers' separation per 1.0 of over-use (pass plays). Measured
+                             # (tools/playcall_check.py probe, Oct 25): at 1.0, a read of -0.2 on every
+                             # pass cost 0.19 net yards a dropback; real ~0.3
+READ_RUN_TILT = 0.8          # run tilt per 1.0 of over-use. At 1.4, -0.2 cost 0.57 yards a carry; real ~0.3
+READ_SNEAK_LOGIT = 1.0       # sneak success log-odds per 1.0 of over-use
+READ_DEF_K = 0.5             # your defense's over-use, in the same units, as an edge for the offense. At 1.0
+                             # always zone cost 6.3 points a game, though zone-heavy defenses are a real style
+SCHEME_FIT_K = 0.08          # scheme fit: over-use units per 1.0 of fit above the coordinator's own mix
+
 # ---- Game-to-game form, home field, fatigue --------------------------------
 # Coordinator style (persistent for a team all season; placeholder for coaches)
 STYLE_PASS_SD = 0.26         # logit: run-heavy vs pass-heavy offenses

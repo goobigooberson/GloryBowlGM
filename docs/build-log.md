@@ -1252,3 +1252,75 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
 - **7. Sim: too few defensive backs get snaps. Measured, not changed.** Real 2023-25 snap counts vs the game (scratchpad `def_snaps.py`): defenders with a snap 32.6 a team season vs 27.3; DBs 12.9 vs 10.1; DB #1-#8 share of the team's defensive snaps 98 / 89 / 79 / 68 / 55 / 40 / 31 / 20% vs 100 / 93 / 83 / 71 / 57 / 39 / 25 / 14%. Real teams rest defensive starters in blowouts a little (top four DBs 89.3% of snaps in games within 8 points, 84.1% in games decided by 25+; LBs 72.0 / 66.5; DL 58.7 / 54.1); the game only rests running backs (`RB_BLOWOUT_REST`). That covers about a third of the gap; the rest is in-game DB rotation (sub packages) and in-season roster churn. New mechanisms, so for a later piece: defensive blowout rest from the numbers above, then DB rotation.
 - **8. Sim: the kick/punt return centers drifted. Measured, not written: returns already run long.** `tools/recenter.py` (1,500 games, 3 leagues) on today's code: kick returns -0.058 -> -0.150, punt returns -0.041 -> -0.098; every other site within about 0.015. Neither the realism check nor the scoreboard measures returns, so they were measured directly (scratchpad `returns.py`, 8 sim seasons vs nflverse pbp, touchbacks and fair catches left out): kick returns 26.2 yards -> 26.6 with the new centers (real 2025 25.9, 2024 27.5: the new kickoff rules; the game's ~2,150 returns a season match 2025's 2,078); punt returns 12.1 -> 12.6 (real 8.8 / 8.9 / 9.6 / 9.9 / 10.2 in 2021-25). Writing the centers moves both away from real, so it waits for **the real gap: punt returns ~2 yards too long (and kick returns a little)**, which is the return-yardage tables, not the centers. Follow-up: rebuild the return tables from 2024-25 pbp, then recenter.
 - **Done looks like / branch `claude/realism-gaps-1e63b8`:** kept: the startup draft RB weight, the movement yardstick fix, the RFA tender rule, the hot-rusher clean-up. Measured and written up, not changed: free agency's mid-market shortfall and near-broke teams (void years, for Blake), the goal line (needs the red-zone rebalance), field goals (kicker churn), DB snaps (defensive blowout rest and sub packages), returns (tables first). A new scoreboard baseline wasn't saved here (the main session's call after merging).
+
+### Calling plays while you watch your game (Oct 25; side session. Blake: "one very important thing in fof8 was the ability to call plays while watching the game of your team. Id want the plays to reflect the coaching staff and offense. but making sure its implemented in a balanced way")
+- **Blake's choices (asked before building):**
+  - Offense, 4th downs and defense: "offense + fourth downs and offense and defense, but you should also be able to give playcalling back to your staff ... swap between watching and calling plays as much as you want throughout a game".
+  - One box, FOF8-style: "shouldnt it just be one check box that says something like 'take playcalling over'". His FOF8 habit: spam the box at max speed and only leave it on to call a certain play or get a player a touchdown; "you have control over the plays if you want but you arent comitting to calling plays for any amount of time".
+  - The coordinator picks personnel. The staff's suggested call and a "Coach's call" button. A small scheme fit ("Yes, small"). The game waits for your call (no play clock).
+- **Built:**
+  - **Screen (`screens/game_page.py`):** "Take over play calling" next to the speed buttons while you watch your own game.
+    - While it's ticked the game stops on each of your snaps, offense or defense. A panel shows the situation, "<Coordinator> suggests: X" (outlined in yellow), a Coach's call button, the menu, and ★ on calls that fit his scheme.
+    - After a few repeats he warns you: "They're keying on Deep pass. Mix it up."
+    - Untick it and the call on screen goes to the staff and the game runs on by itself. Sim to the end hands everything back.
+    - Plays you called are tagged "YOUR CALL: ..." in the play-by-play.
+  - **The menus:**
+    - Offense: Inside run, Outside run, QB sneak (2 yards or less to go), Short / Medium / Deep pass, Screen, Play action.
+    - 4th down: also Punt and Field goal (offered up to 70 yards; the head coach suggests).
+    - After a touchdown: Kick, Go for two (coach's play), or go for two with a play you pick.
+    - Defense: Zone, Man, Zone blitz, Man blitz, All-out blitz, Stop the run (8 in the box), Prevent.
+    - Kneels, spikes, Hail Marys, last-second kicks and timeouts stay automatic.
+  - **Engine:**
+    - `Game.callers` (`engine/sim/game.py`): the game yields a "call" event and waits for the screen. The snap goes through the same code either way.
+    - `coach.call_for_choice` / `apply_def_choice`: the play you pick is the coordinator's own play of that kind, with personnel, ball carrier, side and blitzers drawn from his habits. No bonus for being yours.
+    - `engine/sim/playcalling.py`: the reading of tendencies, scheme fit, and the menu the screen shows (screens read only from the engine).
+  - **Tools:**
+    - `tools/playcall_check.py`: the balance check, with bots in lab leagues.
+    - `tools/screens_check.py` now walks the play-calling view: on saves where your team plays, it watches the game, takes over, makes calls until the offense, defense and 4th-down / try menus have come up, then hands back.
+- **How the balance works:**
+  - The other side has your coordinator's film: his normal mix for the down, distance, score and time. That is the same model the AI coordinators call from. It matched 40,000 sampled calls per situation within 0.4 percentage points (defense within 0.8).
+  - Call something more often than he would, beyond chance (half a chance spread plus one extra call), and they start to expect it: it works worse. What you've been avoiding works a little better (35% of the same size).
+  - The other side keeps two books: the whole game, and this down-and-distance. Older calls fade (half-life ~35 snaps).
+  - A team is only read once you've made a call that isn't the staff's. AI teams and games where you never take over are untouched.
+  - Scheme fit: calls that suit the coordinator's style (e.g. play action for a heavy-set, fullback OC; blitzes for an aggressive DC) work a little better and the rest a little worse, evened out over his own mix.
+  - **Real yardstick** (nflverse 2021-25, quarters 1-4 outside the 2-minute drill, win chance 10-90%, a team's in-game pass rate over expected vs its own season):
+    - Running ~20% more than usual in a game: about 0.3 yards a run less.
+    - Passing ~20% more: about 0.3 yards a pass play less.
+    - The under-used kind gained little.
+  - **Probe** (every bot play given a fixed read): before the knobs were set, a read of -0.2 cost 0.57 yards a carry and 0.19 a dropback. So `READ_RUN_TILT` went 1.4 -> 0.8 and `READ_PASS_SEP` 1.0 -> 1.6.
+  - A read of 0.2 on every play is worth about 2.5-3 points a game.
+  - At real-sized deviations the reads land near real: passing 16% more than the coordinator (bot "pass_early") reads -0.10 on passes; running 18% more ("run_more") reads -0.16 on runs.
+- **Balance test** (`tools/playcall_report.txt`; 6 lab leagues x 1 regular season, real games, the bot calls one side of all 272 games a season, 1,632 games each; point margin a game vs the coordinators' own calls, +-0.35 or so):
+  - **Fair to the staff:** one call of its own each game, then always Coach's call: -0.08.
+  - **Best sensible strategies:** going for it on 4th and 4 or less wherever the coach would kick: +0.40 (real analytics also say teams should go more). A plausible human (run short yardage, pass 3rd and long, play action on 1st and 10): +0.24. Passing more on early downs: -0.11.
+  - For scale, a rough yardstick: a whole coaching staff's effect is at most about 2-3 points a game, one standard deviation. Berry and Fowler ("How Much Do Coaches Matter?") put coaches at 20-30% of team success across sports, and less in the NFL than in college. Team strength spreads about 6 points a game, and play calling is only part of coaching. So these edges are inside what one good play caller is worth.
+  - **Bad strategies cost about what a bad coordinator would:** random calls -1.2, the coordinator's best-fit play every snap -1.2, a run-heavy old-school caller -2.5, always pass -2.0, always screen -3.5, always play action -3.9, always deep -5.2, always short -5.9.
+  - "Always run" costs -12.1 (9.5 points a game, 3.4 yards a carry against defenses that know it's coming). That's extreme, but no real team has ever done it.
+  - **Defense:** random calls 0.0; always zone -2.3, always man -2.7, always one of the blitzes -3.4, always stop the run -2.6, always prevent -3.8, always all-out blitz -4.0.
+  - **Before any reading** (the same sim with no defense adjustment): always play action +2.5 and always deep +2.1 (31 points a game against 23), and on defense always all-out blitz +1.4. Those were real exploits; the reading is what closes them.
+  - Tuning history: the first version counted over-use about twice over (always run -17.7, always all-out blitz -26.8, always zone -8.6). The fixes:
+    - One extra call doesn't count, and chance is filtered at half a spread (it was one spread, but with no allowance one surprise deep shot already drew a warning).
+    - The exact call weighs half as much as run/pass as a whole (`READ_KIND_W` 0.5).
+    - The offense reads your defense at half strength (`READ_DEF_K` 0.5).
+    - A bug fixed: Prevent was compared with itself.
+- **Nothing changes when no one calls plays:**
+  - `tools/same_results.py --games real --seeds 101`: IDENTICAL to main (17 checkpoints x 52 parts, a full season and offseason with real games).
+  - Following the coordinator's suggestion on every snap replays the unwatched game exactly (6 games checked).
+  - Scoreboard vs main's 19:48 baseline: **0 changes beyond the noise, every must-be-zero number fine**. The same 22 sim measures are outside their real five-season range as before; this branch plays the same games.
+- **Tested in the app** (browser mode, a copy of the week-8 test save, simmed to week 9):
+  - Ticked the box and made 14 calls: offense; a 4th down (Punt suggested, no field goal from your own 4); a two-point try ("Two: Inside run", good); defense.
+  - The keying warnings appeared after 2-3 deep passes and after 4 all-out blitzes.
+  - Unticked with a call waiting: the staff took it and the clock ran on by itself.
+  - Re-ticked, then pressed Sim to the end with a call waiting: the game finished and was recorded (W 34-19).
+  - No server errors. One bug found and fixed on the way: a NiceGUI error when the clicked button was cleared before the play ran.
+  - `screens_check.py --saves 03,05`: 0 problems, 167 steps, including the new play-calling walk (offense, defense, 4th down). Full check, all 19 saves: 0 problems, 1,264 steps.
+- **Choices made without asking (Blake to review, PROVISIONAL):**
+  - The exact menus above. QB sneak shows only at 2 yards or less to go. Field goals are offered up to 70 yards (always, if the coach suggests one).
+  - The coordinator's "They're keying on ..." warning, and the ★ scheme marks.
+  - The other side's book starts fresh each game: no film of your called plays from earlier weeks yet.
+  - The scheme-fit size (`SCHEME_FIT_K` 0.08: small). Which calls fit which style is my judgment (`playcalling.fit_offense` / `fit_defense`).
+  - Kneels, spikes, Hail Marys, end-of-half kicks and timeouts stay with the staff.
+- **Follow-ups:**
+  - Film across games: the next opponent's DC studies your called plays from the last few weeks (FOF8's film room).
+  - Keyboard shortcuts for the menu.
+  - The read of defenses has no real-data yardstick (offenses reading defensive tendencies); it's set at half the offense's strength.

@@ -322,6 +322,7 @@ class Worker:
             self.contracts(entry)
         self.popups(entry)
         self.team_picker()
+        self.play_calling()
 
     def views(self, name, inside=False):
         """Click every option of every view toggle and tab row showing, then put it back."""
@@ -469,6 +470,58 @@ class Worker:
             self.close_popups()
         elif "offseason_report" in entry["expect"]:
             self.problem("missing", "no offseason report button in the bar")
+
+    # ---- Watching your game and calling plays (Take over play calling) ----
+    def play_calling(self):
+        """Saves where your team plays this week: watch the game, take over play calling, make
+        calls until both an offense and a defense call have come up (and a 4th down or a try
+        after a touchdown if one does), then hand play calling back. The game is left unfinished,
+        so nothing is recorded."""
+        p = self.page
+        if not self.go("Schedule", "Watch a game"):
+            return
+        watch = p.locator(".q-tab-panel button:visible", has_text=re.compile(r"^\s*Watch this game\s*$"))
+        if not watch.count():
+            return                                  # a bye, or the game's already played
+        if not self.step("Watch a game - playing", lambda: watch.first.click()):
+            return
+        box = p.locator(".q-checkbox", has_text="Take over play calling")
+        if not self._appears(box):
+            self.problem("missing", "no 'Take over play calling' box while watching your game")
+            return
+        fast = p.locator(".q-btn-toggle button", has_text=re.compile(r"^\s*Very fast\s*$"))
+        if fast.count():
+            fast.first.click()
+        panel = p.locator(".call-panel:visible")
+        seen = set()
+
+        def wait_panel():
+            panel.first.wait_for(timeout=90000)
+
+        if not self.step("Play calling - box ticked", lambda: (box.first.click(), wait_panel()), shot=False):
+            return
+        for _ in range(40):
+            head = panel.first.locator(".call-head").inner_text()
+            text = panel.first.inner_text()
+            kind = ("defense" if "DEFENSE" in head else "try after touchdown" if "Try after touchdown" in head
+                    else "4th down" if "4th &" in head else "offense")
+            if kind not in seen:
+                seen.add(kind)
+                self.step(f"Play calling - {kind}", None)
+                if "suggests:" not in text:
+                    self.problem("missing", f"no staff suggestion on the {kind} play-calling menu")
+            if {"offense", "defense"} <= seen and len(seen) >= 3 or len(seen) == 4:
+                break
+            # A call that isn't the staff's (the menu's first such button), then the next call.
+            btn = panel.first.locator(".call-btn:not(.suggested)")
+            if not self.step(f"Play calling - call made ({kind})",
+                             lambda: (btn.first.click(), p.wait_for_timeout(300), wait_panel()), shot=False):
+                return
+        if not {"offense", "defense"} <= seen:
+            self.problem("missing", f"play calling: only these menus came up: {sorted(seen)}")
+        self.step("Play calling - handed back to the staff", lambda: box.first.click())
+        if panel.count():
+            self.problem("couldn't do it", "the play-calling menu stayed up after unticking the box")
 
     def close_popups(self):
         p = self.page
