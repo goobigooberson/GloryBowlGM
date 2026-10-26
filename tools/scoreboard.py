@@ -276,10 +276,11 @@ def combine(parts):
             r = qreal[key]
             out[f"sim.qb.{key}"] = measure([p["qb"][key] for p in parts["sim"] if "qb" in p], r["mean"],
                                            QS.LABELS[key], lo=r["min"], hi=r["max"])
-        # Attempts per game: percentiles of all seasons' starters, one value per league (4 seasons each).
+        # Attempts per game: percentiles of all seasons' starters (each season centered, as the
+        # real ones), one value per league (4 seasons each).
         by_league = defaultdict(list)
         for p in parts["sim"]:
-            by_league[p.get("seed")] += p.get("qb_att_pg", [])
+            by_league[p.get("seed")].append(p.get("qb_att_pg", []))
         for key in ("qb_att_pg_p10", "qb_att_pg_p50", "qb_att_pg_p90"):
             vals = [QS.percentiles(v).get(key) for v in by_league.values() if v]
             out[f"sim.qb.{key}"] = measure(vals, qreal[key]["mean"], QS.LABELS[key])

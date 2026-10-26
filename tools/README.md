@@ -50,7 +50,8 @@
     draft board's Developed %. `python tools/rookie_check.py real` rebuilds
     `real_rookie_bloom.json`.
   - `qb_style_check.py`: efficient low-volume passers, running QBs and pass attempts per
-    game vs real (2010-2024). `python tools/qb_style_check.py real` rebuilds
+    game vs real (2021-2025, games played, each season's attempts centered before
+    pooling; until Oct 25 it was 2010-2024). `python tools/qb_style_check.py real` rebuilds
     `real_qb_styles.json`.
   - `integration_check.py`: the whole game with a team of yours, start to finish (startup
     draft, seasons, every offseason phase, save/load at each stage); prints the problems

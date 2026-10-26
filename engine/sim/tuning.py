@@ -37,7 +37,10 @@ SACK_CLEANUP = 0.45          # share of sacks finished by someone other than the
 # ---- Scrambles -----------------------------------------------------------
 SCRAMBLE_UNPRESSURED = 0.019 # base: QB tucks it when nobody is open
 SCRAMBLE_PRESSURED = 0.17    # base share of escaped pressures that become runs
-SCRAMBLE_SKILL_K = 0.85      # logit per z of the QB's scrambling rating
+SCRAMBLE_SKILL_K = 0.50      # logit per z of the QB's scrambling rating
+                             # (Oct 25: 0.85 -> 0.50. The best scramblers scrambled far too often: top QBs
+                             # 81/64/55/38/21 scrambles a season (#1/#3/#5/#10/#20) vs real 63/49/44/32/19,
+                             # 500+ scramble-yard seasons 2.9 a season vs real 0.6; nflverse 2021-25)
 SCRAMBLE_YARDS_K = 0.35      # tilt per z of scrambling on how far he gets
 
 # ---- Coverage and target choice ------------------------------------------
@@ -148,8 +151,16 @@ PASS_FIELD = ((3, -0.50), (5, -0.50), (10, -0.42), (15, -0.20), (20, -0.06), (25
 YAC_FIELD = ((0, -0.8), (10, -0.6), (20, -0.3), (35, 0.0))
 WR_RUN_SHARE = 0.022          # designed runs that are jet sweeps / end-arounds to a receiver
 QB_GOAL_LINE_RUN = 0.8       # logit: QB keepers and pushes are more common at the 1-3 (real: QBs score ~20% of rushing TDs)
-QB_RUN_SHARE = 0.035         # base share of designed runs that are QB keepers
-QB_RUN_MOBILITY_K = 0.75     # logit per z of QB scrambling
+QB_RUN_SHARE = 0.026         # base share of designed runs that are QB keepers
+QB_RUN_MOBILITY_K = 1.5      # logit per z of QB scrambling
+                             # (Oct 25: 0.035 / 0.75 -> 0.026 / 1.5. Real offenses build designed runs around a
+                             # truly mobile QB: real top QBs 86/64/44/23/13 designed carries a season
+                             # (#1/#3/#5/#10/#20, sneaks included) vs the game's 55/38/34/25/17, so the game's
+                             # 600-yard rushers got there almost all on scrambles. League QB runs unchanged.)
+QB_KEEP_SKILL_K = 3.2        # how much the QB's mobility (scrambling) moves a designed QB run, vs 1.0 for a back's skills
+                             # (Oct 25: was 0.8, built into plays.run_play. Real defenses have to respect a running
+                             # QB on a keeper: the most mobile QBs gain 6.2 yards a keeper in the open field vs 4.7
+                             # for the rest (nflverse 2021-25); the game gave them ~4.5 vs ~4.1.)
 SNEAK_SUCCESS = 0.80         # QB sneak converts this often vs an average line
 
 # ---- Turnovers on carries -------------------------------------------------
@@ -344,6 +355,8 @@ INJURY_QB_MULT = 0.65        # rules protect quarterbacks
 # result up, worse players move it down. These need re-measuring (by Claude)
 # if player ratings or the knobs above change a lot.
 # Measured Oct 19, 2026 over 1,500 games in three different leagues.
+# Oct 25: only "scramble" and "qb_run" re-measured (tools/recenter.py) after the scramble and
+# designed QB run retune changed which QBs carry the ball; the rest left as they were.
 CENTER = {
     "breakaway": 0.011,
     "comp0": 0.061,
@@ -356,9 +369,9 @@ CENTER = {
     "int3": 0.259,
     "kr": -0.058,
     "pr": -0.041,
-    "qb_run": 0.187,
+    "qb_run": 0.576,
     "run": 0.1,
-    "scramble": 0.211,
+    "scramble": 0.157,
     "sneak": 0.011,
     "throwaway": -1.195,
     "yac0": 0.043,
