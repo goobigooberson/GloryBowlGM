@@ -49,6 +49,7 @@ IN_SEASON_BUFFER = 0.025        # cap room AI teams keep for in-season moves (sh
 WEEK1_EXTRA = 0.025             # ...plus, in the offseason, room for what starts counting at week 1 (all 53
                                 # instead of the top 51, the practice squad's pay: about 2% of the cap)
 ROOKIE_RESERVE = 0.035          # cap room kept for the draft class before the draft (if the picks aren't known)
+KEEP_RESERVE_SHARE = 0.5        # after signing a free agent a team keeps this share of that reserve (and its owner's savings)
 STYLE_SD = 0.04                 # front offices differ in how freely they spend (hidden, fixed per team)
 EVAL_SD = 0.05                  # and in how they judge a given player (scouting misjudgment)
 RESIGN_SLACK = 0.10             # re-signing: a deal happens if the team's top figure is within this share of his ask
@@ -175,6 +176,10 @@ RETIRE_UC_SCALE = 0.5           # his plain odds times this at his position's us
 RETIRE_UC_AGE = 0.175           # ...times e^(this x years past that age), from 8 years before to 4 after
 RETIRE_MONEY_K = 0.01           # ...and shrinking by e per 1% of the cap he'd give up (full weight when young)
 TAG_MIN_VALUE = 0.95            # tag a player only if he's worth at least this share of the tag
+RFA_TENDER_MIN_VALUE = 1.0      # tender a restricted free agent only if he's worth this share of the lowest tender
+                                # (Oct 25: 0.75 -> 1.0. At 0.75 teams paid 1-year tenders a third above a player's
+                                # worth: 39 tenders a year at 1%+ of the cap vs real ~19, OverTheCap 2016-21 1-year
+                                # re-signings at the tender amounts; now ~27, the rest re-sign or test the market)
 LONG_TERM_AFTER_TAG = 0.45      # a tagged player signs a long-term deal before the season
 OPTION_MIN_VALUE = 0.8          # exercise a fifth-year option if he's worth this share of it
 FUTURES_KEEP = 0.85             # practice squad players re-signed on reserve/future deals
@@ -454,7 +459,7 @@ def _keep_k(league, tid, pre, cap):
     starts counting at week 1 (an all-in team keeps less for in-season moves, and
     could otherwise be over the cap at week 1)."""
     pk = plan_keep(league, tid)
-    keep = ((_reserve_share(league, tid, pre) - pk) * 0.5 + pk) * cap
+    keep = ((_reserve_share(league, tid, pre) - pk) * KEEP_RESERVE_SHARE + pk) * cap
     if C.top51_in_force(league):
         keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
     return keep
@@ -957,7 +962,8 @@ def league_year_start(league, rng=None, draft_order=None):
             if status == "ERFA":
                 signed = C.minimum_contract(league, pid, tid, years=1, kind="tender")
                 rep["erfa"] += 1
-            elif status == "RFA" and role in ("starter", "backup") and info["price"] >= 0.75 * C.RFA_TENDER_SHARE["rofr"]:
+            elif (status == "RFA" and role in ("starter", "backup")
+                  and info["price"] >= RFA_TENDER_MIN_VALUE * C.RFA_TENDER_SHARE["rofr"]):
                 level = ("first" if info["price"] >= C.RFA_TENDER_SHARE["first"] else
                          "second" if info["price"] >= C.RFA_TENDER_SHARE["second"] else "rofr")
                 amt = C.rfa_tender(league, level, old["years"][-1]["base"])

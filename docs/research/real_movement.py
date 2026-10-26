@@ -7,6 +7,7 @@ from collections import defaultdict, Counter
 from pathlib import Path
 
 W = Path("tools/data/nflverse/weekly_rosters")
+ON_TEAM = {"ACT", "RES", "INA", "DEV", "PUP", "SUS", "RSN", "RSR", "NWT", "EXE", "E01", "E14", "NON"}
 OUT = Path(__file__).with_name("real_movement.json")
 POS = {"QB": "QB", "RB": "RB", "FB": "RB", "WR": "WR", "TE": "TE", "T": "OL", "G": "OL", "C": "OL", "OL": "OL",
        "OT": "OL", "OG": "OL", "DE": "DL", "DT": "DL", "NT": "DL", "DL": "DL", "LB": "LB", "OLB": "LB", "ILB": "LB",
@@ -37,7 +38,11 @@ for yr in range(2018, 2025):
         if r["gsis_id"] not in last or w >= last[r["gsis_id"]][0]:
             last[r["gsis_id"]] = (w, r)
     wk1 = min(int(r["week"]) for r in b)
-    nxt = {r["gsis_id"]: r for r in b if int(r["week"]) == wk1}
+    # On a team in week 1: on its 53, a reserve list or its practice squad. Not the week-1 rows
+    # with status CUT (about 500 a season, the final cut-down's releases; other weeks have ~25),
+    # RET, UFA or RFA: those players are on no team. (Fixed Oct 25: counting every week-1 row as
+    # "on that team" put real "out of the league" at 10.5% instead of 19.0%.)
+    nxt = {r["gsis_id"]: r for r in b if int(r["week"]) == wk1 and r["status"] in ON_TEAM}
     for pid, (_w, r) in last.items():
         if r["status"] not in ("ACT", "RES", "INA"):
             continue                   # count only players on a 53 / reserve at season's end

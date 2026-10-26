@@ -309,8 +309,13 @@ ROTATION = {"RB": 0.26, "RB_3": 0.025, "WR1": 0.11, "WR1_3": 0.23, "WR2": 0.10, 
             "WR3": 0.22, "TE1": 0.18, "TE1_3": 0.12, "TE2": 0.10,
             "LE": 0.40, "RE": 0.40, "LDT": 0.42, "RDT": 0.42, "WLB": 0.08, "SLB": 0.10, "NB": 0.06,
             "MLB": 0.05, "LE_3": 0.06, "RE_3": 0.06, "LDT_3": 0.10, "RDT_3": 0.10}
-HOT_RUSHER_CLEANUP = 0.10    # and per sack he already has, this much more chance the next sack is a clean-up
-                             # by someone else (the protection is sliding his way)
+HOT_RUSHER_CLEANUP = 0.20    # and per sack he already has, this much more chance the next sack is a clean-up
+                             # by someone else (the protection is sliding his way). Oct 25: 0.10 -> 0.20.
+                             # Team sacks a game already matched real (spread 1.81 vs 1.75), but they piled on
+                             # one man: one-player games of 2+ / 3+ / 4+ sacks 175 / 26.7 / 3.0 a season vs
+                             # real 141 / 16.4 / 2.0 (nflverse weekly 2021-25); now 161 / 19.2 / 2.2, season
+                             # totals unchanged (24 seasons; scratchpad sack_games.py). 0.3 gives the same:
+                             # the 0.4 limit in plays._sack binds after two sacks.
 HOT_RUSHER_K = 0.60         # per sack (half per QB hit) a rusher has in this game: how much more the offense
                              # treats him as the threat to slide to and chip (plays.protection). Real
                              # 2021-25 per season: 16 games of 3+ sacks by one player, 2 of 4+; before

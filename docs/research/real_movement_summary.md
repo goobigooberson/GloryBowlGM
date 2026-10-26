@@ -6,24 +6,28 @@ Data: nflverse weekly rosters (local). Full numbers: `real_movement.json`; scrip
 Players on a 53 or a reserve list in their last regular-season week of season Y (~2,140 a
 season, ~67 per team), and where they are in week 1 of Y+1:
 
-- **Same team 66% · new team 24% · on no team 10%** (retired, unsigned, or back later in the season).
-- So about **16 players per team per offseason land on a different team** (free agency, trades,
-  cuts/claims together), and ~7 leave the league.
+- **Same team 60% · new team 21% · on no team 19%** (retired, unsigned, or back later in the season).
+- So about **14 players per team per offseason land on a different team** (free agency, trades,
+  cuts/claims together), and ~13 leave the league.
+- **Corrected Oct 25:** the first version counted every week-1 row as "on that team", including
+  the ~500 a season with status CUT (the final cut-down's releases; other weeks have ~25), so it
+  read same 66% / new 24% / gone 10.5%. Now only players on a 53, a reserve list or a practice
+  squad in week 1 count as on a team.
 
 By experience at the end of season Y:
 | Seasons | Players/season | Same team | New team | On no team |
 |---|---|---|---|---|
-| 0-2 | 990 | 81% | 14% | 5% |
-| 3-4 | 473 | 54% | 37% | 9% |
-| 5-7 | 441 | 54% | 32% | 14% |
-| 8+ | 238 | 47% | 25% | 28% |
+| 0-2 | 990 | 75% | 11% | 13.5% |
+| 3-4 | 473 | 50% | 32% | 18% |
+| 5-7 | 441 | 49% | 28% | 23% |
+| 8+ | 238 | 41% | 22% | 36.5% |
 
-The big wave is players coming off rookie contracts (3-4 seasons: 37% switch teams). 8+ year
-veterans mostly either stay or are done (28% on no team: retirements and unsigned vets).
+The big wave is players coming off rookie contracts (3-4 seasons: 32% switch teams). 8+ year
+veterans mostly either stay or are done (36.5% on no team: retirements and unsigned vets).
 
-By position (new team / on no team): QB 32% / 8% (backup QB carousel), WR 26% / 9%, DL 25% / 10%,
-TE 24% / 11%, DB 24% / 10%, LB 24% / 12%, RB 23% / 12%, OL 22% / 10%, K 18% / 15%, P 16% / 9%,
-LS 9% / 12% (long snappers stay put).
+By position (new team / on no team): QB 31% / 15% (backup QB carousel), WR 22% / 19%, DL 22% / 17%,
+TE 20% / 20%, DB 20% / 20%, LB 20% / 21%, RB 20% / 20%, OL 19% / 19%, K 16% / 21%, P 13% / 19%,
+LS 7% / 17% (long snappers stay put).
 
 ## Practice squad makeup (regular-season weeks, 2022-25)
 Real squads average **15.2 players** (not always full). Per squad, by depth-chart position:

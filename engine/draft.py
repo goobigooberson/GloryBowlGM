@@ -1184,8 +1184,9 @@ STARTUP_MISS_YOUNG = 0.90     # ...and on a player with 0-1 seasons
 # on 10 test leagues and checked on 10 others: error (rms log ratio) 0.47 -> 0.23. Was
 # QB 3.0, RB 1.0, WR 1.1, TE 1.0, T 1.2, G 1.0, C 1.1, DE 1.2, DT 1.0, OLB 0.95, ILB 1.1,
 # CB 1.03, S 1.03 (DTs, RBs, edge rushers and top receivers went too late, corners and
-# safeties too early).
-STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.46, "FB": 0.4, "WR": 1.32, "TE": 1.12, "T": 1.18, "G": 1.11,
+# safeties too early). RB 1.46 -> 1.53 (Oct 25, on the settled new leagues, 40 of them): the
+# 3rd RB went at pick 130 (real 104), the 5th at 192 (156); now 103 and 172.
+STARTUP_POS_WEIGHT = {"QB": 3.0, "RB": 1.53, "FB": 0.4, "WR": 1.32, "TE": 1.12, "T": 1.18, "G": 1.11,
                       "C": 1.07, "DE": 1.46, "DT": 1.26, "OLB": 1.09, "ILB": 1.26, "CB": 1.09, "S": 1.10,
                       "K": 0.3, "P": 0.25, "LS": 0.1}
 # (Specialists: the depth chart gives them 1.0, but their ratings spread wider and a rating
