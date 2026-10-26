@@ -1314,14 +1314,11 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
   - Re-ticked, then pressed Sim to the end with a call waiting: the game finished and was recorded (W 34-19).
   - No server errors. One bug found and fixed on the way: a NiceGUI error when the clicked button was cleared before the play ran.
   - `screens_check.py --saves 03,05`: 0 problems, 167 steps, including the new play-calling walk (offense, defense, 4th down). Full check, all 19 saves: 0 problems, 1,264 steps.
-- **Choices made without asking (Blake to review, PROVISIONAL):**
-  - The exact menus above. QB sneak shows only at 2 yards or less to go. Field goals are offered up to 70 yards (always, if the coach suggests one).
-  - The coordinator's "They're keying on ..." warning, and the ★ scheme marks.
-  - The other side's book starts fresh each game: no film of your called plays from earlier weeks yet.
-  - The scheme-fit size (`SCHEME_FIT_K` 0.08: small). Which calls fit which style is my judgment (`playcalling.fit_offense` / `fit_defense`).
-  - Kneels, spikes, Hail Marys, end-of-half kicks and timeouts stay with the staff.
+- **Choices made without asking, now DECIDED** (Oct 26, Blake: "yes i like the theyre keying on, you decide how much a bonus scheme fit gives thats balanced but satisfying. you make the call on the ones i didnt answer"; the main session's calls on the rest):
+  - Kept: the menus above (QB sneak at 2 yards or less to go, field goals offered up to 70 yards), the "They're keying on ..." warning, the ★ scheme marks, and kneels, spikes, Hail Marys, end-of-half kicks and timeouts staying with the staff.
+  - Scheme-fit size: see "Scheme fit, balanced but satisfying" below. Which calls fit which style is still my judgment (`playcalling.fit_offense` / `fit_defense`).
+  - The fresh book each game is replaced by film across games: see below.
 - **Follow-ups:**
-  - Film across games: the next opponent's DC studies your called plays from the last few weeks (FOF8's film room).
   - Keyboard shortcuts for the menu.
   - The read of defenses has no real-data yardstick (offenses reading defensive tendencies); it's set at half the offense's strength.
 

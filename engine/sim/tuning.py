@@ -292,7 +292,11 @@ READ_DEF_K = 0.5             # your defense's over-use, in the same units, as an
 READ_FILM_GAMES = 3          # film: the other side starts from your called plays in your last 3 games
 READ_FILM_W = 0.4            # ... each earlier snap counting this much of a snap in this game
 READ_FILM_FADE = 0.6         # ... and each older game this much of the one after it
-SCHEME_FIT_K = 0.08          # scheme fit: over-use units per 1.0 of fit above the coordinator's own mix
+SCHEME_FIT_K = 0.20          # scheme fit: over-use units per 1.0 of fit above the coordinator's own mix.
+                             # Oct 26 (Blake: "balanced but satisfying"): swept 0.08 / 0.12 / 0.16 / 0.20;
+                             # at every value the best-fit call every snap stayed below the coach's own
+                             # calls (~-0.8 a game) and a plausible human about +0.6. A ★ call (fit 0.72
+                             # above his mix on average) is worth ~+0.26 yards a carry, +0.14 a dropback
 
 # ---- Game-to-game form, home field, fatigue --------------------------------
 # Coordinator style (persistent for a team all season; placeholder for coaches)

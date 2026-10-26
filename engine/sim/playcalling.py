@@ -273,9 +273,14 @@ def prompt(game):
     book = game.books.get(idx)
     keying, fits = [], []
     sit = situation(st)
+    # Before your first call of the game, what they'd bring from film of your last games.
+    film = None
+    if (getattr(lg, "playcall_film", None) or {}).get(str(team.id)):
+        film = Book(team)
     if kind in ("offense", "fourth"):
-        if book is not None and book.active_off:
-            keying = _keying(book.offense, sit, {"run": "the run", "pass": "the pass"},
+        src = book.offense if (book is not None and book.active_off) else (film.offense if film else None)
+        if src is not None:
+            keying = _keying(src, sit, {"run": "the run", "pass": "the pass"},
                              [(k, coach.PLAY_MENU[k]) for k in plays])
         fit = book.fit_off if book is not None else fit_offense(team)
         if fit:
@@ -283,8 +288,9 @@ def prompt(game):
             mix = sum(q * fit.get(k, 0.0) for k, q in odds.items()) / (sum(odds.values()) or 1.0)
             fits = [k for k in plays if fit.get(k, 0.0) - mix >= FITS_FROM]
     elif kind == "defense":
-        if book is not None and book.active_def:
-            keying = _keying(book.defense, sit, {"blitz": "the blitz"}, list(coach.DEF_MENU.items()))
+        src = book.defense if (book is not None and book.active_def) else (film.defense if film else None)
+        if src is not None:
+            keying = _keying(src, sit, {"blitz": "the blitz"}, list(coach.DEF_MENU.items()))
         fit = book.fit_def if book is not None else fit_defense(team)
         if fit:
             vals = sorted(fit.values())
