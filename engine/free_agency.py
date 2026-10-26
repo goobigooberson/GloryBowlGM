@@ -311,6 +311,8 @@ def uses_void(league, tid, key=""):
     yourself from the Contracts tab)."""
     if tid is None or tid == league.user_team_id or not VOID_YEARS:
         return False
+    if "approach" not in (getattr(league, "fa", None) or {}):
+        return False          # a new league before its first league year: set up as before Oct 26
     p = VOID_USE.get(approach(league, tid), 0.0)
     if p <= 0:
         return False
@@ -876,8 +878,10 @@ def initial_contracts(league, rng=None):
     cap = C.cap_for(league, S)
     for t in league.teams:
         # (a new league is about to play: everyone counts, not just the top 51)
-        # (no void-year escape here: it would void half a new league's deals in its second year)
-        _comply(league, t.id, rng, target=IN_SEASON_BUFFER, allow_cuts=False, top51=False, escape=False)
+        # (no void years here: as the escape they voided half a new league's deals in its second
+        # year; and a new league is set up exactly as before Oct 26, so its final cuts are too)
+        _comply(league, t.id, rng, target=IN_SEASON_BUFFER, allow_cuts=False, top51=False, escape=False,
+                voids=False)
         room = C.cap_room(league, t.id, top51=False)
         if room < IN_SEASON_BUFFER * cap:
             _shrink(league, t.id, IN_SEASON_BUFFER * cap - room + int(0.005 * cap))
@@ -1212,12 +1216,13 @@ def _cap_cuts(league, tid, table, depth, rng):
     return n
 
 
-def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None, escape=True):
+def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None, escape=True, voids=True):
     """AI: get at least `target` (share of the cap) of room: restructure the
     biggest contracts first (with void years if the team leans on them this
     year), then cut the players whose release saves the most for the least
     value lost. escape: when neither is left, restructure with void years as
-    the last way out (Oct 26), whatever the team's style. Returns the moves."""
+    the last way out (Oct 26), whatever the team's style. voids=False: no void
+    years at all (a new league's setup). Returns the moves."""
     S = league.season
     cap = C.cap_for(league, S)
     moves = []
@@ -1232,7 +1237,7 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None, escape=Tr
             c = league.contracts.get(pid)
             if c is None:
                 continue
-            void = C.MAX_PRORATION_YEARS if escaping or uses_void(league, tid, pid) else 0
+            void = C.MAX_PRORATION_YEARS if escaping or (voids and uses_void(league, tid, pid)) else 0
             r = C.restructure_room(league, c, S, void)
             if r > 0:
                 n = C.restructure_spread(c, S, void)
@@ -1244,11 +1249,10 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None, escape=Tr
         # is only a little over (Oct 23: a team $100K over with no restructure worth 0.2% left
         # stayed over all season; the trades session found AI teams drifting over in-season).
         if best and best[0] > min(0.002 * cap, need):
-            # Convert what's needed: the saving is the amount less this season's share of it.
-            n, void = best[2], best[3]
-            amount = int(need * n / (n - 1) * 1.05) + 1
+            void = best[3]
             c = league.contracts[best[1]]
-            C.restructure(league, best[1], min(C.restructure_room(league, c, S, void), amount), void=void)
+            C.restructure(league, best[1], min(C.restructure_room(league, c, S, void), int(need * 1.3) + 1),
+                          void=void)
             moves.append(("restructure", best[1]))
             continue
         if not allow_cuts:

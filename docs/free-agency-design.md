@@ -70,7 +70,8 @@ real season per league first, ~2 min). Nothing is saved.
 - **Reserve/future deals**: last season's practice squad players re-sign 1-2 year minimum
   deals when the season ends.
 
-Not modeled (deliberate, small): void years, incentives (likely/unlikely to be earned),
+Void years and void-year restructures: built Oct 26 (build log, "Void years"; `docs/research/void_years.md`).
+Not modeled (deliberate, small): incentives (likely/unlikely to be earned),
 offset language, the 89% cash-spending floor over multi-year periods, the transition tag
 and RFA offer sheets with draft-pick compensation (no draft-pick trading in the game yet),
 compensatory picks.
