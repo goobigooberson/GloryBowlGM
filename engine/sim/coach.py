@@ -35,6 +35,8 @@ class OffCall:
     gap: str = "guard"              # guard, tackle, end
     tempo: str = "normal"           # normal, hurry, milk
     lineup: dict = field(default_factory=dict)
+    read: float = 0.0               # called plays only (playcalling.py): the offense's edge from how
+                                    # each side's calls are read, plus scheme fit; 0 for the staffs' calls
 
 
 @dataclass
@@ -196,27 +198,35 @@ def choose_personnel(rng, state, is_pass, team, tempo):
     return _weighted(rng, adj)
 
 
+def pass_concepts(state, tempo):
+    """The coordinator's mix of pass concepts in this situation."""
+    if tempo == "hurry":
+        return [("dropback", .60), ("quick", .27), ("deep", .09), ("screen", .04)]
+    if state.down >= 3 and state.togo >= 6:
+        return [("dropback", .58), ("quick", .20), ("deep", .11), ("screen", .07), ("play_action", .04)]
+    if state.down >= 3:
+        return [("quick", .45), ("dropback", .40), ("screen", .05), ("play_action", .07), ("deep", .03)]
+    return [("dropback", .36), ("quick", .27), ("play_action", .24), ("screen", .07), ("deep", .06)]
+
+
+def must_pass(state, off_idx):
+    """Must-have yardage with the clock running out: the coordinator all but always throws."""
+    diff = score_diff(state, off_idx)
+    hs = half_seconds(state)
+    return (((state.qtr >= 4 and diff < 0 and hs <= 150) or (state.qtr == 2 and hs <= 40))
+            and state.down >= 3 and state.togo >= 4)
+
+
 def call_offense(rng, state, off_idx, off_team, def_team):
     tempo = tempo_for(state, off_idx)
     p_pass = pass_probability(state, off_idx, off_team)
-    diff = score_diff(state, off_idx)
-    hs = half_seconds(state)
-    if ((state.qtr >= 4 and diff < 0 and hs <= 150) or (state.qtr == 2 and hs <= 40)) \
-            and state.down >= 3 and state.togo >= 4:
-        p_pass = max(p_pass, 0.985)       # must-have yardage with the clock running out
+    if must_pass(state, off_idx):
+        p_pass = max(p_pass, 0.985)
     is_pass = rng.random() < p_pass
     package = choose_personnel(rng, state, is_pass, off_team, tempo)
     call = OffCall(kind="pass" if is_pass else "run", package=package, tempo=tempo)
     if is_pass:
-        if tempo == "hurry":
-            opts = [("dropback", .60), ("quick", .27), ("deep", .09), ("screen", .04)]
-        elif state.down >= 3 and state.togo >= 6:
-            opts = [("dropback", .58), ("quick", .20), ("deep", .11), ("screen", .07), ("play_action", .04)]
-        elif state.down >= 3:
-            opts = [("quick", .45), ("dropback", .40), ("screen", .05), ("play_action", .07), ("deep", .03)]
-        else:
-            opts = [("dropback", .36), ("quick", .27), ("play_action", .24), ("screen", .07), ("deep", .06)]
-        call.concept = _weighted(rng, opts)
+        call.concept = _weighted(rng, pass_concepts(state, tempo))
     else:
         sneak_spot = state.togo <= 1 and (state.down >= 3 or (state.down == 2 and rng.random() < 0.25))
         if sneak_spot and rng.random() < 0.42:
@@ -245,6 +255,140 @@ def call_offense(rng, state, off_idx, off_team, def_team):
             lean = off_team.outside_lean
             call.gap = _weighted(rng, [("guard", .36 - lean / 2), ("tackle", .33), ("end", .31 + lean / 2)])
     return call
+
+
+# ---------------------------------------------------------------------------
+# Calling your own plays (the Watch a game page; tools/playcall_check.py)
+# ---------------------------------------------------------------------------
+# The menu, in the words a fan would use, and the sim's call behind each one. You pick the
+# kind of play; the coordinator fills in the rest exactly as he would for his own call of
+# that kind (personnel, who carries it, which side), so a called play is the same play an AI
+# coordinator would run.
+
+PLAY_MENU = {
+    "run_inside": "Inside run",
+    "run_outside": "Outside run",
+    "sneak": "QB sneak",
+    "pass_short": "Short pass",
+    "pass_medium": "Medium pass",
+    "pass_long": "Deep pass",
+    "screen": "Screen",
+    "play_action": "Play action",
+}
+PASS_CHOICES = {"pass_short": "quick", "pass_medium": "dropback", "pass_long": "deep",
+                "screen": "screen", "play_action": "play_action"}
+RUN_CHOICES = ("run_inside", "run_outside", "sneak")
+
+
+def choice_of(call):
+    """The menu entry a coach's call falls under (None for kneels, spikes, Hail Marys)."""
+    if call.kind == "sneak":
+        return "sneak"
+    if call.kind == "run":
+        return "run_inside" if call.gap == "guard" else "run_outside"
+    if call.kind == "pass":
+        for k, concept in PASS_CHOICES.items():
+            if concept == call.concept:
+                return k
+    return None
+
+
+def _sweep_share(lean):
+    """Of the coach's own outside runs by a back or receiver, the share that are jet sweeps."""
+    outside = (.38 + .365) * (.33 + .31 + lean / 2)
+    w = T.WR_RUN_SHARE
+    return w / (w + (1 - w) * outside)
+
+
+def call_for_choice(rng, state, off_idx, off_team, choice):
+    """The coordinator's call of the kind you picked: everything you didn't pick (personnel,
+    ball carrier, side, gap) is drawn from his own habits for that kind of play."""
+    tempo = tempo_for(state, off_idx)
+    if choice in PASS_CHOICES:
+        package = choose_personnel(rng, state, True, off_team, tempo)
+        return OffCall(kind="pass", package=package, concept=PASS_CHOICES[choice], tempo=tempo)
+    package = choose_personnel(rng, state, False, off_team, tempo)
+    call = OffCall(kind="run", package=package, tempo=tempo)
+    if choice == "sneak":
+        call.kind, call.carrier, call.location = "sneak", "QB", "middle"
+        return call
+    qb_share = sigmoid(logit(T.QB_RUN_SHARE) + T.QB_RUN_MOBILITY_K * (off_team.qb_mobility - 0.3)
+                       + (T.QB_GOAL_LINE_RUN if state.yl <= 3 else 0.0))
+    if rng.random() < qb_share:
+        call.carrier = "QB"
+    elif package in ("21 personnel", "22 personnel") and rng.random() < 0.07:
+        call.carrier = "FB"
+    elif choice == "run_outside" and state.yl > 5 and rng.random() < _sweep_share(off_team.outside_lean):
+        # Jet sweep / end-around (the coach's share of his outside runs).
+        call.carrier = "WR3" if rng.random() < 0.55 else "WR1"
+        call.location = "left" if rng.random() < 0.5 else "right"
+        call.gap = "end"
+        return call
+    else:
+        call.carrier = "RB"
+    lean = off_team.outside_lean
+    if choice == "run_inside":
+        # The coach's inside runs: up the middle, or off either guard.
+        call.location = _weighted(rng, [("left", .38 * (.36 - lean / 2)), ("middle", .255),
+                                        ("right", .365 * (.36 - lean / 2))])
+        call.gap = "guard"
+    else:
+        call.location = _weighted(rng, [("left", .38), ("right", .365)])
+        call.gap = _weighted(rng, [("tackle", .33), ("end", .31 + lean / 2)])
+    return call
+
+
+# The defensive menu. Personnel stays the coordinator's (it follows the offense's personnel).
+DEF_MENU = {
+    "zone": "Zone",
+    "man": "Man",
+    "zone_blitz": "Zone blitz",
+    "man_blitz": "Man blitz",
+    "all_out": "All-out blitz",
+    "run_stop": "Stop the run",
+    "prevent": "Prevent",
+}
+BLITZ_CHOICES = ("zone_blitz", "man_blitz", "all_out")
+
+
+def def_choice_of(dcall):
+    """The menu entry a defensive call falls under."""
+    if dcall.prevent:
+        return "prevent"
+    if dcall.loaded:
+        return "run_stop"
+    if not dcall.blitzers:
+        return dcall.coverage
+    if dcall.coverage == "zone":
+        return "zone_blitz"
+    return "all_out" if len(dcall.blitzers) >= 2 else "man_blitz"
+
+
+def _blitz_pool(package):
+    # Slot corners and safeties blitz often in the modern NFL (real: about 8% of sacks come from DBs).
+    return {"Base 4-3": ["WLB", "SLB", "MLB", "SS", "SS"], "Nickel": ["WLB", "MLB", "NB", "NB", "SS", "SS"],
+            "Dime": ["MLB", "DB", "NB", "NB", "SS"]}[package]
+
+
+def apply_def_choice(rng, dcall, choice):
+    """Change the coordinator's call to the one you picked (same personnel on the field)."""
+    dcall.prevent = choice == "prevent"
+    dcall.loaded = choice == "run_stop" and dcall.lineup.get("SS") is not None
+    if choice in ("zone", "man"):
+        dcall.coverage = choice
+    elif choice in ("zone_blitz", "prevent"):
+        dcall.coverage = "zone"
+    elif choice in ("man_blitz", "all_out"):
+        dcall.coverage = "man"
+    n = {"zone_blitz": 1, "man_blitz": 1, "all_out": 2}.get(choice, 0)
+    blitzers = list(dcall.blitzers[:n])
+    pool = _blitz_pool(dcall.package)
+    while len(blitzers) < n:
+        s = pool[int(rng.random() * len(pool))]
+        if s not in blitzers:
+            blitzers.append(s)
+    dcall.blitzers = blitzers
+    return dcall
 
 
 # ---------------------------------------------------------------------------

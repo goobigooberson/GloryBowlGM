@@ -57,17 +57,19 @@ def centered(site, m):
     return m - T.CENTER.get(site, 0.0)
 
 
-def qvalue(table, u, rng=None, tail=0.0):
-    """Value at random point u in a real-NFL quantile table. Beyond the last
-    point, extend with an exponential tail (for the rare very long play)."""
-    if u <= Q[0]:
+def qvalue(table, u, rng=None, tail=0.0, steps=None):
+    """Value at random point u in a real-NFL quantile table (at data.Q_STEPS, or the
+    table's own steps). Beyond the last point, extend with an exponential tail (for the
+    rare very long play)."""
+    q = steps or Q
+    if u <= q[0]:
         return table[0]
-    if u >= Q[-1]:
+    if u >= q[-1]:
         if tail and rng is not None:
             return table[-1] + rng.expovariate(1.0 / tail)
         return table[-1]
-    i = bisect_right(Q, u) - 1
-    lo, hi = Q[i], Q[i + 1]
+    i = bisect_right(q, u) - 1
+    lo, hi = q[i], q[i + 1]
     f = (u - lo) / (hi - lo)
     return table[i] + f * (table[i + 1] - table[i])
 
@@ -104,6 +106,46 @@ def field_squeeze(table, yl):
         if y0 <= yl <= y1:
             return a0 + (a1 - a0) * (yl - y0) / (y1 - y0)
     return 0.0
+
+
+def pass_down(st, hurry=False, cover=False):
+    """How sure the defense is that a pass is coming (0 = it must respect the run, 1 = an
+    obvious passing down), minus the league's average over dropbacks, so it moves passing
+    between downs without moving it overall. Real NFL (nflverse 2023-25, neutral score):
+    sacks 4.8% of dropbacks on 1st & 10 but 9-11% on 3rd & 3+; completions 69% vs 57-59%.
+    cover: the coverage's level, which eases off on 3rd and very long (it gives up the
+    underneath throw: real completions 66% on 3rd & 11+, while the rush still comes)."""
+    if st.down >= 3:
+        lvl = 1.0 if st.togo >= 3 else T.PASS_DOWN_SHORT
+        if cover and st.togo >= 11:
+            lvl = T.PASS_DOWN_LONG_COVER
+    else:
+        lvl = 0.0
+    if hurry or (st.qtr >= 4 and st.score[1 - st.poss] - st.score[st.poss] >= 9):
+        lvl = max(lvl, T.PASS_DOWN_CATCHUP)
+    return lvl - (T.PASS_DOWN_CENTER_COVER if cover else T.PASS_DOWN_CENTER)
+
+
+def marked_short(st, res, rng):
+    """Defenders defend the line to gain: a run or catch that just reaches it is often marked a
+    yard short. Real NFL (nflverse 2023-25): runs with 4-6 to go end 1 yard short 15.3% of the
+    time, exactly at the sticks 3.7%, 1 past 7.1%; catches with 7-9 to go 10.4 / 3.3 / 7.4%.
+    The sim's yards didn't know where the sticks were (10.8 / 8.2 / 6.1 and 5.9 / 5.6 / 5.9),
+    so 2nd and 3rd & 1 came up too rarely (3rd & 1: 7.8% of 3rd downs vs real 12.1%). On 3rd and
+    4th down the ball carrier fights for the marker: real 1-short : exactly-at 3.2 : 1 for runs
+    and 2.1 : 1 for catches, vs 4.0 : 1 and 2.7 : 1 on early downs."""
+    p = T.STICKS_SHORT if st.down <= 2 else T.STICKS_SHORT_LATE
+    if not p or res.td or res.fumble or res.safety or res.yards != st.togo or st.togo >= st.yl:
+        return
+    if not (res.kind in ("run", "scramble") or (res.kind == "pass" and res.complete)):
+        return
+    if rng.random() < p:
+        res.yards -= 1
+        if res.kind == "pass":
+            if res.yac >= 1:
+                res.yac -= 1
+            elif res.air_yards is not None:
+                res.air_yards -= 1
 
 
 def base_completion(air):
@@ -318,6 +360,8 @@ def protection(g, off, deff, call, dcall, rng):
     qb = lo.get("QB")
     if qb is not None:
         timing *= math.exp(-0.10 * off.z(qb, "QB", "timing"))
+    # Obvious passing downs: rushers pin their ears back and the QB waits for routes past the sticks.
+    timing *= math.exp(T.PASS_DOWN_RUSH * pass_down(g.state, call.tempo == "hurry"))
 
     extra_blockers = []
     blitz = bool(dcall.blitzers)
@@ -629,7 +673,8 @@ def pass_play(g, off, deff, call, dcall, rng):
         free = blocker is None
         conc = {"quick": -0.5, "screen": -0.9, "deep": 0.25, "play_action": 0.1, "hail_mary": 0.3}.get(call.concept, 0.0)
         p_sack = sigmoid(T.SACK_GIVEN_PRESSURE + 0.30 * edge - T.SACK_SENSE_RUSH_K * sense
-                         - T.SACK_SCRAMBLE_K * scr + (0.35 if free else 0.0) + conc)
+                         - T.SACK_SCRAMBLE_K * scr + (0.35 if free else 0.0) + conc
+                         + T.PASS_DOWN_SACK * pass_down(st, hurry_mode))
         if rng.random() < p_sack:
             return _sack(g, off, deff, qb, winners, res, rng, [ld[s] for s in rushing if ld.get(s) is not None])
         p_scramble = sigmoid(logit(T.SCRAMBLE_PRESSURED) + T.SCRAMBLE_SKILL_K * scr)
@@ -679,6 +724,8 @@ def pass_play(g, off, deff, call, dcall, rng):
             if helper and depth >= 16 and ld.get(helper) is not None:
                 cover += 0.25 + 0.15 * deff.z(ld[helper], helper, "zone_cover")
         sep = rec - cover - cls + rng.gauss(0, T.SEPARATION_NOISE)
+        if call.read:
+            sep += T.READ_PASS_SEP * call.read      # a called play the defense was (or wasn't) expecting
         if shaded is not None:
             sep += -T.SHADE_COVER if r is shaded else T.SHADE_OTHERS
         # A receiver who's been fed all game draws tighter coverage.
@@ -751,7 +798,8 @@ def pass_play(g, off, deff, call, dcall, rng):
         if res.hurried:
             s -= 0.05 * depth
         if st.down >= 3:
-            s += 0.35 if depth >= st.togo else (-0.30 if depth < st.togo - 2 else 0.0)
+            pull = 1.0 if st.togo <= T.STICKS_TARGET_MAX else T.STICKS_LONG_SCALE
+            s += pull * (T.STICKS_TARGET_K if depth >= st.togo else (-T.SHORT_OF_STICKS_K if depth < st.togo - 2 else 0.0))
         if hurry_mode and depth >= 8:
             s += 0.15
         if r["slot"] == screen_slot:
@@ -802,6 +850,9 @@ def pass_play(g, off, deff, call, dcall, rng):
             "comp" + dk, T.COMP_ACCURACY_K * acc + T.COMP_SEPARATION_K * sep + T.COMP_HANDS_K * hands
             - T.COMP_DEFENDER_K * dball + (T.COMP_HURRIED if res.hurried else 0.0) + w.pass_logit(depth)))
         x += field_squeeze(T.PASS_FIELD, st.yl)
+        # Coverage that knows a pass is coming sits on the sticks; on early downs it must respect the run.
+        pdl = pass_down(st, hurry_mode, cover=True)
+        x -= T.PASS_DOWN_COVER * pdl
         # A non-quarterback throwing (only he can be below every real QB's level, since a
         # real QB's accuracy has a soft floor at -Z_CAP): the part below it isn't capped.
         x += T.UNTRAINED_PASSER_K * min(0.0, acc + T.Z_CAP)
@@ -813,7 +864,8 @@ def pass_play(g, off, deff, call, dcall, rng):
         p_comp = sigmoid(x)
         p_int = (base_interception(depth) * T.INT_SCALE
                  * math.exp(centered("int" + dk, -T.INT_SKILL_K * dec + T.INT_DEFENDER_K * dball
-                                     + (T.INT_HURRIED if res.hurried else 0.0) - T.INT_SEPARATION_K * sep)))
+                                     + (T.INT_HURRIED if res.hurried else 0.0) - T.INT_SEPARATION_K * sep))
+                 * math.exp(T.PASS_DOWN_INT * pdl))
     p_int = min(p_int, 0.6 * (1 - p_comp))
     u = rng.random()
     res.elapsed = 6
@@ -1106,20 +1158,22 @@ def run_play(g, off, deff, call, dcall, rng):
         m -= 0.05
     m = soft_cap(T.RUN_CAP, centered("qb_run" if cslot == "QB" else "run", m))
     m += T.UNTRAINED_K * below      # players out of position below every real player's level: not capped
+    if call.read:
+        m += T.READ_RUN_TILT * call.read     # a called play the defense was (or wasn't) expecting
     if cslot == "QB":
         table = data.Q_QB_RUN
     elif st.togo <= 2 and st.yl > 3:
         table = data.Q_RUN_SHORT_YARDAGE
     else:
         table = data.Q_RUN_OPEN
-    m += field_squeeze(T.RUN_FIELD, st.yl) + T.RUN_SCALE
+    m += field_squeeze(T.RUN_FIELD, st.yl) * (T.QB_RUN_FIELD_SCALE if cslot == "QB" else 1.0) + T.RUN_SCALE
     u = tilt(rng.random(), m)
     if u > 0.85:
         safeties = [ld[s] for s in ("FS", "SS") if ld.get(s) is not None]
         sz = (sum(deff.z(p, _slot_of(ld, p), "pursuit") for p in safeties) / len(safeties)) if safeties else -0.5
         speed = off.z(carrier, cslot, "breakaway") if cslot != "QB" else off.z(carrier, "QB", "scrambling")
         u = tilt(u, centered("breakaway", T.RUN_BREAKAWAY_K * (speed - sz)))
-    y = int(round(qvalue(table, u, rng, tail=15)))
+    y = int(round(qvalue(table, u, rng, tail=15, steps=data.Q_FINE_STEPS)))
     y = min(y, st.yl)
     if st.yl - y >= 100:
         if rng.random() < T.SAFETY_ESCAPE:
@@ -1164,7 +1218,8 @@ def sneak_play(g, off, deff, call, dcall, rng):
     inner_d = [(s, ld[s]) for s in ("LDT", "RDT", "MLB") if ld.get(s) is not None]
     bo = sum(_run_block_score(off, p, s) for s, p in inner_o) / max(1, len(inner_o))
     bd = sum(_run_def_score(deff, p, s) for s, p in inner_d) / max(1, len(inner_d))
-    p = sigmoid(logit(T.SNEAK_SUCCESS) + centered("sneak", 0.45 * (bo - bd)) - (0.25 if st.togo >= 2 else 0.0))
+    p = sigmoid(logit(T.SNEAK_SUCCESS) + centered("sneak", 0.45 * (bo - bd)) - (0.25 if st.togo >= 2 else 0.0)
+                + T.READ_SNEAK_LOGIT * call.read)
     if rng.random() < p:
         y = st.togo + (1 if rng.random() < 0.3 else 0)
     else:
