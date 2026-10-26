@@ -1320,11 +1320,43 @@ Blake asked Claude to keep going while he slept; these are Claude's judgment cal
   - `screens_check.py --saves 03,05`: 0 problems, 167 steps, including the new play-calling walk (offense, defense, 4th down). Full check, all 19 saves: 0 problems, 1,264 steps.
 - **Choices made without asking, now DECIDED** (Oct 26, Blake: "yes i like the theyre keying on, you decide how much a bonus scheme fit gives thats balanced but satisfying. you make the call on the ones i didnt answer"; the main session's calls on the rest):
   - Kept: the menus above (QB sneak at 2 yards or less to go, field goals offered up to 70 yards), the "They're keying on ..." warning, the ★ scheme marks, and kneels, spikes, Hail Marys, end-of-half kicks and timeouts staying with the staff.
-  - Scheme-fit size: see "Scheme fit, balanced but satisfying" below. Which calls fit which style is still my judgment (`playcalling.fit_offense` / `fit_defense`).
-  - The fresh book each game is replaced by film across games: see below.
+  - Scheme-fit size: see the next entry. Which calls fit which style is still my judgment (`playcalling.fit_offense` / `fit_defense`).
+  - The fresh book each game is replaced by film across games: see the next entry.
 - **Follow-ups:**
   - Keyboard shortcuts for the menu.
   - The read of defenses has no real-data yardstick (offenses reading defensive tendencies); it's set at half the offense's strength.
+
+### Play calling: scheme fit "balanced but satisfying", and film across games (Oct 26; same side session. Blake: "you decide how much a bonus scheme fit gives thats balanced but satisfying"; the film room was the main session's call on his open items)
+- **Scheme fit: `SCHEME_FIT_K` 0.08 -> 0.20.**
+  - Swept 0.08 / 0.12 / 0.16 / 0.20 with `tools/playcall_check.py` (6 lab leagues each, on main's current sim).
+  - The rule: the largest value where the coordinator's best-fit call every snap doesn't beat his own calls, a plausible human stays inside a good play caller's edge (about +0.6 a game), and one call then always Coach's call stays about 0.
+  - Results, point margin a game vs a pooled baseline:
+    - The coach's own calls are the same games in every run, so the baseline averages them with the one-call-then-coach runs: +0.13. One coach run alone came out -0.23, which is luck.
+    - best_fit: -1.1 / -0.9 / -0.8 / -0.8 at 0.08 / 0.12 / 0.16 / 0.20.
+    - situational: +0.6 / +0.6 / +0.8 / +0.4.
+    - coach_after_one: +0.3 / +0.3 / -0.3 / +0.1.
+  - Every value passed. Fit barely moves these, because the reading of tendencies punishes leaning on one call long before the fit pays. So 0.20, the largest tried.
+  - **What a ★ call is worth at 0.20:** the average ★ call fits 0.72 above the coordinator's own mix (22% of offensive options get a ★). That's a read of +0.14, about **+0.26 yards a carry** or **+0.14 net yards a dropback** for that play. Probe on the current sim: a read of +0.1 on every play is +0.18 yards a carry, +0.10 a dropback and +1.9 points a game; -0.2 is -0.30 and -0.22.
+  - Calling ★ plays every snap still loses (best_fit -1.0 in the final table).
+- **Film across games (built):**
+  - After each game where you called plays, your team's calls go on film: `league.playcall_film`, the last 3 games, saved in the save file; older saves load with none.
+  - When you take over in a later game, the other side starts with that film. It's a book of its own:
+    - It counts at 40% of the same over-use seen today (`READ_FILM_W`), with each older game at 60% of the next (`READ_FILM_FADE`).
+    - It only ever adds pressure on what you leaned on (a call, run or pass as a whole, the blitz). It never makes another call a surprise and never waters down today's evidence.
+    - Games where the staff called everything go on film as normal games. A team whose film is all normal games drops off it.
+  - AI teams, and games where you never make a call of your own, are untouched.
+  - The coordinator's "They're keying on ..." warning now shows from your first call of a game when the film has it ("the pass, Deep pass" after three weeks of deep shots).
+  - **A mistake I made and fixed:** the first version merged film into today's book as extra snaps. That diluted today's evidence and made a newly spammed call look under-used. A bot that spams a different call each week then did *better* with film than without (-4.2 vs -6.4 a game). Kept apart, it's -6.8 with film vs -6.4 without, and a bot that spams the same call every week goes from -4.6 to -7.4.
+- **Final balance table** (`tools/playcall_report.txt`; 6 lab leagues x 1 regular season, real games, 1,632 games per strategy, +-0.35 or so; vs the coach's own calls in this run, -0.23, which is about 0.35 low by luck; subtract ~0.35 for the pooled view):
+  - **Fair to the staff:** one call of its own each game, then always Coach's call: +0.26.
+  - **Sensible strategies:** pass more on early downs +1.11, a plausible human +1.04, going for it on 4th and short +0.87. Pooled, about +0.75 / +0.7 / +0.5.
+  - **Bad strategies:** random -0.88, best-fit call every snap -0.98, always pass -1.04, run-heavy -2.69, always screen -3.14, always play action -4.86, switch the spammed call each week -6.76, always short -7.12, always deep -7.43, always run -13.27.
+  - **Defense:** random +0.29; always man -2.79, always stop the run -2.88, always zone -3.08, always a blitz -3.92, always prevent -4.53, always all-out blitz -5.18.
+  - Spammers cost more than in the Oct 25 table: that's the film. Sensible strategies are unchanged within the noise.
+- **Checks:**
+  - `tools/same_results.py --ref main --games real --seeds 101`: IDENTICAL (17 checkpoints x 53 parts). Nothing changes when no one calls plays.
+  - Film saves and loads exactly (save/load round trip in a lab league after 3 weeks of called plays).
+  - `tools/screens_check.py` (the PC was at idle priority): all 19 saves, 1,563 steps, 1 problem, a click timeout on League > History > All-Pro in save 14. That save alone: 0 problems. The play-calling walk was clean in every save with a game.
 
 ### The follow-ups: return centers, red-zone QB keepers, passing downs (built, switched off for Blake), and why pass-happy teams stay narrow (Oct 25; same side session. Blake: "ok yes lets work on those follow ups and whats left")
 - **Return centers (`CENTER` kr / pr): measured, left as they are.** `recenter.py` (look only) still shows the drift the sacks session found (`kr` -0.058 -> -0.149, `pr` -0.041 -> -0.095). Returns aren't in the realism check, so I compared directly (6 lab seasons; real = returns only, no fair catches or touchbacks): kick returns game 26.1 yards vs real 26.1 (2025) / 28.0 (2024); punt returns game 12.2 vs real 10.9 / 10.3. Writing the new centers moves both the wrong way (26.5, 12.5). The other sites drifted ~0.01. **New finding:** punt returns run 1.3-1.9 yards long.

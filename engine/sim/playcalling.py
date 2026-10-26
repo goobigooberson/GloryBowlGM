@@ -126,15 +126,20 @@ class Tendencies:
         self.n = defaultdict(float)        # scope: snaps
         self.game = {"dev": defaultdict(float), "var": defaultdict(float), "n": defaultdict(float)}
                                            # this game's calls alone, not faded: what goes on film
+        self.film = {"dev": defaultdict(float), "var": defaultdict(float), "n": defaultdict(float)}
+                                           # your last games' calls (film), older games counted less
 
     def add_film(self, snap, weight):
-        """Start from an earlier game's film (snapshot()), counted at `weight` per snap."""
-        for name, book in (("dev", self.dev), ("var", self.var)):
+        """An earlier game's film (snapshot()), counted at `weight` per snap. Kept apart from this
+        game's book: film only adds pressure on what you leaned on, it never dilutes what the
+        other side sees today or makes something else a surprise (Oct 26: merged into one book,
+        film made switching the spammed call each game cheaper, not dearer)."""
+        for name in ("dev", "var"):
             for k, v in snap.get(name, {}).items():
                 scope, key = k.split("|")
-                book[(scope, key)] += weight * v
+                self.film[name][(scope, key)] += weight * v
         for scope, v in snap.get("n", {}).items():
-            self.n[scope] += weight * v
+            self.film["n"][scope] += weight * v
 
     def snapshot(self):
         """This game's calls, for the film (JSON-ready)."""
@@ -152,11 +157,16 @@ class Tendencies:
         total = 0.0
         for scope, n0 in (("game", T.READ_N0_GAME), (sit, T.READ_N0_SITUATION)):
             n = self.n[scope]
-            if n <= 0:
-                continue
-            d = self.dev[(scope, key)]
-            beyond = max(0.0, abs(d) - T.READ_CHANCE_Z * math.sqrt(self.var[(scope, key)]) - T.READ_ALLOW)
-            total += w * math.copysign(beyond, d) / (n + n0)
+            if n > 0:
+                d = self.dev[(scope, key)]
+                beyond = max(0.0, abs(d) - T.READ_CHANCE_Z * math.sqrt(self.var[(scope, key)]) - T.READ_ALLOW)
+                total += w * math.copysign(beyond, d) / (n + n0)
+            fn = self.film["n"][scope]
+            fd = self.film["dev"][(scope, key)]
+            if fn > 0 and fd > 0:
+                # Film: only what you leaned on, at READ_FILM_W of this game's weight.
+                beyond = max(0.0, fd - T.READ_CHANCE_Z * math.sqrt(self.film["var"][(scope, key)]) - T.READ_ALLOW)
+                total += T.READ_FILM_W * w * beyond / (fn + n0)
         return total
 
     def record(self, sit, odds, choice):
@@ -314,12 +324,12 @@ class Book:
         self.defense = Tendencies(DEF_GROUP)
         film = (getattr(game_team.league, "playcall_film", None) or {}).get(str(game_team.id), [])
         for age, entry in enumerate(film[:T.READ_FILM_GAMES]):
-            w = T.READ_FILM_W * T.READ_FILM_FADE ** age
+            w = T.READ_FILM_FADE ** age
             for side, tend in (("off", self.offense), ("def", self.defense)):
                 if entry.get(side):
                     tend.add_film(entry[side], w)
                 else:
-                    tend.n["game"] += w * entry.get("n_" + side, 0)    # a game the staff called: all normal
+                    tend.film["n"]["game"] += w * entry.get("n_" + side, 0)   # a game the staff called: all normal
         self.fit_off = fit_offense(game_team)
         self.fit_def = fit_defense(game_team)
         self.active_off = False

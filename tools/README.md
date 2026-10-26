@@ -65,7 +65,9 @@
   always throw deep, always play action, random, pass more on early downs, a plausible human,
   the coordinator's best-fit play every time, going for it on 4th and short, and on defense
   always blitz, always man, always prevent, always stop the run, random; plus one call of its
-  own each game and then always "Coach's call" (being read must cost it nothing). The bot's side
+  own each game and then always "Coach's call" (being read must cost it nothing), and one call
+  spammed every snap but a different one each week (film of your last 3 games must make that
+  no cheaper than spamming without film: `--set READ_FILM_W=0` for the comparison). The bot's side
   alternates home/away; its point margin a game is compared with "coach" (the staff's own
   calls: exactly the games nobody calls plays in). `probe:X` gives every offensive play of the
   bot's side a fixed read X, to see what a read is worth in yards (for the `READ_*` knobs in
