@@ -1,20 +1,18 @@
 ==============================================================================================================
-SCOREBOARD 2026-10-25 19:48  suites: fa, sim, determinism, rookies, integration, speed  (1018 s)
-Compared with the baseline of 2026-10-25 05:12. A change counts if it's more than 3x the normal run-to-run swing.
+SCOREBOARD 2026-10-25 23:21  suites: fa, sim, determinism, rookies, integration, speed  (648 s)
+Compared with the baseline of 2026-10-25 19:48. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: all fine
 
-CHANGES BIGGER THAN THE NOISE (7):
+CHANGES BIGGER THAN THE NOISE (5):
   verdict   measure                                        now   (noise)   baseline      real  why
-  SLOWER    speed.sec_camp_phase                         4.08s  +/-0.00s      2.81s         -  +45%  (seconds: training camp phase)
-  SLOWER    speed.sec_draft_phase                        2.16s  +/-0.00s      1.27s         -  +70%  (seconds: the draft (no picks of yours))
-  SLOWER    speed.sec_offseason_total                   21.86s  +/-0.00s     12.73s         -  +72%  (seconds for a whole offseason)
-  SLOWER    speed.sec_per_fa_wave                        1.55s  +/-0.74s      0.79s         -  +97%  (seconds per free agency Next click)
-  SLOWER    speed.sec_per_week_real_games                1.78s  +/-0.31s      1.14s         -  +57%  (seconds per regular-season week (real games, one league))
-  CHANGED   rookies.devl_70plus                          11.0%   +/-1.5%      47.6%         -  -72.3 x noise  (draft board: drafted players shown 70%+ developed)
-  CHANGED   rookies.devl_80plus                           5.9%   +/-0.9%      28.3%         -  -74.6 x noise  (draft board: ...80%+ developed)
+  FASTER    speed.sec_camp_phase                         2.84s  +/-0.00s      4.08s         -  -30%  (seconds: training camp phase)
+  FASTER    speed.sec_draft_phase                        1.27s  +/-0.00s      2.16s         -  -41%  (seconds: the draft (no picks of yours))
+  FASTER    speed.sec_offseason_total                   15.16s  +/-0.00s     21.86s         -  -31%  (seconds for a whole offseason)
+  FASTER    speed.sec_per_fa_wave                        1.01s  +/-0.76s      1.55s         -  -35%  (seconds per free agency Next click)
+  FASTER    speed.sec_per_week_real_games                1.22s  +/-0.29s      1.78s         -  -31%  (seconds per regular-season week (real games, one league))
 
-OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 20
-  pass_yds>=4500 low, pass_td#32 HIGH, rec_td>=10 HIGH, targets>=100 low, tackles>=80 HIGH, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, sacks>=12 HIGH, edge_sacks#10 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl>=10 HIGH, fgm>=30 HIGH, fga#20 HIGH, fga#32 HIGH, fga>=35 HIGH
+OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 26
+  pass_yds>=4500 low, rush_td>=8 HIGH, rush_td>=10 HIGH, targets>=100 low, tackles>=80 HIGH, db_tackles>=80 HIGH, dl_tackles#10 HIGH, dl_tackles#20 HIGH, dl_tackles>=50 HIGH, dl_tackles>=70 HIGH, solo>=100 HIGH, edge_sacks#20 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl#5 low, tfl>=10 HIGH, fgm#10 HIGH, fgm>=30 HIGH, fgm>=35 HIGH, fga#10 HIGH, fga#20 HIGH, fga#32 HIGH, fga>=35 HIGH, fga>=40 HIGH, punts#1 low
 
-Everything else (384 measures) is within the noise of the baseline.
+Everything else (386 measures) is within the noise of the baseline.
