@@ -176,7 +176,10 @@ RETIRE_UC_SCALE = 0.5           # his plain odds times this at his position's us
 RETIRE_UC_AGE = 0.175           # ...times e^(this x years past that age), from 8 years before to 4 after
 RETIRE_MONEY_K = 0.01           # ...and shrinking by e per 1% of the cap he'd give up (full weight when young)
 TAG_MIN_VALUE = 0.95            # tag a player only if he's worth at least this share of the tag
-RFA_TENDER_MIN_VALUE = 0.75     # tender a restricted free agent only if he's worth this share of the lowest tender
+RFA_TENDER_MIN_VALUE = 1.0      # tender a restricted free agent only if he's worth this share of the lowest tender
+                                # (Oct 25: 0.75 -> 1.0. At 0.75 teams paid 1-year tenders a third above a player's
+                                # worth: 39 tenders a year at 1%+ of the cap vs real ~19, OverTheCap 2016-21 1-year
+                                # re-signings at the tender amounts; now ~27, the rest re-sign or test the market)
 LONG_TERM_AFTER_TAG = 0.45      # a tagged player signs a long-term deal before the season
 OPTION_MIN_VALUE = 0.8          # exercise a fifth-year option if he's worth this share of it
 FUTURES_KEEP = 0.85             # practice squad players re-signed on reserve/future deals
