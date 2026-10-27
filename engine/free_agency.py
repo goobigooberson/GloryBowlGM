@@ -59,6 +59,8 @@ UPGRADE_K = 0.10               # a team pays up to this much over his price for 
 UPGRADE_FULL = 10.0             # ...reached at this many rating points over the starter he'd replace
 MIN_UPGRADE = 1.5               # less of an upgrade than this: he's priced as a backup there
 DEPTH_KEEP = 0.55               # chance a team keeps a cheap depth player it could keep (teams churn depth)
+RESTRUCTURE_MIN = 0.001         # an AI restructure to get under the cap converts at least this share of the cap
+                                # (about $0.3M; less can free nothing in season once the bonus is split into whole $K)
 # ---- Knobs: each AI team's approach to the league year (Blake, Oct 24: "match the real NFL":
 # contenders go all in, rebuilders sit on room). Real cap room when free agency opens
 # (2024-25): median ~14% of the cap, 7-8 teams with almost none, the most 40-45%; before
@@ -74,6 +76,13 @@ ALLIN_RISE = 0.15               # ...back-load new deals (base salary climbs thi
                                 # a small cap hit now, bigger ones later)
 ALLIN_NEXT_MAX = 1.15           # ...and let next season's commitments run past next season's cap (it'll
                                 # restructure or cut in March, as real contenders do; EXTEND_NEXT_MAX otherwise)
+LATER_COVER = {"all_in": 0.5, "normal": 0.0, "rebuild": 0.0}   # Oct 26: the share of the room it could still
+                                # open by restructuring later (in the summer, at final cuts) that an AI team counts
+                                # toward the room it keeps in the offseason for week 1 and its rookies (after a
+                                # signing, re-signing a starter, a tag): real contenders spend to the last dollar in
+                                # March and make the rookie and week-1 money in the summer (see the build log)
+LATER_COVER_NEXT_MAX = 1.0      # ...but not once next season's commitments pass this share of next season's cap
+                                # (or its void money passes VOID_BRAKE): that team's later room is already spoken for
 REBUILD_KEEP = 0.0              # rebuilding: keep this share of the cap unspent in the offseason (it carries over;
                                 # Oct 22: 0.02 -> 0 with the real opening-day data, rebuilders sat on too much)
 REBUILD_AGE = 29                # ...pay players this old or older less
@@ -303,12 +312,12 @@ def _cap_hell(league, tid):
     return v
 
 
-def uses_void(league, tid, key=""):
+def uses_void(league, tid, key="", load=None):
     """Does this AI team add void years to this deal or restructure (key: the player)?
     The odds come from its approach this league year and its GM's cap style, so all-in
     teams and money pushers lean on them and rebuilding teams don't; never once it
     carries VOID_BRAKE of its cap in void money, never your team (you add them
-    yourself from the Contracts tab)."""
+    yourself from the Contracts tab). load: its void_load, if already counted."""
     if tid is None or tid == league.user_team_id or not VOID_YEARS:
         return False
     if "approach" not in (getattr(league, "fa", None) or {}):
@@ -319,7 +328,9 @@ def uses_void(league, tid, key=""):
     p = _odds_shift(p, VOID_CAP_K * gm_style(league, tid, "cap"))
     if random.Random(f"fa-void-{_salt(league)}-{league.season}-{tid}-{key}").random() >= p:
         return False
-    return void_load(league, tid) < VOID_BRAKE * C.cap_for(league, league.season)
+    if load is None:
+        load = void_load(league, tid)
+    return load < VOID_BRAKE * C.cap_for(league, league.season)
 
 
 def void_load(league, tid):
@@ -495,10 +506,11 @@ def _restructure_left(league, tid):
     left = budget * cap - league.fa.get("allin_used", {}).get(tid, 0)
     S = league.season
     possible = 0
+    load = void_load(league, tid)
     for pid in C.players_with_team(league, tid):
         c = league.contracts.get(pid)
         if c is not None:
-            void = C.MAX_PRORATION_YEARS if uses_void(league, tid, pid) else 0
+            void = C.MAX_PRORATION_YEARS if uses_void(league, tid, pid, load) else 0
             r = C.restructure_room(league, c, S, void)
             if r > 0:
                 possible += r - r // C.restructure_spread(c, S, void)
@@ -519,12 +531,58 @@ def _keep_k(league, tid, pre, cap):
     """Cap room ($K) an AI team keeps after signing a free agent: half its usual
     reserve, plus all of its owner's planned savings, and never less than what
     starts counting at week 1 (an all-in team keeps less for in-season moves, and
-    could otherwise be over the cap at week 1)."""
+    could otherwise be over the cap at week 1); in the offseason, less the room it
+    counts on opening later by restructuring (_later_cover)."""
     pk = plan_keep(league, tid)
     keep = ((_reserve_share(league, tid, pre) - pk) * KEEP_RESERVE_SHARE + pk) * cap
     if C.top51_in_force(league):
         keep = max(keep, (WEEK1_EXTRA + 0.005 + _open_spots_share(league, tid)) * cap)
+        keep = max(0, keep - _later_cover(league, tid))
     return keep
+
+
+def _later_room(league, tid):
+    """Cap room ($K) this team could open this league year by restructuring every
+    contract it can (with void years if it leans on them), less what its all-in
+    restructure budget already lets it spend now (_restructure_left); 0 for a team
+    whose future is already mortgaged (next season's commitments past
+    LATER_COVER_NEXT_MAX of next season's cap, or void money past VOID_BRAKE)."""
+    S = league.season
+    fa = getattr(league, "fa", None) or {}
+    # (worked out again after any signing, restructure, release, trade or new charge)
+    key = (S, getattr(league, "stage", ""), C.pay_week(league), len(league.contract_log),
+           len(getattr(league, "transactions", ())), tuple((fa.get("restructures") or {}).get(tid, (0, 0))),
+           (fa.get("allin_used") or {}).get(tid, 0), C.charges(league, tid, S), C.charges(league, tid, S + 1),
+           len(C.players_with_team(league, tid)))
+    memo = league.__dict__.setdefault("_later_room", {})
+    if memo.get(tid, (None,))[0] == key:
+        return memo[tid][1]
+    load = void_load(league, tid)
+    total = 0
+    if (load < VOID_BRAKE * C.cap_for(league, S)
+            and C.commitments(league, tid, S + 1) <= LATER_COVER_NEXT_MAX * C.cap_for(league, S + 1)):
+        for pid in C.players_with_team(league, tid):
+            c = league.contracts.get(pid)
+            if c is None or c["team"] != tid:
+                continue
+            void = C.MAX_PRORATION_YEARS if uses_void(league, tid, pid, load) else 0
+            r = C.restructure_room(league, c, S, void)
+            if r > 0:
+                n = C.restructure_spread(c, S, void)
+                if n > 1:
+                    total += r - r // n
+        total = max(0, total - _restructure_left(league, tid))
+    memo[tid] = (key, total)
+    return total
+
+
+def _later_cover(league, tid):
+    """$K of the offseason's kept room an AI team leaves to later restructures
+    (LATER_COVER by its approach this league year; none for your team)."""
+    if tid is None or tid == league.user_team_id:
+        return 0
+    share = LATER_COVER.get(approach(league, tid), 0.0)
+    return int(share * _later_room(league, tid)) if share > 0 else 0
 
 
 def _room_cut(league, tid, p, info, table, pids=None, memo=None):
@@ -1063,8 +1121,9 @@ def league_year_start(league, rng=None, draft_order=None):
                                           old.get("tags", 0) if old["kind"] == "tag" else 0)
                     floor = ((WEEK1_EXTRA + 0.005) if approach(league, tid) != "rebuild"
                              else _reserve_share(league, tid, True))
+                    floor_k = max(0, floor * C.cap_for(league, S) - _later_cover(league, tid))
                     if (info["price"] * C.cap_for(league, S) >= TAG_MIN_VALUE * amount
-                            and C.room_after(league, tid, amount) >= floor * C.cap_for(league, S)):
+                            and C.room_after(league, tid, amount) >= floor_k):
                         signed = C.tag_contract(league, pid, tid, amount,
                                                 old.get("tags", 0) if old["kind"] == "tag" else 0)
                         league.fa["tags"][tid] = pid
@@ -1076,7 +1135,7 @@ def league_year_start(league, rng=None, draft_order=None):
             # week 1 adds; an all-in team restructures now if even that isn't there.
             keep = _reserve_share(league, tid, True) * C.cap_for(league, S)
             if approach(league, tid) != "rebuild" and role == "starter":
-                keep = (WEEK1_EXTRA + 0.005) * C.cap_for(league, S)
+                keep = max(0, (WEEK1_EXTRA + 0.005) * C.cap_for(league, S) - _later_cover(league, tid))
             if C.room_after(league, tid, _first_hit(league, signed)) < keep and signed["kind"] not in ("tender",):
                 if not (role == "starter" and _make_room(league, tid, _first_hit(league, signed) + keep, rng)):
                     signed = None
@@ -1227,17 +1286,19 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None, escape=Tr
     cap = C.cap_for(league, S)
     moves = []
     escaping = False                  # the last way out: every restructure with void years
+    stalled = set()                   # players whose last restructure freed nothing
     for _ in range(60):
         room = C.cap_room(league, tid, top51=top51)
         if room >= target * cap:
             return moves
         need = target * cap - room
         best = None
+        load = void_load(league, tid) if voids and not escaping else 0
         for pid in C.players_with_team(league, tid):
             c = league.contracts.get(pid)
-            if c is None:
+            if c is None or pid in stalled:
                 continue
-            void = C.MAX_PRORATION_YEARS if escaping or (voids and uses_void(league, tid, pid)) else 0
+            void = C.MAX_PRORATION_YEARS if escaping or (voids and uses_void(league, tid, pid, load)) else 0
             r = C.restructure_room(league, c, S, void)
             if r > 0:
                 n = C.restructure_spread(c, S, void)
@@ -1248,12 +1309,16 @@ def _comply(league, tid, rng, target=0.0, allow_cuts=True, top51=None, escape=Tr
         # A restructure worth doing: at least 0.2% of the cap, or all that's needed when the team
         # is only a little over (Oct 23: a team $100K over with no restructure worth 0.2% left
         # stayed over all season; the trades session found AI teams drifting over in-season).
+        # Never smaller than RESTRUCTURE_MIN of the cap (Oct 26: in season a team $1K over restructured
+        # $2K, which frees nothing once the bonus is split into whole $K, 60 times, and stayed over).
         if best and best[0] > min(0.002 * cap, need):
             void = best[3]
             c = league.contracts[best[1]]
-            C.restructure(league, best[1], min(C.restructure_room(league, c, S, void), int(need * 1.3) + 1),
-                          void=void)
+            amount = max(int(need * 1.3) + 1, int(RESTRUCTURE_MIN * cap))
+            C.restructure(league, best[1], min(C.restructure_room(league, c, S, void), amount), void=void)
             moves.append(("restructure", best[1]))
+            if C.cap_room(league, tid, top51=top51) <= room:
+                stalled.add(best[1])
             continue
         if not allow_cuts:
             if escape and VOID_YEARS and not escaping and tid != league.user_team_id:
