@@ -427,7 +427,8 @@ def market_value(league, c, job, rng=None):
 def budget(league, tid, season=None):
     """The owner's staff budget for a season ($K)."""
     f = league.staff["owner"].get(str(tid), 1.0)
-    return int(BUDGET_BASE * f * cap_ratio(league, season))
+    from .finances import budget_mult           # his profits move it a little (finances.py, Oct 26)
+    return int(BUDGET_BASE * f * budget_mult(league, tid) * cap_ratio(league, season))
 
 
 def dead_money(league, tid, season=None):

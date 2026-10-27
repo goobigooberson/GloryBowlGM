@@ -58,6 +58,20 @@
     draft, seasons, every offseason phase, save/load at each stage); prints the problems
     found (must be 0). `python tools/integration_check.py --seasons 6` before big commits.
 
+## Team finances: the check (Oct 26)
+
+- `finance_check.py`: lab leagues' closed books (engine/finances.py) vs the real NFL
+  (`docs/research/real_finance.json`, built by `docs/research/finance_research.py` from ESPN
+  attendance 2008-2025, Forbes 2024 revenue and profit by team, Sportico's 2025 revenue split,
+  Team Marketing Report ticket prices, OverTheCap cash spending, the Packers' reports): revenue
+  per team and its spread, where the money comes from, profit, cash paid to players, ticket
+  prices and their yearly change, crowds and how they follow winning, team values. Money is
+  compared as a share of each season's cap. Writes `finance_report.txt`.
+  ```
+  python tools/finance_check.py                          # leagues 101,102,103 x 5 seasons (~5 min)
+  python tools/finance_check.py --leagues 101 --seasons 3
+  ```
+
 ## Calling your own plays: the balance check (Oct 25)
 
 - `playcall_check.py`: is "Take over play calling" balanced? A bot calls one team's plays in

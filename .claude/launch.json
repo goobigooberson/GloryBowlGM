@@ -191,6 +191,18 @@
         "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project--claude-worktrees-void-years-d64f4e\\643141fa-58c7-4521-8a37-5bc7ca146b0f\\scratchpad\\voidsaves"
       ],
       "port": 8151
+    },
+    {
+      "name": "finances-test",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "app.py",
+        "--browser",
+        "--no-show",
+        "--port=8161",
+        "--saves-dir=C:\\Users\\bshec\\AppData\\Local\\Temp\\claude\\C--Users-bshec-OneDrive-Documents-Blakes-New-Front-Office-Football-Project--claude-worktrees-team-finances-352ec9\\9995a5bc-15b2-4e87-b0dc-9bef212838ad\\scratchpad\\finsaves"
+      ],
+      "port": 8161
     }
   ]
 }

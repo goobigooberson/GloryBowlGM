@@ -86,6 +86,10 @@ def start_season(league, rng=None, carryover=None):
         weeks = PRESEASON_WEEKS + games
         league.injuries[pid] = {"team": team, "weeks": weeks, "part": injuries.name(kind), "week": 0,
                                 "kind": kind, "initial": weeks, "carryover": True, "status": "Out"}
+    # This season's ticket prices (finances.py, Oct 26: every team's books; set at the new
+    # league year, or now for a new league or a save from before then).
+    from . import finances
+    finances.ensure(league)
     # Training camp opens: its first week of practices.
     practice_week(league, 0)
 
@@ -417,6 +421,9 @@ def record_game(league, g, game):
         # Plays you called go on film for your next opponents (engine/sim/playcalling.py).
         from .sim import playcalling
         playcalling.save_film(league, game)
+    if getattr(league, "finances", None):
+        from . import finances
+        finances.game_played(league, g)      # the home crowd and game-day money (Oct 26)
     cal = game_calendar(league, g)
     played_ids = {int(k) for k in league.boxes[g["id"]]["players"]}
     label = game_label(league, g)
@@ -712,6 +719,8 @@ def begin_offseason(league, rng=None):
         league.champions[league.season] = champ
     from . import history
     history.archive_season(league)     # the record book's best single games, before the box scores go
+    from . import finances
+    finances.close_season(league)      # every team's books for the season, kept for good (Oct 26)
     finished = [{"season": league.season, "phase": phase, "game": dict(g), "box": league.boxes.get(g["id"])}
                 for phase, games in (("preseason", league.preseason), ("regular", league.schedule),
                                      ("playoffs", league.playoffs))
@@ -733,6 +742,7 @@ def begin_offseason(league, rng=None):
     league.schedule, league.preseason, league.playoffs, league.boxes = [], [], [], {}
     league.playoff_seeds, league.playoff_round = None, 0
     offseason.offseason_start(league, summary, rng)
+    finances.ensure(league)            # the new league year's ticket prices
     league.offseason.update({"share": {str(k): v for k, v in played_share.items()},
                              "serious": {str(k): v for k, v in serious.items()},
                              "carry": [list(c) for c in carry]})

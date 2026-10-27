@@ -114,3 +114,34 @@ def bar(current, potential, width=20):
     grow = max(0, round(potential / 100 * width) - filled)
     empty = width - filled - grow
     return "[" + "#" * filled + "+" * grow + "." * empty + "]"
+
+
+# ---------------------------------------------------------------------------
+# Money (team finances, Oct 26): the way the sports pages print it.
+# ---------------------------------------------------------------------------
+
+def money(k):
+    """$K -> '$72.6M', '$885K', '-$1.2M', '$1.17B'."""
+    sign = "-" if k < 0 else ""
+    k = abs(k)
+    if k >= 999_500:
+        return f"{sign}${k / 1_000_000:.2f}B" if k < 99_995_000 else f"{sign}${k / 1_000_000:.0f}B"
+    if k >= 1000:
+        m = k / 1000
+        return f"{sign}${m:.1f}M" if m < 100 else f"{sign}${m:.0f}M"
+    return f"{sign}${round(k)}K"
+
+
+def price(dollars):
+    """158.4 -> '$158'; a suite's season price in $K goes through money()."""
+    return f"${round(dollars):,}"
+
+
+def crowd(n):
+    """68412 -> '68,412'"""
+    return f"{round(n):,}" if n is not None else "-"
+
+
+def share(x, digits=0):
+    """0.973 -> '97%'"""
+    return f"{x * 100:.{digits}f}%" if x is not None else "-"
