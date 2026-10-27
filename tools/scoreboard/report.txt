@@ -1,16 +1,12 @@
 ==============================================================================================================
-SCOREBOARD 2026-10-26 21:48  suites: fa, sim, determinism, rookies, integration, speed  (696 s)
-Compared with the baseline of 2026-10-26 20:16. A change counts if it's more than 3x the normal run-to-run swing.
+SCOREBOARD 2026-10-26 22:12  suites: fa, sim, determinism, rookies, integration, speed  (449 s)
+Compared with the baseline of 2026-10-26 21:48. A change counts if it's more than 3x the normal run-to-run swing.
 ==============================================================================================================
 MUST BE ZERO: all fine
 
-CHANGES BIGGER THAN THE NOISE (3):
-  verdict   measure                                        now   (noise)   baseline      real  why
-  SLOWER    speed.sec_camp_phase                         3.56s  +/-0.00s      2.59s         -  +37%  (seconds: training camp phase)
-  SLOWER    speed.sec_resign_phase                       0.31s  +/-0.00s      0.12s         -  +150%  (seconds: start of league year phase)
-  IMPROVED  fa.teams_under_2pct_w1                         5.1    +/-1.5        2.4       5.8  +5.3 x noise  (teams under 2% of the cap after the first wave)
+CHANGES BIGGER THAN THE NOISE (0):
 
 OUTSIDE THE REAL RANGE NOW (sim measures with a real five-season range): 19
   pass_yds>=4500 low, pass_int#1 HIGH, rush_att>=200 low, rush_td>=8 HIGH, rec_td>=10 HIGH, wr_rec_yds>=1300 HIGH, te_rec#1 low, db_tackles>=80 HIGH, dl_tackles>=50 HIGH, solo>=100 HIGH, edge_sacks>=10 HIGH, edge_sacks>=12 HIGH, pd>=15 HIGH, tfl#1 low, tfl#5 low, tfl>=10 HIGH, fga#20 HIGH, fga#32 HIGH, fga>=35 HIGH
 
-Everything else (408 measures) is within the noise of the baseline.
+Everything else (411 measures) is within the noise of the baseline.
