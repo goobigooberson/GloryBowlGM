@@ -1,0 +1,68 @@
+Team finances vs the real NFL (3 leagues x 5 seasons, 480 team-seasons; 287 s)
+Money is shown as a share of that season's cap (x cap) so seasons compare; real: Forbes 2024 (cap $255.4M), Sportico 2025 (cap $279.2M), OverTheCap 2026 (cap $301.2M).
+
+REVENUE PER TEAM (x cap)
+                                                                 game                     real
+  average (spread)                                     2.63 (sd 0.27)           2.59 (sd 0.47)   Forbes 2024; Sportico 2025 avg 2.63
+  lowest / middle / highest                        2.19 / 2.57 / 3.72       2.16 / 2.45 / 4.83   
+  local revenue: average (spread)                      1.01 (sd 0.27)           0.90 (sd 0.47)   Forbes minus $433M national
+  local revenue without the top 3%: spread                       0.22                     0.25   real: without Dallas
+  highest / average                                              1.42                     1.86   a Dallas-like giant is rare
+
+WHERE THE MONEY COMES FROM (share of revenue)
+                                                                 game                     real
+  national                                                      61.7%                      62%   
+  tickets and suites (incl. visiting share)                     18.5%                      19%   
+  sponsors                                                      10.8%                      11%   
+  concessions, parking, store, events                            7.0%                       7%   
+  local media                                                    2.0%                       2%   
+  visiting teams' share a team ($M at a $279M cap)                     30                       29   
+  regular + club gate (x cap): low / high                 0.27 / 0.69              0.32 / 0.69   Sportico 2024
+
+PROFIT (x cap)
+                                                                 game                     real
+  average (spread)                                     0.48 (sd 0.29)           0.50 (sd 0.41)   Sportico 2025 avg 0.45
+  lowest / middle / highest                       -0.46 / 0.48 / 1.21       0.08 / 0.42 / 2.46   
+  teams losing money                                             4.8%           0 of 32 (2024)   Packers FY2021 (no fans) and FY2026 (-$1M)
+  cash paid to players: average (spread)               1.07 (sd 0.25)           1.10 (sd 0.11)   OverTheCap 2026
+  cash paid to players: low / high                        0.43 / 1.96              0.82 / 1.30   
+  profit per extra $1 of revenue                                 0.54                     0.54   Forbes 2024 without Dallas
+  by season of the league (average x cap): revenue / cash to players / profit / teams losing money
+    2026: 2.64 / 1.16 / 0.40 / 6%
+    2027: 2.64 / 1.17 / 0.38 / 11%
+    2028: 2.63 / 1.02 / 0.52 / 2%
+    2029: 2.62 / 0.96 / 0.57 / 3%
+    2030: 2.61 / 1.02 / 0.52 / 1%
+
+TICKET PRICES
+                                                                 game                     real
+  average regular seat (2026 $)                                  $160                     $161   TMR 2024 at the 2026 cap
+  spread across teams (share of average)                        11.9%                    13.6%   TMR 2023
+  cheapest / dearest vs average                           0.70 / 1.39              0.80 / 1.38   
+  yearly change %: average (spread)                      8.0 (sd 6.9)             7.4 (sd 5.4)   TMR 2023
+  yearly change %: lowest / highest                       -3.2 / 20.3               0.0 / 20.0   
+  teams cutting prices                                           1.6%                  0 of 24   
+
+ATTENDANCE (regular season home games)
+                                                                 game                     real
+  average crowd                                                67,963                   69,376   ESPN 2022-25
+  spread across teams                                           5,823                    6,331   
+  share of seats sold: middle                                   0.996                    0.978   real: vs the stadium's best year
+  share of seats sold: bottom 25% / 10%                 0.963 / 0.913            0.936 / 0.890   
+  yearly change: middle size                                    0.015                    0.010   
+  crowd per 1.0 of win%: this season                           +0.030          +0.021 (+0.028)   real: odd years out (all years)
+  crowd per 1.0 of win%: last season                           +0.024          +0.015 (+0.037)   
+  crowd: playoffs last season                                  +0.003          +0.006 (+0.006)   
+
+FRANCHISE VALUE AND THE OWNER
+                                                                 game                     real
+  value / revenue                                                10.8                     10.7   Forbes 2025
+  owner unhappy with money (factor >= 1.05)                     14.6%                        -   raises the firing chance (setting on)
+  owner pleased with money (factor <= 0.95)                      9.2%                        -   
+
+WHAT DRIVES REVENUE (local revenue x cap on each, one at a time)
+                                                                 game                     real
+  franchise pull (per spread)                        +0.249 (R2 0.82)                            
+  market (TV homes, M)                               +0.042 (R2 0.05)                            
+  stadium age (years)                                -0.006 (R2 0.04)                            
+  last season's win%                                 -0.020 (R2 0.00)                            

@@ -8,7 +8,7 @@
 #   - every team has a stadium (capacity, club seats, suites, age); a new one earns
 #     more and the edge fades; building and renovating are the next step, not here;
 #   - the owner judges you mostly on winning; money counts only at the edges
-#     (owner_money_factor), and profits slowly move his staff budget and spending;
+#     (owner_money_factor), and profits slowly move his staff budget;
 #   - all 32 teams run real books and price their own tickets, shown on the League
 #     finances page.
 #
@@ -35,7 +35,7 @@
 #   tickets; the home team keeps ~$1-2M of concessions and parking.
 #
 # Saved on the league as league.finances (database MONEY_INFO key "finances"):
-#   {"teams": {tid: {"market", "income", "brand", "opex", "owner_base", "stadium": {...}}},
+#   {"teams": {tid: {"market", "income", "brand", "opex", "budget_mult", "stadium": {...}}},
 #    "prices": {season: {tid: {"general", "club", "set_by"}}},
 #    "games": {season: {gid: {"home", "att", "club", "general_cap", "club_cap", "gate",
 #                              "club_gate", "conc", "kind"}}},
@@ -153,8 +153,9 @@ DEAD_CASH = 0.3                 # share of dead money that is cash still owed (t
 VALUE_MULT = 10.7               # Forbes 2025: average value $7.1B on $662M revenue
 VALUE_MARKET = 0.08             # a bigger market sells for a bit more per dollar of revenue (log)
 # ---- The owner ------------------------------------------------------------------
-BUDGET_DRIFT = 0.15             # each season his staff budget factor moves this share of the way
-BUDGET_PROFIT_K = 0.06          #   toward his own level x exp(this x profit vs expected, in spreads)
+BUDGET_DRIFT = 0.15             # each season his staff budget moves this share of the way toward
+BUDGET_PROFIT_K = 0.06          #   his own level x exp(this x profit vs expected, in spreads)
+BUDGET_MULT = (0.85, 1.15)      #   never more than this far from his own level
 MONEY_HEAT = (0.20, 0.10)       # owner can fire you: chance x (1 + this x bad money, - this x good money)
 PROFIT_SPREAD = 0.20            # a spread of profit (x cap; Forbes 2024 without Dallas: $52M / $255M)
 
@@ -252,7 +253,6 @@ def _new_teams(league):
     rng.shuffle(sponsors)
     from .sim.weather import STADIUMS
     first = league.settings.get("first_season", league.season)
-    staff_owner = (getattr(league, "staff", None) or {}).get("owner", {})
     for i, t in enumerate(league.teams):
         opened, capacity = pool[i % len(pool)]
         opened = min(opened, first)
@@ -271,7 +271,6 @@ def _new_teams(league):
             "opex": round(max(0.7, rng.gauss(1.0, OPEX_SD)), 3),
             "owner_price": round(rng.gauss(*OWNER_PRICE), 3),
             "events": round(rng.lognormvariate(0, EVENTS_PER_CAP[1]), 3),
-            "owner_base": staff_owner.get(str(t.id)),       # his own budget level (filled when staffs exist)
             "stadium": {"name": name, "opened": opened, "capacity": capacity, "club": club, "suites": suites,
                         "roof": STADIUMS.get(t.abbrev, ("outdoor", {}))[0]},
         }
@@ -817,19 +816,23 @@ def profit_score(league, tid, seasons=3):
 
 
 def _owner_budgets(league, season):
-    st = getattr(league, "staff", None)
-    if not st or "owner" not in st:
-        return
-    from .staff import BUDGET_RANGE
+    """Each owner's staff budget drifts with his profits (budget_mult, read by
+    staff.budget). His free agency spending level stays his own (free_agency.spend_level
+    reads only staff["owner"]): letting profits move it too made one AI team in 12
+    league-offseasons end a checkpoint over the cap (scoreboard, Oct 26)."""
     for t in league.teams:
         ft = league.finances["teams"][t.id]
-        if ft.get("owner_base") is None:
-            ft["owner_base"] = st["owner"].get(str(t.id), 1.0)
-        own = ft["owner_base"]
-        target = own * math.exp(BUDGET_PROFIT_K * max(-2.0, min(2.0, profit_score(league, t.id))))
-        cur = st["owner"].get(str(t.id), own)
-        new = cur + BUDGET_DRIFT * (target - cur)
-        st["owner"][str(t.id)] = round(max(BUDGET_RANGE[0], min(BUDGET_RANGE[1], new)), 3)
+        target = math.exp(BUDGET_PROFIT_K * max(-2.0, min(2.0, profit_score(league, t.id))))
+        cur = ft.get("budget_mult", 1.0)
+        ft["budget_mult"] = round(max(BUDGET_MULT[0], min(BUDGET_MULT[1], cur + BUDGET_DRIFT * (target - cur))), 3)
+
+
+def budget_mult(league, tid):
+    """The owner's staff budget times this (profits; 1.0 before any season closes)."""
+    fin = getattr(league, "finances", None)
+    if not fin or not fin.get("teams") or tid not in fin["teams"]:
+        return 1.0
+    return fin["teams"][tid].get("budget_mult", 1.0)
 
 
 def owner_money_factor(league, tid):
