@@ -118,7 +118,8 @@ CREATE TABLE contract_log (         -- every signing, kept for good
 """
 
 # Money state kept as JSON in league_info (dicts keyed by team id / season / player id).
-MONEY_INFO = ("cap_history", "cap_carry", "cap_charges", "june1_used", "fa", "tv")   # tv: league_money.py
+MONEY_INFO = ("cap_history", "cap_carry", "cap_charges", "june1_used", "fa", "tv",   # tv: league_money.py
+              "finances")                                                          # finances.py (Oct 26)
 
 
 def _int_keys(obj):
@@ -553,6 +554,14 @@ def load_league(path):
             league.filled_on_load = True
         elif not league.staff.get("gm"):
             staff.ensure(league)          # saves from before Oct 22: the AI general managers (gm.py)
+            league.filled_on_load = True
+        # Team finances (saves from before Oct 26 have none: every team gets its market,
+        # stadium and this season's prices, seeded by the save's salt; games already
+        # played get their crowds). A startup draft gets them when its first season starts.
+        if league.teams and getattr(league, "stage", "") != "startup_draft" and not league.finances.get("teams"):
+            league.finances = None
+            from . import finances
+            finances.ensure(league)
             league.filled_on_load = True
         if "transactions" in tables:
             for r in db.execute("SELECT * FROM transactions ORDER BY rowid"):

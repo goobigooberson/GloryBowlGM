@@ -34,6 +34,7 @@ from .game_page import build_game_tab
 from .news_page import build_news_tab
 from .awards_page import build_awards_tab
 from .history_page import build_history_tab, build_records_tab, build_hof_tab
+from .finances_page import build_finances_tab, build_league_finances_tab
 
 
 class _NoGame:
@@ -67,7 +68,7 @@ def build_page():
     startup = draft_day.in_startup(league)
     pages = ["Draft"] if startup else ["Home", "Roster", "Contracts", "Trades", "Staff", "Draft", "Depth chart", "Position counts",
                                         "Schedule", "Standings", "Stats", "Playoffs", "Bitter", "Awards", "History",
-                                        "Records", "Hall of Fame", "Game"]
+                                        "Records", "Hall of Fame", "Game", "Finances", "League finances"]
     if not startup and not season.in_offseason(league):
         pages.remove("Draft")    # Blake: the Draft section shows only in the offseason (scouting is offseason-only)
     phase = season.offseason_phase(league)
@@ -410,6 +411,7 @@ def build_page():
             contracts_tab = ui.tab("Contracts")
             trades_tab = ui.tab("Trades")    # player trades (trade_page.py, Oct 23)
             staff_tab = ui.tab("Staff")      # your coaching staff and the carousel (staff_page.py)
+            finances_tab = ui.tab("Finances")    # tickets, attendance, the books (finances_page.py, Oct 26)
         draft_tab = ui.tab("Draft")          # scouting, the draft room, results (draft_page.py)
         if not startup:
             depth_tab = ui.tab("Depth chart")
@@ -423,6 +425,7 @@ def build_page():
             history_tab = ui.tab("History")          # league history, the record book, the Hall of Fame
             records_tab = ui.tab("Records")          # (history_page.py, Oct 25)
             hof_tab = ui.tab("Hall of Fame")
+            league_fin_tab = ui.tab("League finances")   # every team's books (finances_page.py)
             game_tab = ui.tab("Game")
     # Come back to the tab you were on (e.g. after opening a player card). Bitter is
     # rebuilt only while you're looking at it (it rebuilds the whole season's news, ~1 s
@@ -478,6 +481,7 @@ def build_page():
     refresh_trades = noop
     refresh_standings = refresh_stats = refresh_playoffs = refresh_news = refresh_awards = noop
     refresh_history = refresh_records = refresh_hof = noop
+    refresh_finances = refresh_league_finances = noop
     refresh_home = noop
 
     async def home_settle():
@@ -509,6 +513,8 @@ def build_page():
                                        page_row.refresh()))
             with ui.tab_panel(staff_tab).classes("p-0"):
                 refresh_staff = build_staff_tab(on_change=lambda: (season_bar.refresh(), refresh_roster()))
+            with ui.tab_panel(finances_tab).classes("p-0"):
+                refresh_finances = lazy("Finances", build_finances_tab(on_change=lambda: refresh_league_finances()))
         def draft_room():
             return build_draft_tab(
                 on_change=lambda: (season_bar.refresh(), team_banner.refresh()),
@@ -552,6 +558,8 @@ def build_page():
                 refresh_records = lazy("Records", build_records_tab())
             with ui.tab_panel(hof_tab).classes("p-0"):
                 refresh_hof = lazy("Hall of Fame", build_hof_tab())
+            with ui.tab_panel(league_fin_tab).classes("p-0"):
+                refresh_league_finances = lazy("League finances", build_league_finances_tab())
             with ui.tab_panel(game_tab).classes("p-0"):
                 game_ctrl = build_game_tab(on_season_game_done=lambda: after_games(follow_week=False),
                                            on_open_summary=lambda gid: open_summary(gid))
@@ -783,6 +791,8 @@ def build_page():
         refresh_history()
         refresh_records()
         refresh_hof()
+        refresh_finances()
+        refresh_league_finances()
         refresh_home()
         game_ctrl.refresh()
 
@@ -868,6 +878,7 @@ def build_page():
         team_banner.refresh()
         refresh_roster()
         refresh_staff()
+        refresh_finances()
         refresh_depth()
         refresh_counts()
         refresh_schedule()

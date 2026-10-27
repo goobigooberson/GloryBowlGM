@@ -178,6 +178,12 @@ Decided items waiting to be built:
   `engine/news_money.py` its news. AI teams' yearly approach (all in / normal / rebuild) is in
   `free_agency.set_approaches`; `tools/free_agency_check.py` compares cap room at free agency's
   opening with the real NFL's.
+- `engine/finances.py` team finances (Blake, Oct 26: two ticket prices a year, every team's books,
+  stadiums that age, the owner judges winning first and money at the edges): markets, stadiums,
+  demand and prices, each home game's crowd and money, the profit and loss (saved as
+  `league.finances`); `engine/news_finances.py` its news; `screens/finances_page.py` the Finances
+  page (Team) and League finances (League); `tools/finance_check.py` vs real data
+  (`docs/research/finance_research.py`). Stadium projects (new, renovations) are the next step.
 - `engine/gm.py` the AI teams' general managers (Blake, Oct 22: draft-day, free agency, own-player and cap
   habits, hiring coaches; hired and fired like real GMs; `docs/staff-design.md` section 10);
   `engine/news_front_office.py` GM and head coach news; `tools/gm_check.py` vs real GM data

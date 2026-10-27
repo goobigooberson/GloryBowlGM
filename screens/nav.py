@@ -15,9 +15,9 @@ from . import theme
 # Section -> its pages (the tab names in main_page.py), in order.
 SECTIONS = [
     ("Home", ["Home"]),
-    ("Team", ["Roster", "Depth chart", "Position counts", "Contracts", "Trades", "Staff"]),
+    ("Team", ["Roster", "Depth chart", "Position counts", "Contracts", "Trades", "Staff", "Finances"]),
     ("Schedule", ["Schedule", "Game", "Playoffs"]),
-    ("League", ["Standings", "Stats", "Awards", "History", "Records", "Hall of Fame"]),
+    ("League", ["Standings", "Stats", "Awards", "History", "Records", "Hall of Fame", "League finances"]),
     ("Draft", ["Draft"]),
     ("Bitter", ["Bitter"]),
 ]

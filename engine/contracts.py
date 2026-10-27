@@ -404,6 +404,9 @@ def sign(league, c, log=True, phase="", new_team=None):
                          else bool(old and old["team"] != c["team"]))})
         if c.get("pick"):
             league.contract_log[-1]["pick"] = c["pick"]
+        if c.get("signing_bonus"):
+            from . import finances
+            finances.note_bonus(league, c["team"], c["signing_bonus"])   # paid now, in cash (team books)
     return c
 
 

@@ -1,0 +1,2558 @@
+{
+"2002": {
+"BUF": {
+"home_g": 8,
+"home_avg": 68462
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 61871
+}
+},
+"2003": {
+"BUF": {
+"home_g": 8,
+"home_avg": 73015
+},
+"CHARGERS": {
+"home_g": 7,
+"home_avg": 59878
+}
+},
+"2004": {
+"BUF": {
+"home_g": 8,
+"home_avg": 71799
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 60682
+}
+},
+"2005": {
+"BUF": {
+"home_g": 8,
+"home_avg": 71906
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 66239
+}
+},
+"2006": {
+"WAS": {
+"home_g": 8,
+"home_avg": 87631
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 78613
+},
+"KC": {
+"home_g": 8,
+"home_avg": 77909
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 77321
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76347
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73567
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 72334
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 70818
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70718
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 70432
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 70183
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69224
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NO": {
+"home_g": 8,
+"home_avg": 68808
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"SF": {
+"home_g": 8,
+"home_avg": 68150
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 67977
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 67646
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 66858
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 66378
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 65983
+},
+"TB": {
+"home_g": 8,
+"home_avg": 65582
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 65326
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 63603
+},
+"DAL": {
+"home_g": 8,
+"home_avg": 63288
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 62432
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62223
+},
+"DET": {
+"home_g": 8,
+"home_avg": 60889
+}
+},
+"2007": {
+"WAS": {
+"home_g": 8,
+"home_avg": 88090
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 78731
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 77106
+},
+"KC": {
+"home_g": 8,
+"home_avg": 76777
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76611
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73402
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 73000
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71153
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 71054
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70805
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 70519
+},
+"NO": {
+"home_g": 8,
+"home_avg": 70004
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 68395
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68193
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 68169
+},
+"SF": {
+"home_g": 8,
+"home_avg": 68028
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 65790
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 65502
+},
+"TB": {
+"home_g": 8,
+"home_avg": 65316
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 65301
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 64580
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 64294
+},
+"DAL": {
+"home_g": 8,
+"home_avg": 63534
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62158
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 62084
+},
+"DET": {
+"home_g": 8,
+"home_avg": 61304
+}
+},
+"2008": {
+"WAS": {
+"home_g": 8,
+"home_avg": 88604
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 79069
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78482
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 75509
+},
+"KC": {
+"home_g": 8,
+"home_avg": 74077
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73210
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 72778
+},
+"BUF": {
+"home_g": 7,
+"home_avg": 71405
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71269
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70682
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 70420
+},
+"NO": {
+"home_g": 7,
+"home_avg": 70092
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69144
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 68138
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 67995
+},
+"SF": {
+"home_g": 8,
+"home_avg": 67512
+},
+"IND": {
+"home_g": 8,
+"home_avg": 66378
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 65489
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 65167
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 64582
+},
+"TB": {
+"home_g": 8,
+"home_avg": 64511
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 64096
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 64065
+},
+"DAL": {
+"home_g": 8,
+"home_avg": 63368
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 63267
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 62890
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62034
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 59980
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 57850
+},
+"DET": {
+"home_g": 8,
+"home_avg": 54497
+}
+},
+"2009": {
+"DAL": {
+"home_g": 8,
+"home_avg": 89756
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 84794
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 78701
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 77052
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 75116
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73289
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71082
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70708
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 70608
+},
+"BUF": {
+"home_g": 7,
+"home_avg": 70128
+},
+"NO": {
+"home_g": 8,
+"home_avg": 70105
+},
+"SF": {
+"home_g": 8,
+"home_avg": 69732
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69144
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 68888
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 68173
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 67543
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 67542
+},
+"KC": {
+"home_g": 8,
+"home_avg": 67514
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 67392
+},
+"IND": {
+"home_g": 8,
+"home_avg": 66549
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 64004
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 63775
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 63485
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 63142
+},
+"TB": {
+"home_g": 7,
+"home_avg": 62991
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62250
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 55237
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 49651
+},
+"DET": {
+"home_g": 8,
+"home_avg": 49395
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 44284
+}
+},
+"2010": {
+"DAL": {
+"home_g": 8,
+"home_avg": 87047
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 83172
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 79019
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78596
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 74908
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 72620
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71227
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71080
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70795
+},
+"NO": {
+"home_g": 8,
+"home_avg": 70038
+},
+"SF": {
+"home_g": 7,
+"home_avg": 69732
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69144
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 67850
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 67744
+},
+"KC": {
+"home_g": 8,
+"home_avg": 67672
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 66992
+},
+"IND": {
+"home_g": 8,
+"home_avg": 66975
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 66116
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 65530
+},
+"BUF": {
+"home_g": 7,
+"home_avg": 63195
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 63083
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 63032
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 62774
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62195
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 60364
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 58751
+},
+"DET": {
+"home_g": 8,
+"home_avg": 56285
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 52922
+},
+"TB": {
+"home_g": 8,
+"home_avg": 49314
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 46431
+}
+},
+"2011": {
+"DAL": {
+"home_g": 8,
+"home_avg": 85512
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 79475
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78986
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 76921
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 75327
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73042
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 72292
+},
+"KC": {
+"home_g": 8,
+"home_avg": 72082
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71496
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71224
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70512
+},
+"SF": {
+"home_g": 8,
+"home_avg": 69732
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69144
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 68986
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 66413
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 65859
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 65392
+},
+"IND": {
+"home_g": 8,
+"home_avg": 64828
+},
+"DET": {
+"home_g": 8,
+"home_avg": 63742
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 63034
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 62816
+},
+"BUF": {
+"home_g": 7,
+"home_avg": 62694
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 62331
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62145
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 61181
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 60886
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 59242
+},
+"TB": {
+"home_g": 7,
+"home_avg": 56614
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 56394
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 49251
+}
+},
+"2012": {
+"DAL": {
+"home_g": 8,
+"home_avg": 88531
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 80495
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 79654
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 79088
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76632
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73293
+},
+"NO": {
+"home_g": 8,
+"home_avg": 72888
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71665
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71278
+},
+"GB": {
+"home_g": 8,
+"home_avg": 70507
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 70096
+},
+"SF": {
+"home_g": 8,
+"home_avg": 69732
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69144
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68755
+},
+"KC": {
+"home_g": 8,
+"home_avg": 68508
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 67946
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 66632
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65189
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 64984
+},
+"BUF": {
+"home_g": 7,
+"home_avg": 64950
+},
+"DET": {
+"home_g": 8,
+"home_avg": 63769
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62329
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 61188
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 61141
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 60890
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 60725
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 59964
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 57379
+},
+"RAMS": {
+"home_g": 7,
+"home_avg": 56703
+},
+"TB": {
+"home_g": 8,
+"home_avg": 55102
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 54216
+}
+},
+"2013": {
+"DAL": {
+"home_g": 8,
+"home_avg": 88043
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 80148
+},
+"GB": {
+"home_g": 8,
+"home_avg": 77947
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 77220
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 76957
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76872
+},
+"KC": {
+"home_g": 8,
+"home_avg": 75359
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73443
+},
+"NO": {
+"home_g": 8,
+"home_avg": 72901
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71658
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 71242
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71135
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 70224
+},
+"SF": {
+"home_g": 8,
+"home_avg": 69732
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69144
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68197
+},
+"BUF": {
+"home_g": 7,
+"home_avg": 66267
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65950
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 64319
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 64205
+},
+"MIN": {
+"home_g": 7,
+"home_avg": 64019
+},
+"DET": {
+"home_g": 8,
+"home_avg": 63796
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 63297
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62358
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 61033
+},
+"JAX": {
+"home_g": 7,
+"home_avg": 59940
+},
+"TB": {
+"home_g": 8,
+"home_avg": 58818
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 57311
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 56957
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 50444
+}
+},
+"2014": {
+"DAL": {
+"home_g": 8,
+"home_avg": 90069
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 78967
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78160
+},
+"GB": {
+"home_g": 8,
+"home_avg": 78139
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 77964
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76939
+},
+"KC": {
+"home_g": 8,
+"home_avg": 74967
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73607
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73112
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71766
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71044
+},
+"SF": {
+"home_g": 8,
+"home_avg": 70774
+},
+"ATL": {
+"home_g": 7,
+"home_avg": 70502
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 70035
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69596
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 69143
+},
+"NE": {
+"home_g": 8,
+"home_avg": 68756
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68412
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 67522
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 67425
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 65432
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65375
+},
+"DET": {
+"home_g": 8,
+"home_avg": 63024
+},
+"JAX": {
+"home_g": 7,
+"home_avg": 62961
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 62226
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 61979
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 61681
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 60703
+},
+"TB": {
+"home_g": 8,
+"home_avg": 59659
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 57416
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 57018
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 52238
+}
+},
+"2015": {
+"DAL": {
+"home_g": 8,
+"home_avg": 91459
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 79001
+},
+"GB": {
+"home_g": 8,
+"home_avg": 78413
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78160
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76922
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 76209
+},
+"KC": {
+"home_g": 7,
+"home_avg": 74086
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 74056
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73038
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71769
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71002
+},
+"SF": {
+"home_g": 8,
+"home_avg": 70799
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 70355
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 69880
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69483
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 69020
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 67193
+},
+"NE": {
+"home_g": 8,
+"home_avg": 66829
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 66772
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 66186
+},
+"IND": {
+"home_g": 8,
+"home_avg": 66047
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 64356
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 64185
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 62304
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 62035
+},
+"TB": {
+"home_g": 8,
+"home_avg": 61560
+},
+"JAX": {
+"home_g": 7,
+"home_avg": 61463
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 61389
+},
+"DET": {
+"home_g": 8,
+"home_avg": 61347
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 54613
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 52430
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 52402
+}
+},
+"2016": {
+"DAL": {
+"home_g": 8,
+"home_avg": 92539
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 78789
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 78304
+},
+"GB": {
+"home_g": 8,
+"home_avg": 78215
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78160
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76774
+},
+"RAMS": {
+"home_g": 1,
+"home_avg": 74121
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73792
+},
+"KC": {
+"home_g": 8,
+"home_avg": 73328
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73109
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71868
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71102
+},
+"SF": {
+"home_g": 8,
+"home_avg": 70178
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 69999
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69596
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 69073
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 68509
+},
+"NE": {
+"home_g": 8,
+"home_avg": 66829
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66786
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65549
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 65512
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 64831
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 64659
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 64312
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 64311
+},
+"JAX": {
+"home_g": 7,
+"home_avg": 61915
+},
+"DET": {
+"home_g": 8,
+"home_avg": 60792
+},
+"TB": {
+"home_g": 8,
+"home_avg": 60624
+},
+"CIN": {
+"home_g": 7,
+"home_avg": 60511
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 60368
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 57024
+},
+"RAIDERS": {
+"home_g": 7,
+"home_avg": 54584
+}
+},
+"2017": {
+"DAL": {
+"home_g": 8,
+"home_avg": 92721
+},
+"GB": {
+"home_g": 8,
+"home_avg": 78092
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 77562
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 77179
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76355
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 75175
+},
+"KC": {
+"home_g": 8,
+"home_avg": 74106
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73617
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73139
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 71960
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71774
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 70588
+},
+"SF": {
+"home_g": 8,
+"home_avg": 70144
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69596
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68976
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 67627
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 66775
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66721
+},
+"NE": {
+"home_g": 8,
+"home_avg": 65878
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 65651
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 64303
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 64217
+},
+"DET": {
+"home_g": 8,
+"home_avg": 64137
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 63882
+},
+"IND": {
+"home_g": 8,
+"home_avg": 63440
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 63392
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 62471
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 61142
+},
+"TB": {
+"home_g": 8,
+"home_avg": 59952
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 57775
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 53275
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 25335
+}
+},
+"2018": {
+"DAL": {
+"home_g": 8,
+"home_avg": 91619
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 77982
+},
+"GB": {
+"home_g": 8,
+"home_avg": 77834
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 76940
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 76446
+},
+"KC": {
+"home_g": 8,
+"home_avg": 75972
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 73772
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73051
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 72898
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 72429
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71804
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 70431
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69696
+},
+"SF": {
+"home_g": 8,
+"home_avg": 69148
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 69001
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66811
+},
+"JAX": {
+"home_g": 7,
+"home_avg": 66674
+},
+"NE": {
+"home_g": 8,
+"home_avg": 65878
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 65765
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 65560
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 64961
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 64520
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 63456
+},
+"DET": {
+"home_g": 8,
+"home_avg": 62795
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 62013
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 61815
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 61028
+},
+"IND": {
+"home_g": 8,
+"home_avg": 59199
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 57919
+},
+"TB": {
+"home_g": 8,
+"home_avg": 54356
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 50753
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 32768
+}
+},
+"2019": {
+"DAL": {
+"home_g": 8,
+"home_avg": 90929
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78523
+},
+"GB": {
+"home_g": 8,
+"home_avg": 77845
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 75937
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 74664
+},
+"KC": {
+"home_g": 8,
+"home_avg": 73465
+},
+"NO": {
+"home_g": 8,
+"home_avg": 73082
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 72220
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71793
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 71601
+},
+"RAMS": {
+"home_g": 7,
+"home_avg": 71229
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 70627
+},
+"SF": {
+"home_g": 8,
+"home_avg": 70305
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69783
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68990
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 68839
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 67431
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66849
+},
+"NE": {
+"home_g": 8,
+"home_avg": 65753
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 65488
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 64509
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 63085
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 63067
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 62237
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 61916
+},
+"DET": {
+"home_g": 8,
+"home_avg": 61342
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 61323
+},
+"IND": {
+"home_g": 8,
+"home_avg": 61110
+},
+"RAIDERS": {
+"home_g": 7,
+"home_avg": 52549
+},
+"TB": {
+"home_g": 8,
+"home_avg": 51898
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 47179
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 31750
+}
+},
+"2020": {
+"DAL": {
+"home_g": 8,
+"home_avg": 28187
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 15919
+},
+"TB": {
+"home_g": 8,
+"home_avg": 14483
+},
+"KC": {
+"home_g": 8,
+"home_avg": 13153
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 12400
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 12294
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 12200
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 12075
+},
+"IND": {
+"home_g": 8,
+"home_avg": 9945
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 9811
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 9566
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 8800
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 5280
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 4889
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 3969
+},
+"NO": {
+"home_g": 8,
+"home_avg": 3621
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 2800
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 2172
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 1500
+}
+},
+"2021": {
+"DAL": {
+"home_g": 8,
+"home_avg": 93421
+},
+"GB": {
+"home_g": 8,
+"home_avg": 77991
+},
+"DEN": {
+"home_g": 9,
+"home_avg": 76236
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 73882
+},
+"KC": {
+"home_g": 9,
+"home_avg": 73227
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 71906
+},
+"NYJ": {
+"home_g": 9,
+"home_avg": 71676
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 71598
+},
+"BAL": {
+"home_g": 9,
+"home_avg": 70537
+},
+"CHARGERS": {
+"home_g": 9,
+"home_avg": 70240
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69796
+},
+"TEN": {
+"home_g": 9,
+"home_avg": 68566
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68408
+},
+"BUF": {
+"home_g": 9,
+"home_avg": 67816
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 67586
+},
+"CLE": {
+"home_g": 9,
+"home_avg": 67431
+},
+"HOU": {
+"home_g": 9,
+"home_avg": 66811
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66701
+},
+"SF": {
+"home_g": 8,
+"home_avg": 66670
+},
+"NE": {
+"home_g": 9,
+"home_avg": 65878
+},
+"TB": {
+"home_g": 8,
+"home_avg": 65372
+},
+"NO": {
+"home_g": 8,
+"home_avg": 64929
+},
+"MIA": {
+"home_g": 9,
+"home_avg": 64374
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 62622
+},
+"IND": {
+"home_g": 9,
+"home_avg": 62475
+},
+"RAIDERS": {
+"home_g": 9,
+"home_avg": 61185
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 60834
+},
+"PIT": {
+"home_g": 9,
+"home_avg": 60488
+},
+"CIN": {
+"home_g": 9,
+"home_avg": 60325
+},
+"JAX": {
+"home_g": 9,
+"home_avg": 59968
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 52751
+},
+"DET": {
+"home_g": 8,
+"home_avg": 51522
+}
+},
+"2022": {
+"DAL": {
+"home_g": 9,
+"home_avg": 93465
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78009
+},
+"NYG": {
+"home_g": 9,
+"home_avg": 76474
+},
+"GB": {
+"home_g": 9,
+"home_avg": 76180
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 75980
+},
+"KC": {
+"home_g": 8,
+"home_avg": 73499
+},
+"RAMS": {
+"home_g": 9,
+"home_avg": 72734
+},
+"SF": {
+"home_g": 9,
+"home_avg": 71629
+},
+"CAR": {
+"home_g": 9,
+"home_avg": 71351
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 70589
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 69955
+},
+"PHI": {
+"home_g": 9,
+"home_avg": 69869
+},
+"ATL": {
+"home_g": 9,
+"home_avg": 69583
+},
+"TB": {
+"home_g": 9,
+"home_avg": 68988
+},
+"NO": {
+"home_g": 9,
+"home_avg": 68987
+},
+"SEA": {
+"home_g": 9,
+"home_avg": 68832
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 68616
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 68431
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 67911
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 67431
+},
+"MIN": {
+"home_g": 9,
+"home_avg": 66687
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 66459
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 66280
+},
+"CIN": {
+"home_g": 7,
+"home_avg": 66247
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 66230
+},
+"NE": {
+"home_g": 8,
+"home_avg": 65878
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65559
+},
+"ARI": {
+"home_g": 9,
+"home_avg": 65203
+},
+"DET": {
+"home_g": 9,
+"home_avg": 63423
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 62045
+},
+"CHI": {
+"home_g": 9,
+"home_avg": 59823
+},
+"WAS": {
+"home_g": 9,
+"home_avg": 58106
+}
+},
+"2023": {
+"DAL": {
+"home_g": 8,
+"home_avg": 93594
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 79307
+},
+"NYJ": {
+"home_g": 9,
+"home_avg": 77890
+},
+"GB": {
+"home_g": 8,
+"home_avg": 77829
+},
+"DEN": {
+"home_g": 9,
+"home_avg": 76388
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 73150
+},
+"SF": {
+"home_g": 8,
+"home_avg": 71655
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 71635
+},
+"HOU": {
+"home_g": 9,
+"home_avg": 71193
+},
+"KC": {
+"home_g": 9,
+"home_avg": 70968
+},
+"BAL": {
+"home_g": 9,
+"home_avg": 70597
+},
+"NO": {
+"home_g": 8,
+"home_avg": 70020
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69878
+},
+"CHARGERS": {
+"home_g": 9,
+"home_avg": 69736
+},
+"BUF": {
+"home_g": 9,
+"home_avg": 69609
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 69603
+},
+"JAX": {
+"home_g": 9,
+"home_avg": 69031
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68735
+},
+"CLE": {
+"home_g": 9,
+"home_avg": 67810
+},
+"PIT": {
+"home_g": 9,
+"home_avg": 66977
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66913
+},
+"CIN": {
+"home_g": 9,
+"home_avg": 66040
+},
+"MIA": {
+"home_g": 9,
+"home_avg": 65922
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65230
+},
+"DET": {
+"home_g": 8,
+"home_avg": 64850
+},
+"TEN": {
+"home_g": 9,
+"home_avg": 64520
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 63950
+},
+"TB": {
+"home_g": 8,
+"home_avg": 63756
+},
+"NE": {
+"home_g": 9,
+"home_avg": 63018
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 62864
+},
+"RAIDERS": {
+"home_g": 9,
+"home_avg": 62190
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 61769
+}
+},
+"2024": {
+"DAL": {
+"home_g": 9,
+"home_avg": 92972
+},
+"NYJ": {
+"home_g": 8,
+"home_avg": 78789
+},
+"NYG": {
+"home_g": 9,
+"home_avg": 78470
+},
+"GB": {
+"home_g": 9,
+"home_avg": 78003
+},
+"DEN": {
+"home_g": 8,
+"home_avg": 73969
+},
+"KC": {
+"home_g": 8,
+"home_avg": 73593
+},
+"RAMS": {
+"home_g": 9,
+"home_avg": 73194
+},
+"SF": {
+"home_g": 9,
+"home_avg": 71422
+},
+"ATL": {
+"home_g": 9,
+"home_avg": 71381
+},
+"HOU": {
+"home_g": 8,
+"home_avg": 71333
+},
+"BAL": {
+"home_g": 8,
+"home_avg": 71052
+},
+"BUF": {
+"home_g": 8,
+"home_avg": 70695
+},
+"CAR": {
+"home_g": 9,
+"home_avg": 70612
+},
+"NO": {
+"home_g": 9,
+"home_avg": 70012
+},
+"CHARGERS": {
+"home_g": 8,
+"home_avg": 69966
+},
+"SEA": {
+"home_g": 9,
+"home_avg": 68660
+},
+"CLE": {
+"home_g": 8,
+"home_avg": 67726
+},
+"PHI": {
+"home_g": 9,
+"home_avg": 67363
+},
+"PIT": {
+"home_g": 8,
+"home_avg": 66880
+},
+"CIN": {
+"home_g": 8,
+"home_avg": 66294
+},
+"MIN": {
+"home_g": 9,
+"home_avg": 66286
+},
+"IND": {
+"home_g": 8,
+"home_avg": 65767
+},
+"JAX": {
+"home_g": 8,
+"home_avg": 65764
+},
+"MIA": {
+"home_g": 8,
+"home_avg": 65643
+},
+"DET": {
+"home_g": 9,
+"home_avg": 64922
+},
+"TEN": {
+"home_g": 8,
+"home_avg": 64819
+},
+"NE": {
+"home_g": 8,
+"home_avg": 64634
+},
+"ARI": {
+"home_g": 9,
+"home_avg": 63975
+},
+"TB": {
+"home_g": 9,
+"home_avg": 63689
+},
+"WAS": {
+"home_g": 9,
+"home_avg": 63428
+},
+"RAIDERS": {
+"home_g": 8,
+"home_avg": 62175
+},
+"CHI": {
+"home_g": 9,
+"home_avg": 58649
+}
+},
+"2025": {
+"DAL": {
+"home_g": 8,
+"home_avg": 92991
+},
+"NYG": {
+"home_g": 8,
+"home_avg": 79786
+},
+"GB": {
+"home_g": 8,
+"home_avg": 77848
+},
+"DEN": {
+"home_g": 9,
+"home_avg": 75256
+},
+"KC": {
+"home_g": 9,
+"home_avg": 73460
+},
+"NYJ": {
+"home_g": 9,
+"home_avg": 73360
+},
+"RAMS": {
+"home_g": 8,
+"home_avg": 73235
+},
+"CAR": {
+"home_g": 8,
+"home_avg": 72417
+},
+"SF": {
+"home_g": 8,
+"home_avg": 71177
+},
+"BUF": {
+"home_g": 9,
+"home_avg": 70877
+},
+"HOU": {
+"home_g": 9,
+"home_avg": 70821
+},
+"ATL": {
+"home_g": 8,
+"home_avg": 70599
+},
+"BAL": {
+"home_g": 9,
+"home_avg": 70294
+},
+"NO": {
+"home_g": 8,
+"home_avg": 70036
+},
+"PHI": {
+"home_g": 8,
+"home_avg": 69879
+},
+"CHARGERS": {
+"home_g": 9,
+"home_avg": 68900
+},
+"SEA": {
+"home_g": 8,
+"home_avg": 68740
+},
+"PIT": {
+"home_g": 9,
+"home_avg": 67213
+},
+"MIA": {
+"home_g": 9,
+"home_avg": 67122
+},
+"MIN": {
+"home_g": 8,
+"home_avg": 66842
+},
+"IND": {
+"home_g": 9,
+"home_avg": 66088
+},
+"CIN": {
+"home_g": 9,
+"home_avg": 64949
+},
+"CLE": {
+"home_g": 9,
+"home_avg": 64660
+},
+"NE": {
+"home_g": 9,
+"home_avg": 64628
+},
+"DET": {
+"home_g": 8,
+"home_avg": 64589
+},
+"JAX": {
+"home_g": 9,
+"home_avg": 64445
+},
+"WAS": {
+"home_g": 8,
+"home_avg": 64295
+},
+"TB": {
+"home_g": 8,
+"home_avg": 63640
+},
+"ARI": {
+"home_g": 8,
+"home_avg": 63524
+},
+"RAIDERS": {
+"home_g": 9,
+"home_avg": 62260
+},
+"TEN": {
+"home_g": 9,
+"home_avg": 58893
+},
+"CHI": {
+"home_g": 8,
+"home_avg": 58126
+}
+}
+}

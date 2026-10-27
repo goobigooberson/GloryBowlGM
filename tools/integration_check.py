@@ -60,6 +60,8 @@ def run(N=6, scratch=None, say=_print):
         check(lg2.offseason == lg.offseason, f"{tag}: save/load changed the offseason state")
         check((lg2.tv or {}) == (lg.tv or {}), f"{tag}: save/load changed the TV/cap records")
         check(lg2.cap_history == lg.cap_history, f"{tag}: save/load changed the cap history")
+        check((getattr(lg2, "finances", None) or {}) == (getattr(lg, "finances", None) or {}),
+              f"{tag}: save/load changed the team finances")
         try:
             os.remove(path)
         except OSError:
@@ -158,6 +160,15 @@ def run(N=6, scratch=None, say=_print):
                           f"{'; '.join(ev)}")
                     say(f"    room at FA open: top {rooms[0]*100:.0f}%, 5th {rooms[4]*100:.0f}%, median {st.median(rooms)*100:.1f}%, "
                           f"24th {rooms[23]*100:.1f}%, under 2%: {sum(r < 0.02 for r in rooms)}; approaches {dict(ap)}")
+                    books = (lg.finances or {}).get("books", {}).get(lg.season - 1)
+                    check(bool(books) and len(books) == len(lg.teams), f"{lg.season - 1}: team finances not closed")
+                    if books:
+                        mine_b = books.get(lg.user_team_id, {})
+                        say(f"    {lg.season - 1} books: revenue {C.fmt_money(st.mean(b['revenue'] for b in books.values()))}, "
+                              f"profit {C.fmt_money(st.mean(b['profit'] for b in books.values()))} "
+                              f"({sum(b['profit'] < 0 for b in books.values())} losing money), crowd "
+                              f"{st.mean(b['att_avg'] or 0 for b in books.values()):,.0f}; yours "
+                              f"{C.fmt_money(mine_b.get('profit', 0))} at ${mine_b.get('price')}")
                 if key == "fa":
                     fas = sorted(FA.free_agent_list(lg), key=lambda p: -p.overall())[:40]
                     placed = []

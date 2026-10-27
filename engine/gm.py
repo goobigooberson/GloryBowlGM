@@ -552,10 +552,21 @@ def job_security(league):
         playoffs = bool(po.seed_of(league, tid)) if (over or SE.in_playoffs(league)) else False
         tenure = _your_tenure(league, True)
         basis = f"this season {r['w']}-{r['l']}" + (f"-{r['t']}" if r["t"] else "")
-    p = min(0.95, fire_chance(w17, tenure, playoffs) * FIRE_LIFT)
+    money, money_word = _money(league, tid)
+    p = min(0.95, fire_chance(w17, tenure, playoffs) * FIRE_LIFT * money)
     word = next(wd for lim, wd in SECURITY_WORDS if p < lim)
     return {"chance": p, "word": word, "on": can_be_fired(league), "tenure": tenure,
-            "basis": f"{basis}, your {_ordinal(tenure)} season in charge" + (", playoffs" if playoffs else "")}
+            "basis": f"{basis}, your {_ordinal(tenure)} season in charge" + (", playoffs" if playoffs else "")
+                     + (f"; {money_word}" if money_word else "")}
+
+
+def _money(league, tid):
+    """The money part of your owner's view (finances.owner_money_factor; Blake, Oct 26:
+    winning first, money only at the edges): (factor on the chance, words or None)."""
+    if not getattr(league, "finances", None):
+        return 1.0, None
+    from . import finances
+    return finances.owner_money_factor(league, tid)
 
 
 def _ordinal(n):
@@ -601,7 +612,8 @@ def owner_review(league):
     lines = SE.team_season_summary(league)
     mine = next(r for r in lines if r["team"] == tid)
     tenure = _your_tenure(league, True)
-    chance = min(0.95, fire_chance(_wins17(mine), tenure, bool(mine.get("seed"))) * FIRE_LIFT)
+    money, _w = _money(league, tid)
+    chance = min(0.95, fire_chance(_wins17(mine), tenure, bool(mine.get("seed"))) * FIRE_LIFT * money)
     rng = random.Random(f"gm-you-{_salt(league)}-{S}")
     fired = rng.random() < chance
     rv = {"season": S, "fired": fired, "chance": round(chance, 3), "team": tid, "offers": [], "new_team": None,

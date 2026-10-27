@@ -2986,6 +2986,7 @@ def _season_news(ctx, season, past_games):
     from .news_front_office import front_office_news   # GMs and head coaches (Oct 22)
     from .news_trades import trade_news    # player trades (Oct 23)
     from .news_history import hall_of_fame_news   # the Hall of Fame (Oct 25)
+    from .news_finances import finance_news   # ticket prices, empty seats, team values (Oct 26)
     sections = [lambda: [_game_story(ctx, season, phase, g, box, recs, track)
                          for phase, g, box in games if g.get("played") and box],
                 lambda: _performances_and_milestones(ctx, season, games, recs, track),
@@ -2994,7 +2995,7 @@ def _season_news(ctx, season, past_games):
                 lambda: _playoff_field(ctx, season), lambda: _season_summary(ctx, season, games),
                 lambda: _captains(ctx, season), lambda: awards_news(ctx, season), lambda: money_news(ctx, season),
                 lambda: front_office_news(ctx, season), lambda: trade_news(ctx, season),
-                lambda: hall_of_fame_news(ctx, season),
+                lambda: hall_of_fame_news(ctx, season), lambda: finance_news(ctx, season),
                 lambda: ctx.finish_posts(start)]   # Bitter's bits, worded in calendar order (Oct 24)
     for section in sections:
         # Each kind of news keeps its own memory of recent wording, so a story
