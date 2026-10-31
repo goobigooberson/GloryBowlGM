@@ -2,8 +2,10 @@
 
 You're helping Blake build his own football general manager sim, a new and
 improved successor to Front Office Football 8 (FOF8). Read this whole file,
-then `docs/build-log.md` (the full record of what's built and decided) before
-doing anything else. For design questions, also read
+then `docs/current-state.md` (the short summary of what's built, decided and
+open) before doing anything else. `docs/build-log.md` is the full history
+(500+ KB): never read it whole; search it for your topic (its section headings
+are listed at the end of `current-state.md`). For design questions, also read
 `FOF8 Design Reference for AI Context.pdf` (in this folder); its "Blake's
 priorities" section overrides everything else in that document.
 
@@ -41,9 +43,16 @@ priorities" section overrides everything else in that document.
 - Keep the game's rules and data (`engine/`) separate from the screens
   (`screens/`), so balance and AI can be tuned later without rewriting the
   interface. Screens read from the engine only.
-- Keep `docs/build-log.md` up to date: record decisions (with Blake's
-  reasoning), what was built, test results, and known gaps. It's the hand-off
-  record between sessions.
+- Keep the record up to date: add a dated entry at the end of
+  `docs/build-log.md` (decisions with Blake's reasoning, what was built, test
+  results, known gaps; append without reading the whole file), and update the
+  matching lines of `docs/current-state.md` when a system's status, a decision
+  or a known gap changes. Keep `current-state.md` short (under ~25 KB): replace
+  old facts there, don't pile on history.
+- Be thrifty with usage (Blake, Oct 30): read only what the task needs; side
+  sessions report once, when done or blocked, not every time they wait; a
+  branch that already includes the latest main and passed its checks merges
+  without re-running them; save one scoreboard baseline per batch of merges.
 - Ask Blake before design decisions that are his to make (how something should
   feel or play). Make technical calls yourself and mention them.
 - Measure every engine change: `python tools/scoreboard.py` before and after
@@ -132,18 +141,12 @@ could affect stats:
   happen); outliers are controlled by football mechanisms (coverage
   adjustments, workload, injuries, diminishing returns).
 
-## Planned next (Step 7: season loop)
+## The season loop (Step 7)
 
-See "Planned game flow", "Player development" and "Progress" in the build log.
-Decided items waiting to be built:
-- A "Regular season games" league setting (16 or 17; default 17). The engine
-  is per-play, so only the schedule and the report benchmarks change (scale
-  real benchmarks by games/17).
-- Player development as designed in the build log (potential shifts, two
-  layers, staged reveals). Rust was dropped (Blake, Oct 23).
-- Main menu, new game, save slots.
-- Coaches will eventually replace the random coordinator styles in
-  `gameteam._build_tendencies` and should bench players who play badly.
+Built: the 16/17-game setting, player development, main menu, new game and
+save slots. What's planned next is under "Open threads" in
+`docs/current-state.md`. Still waiting: coaches should bench players who play
+badly.
 - Roster moves during a season: built Oct 22 (`engine/transactions.py`: practice
   squads, injured reserve/PUP, signings, waivers, elevations, real NFL rules;
   training camp injuries and next-season carryover). Since Oct 23 camp runs

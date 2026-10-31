@@ -1,4 +1,5 @@
 # Build log: decisions and progress
+> Start with docs/current-state.md (the short summary). This file is the full history: search it for your topic instead of reading it all.
 
 Running record of what's been built and decided, so any chat in this project can pick up where the last left off.
 
