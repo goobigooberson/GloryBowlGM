@@ -15,9 +15,10 @@ priorities" section overrides everything else in that document.
   other platforms, single-player only.
 - The project lives in `C:\Projects\GloryBowlGM` (moved out of OneDrive on
   Oct 31). Blake starts the game from the "Glory Bowl GM" shortcut on his
-  desktop (`pythonw app.py`, no terminal). There is no GitHub remote: a full
-  git backup (`git bundle`) and a copy of `saves/` are kept in
-  `OneDrive\Glory Bowl GM backup`.
+  desktop (`pythonw app.py`, no terminal). Backups: private GitHub repo
+  `goobigooberson/GloryBowlGM` (`origin`; push `main` after commits that the
+  main session merges; saves and the real NFL data aren't uploaded), plus an
+  older full git bundle and a copy of `saves/` in `OneDrive\Glory Bowl GM backup`.
 - Not a 1:1 remake. Change, cut or reinvent any FOF8 system when it makes the
   game better, and say what you changed and why.
 - Stack (decided): Python 3.13, NiceGUI 3.18 (opens in its own desktop window
