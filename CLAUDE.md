@@ -13,6 +13,11 @@ priorities" section overrides everything else in that document.
 
 - Personal project for Blake's own use on his Windows PC. Not for sale, no
   other platforms, single-player only.
+- The project lives in `C:\Projects\GloryBowlGM` (moved out of OneDrive on
+  Oct 31). Blake starts the game from the "Glory Bowl GM" shortcut on his
+  desktop (`pythonw app.py`, no terminal). There is no GitHub remote: a full
+  git backup (`git bundle`) and a copy of `saves/` are kept in
+  `OneDrive\Glory Bowl GM backup`.
 - Not a 1:1 remake. Change, cut or reinvent any FOF8 system when it makes the
   game better, and say what you changed and why.
 - Stack (decided): Python 3.13, NiceGUI 3.18 (opens in its own desktop window
@@ -74,8 +79,9 @@ priorities" section overrides everything else in that document.
   owns them, and leave other sessions' files alone.
 - Line endings are handled by `.gitattributes` (git compares text as LF); don't
   convert files between line endings.
-- OneDrive: if removing a worktree leaves `.git/worktrees/<name>` that can't be
-  deleted ("Permission denied"), OneDrive marked it read-only; in PowerShell:
+- Read-only leftovers (seen under OneDrive, may still happen): if removing a
+  worktree leaves `.git/worktrees/<name>` that can't be deleted ("Permission
+  denied"), its files are marked read-only; in PowerShell:
   `Get-ChildItem -Recurse -Force .git\worktrees\<name> | % { $_.Attributes = 'Normal' }`
   then `Remove-Item -Recurse -Force .git\worktrees\<name>`.
   If the worktree folder itself is left behind, first remove its data link alone with

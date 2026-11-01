@@ -19,10 +19,10 @@ For a fresh main (coordinator) session. Read `CLAUDE.md` and
   checks passed on 5f06216: integration had 0 problems, screens ran 1,623
   steps with 0 problems, all must-be-zero measures were fine, and nothing
   changed beyond noise. The scoreboard baseline was saved there.
-- Idle, already-merged side sessions whose worktrees can be removed (archive
-  them only on Blake's yes): fa-commitment (`claude/fa-commitment-b89ef2`) and
-  team-finances (`claude/team-finances-352ec9`). Before deleting a worktree,
-  remove its data link first: `cmd /c rmdir <wt>\tools\data\nflverse`.
+- Oct 31: the project moved to `C:\Projects\GloryBowlGM` (out of OneDrive).
+  The old OneDrive folder is a leftover copy; Blake deletes it once he's happy.
+  Worktrees: none (fa-commitment and team-finances were merged and removed).
+  Claude memory was copied to the new folder's project memory.
 - Local uncommitted `.claude/launch.json` holds the layout session's test
   entries; leave it alone. Untracked `docs/for-gemini/` and its zip belong to
   Blake.
